@@ -199,12 +199,25 @@ body{
 .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
 .photos .ph{aspect-ratio:1;border-radius:3px;background:linear-gradient(135deg,#e9eef2,#dfe7ec);display:flex;align-items:center;justify-content:center;color:#aab8c2;font-size:18px;}
 
+/* import modal */
+.modal{position:fixed;inset:0;background:rgba(22,22,22,.42);display:flex;align-items:center;justify-content:center;z-index:50;}
+.modal .box{background:#fff;border-radius:6px;max-width:460px;width:90%;padding:24px;box-shadow:0 12px 48px rgba(0,0,0,.25);max-height:82vh;overflow:auto;}
+.modal h3{font-family:var(--serif);font-weight:400;font-size:21px;margin:0 0 5px;}
+.modal .msub{color:var(--grey);font-size:12.5px;margin-bottom:14px;}
+.maprow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
+.maprow .mn{flex:1;font-size:13.5px;}
+.maprow .mn small{color:var(--grey);}
+.maprow select{font-family:inherit;font-size:12.5px;padding:5px 7px;border:1px solid var(--line);border-radius:4px;background:#fff;}
+.modal .macts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.imp-pill{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;font-weight:600;cursor:pointer;border:1px solid #cdd9e0;color:var(--accent-dk);background:var(--accent-soft);border-radius:2px;padding:3px 8px;margin-left:auto;font-family:var(--sans);}
+.imp-pill:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 .connect{font-size:11.5px;color:var(--grey);background:var(--panel);border:1px dashed var(--line);border-radius:3px;padding:10px 12px;margin-top:12px;line-height:1.5;}
 .connect b{color:var(--accent-dk);text-transform:uppercase;letter-spacing:1px;font-size:10px;}
 .foot{text-align:center;color:var(--grey);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin-top:38px;padding-top:18px;border-top:1px solid var(--line);}
 .foot .loc{font-family:var(--serif);text-transform:none;letter-spacing:.5px;font-size:12px;display:block;margin-top:6px;color:var(--grey);}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://alcdn.msftauth.net/browser/2.38.4/js/msal-browser.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -238,7 +251,7 @@ body{
       </div>
 
       <div class="card c-todo">
-        <h2><span class="sq"></span>To-Dos</h2>
+        <h2><span class="sq"></span>To-Dos <button class="imp-pill" id="msImport">⊕ Import To Do</button></h2>
         <div class="tabs">
           <div class="tab active" data-list="biz">Business</div>
           <div class="tab" data-list="personal">Personal</div>
@@ -684,6 +697,64 @@ async function silentRefresh(){
 })();
 // keep tokens fresh in the background
 setInterval(silentRefresh, 45*60*1000);
+
+/* ---------- Microsoft To Do: one-time import via Graph ---------- */
+const MS_CLIENT_ID='6317e330-50ac-46f2-89c3-dc661be621f4';
+const MS_REDIRECT='https://cbsp4809.github.io/personal-dashboard/';
+let msalApp=null;
+function initMsal(){
+  if(msalApp)return true;
+  if(!(window.msal&&msal.PublicClientApplication))return false;
+  msalApp=new msal.PublicClientApplication({
+    auth:{clientId:MS_CLIENT_ID, authority:'https://login.microsoftonline.com/common', redirectUri:MS_REDIRECT},
+    cache:{cacheLocation:'localStorage'}
+  });
+  return true;
+}
+async function msGraph(path, token){
+  const r=await fetch('https://graph.microsoft.com/v1.0'+path,{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok)throw new Error('Graph '+r.status);
+  return r.json();
+}
+async function msImportFlow(){
+  if(!initMsal()){alert('Microsoft sign-in is still loading — try again in a moment. (Works on the live site, not the Cowork preview.)');return;}
+  try{
+    const login=await msalApp.loginPopup({scopes:['Tasks.Read'],prompt:'select_account'});
+    const account=login.account;
+    let tok;
+    try{tok=await msalApp.acquireTokenSilent({scopes:['Tasks.Read'],account});}
+    catch(_){tok=await msalApp.acquireTokenPopup({scopes:['Tasks.Read']});}
+    const token=tok.accessToken;
+    const lists=await msGraph('/me/todo/lists', token);
+    const data=[];
+    for(const l of (lists.value||[])){
+      const t=await msGraph('/me/todo/lists/'+l.id+'/tasks?$top=100&$filter='+encodeURIComponent("status ne 'completed'"), token);
+      data.push({name:l.displayName||'List', tasks:(t.value||[]).map(x=>({
+        x:x.title||'(untitled)', d:false,
+        due:(x.dueDateTime&&x.dueDateTime.dateTime)?x.dueDateTime.dateTime.slice(0,10):'',
+        note:(x.body&&x.body.content)?x.body.content.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim():'',
+        star:x.importance==='high'
+      }))});
+    }
+    showImportPanel(data);
+  }catch(e){alert('Microsoft import error: '+(e&&e.message?e.message:e));}
+}
+function showImportPanel(data){
+  const total=data.reduce((s,l)=>s+l.tasks.length,0);
+  const guess=n=>{n=(n||'').toLowerCase();if(/work|business|studio|client|pod|wedding|shoot/.test(n))return 'biz';if(/goal|idea|someday|long|vision|dream/.test(n))return 'longterm';return 'personal';};
+  const wrap=document.createElement('div');wrap.className='modal';
+  wrap.innerHTML=`<div class="box"><h3>Import from Microsoft To Do</h3><div class="msub">${total} open task${total!==1?'s':''} across ${data.length} list${data.length!==1?'s':''}. Choose where each list lands — due dates, notes, and priority come with them.</div><div id="maprows"></div><div class="macts"><button class="btn" id="impCancel" style="background:var(--bg);color:var(--ink);border-color:var(--line)">Cancel</button><button class="btn" id="impGo">Import</button></div></div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector('#maprows').innerHTML=data.map((l,i)=>`<div class="maprow"><div class="mn">${esc(l.name)} <small>(${l.tasks.length})</small></div><select data-i="${i}"><option value="biz"${guess(l.name)==='biz'?' selected':''}>Business</option><option value="personal"${guess(l.name)==='personal'?' selected':''}>Personal</option><option value="longterm"${guess(l.name)==='longterm'?' selected':''}>Long-term</option><option value="skip">Skip</option></select></div>`).join('');
+  wrap.querySelector('#impCancel').onclick=()=>wrap.remove();
+  wrap.querySelector('#impGo').onclick=()=>{
+    let n=0;
+    wrap.querySelectorAll('select').forEach(s=>{const l=data[+s.dataset.i];if(s.value==='skip')return;const a=getTodos(s.value);l.tasks.forEach(t=>{a.push(t);n++;});setTodos(s.value,a);});
+    wrap.remove();renderTodos();
+    alert('Imported '+n+' task'+(n!==1?'s':'')+' into your dashboard.');
+  };
+}
+$('#msImport').onclick=msImportFlow;
 
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
 tick();renderTodos();renderMails();renderKids();renderFiled();
