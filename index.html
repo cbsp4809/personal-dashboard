@@ -220,7 +220,7 @@ body{
       <div class="card c-agenda">
         <h2><span class="sq"></span>Today's Agenda <span class="pill" id="agendaPill">Sample · connect calendar</span></h2>
         <div id="agenda"></div>
-        <div class="connect"><b>Go live</b><br>Connect Google or Apple Calendar and this fills with your real schedule.</div>
+        <div class="connect" id="agendaConnect"><b>Go live</b><br>Connect Google or Apple Calendar and this fills with your real schedule.</div>
       </div>
 
       <div class="card c-todo">
@@ -239,7 +239,7 @@ body{
       <div class="card c-inbox">
         <h2><span class="sq"></span>Priority Inbox <span class="pill" id="mailPill">Sample · connect email</span></h2>
         <div id="mails"></div>
-        <div class="connect"><b>Go live</b><br>Connect Gmail / Outlook to surface real priority mail with AI-drafted replies ready to send.</div>
+        <div class="connect" id="mailConnect"><b>Go live</b><br>Connect Gmail / Outlook to surface real priority mail with AI-drafted replies ready to send.</div>
       </div>
     </div>
 
@@ -595,6 +595,7 @@ async function refreshGoogle(){
     $('#mailPill').textContent='Live · '+gAccounts.length+' account'+(gAccounts.length>1?'s':'');
     $('#mailPill').className='pill live';
   }catch(e){}
+  const ac=$('#agendaConnect'),mc=$('#mailConnect');if(ac)ac.style.display='none';if(mc)mc.style.display='none';
   gStatus(gAccounts.length+' account'+(gAccounts.length>1?'s':'')+' connected · click + to add another');
 }
 $('#gconnect').onclick=()=>{
