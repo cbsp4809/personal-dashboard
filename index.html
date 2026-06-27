@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chris Bailey · Personal Dashboard</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f1efea;          /* soft off-white page so white cards lift */
+  --panel:#f5f4f1;
+  --card:#ffffff;
+  --ink:#161616;
+  --grey:#707070;
+  --line:#e6e3dd;
+  --line-soft:#eeebe5;
+  --accent:#6a8193;      /* brand slate blue */
+  --accent-dk:#4f6575;
+  --accent-soft:#eef1f3;
+  --shadow:0 1px 2px rgba(40,38,34,.04), 0 4px 18px rgba(40,38,34,.05);
+  /* navy / blue / light-blue section hues on a light-beige page */
+  --h-slate:#6a8193;   /* brand slate blue */
+  --h-navy:#2e4258;    /* deep navy */
+  --h-blue:#5b7d9a;    /* mid blue */
+  --h-sky:#93b0c6;     /* light blue */
+  --h-steel:#3f5b76;   /* steel navy */
+  --serif:'Perpetua', Palatino, "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
+  --sans:"Helvetica Neue", Helvetica, Arial, sans-serif;
+  --radius:4px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:14.5px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:34px 26px 70px;}
+
+/* ---------- masthead ---------- */
+.mast{text-align:center;padding:8px 0 22px;border-bottom:1px solid var(--line);margin-bottom:28px;position:relative;}
+.brandmark{color:var(--accent);font-size:11px;letter-spacing:2px;margin-bottom:9px;}
+.wordmark{font-family:var(--serif);font-weight:400;text-transform:uppercase;letter-spacing:7px;font-size:30px;line-height:1.05;color:var(--ink);}
+.wordmark .sub{display:block;font-size:11px;letter-spacing:5px;color:var(--grey);margin-top:7px;}
+.mast-meta{display:flex;justify-content:space-between;align-items:center;margin-top:22px;}
+.greet{font-family:var(--serif);font-size:21px;letter-spacing:.5px;color:var(--ink);font-weight:400;}
+.greet em{font-style:italic;color:var(--accent);}
+.clock{text-align:right;font-variant-numeric:tabular-nums;}
+.clock .time{font-family:var(--serif);font-size:26px;letter-spacing:1px;}
+.clock .date{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);}
+
+/* ---------- grid ---------- */
+.grid{display:grid;grid-template-columns:1.12fr 1fr;gap:26px;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;gap:20px;}}
+.col{display:flex;flex-direction:column;gap:26px;}
+.card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--sec,var(--accent));border-radius:var(--radius);padding:21px 22px 20px;box-shadow:var(--shadow);}
+.card h2{font-family:var(--sans);font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--ink);margin:0 0 16px;font-weight:600;display:flex;align-items:center;gap:9px;padding-bottom:11px;border-bottom:1px solid var(--line-soft);}
+.card h2 .sq{width:7px;height:7px;background:var(--sec,var(--accent));display:inline-block;}
+/* subtle per-section hue: thin top accent + barely-there tint */
+.c-agenda{--sec:var(--h-slate);background:linear-gradient(#f6f9fb,#ffffff 70px);}
+.c-todo{--sec:var(--h-navy);background:linear-gradient(#f5f7fa,#ffffff 70px);}
+.c-inbox{--sec:var(--h-blue);background:linear-gradient(#f4f8fb,#ffffff 70px);}
+.c-goal{--sec:var(--h-sky);background:linear-gradient(#f5f9fc,#ffffff 70px);}
+.c-reports{--sec:var(--h-steel);background:linear-gradient(#f6f8fb,#ffffff 70px);}
+.pill{font-size:9.5px;color:var(--grey);border:1px solid var(--line);border-radius:2px;padding:2px 7px;margin-left:auto;letter-spacing:1px;text-transform:uppercase;font-weight:500;}
+.pill.live{color:var(--accent-dk);border-color:#cdd9e0;background:var(--accent-soft);}
+
+/* ---------- agenda ---------- */
+.event{display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft);}
+.event:last-child{border-bottom:none;}
+.event .t{font-variant-numeric:tabular-nums;color:var(--accent-dk);font-weight:600;font-size:12px;letter-spacing:.5px;min-width:58px;padding-top:1px;}
+.event .body{flex:1;}
+.event .ttl{font-size:14.5px;}
+.event .loc{color:var(--grey);font-size:12px;}
+.event.now{background:var(--accent-soft);margin:0 -12px;padding:11px 12px;border-radius:3px;border:none;}
+
+/* ---------- todo ---------- */
+.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--line-soft);}
+.tab{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:7px 14px;cursor:pointer;color:var(--grey);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:var(--ink);border-color:var(--accent);}
+.todo{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
+.todo:last-of-type{border-bottom:none;}
+.todo input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+.todo label{flex:1;cursor:pointer;}
+.todo.done label{text-decoration:line-through;color:var(--grey);}
+.todo .del{opacity:0;color:var(--grey);background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;}
+.todo:hover .del{opacity:1;}
+.addrow{display:flex;gap:8px;margin-top:14px;}
+.addrow input{flex:1;border:1px solid var(--line);border-radius:var(--radius);padding:9px 12px;font-size:13.5px;background:var(--bg);font-family:inherit;}
+.addrow input:focus{outline:none;border-color:var(--accent);}
+.btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:var(--radius);padding:9px 16px;font-weight:600;cursor:pointer;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--sans);}
+.btn:hover{background:var(--accent-dk);border-color:var(--accent-dk);}
+
+/* ---------- email ---------- */
+.mail{padding:11px 0;border-bottom:1px solid var(--line-soft);}
+.mail:last-child{border-bottom:none;}
+.mail .from{font-weight:600;font-size:13.5px;}
+.mail .subj{color:var(--grey);font-size:12.5px;margin:1px 0 8px;}
+.mail .acts{display:flex;gap:8px;}
+.mail .mini{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:2px;border:1px solid var(--line);background:var(--bg);cursor:pointer;color:var(--ink);font-weight:600;}
+.mail .mini.draft{border-color:#cdd9e0;color:var(--accent-dk);background:var(--accent-soft);}
+
+/* ---------- goals / gratitude ---------- */
+.goalblock{margin-bottom:16px;}
+.goalblock:last-child{margin-bottom:0;}
+.goalblock .lab{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-dk);font-weight:600;margin-bottom:6px;}
+.editable{border:1px solid transparent;border-radius:3px;padding:7px 9px;margin:0 -9px;min-height:26px;font-family:var(--serif);font-size:15.5px;color:var(--ink);}
+.editable:hover{border-color:var(--line-soft);}
+.editable:focus{outline:none;border-color:var(--accent);background:#fff;}
+.editable[data-empty]:empty:before{content:attr(data-empty);color:var(--grey);font-style:italic;font-size:14px;}
+
+/* ---------- assistant ---------- */
+.assistant{background:var(--ink);color:#f2f2f0;border-color:var(--ink);}
+.assistant h2{color:#cfd8de;border-color:rgba(255,255,255,.1);}
+.assistant h2 .sq{background:var(--accent);}
+.chatlog{max-height:240px;overflow-y:auto;margin-bottom:14px;display:flex;flex-direction:column;gap:10px;padding-right:4px;}
+.msg{padding:10px 13px;border-radius:4px;font-size:13.5px;max-width:88%;white-space:pre-wrap;line-height:1.5;}
+.msg.u{background:var(--accent);color:#fff;align-self:flex-end;}
+.msg.a{background:rgba(255,255,255,.07);color:#ececea;align-self:flex-start;}
+.msg.a.think{color:#9aa5ac;font-style:italic;}
+.askrow{display:flex;gap:8px;align-items:flex-end;}
+.askrow textarea{flex:1;resize:none;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#f2f2f0;border-radius:4px;padding:11px 13px;font-size:13.5px;font-family:inherit;line-height:1.4;max-height:120px;}
+.askrow textarea::placeholder{color:#8b949b;}
+.askrow textarea:focus{outline:none;border-color:var(--accent);}
+.iconbtn{border:none;border-radius:4px;width:42px;height:42px;cursor:pointer;font-size:16px;flex-shrink:0;}
+.mic{background:rgba(255,255,255,.09);color:#f2f2f0;}
+.mic.rec{background:#b5524a;animation:pulse 1s infinite;}
+@keyframes pulse{50%{opacity:.55;}}
+.send{background:var(--accent);color:#fff;}
+.send:hover{background:var(--accent-dk);}
+.hint{font-size:11px;color:#8b949b;margin-top:9px;letter-spacing:.3px;}
+
+/* ---------- reports ---------- */
+.report{display:flex;gap:13px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line-soft);}
+.report:last-child{border-bottom:none;}
+.report .ic{width:34px;height:34px;border-radius:2px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.report .rbody{flex:1;}
+.report .rttl{font-weight:600;font-size:13.5px;}
+.report .rmeta{color:var(--grey);font-size:11px;letter-spacing:.5px;text-transform:uppercase;}
+.report .out{font-size:13px;color:var(--ink);margin-top:8px;background:var(--panel);border-radius:3px;padding:10px 12px;display:none;line-height:1.55;}
+.report .gen{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-dk);background:none;border:none;padding:6px 0 0;cursor:pointer;font-weight:600;}
+
+.connect{font-size:11.5px;color:var(--grey);background:var(--panel);border:1px dashed var(--line);border-radius:3px;padding:10px 12px;margin-top:12px;line-height:1.5;}
+.connect b{color:var(--accent-dk);text-transform:uppercase;letter-spacing:1px;font-size:10px;}
+.foot{text-align:center;color:var(--grey);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin-top:38px;padding-top:18px;border-top:1px solid var(--line);}
+.foot .loc{font-family:var(--serif);text-transform:none;letter-spacing:.5px;font-size:12px;display:block;margin-top:6px;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- masthead -->
+  <div class="mast">
+    <div class="brandmark">■</div>
+    <div class="wordmark">Chris Bailey<span class="sub">Photography · Personal Dashboard</span></div>
+    <div class="mast-meta">
+      <div class="greet" id="greet">Good morning, <em>Chris</em></div>
+      <div class="clock">
+        <div class="time" id="time">--:--</div>
+        <div class="date" id="date"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="col">
+      <div class="card c-agenda">
+        <h2><span class="sq"></span>Today's Agenda <span class="pill">Sample · connect calendar</span></h2>
+        <div id="agenda"></div>
+        <div class="connect"><b>Go live</b><br>Connect Google or Apple Calendar and this fills with your real schedule.</div>
+      </div>
+
+      <div class="card c-todo">
+        <h2><span class="sq"></span>To-Dos</h2>
+        <div class="tabs">
+          <div class="tab active" data-list="biz">Business</div>
+          <div class="tab" data-list="personal">Personal</div>
+        </div>
+        <div id="todos"></div>
+        <div class="addrow">
+          <input id="todoInput" placeholder="Add a task and press Enter…">
+          <button class="btn" id="todoAdd">Add</button>
+        </div>
+      </div>
+
+      <div class="card c-inbox">
+        <h2><span class="sq"></span>Priority Inbox <span class="pill">Sample · connect email</span></h2>
+        <div id="mails"></div>
+        <div class="connect"><b>Go live</b><br>Connect Gmail / Outlook to surface real priority mail with AI-drafted replies ready to send.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col">
+      <div class="card assistant">
+        <h2><span class="sq"></span>Assistant</h2>
+        <div class="chatlog" id="chatlog">
+          <div class="msg a">Morning, Chris. Ask me anything, or tell me to do something — e.g. "add to-do: call the Greenway Plaza landlord", "draft a reply to Methodist", or "what should I focus on today?"</div>
+        </div>
+        <div class="askrow">
+          <textarea id="ask" rows="1" placeholder="Talk or type a command…"></textarea>
+          <button class="iconbtn mic" id="mic" title="Speak">🎙</button>
+          <button class="iconbtn send" id="send" title="Send">→</button>
+        </div>
+        <div class="hint">Start with "add to-do:", "add personal to-do:", or just ask a question.</div>
+      </div>
+
+      <div class="card c-goal">
+        <h2><span class="sq"></span>Goal Focus</h2>
+        <div class="goalblock">
+          <div class="lab">Short-term</div>
+          <div class="editable" id="goalShort" contenteditable="true" data-empty="What needs to happen this week/month?"></div>
+        </div>
+        <div class="goalblock">
+          <div class="lab">Long-term</div>
+          <div class="editable" id="goalLong" contenteditable="true" data-empty="The big-picture goals to keep in front of mind."></div>
+        </div>
+        <div class="goalblock">
+          <div class="lab">Gratitude — for Reagan &amp; me</div>
+          <div class="editable" id="gratitude" contenteditable="true" data-empty="One thing I'm grateful for today…"></div>
+        </div>
+      </div>
+
+      <div class="card c-reports">
+        <h2><span class="sq"></span>Automated Reports</h2>
+        <div id="reports"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Personal Dashboard · v1 · saved on this device <span id="connNote"></span>
+    <span class="loc">4809 Blossom St. Houston, TX · Fine art wedding &amp; portrait studio</span>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const store={get:(k,d)=>{try{const v=localStorage.getItem('cb_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
+             set:(k,v)=>{try{localStorage.setItem('cb_'+k,JSON.stringify(v));}catch(e){}}};
+function esc(s){return (s+'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* clock & greeting */
+function tick(){
+  const n=new Date();
+  $('#time').textContent=n.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  $('#date').textContent=n.toLocaleDateString([], {weekday:'long',month:'long',day:'numeric'});
+  const h=n.getHours();
+  $('#greet').innerHTML=(h<12?'Good morning':h<18?'Good afternoon':'Good evening')+', <em>Chris</em>';
+  renderAgenda();
+}
+setInterval(tick,1000*30);
+
+/* agenda */
+const agenda=[
+  {t:'9:00',ttl:'Weekly team sync',loc:'Studio Pod · planner outreach + active deals'},
+  {t:'11:00',ttl:'Methodist — AI headshots follow-up',loc:'Zoom'},
+  {t:'1:30',ttl:'Greenway Plaza walkthrough',loc:'New Studio Pod location'},
+  {t:'4:00',ttl:'Kids — school pickup',loc:'Personal'},
+];
+function toMin(t){const[a,b]=t.split(':');return (+a)*60+ +b;}
+function renderAgenda(){
+  const now=new Date().getHours()*60+new Date().getMinutes();
+  let nextIdx=agenda.findIndex(e=>toMin(e.t)>=now);
+  $('#agenda').innerHTML=agenda.map((e,i)=>
+    `<div class="event ${i===nextIdx?'now':''}"><div class="t">${e.t}</div><div class="body"><div class="ttl">${esc(e.ttl)}</div><div class="loc">${esc(e.loc)}</div></div></div>`
+  ).join('');
+}
+
+/* to-dos */
+let curList='biz';
+const defaults={biz:[{x:'Follow up on NACE2026 leads',d:false},{x:'Send Kinder Morgan headshot quote',d:false},{x:'Review photo-booth market report',d:false}],
+                personal:[{x:'Pick a gift for Reagan',d:false},{x:"Book kids' summer camp",d:false}]};
+function getTodos(l){return store.get('todos_'+l, defaults[l]);}
+function setTodos(l,v){store.set('todos_'+l,v);}
+function renderTodos(){
+  const items=getTodos(curList);
+  $('#todos').innerHTML=items.map((it,i)=>
+    `<div class="todo ${it.d?'done':''}"><input type="checkbox" data-i="${i}" ${it.d?'checked':''}><label data-i="${i}">${esc(it.x)}</label><button class="del" data-i="${i}">✕</button></div>`
+  ).join('')||'<div style="color:var(--grey);font-size:13px;padding:6px 0">Nothing here yet — add a task below.</div>';
+  $('#todos').querySelectorAll('input').forEach(c=>c.onchange=e=>{const a=getTodos(curList);a[e.target.dataset.i].d=e.target.checked;setTodos(curList,a);renderTodos();});
+  $('#todos').querySelectorAll('.del').forEach(b=>b.onclick=e=>{const a=getTodos(curList);a.splice(e.target.dataset.i,1);setTodos(curList,a);renderTodos();});
+}
+function addTodo(text,list){list=list||curList;const a=getTodos(list);a.push({x:text,d:false});setTodos(list,a);if(list===curList)renderTodos();}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');curList=t.dataset.list;renderTodos();});
+$('#todoAdd').onclick=()=>{const v=$('#todoInput').value.trim();if(v){addTodo(v);$('#todoInput').value='';}};
+$('#todoInput').onkeydown=e=>{if(e.key==='Enter')$('#todoAdd').click();};
+
+/* priority inbox */
+const mails=[
+  {from:'Amber Reyes',subj:'Studio Pod franchise — Florida next steps'},
+  {from:'Methodist Hospital',subj:'AI headshot solution — pricing questions'},
+  {from:'Lincoln Elementary',subj:'Field trip permission slip (attachment)'},
+];
+$('#mails').innerHTML=mails.map((m,i)=>
+  `<div class="mail"><div class="from">${esc(m.from)}</div><div class="subj">${esc(m.subj)}</div><div class="acts"><button class="mini draft" data-i="${i}">✎ Draft reply</button><button class="mini">Archive</button></div></div>`
+).join('');
+$('#mails').querySelectorAll('.draft').forEach(b=>b.onclick=()=>{const m=mails[b.dataset.i];$('#ask').value='Draft a short, warm reply to '+m.from+' about: '+m.subj;$('#ask').focus();});
+
+/* goals & gratitude */
+['goalShort','goalLong','gratitude'].forEach(id=>{
+  const el=$('#'+id);
+  el.textContent=store.get(id,'')||'';
+  el.addEventListener('input',()=>store.set(id,el.textContent));
+});
+
+/* assistant */
+const log=$('#chatlog');
+function addMsg(text,who,think){const d=document.createElement('div');d.className='msg '+who+(think?' think':'');d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight;return d;}
+async function callClaude(prompt){
+  try{
+    if(window.cowork&&window.cowork.askClaude){
+      const ctx=[{role:'context',todos_business:getTodos('biz'),todos_personal:getTodos('personal'),goals_short:store.get('goalShort',''),goals_long:store.get('goalLong',''),agenda:agenda}];
+      const r=await window.cowork.askClaude(prompt,ctx);
+      if(typeof r==='string')return r;
+      if(r&&r.text)return r.text;
+      if(r&&r.content)return Array.isArray(r.content)?r.content.map(c=>c.text||'').join(''):r.content;
+      return JSON.stringify(r);
+    }
+  }catch(e){return '⚠️ '+e.message;}
+  return "I'm only fully responsive inside Cowork. Any \"add to-do\" commands were still handled directly.";
+}
+async function handleAsk(){
+  const q=$('#ask').value.trim();if(!q)return;
+  $('#ask').value='';$('#ask').style.height='auto';
+  addMsg(q,'u');
+  const m=q.match(/^add\s+(personal\s+)?to-?do:?\s*(.+)/i);
+  if(m){const list=m[1]?'personal':'biz';addTodo(m[2].trim(),list);addMsg('Added to your '+(list==='biz'?'Business':'Personal')+' to-dos: "'+m[2].trim()+'" ✓','a');return;}
+  const thinking=addMsg('Thinking…','a',true);
+  const ans=await callClaude(q);
+  thinking.remove();addMsg(ans,'a');
+}
+$('#send').onclick=handleAsk;
+$('#ask').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleAsk();}});
+$('#ask').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';});
+
+/* voice */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+  const rec=new SR();rec.lang='en-US';rec.interimResults=false;let recording=false;
+  $('#mic').onclick=()=>{recording?rec.stop():rec.start();};
+  rec.onstart=()=>{recording=true;$('#mic').classList.add('rec');};
+  rec.onend=()=>{recording=false;$('#mic').classList.remove('rec');};
+  rec.onresult=e=>{$('#ask').value=e.results[0][0].transcript;$('#ask').focus();};
+}else{$('#mic').style.display='none';}
+
+/* reports */
+const reports=[
+  {ic:'📸',ttl:'Photo Booth Market — weekly',meta:'Iris bot · routine research',prompt:'In 4 short bullet points, give a plausible weekly market-pulse summary for the event photo-booth / Studio Pod industry: demand trends, pricing, one competitor move, and one opportunity for Chris Bailey Photography.'},
+  {ic:'📈',ttl:'Business performance snapshot',meta:'Auto-generated',prompt:'In 3 short bullets, suggest what a weekly performance snapshot for a fine-art photography + photo-booth business should highlight this week (leads, bookings, follow-ups).'},
+];
+$('#reports').innerHTML=reports.map((r,i)=>
+  `<div class="report"><div class="ic">${r.ic}</div><div class="rbody"><div class="rttl">${esc(r.ttl)}</div><div class="rmeta">${esc(r.meta)}</div><button class="gen" data-i="${i}">Generate brief ▸</button><div class="out" id="out${i}"></div></div></div>`
+).join('');
+$('#reports').querySelectorAll('.gen').forEach(b=>b.onclick=async()=>{
+  const i=b.dataset.i,out=$('#out'+i);out.style.display='block';out.textContent='Generating…';
+  out.textContent=await callClaude(reports[i].prompt);
+});
+
+$('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
+tick();renderTodos();
+</script>
+</body>
+</html>
