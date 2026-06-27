@@ -228,6 +228,7 @@ body{
         <div class="tabs">
           <div class="tab active" data-list="biz">Business</div>
           <div class="tab" data-list="personal">Personal</div>
+          <div class="tab" data-list="longterm">Long-term</div>
         </div>
         <div id="todos"></div>
         <div class="addrow">
@@ -372,7 +373,8 @@ function renderAgenda(){
 /* to-dos */
 let curList='biz';
 const defaults={biz:[{x:'Follow up on NACE2026 leads',d:false},{x:'Send Kinder Morgan headshot quote',d:false},{x:'Review photo-booth market report',d:false}],
-                personal:[{x:'Pick a gift for Reagan',d:false},{x:"Book kids' summer camp",d:false}]};
+                personal:[{x:'Pick a gift for Reagan',d:false},{x:"Book kids' summer camp",d:false}],
+                longterm:[{x:'Open the Greenway Plaza Studio Pod location',d:false},{x:'Build out the AI headshot offering',d:false},{x:'Capture ideas & big-picture goals here…',d:false}]};
 function getTodos(l){return store.get('todos_'+l, defaults[l]);}
 function setTodos(l,v){store.set('todos_'+l,v);}
 function renderTodos(){
