@@ -46,6 +46,17 @@ body{
 .clock{text-align:right;font-variant-numeric:tabular-nums;}
 .clock .time{font-family:var(--serif);font-size:26px;letter-spacing:1px;}
 .clock .date{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey);}
+/* google accounts bar */
+.gbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 -8px;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.gbar .glabel{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--grey);font-weight:600;}
+.gchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:3px 10px;}
+.gchip .gdot{width:8px;height:8px;border-radius:50%;}
+.gbtn{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;border:1px solid var(--accent);color:var(--accent-dk);background:var(--accent-soft);border-radius:20px;padding:4px 12px;cursor:pointer;font-family:var(--sans);}
+.gbtn:hover{background:var(--accent);color:#fff;}
+.gstatus{font-size:11.5px;color:var(--grey);margin-left:auto;}
+.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:2px;}
+.mail{position:relative;}
+.mail .adot{position:absolute;left:-2px;top:14px;}
 
 /* ---------- grid ---------- */
 .grid{display:grid;grid-template-columns:1.12fr 1fr;gap:26px;}
@@ -179,6 +190,7 @@ body{
 .foot{text-align:center;color:var(--grey);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;margin-top:38px;padding-top:18px;border-top:1px solid var(--line);}
 .foot .loc{font-family:var(--serif);text-transform:none;letter-spacing:.5px;font-size:12px;display:block;margin-top:6px;color:var(--grey);}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -195,11 +207,18 @@ body{
     </div>
   </div>
 
+  <div class="gbar">
+    <span class="glabel">Google</span>
+    <span id="gchips"></span>
+    <button class="gbtn" id="gconnect">+ Connect account</button>
+    <span class="gstatus" id="gstatus">Sign in to merge calendar &amp; mail from all your accounts.</span>
+  </div>
+
   <div class="grid">
     <!-- LEFT -->
     <div class="col">
       <div class="card c-agenda">
-        <h2><span class="sq"></span>Today's Agenda <span class="pill">Sample · connect calendar</span></h2>
+        <h2><span class="sq"></span>Today's Agenda <span class="pill" id="agendaPill">Sample · connect calendar</span></h2>
         <div id="agenda"></div>
         <div class="connect"><b>Go live</b><br>Connect Google or Apple Calendar and this fills with your real schedule.</div>
       </div>
@@ -218,7 +237,7 @@ body{
       </div>
 
       <div class="card c-inbox">
-        <h2><span class="sq"></span>Priority Inbox <span class="pill">Sample · connect email</span></h2>
+        <h2><span class="sq"></span>Priority Inbox <span class="pill" id="mailPill">Sample · connect email</span></h2>
         <div id="mails"></div>
         <div class="connect"><b>Go live</b><br>Connect Gmail / Outlook to surface real priority mail with AI-drafted replies ready to send.</div>
       </div>
@@ -330,12 +349,24 @@ const agenda=[
   {t:'4:00',ttl:'Kids — school pickup',loc:'Personal'},
 ];
 function toMin(t){const[a,b]=t.split(':');return (+a)*60+ +b;}
+let liveAgenda=null; // set when Google connected
 function renderAgenda(){
-  const now=new Date().getHours()*60+new Date().getMinutes();
-  let nextIdx=agenda.findIndex(e=>toMin(e.t)>=now);
-  $('#agenda').innerHTML=agenda.map((e,i)=>
-    `<div class="event ${i===nextIdx?'now':''}"><div class="t">${e.t}</div><div class="body"><div class="ttl">${esc(e.ttl)}</div><div class="loc">${esc(e.loc)}</div></div></div>`
-  ).join('');
+  const nowMin=new Date().getHours()*60+new Date().getMinutes();
+  let items;
+  if(liveAgenda){
+    items=liveAgenda.map(e=>({
+      label:e.allDay?'all day':e.t.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}),
+      min:e.allDay?-1:e.t.getHours()*60+e.t.getMinutes(),
+      ttl:e.ttl, loc:e.loc, color:e.color
+    }));
+  }else{
+    items=agenda.map(e=>({label:e.t, min:toMin(e.t), ttl:e.ttl, loc:e.loc, color:null}));
+  }
+  items.sort((a,b)=>a.min-b.min);
+  const nextIdx=items.findIndex(e=>e.min>=0 && e.min>=nowMin);
+  $('#agenda').innerHTML=items.map((e,i)=>
+    `<div class="event ${i===nextIdx?'now':''}">${e.color?`<span class="adot" style="background:${e.color}"></span>`:''}<div class="t">${esc(e.label)}</div><div class="body"><div class="ttl">${esc(e.ttl)}</div><div class="loc">${esc(e.loc)}</div></div></div>`
+  ).join('')||'<div style="color:var(--grey);font-size:13px;padding:6px 0">No events today.</div>';
 }
 
 /* to-dos */
@@ -363,10 +394,14 @@ const mails=[
   {from:'Methodist Hospital',subj:'AI headshot solution — pricing questions'},
   {from:'Lincoln Elementary',subj:'Field trip permission slip (attachment)'},
 ];
-$('#mails').innerHTML=mails.map((m,i)=>
-  `<div class="mail"><div class="from">${esc(m.from)}</div><div class="subj">${esc(m.subj)}</div><div class="acts"><button class="mini draft" data-i="${i}">✎ Draft reply</button><button class="mini">Archive</button></div></div>`
-).join('');
-$('#mails').querySelectorAll('.draft').forEach(b=>b.onclick=()=>{const m=mails[b.dataset.i];$('#ask').value='Draft a short, warm reply to '+m.from+' about: '+m.subj;$('#ask').focus();});
+let liveMail=null; // set when Google connected
+function renderMails(){
+  const list=liveMail||mails.map(m=>({from:m.from,subj:m.subj,color:null}));
+  $('#mails').innerHTML=list.map((m,i)=>
+    `<div class="mail">${m.color?`<span class="adot" style="background:${m.color}"></span>`:''}<div class="from">${esc(m.from)}</div><div class="subj">${esc(m.subj)}</div><div class="acts"><button class="mini draft" data-i="${i}">✎ Draft reply</button><button class="mini">Archive</button></div></div>`
+  ).join('')||'<div style="color:var(--grey);font-size:13px;padding:6px 0">Inbox clear.</div>';
+  $('#mails').querySelectorAll('.draft').forEach(b=>b.onclick=()=>{const m=list[b.dataset.i];$('#ask').value='Draft a short, warm reply to '+m.from+' about: '+m.subj;$('#ask').focus();});
+}
 
 /* goals & gratitude */
 ['goalShort','goalLong','gratitude'].forEach(id=>{
@@ -476,8 +511,99 @@ $('#parseGo').onclick=async()=>{
 /* ---------- family: photo stream (placeholder tiles until photos added) ---------- */
 $('#photos').innerHTML=Array.from({length:6}).map(()=>'<div class="ph">◳</div>').join('');
 
+/* ---------- Google: connect & merge calendar + mail across accounts ---------- */
+const GOOGLE_CLIENT_ID='856021652747-pdvp5j1ak392u8qoj7ss17qeianpkavo.apps.googleusercontent.com';
+const GOOGLE_SCOPES='https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/gmail.readonly';
+const ACCT_COLORS=['#6a8193','#2e4258','#93b0c6','#5b7d9a','#3f5b76'];
+let gAccounts=[]; // {email, token, color}
+let tokenClient=null;
+function gStatus(t){const el=$('#gstatus');if(el)el.textContent=t;}
+function renderChips(){
+  $('#gchips').innerHTML=gAccounts.map(a=>`<span class="gchip"><span class="gdot" style="background:${a.color}"></span>${esc(a.email)}</span>`).join('');
+}
+function initGoogle(){
+  if(tokenClient)return true;
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)){return false;}
+  tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:GOOGLE_CLIENT_ID, scope:GOOGLE_SCOPES, prompt:'select_account',
+    callback: async (resp)=>{
+      if(resp.error||!resp.access_token){gStatus('Sign-in cancelled.');return;}
+      gStatus('Connecting…');
+      try{
+        const email=await gFetchEmail(resp.access_token);
+        const existing=gAccounts.find(a=>a.email===email);
+        if(existing){existing.token=resp.access_token;}
+        else{gAccounts.push({email,token:resp.access_token,color:ACCT_COLORS[gAccounts.length%ACCT_COLORS.length]});}
+        renderChips();
+        await refreshGoogle();
+      }catch(e){gStatus('Error: '+e.message);}
+    }
+  });
+  return true;
+}
+async function gFetchEmail(token){
+  const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok)throw new Error('profile '+r.status);
+  return (await r.json()).emailAddress||'account';
+}
+async function gFetchEvents(acct){
+  const n=new Date();
+  const start=new Date(n.getFullYear(),n.getMonth(),n.getDate()).toISOString();
+  const end=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1).toISOString();
+  const url='https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=20&timeMin='+encodeURIComponent(start)+'&timeMax='+encodeURIComponent(end);
+  const r=await fetch(url,{headers:{Authorization:'Bearer '+acct.token}});
+  if(!r.ok)return [];
+  const j=await r.json();
+  return (j.items||[]).map(e=>({
+    allDay:!e.start.dateTime,
+    t:e.start.dateTime?new Date(e.start.dateTime):new Date(),
+    ttl:e.summary||'(no title)',
+    loc:e.location||acct.email.split('@')[0],
+    color:acct.color
+  }));
+}
+async function gFetchMail(acct){
+  const q=encodeURIComponent('is:unread -category:promotions -category:social');
+  const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=4&q='+q,{headers:{Authorization:'Bearer '+acct.token}});
+  if(!r.ok)return [];
+  const ids=((await r.json()).messages||[]).slice(0,4);
+  const out=[];
+  for(const m of ids){
+    const d=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+m.id+'?format=metadata&metadataHeaders=From&metadataHeaders=Subject',{headers:{Authorization:'Bearer '+acct.token}});
+    if(!d.ok)continue;
+    const h=((await d.json()).payload||{}).headers||[];
+    const from=((h.find(x=>x.name==='From')||{}).value||'').replace(/<[^>]*>/,'').replace(/"/g,'').trim();
+    const subj=(h.find(x=>x.name==='Subject')||{}).value||'(no subject)';
+    out.push({from:from||'(unknown)',subj,color:acct.color});
+  }
+  return out;
+}
+async function refreshGoogle(){
+  if(!gAccounts.length)return;
+  gStatus('Refreshing…');
+  try{
+    const ev=(await Promise.all(gAccounts.map(gFetchEvents))).flat();
+    liveAgenda=ev;
+    renderAgenda();
+    $('#agendaPill').textContent='Live · '+gAccounts.length+' account'+(gAccounts.length>1?'s':'');
+    $('#agendaPill').className='pill live';
+  }catch(e){}
+  try{
+    const ml=(await Promise.all(gAccounts.map(gFetchMail))).flat();
+    liveMail=ml;
+    renderMails();
+    $('#mailPill').textContent='Live · '+gAccounts.length+' account'+(gAccounts.length>1?'s':'');
+    $('#mailPill').className='pill live';
+  }catch(e){}
+  gStatus(gAccounts.length+' account'+(gAccounts.length>1?'s':'')+' connected · click + to add another');
+}
+$('#gconnect').onclick=()=>{
+  if(!initGoogle()){gStatus('Google sign-in still loading — try again in a moment. (Only works on the live site, not the preview.)');return;}
+  tokenClient.requestAccessToken();
+};
+
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
-tick();renderTodos();renderKids();renderFiled();
+tick();renderTodos();renderMails();renderKids();renderFiled();
 </script>
 </body>
 </html>
