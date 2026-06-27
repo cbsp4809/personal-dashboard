@@ -154,6 +154,11 @@ body{
 .send{background:var(--accent);color:#fff;}
 .send:hover{background:var(--accent-dk);}
 .hint{font-size:11px;color:#8b949b;margin-top:9px;letter-spacing:.3px;}
+.aitools{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.aisel{font-family:var(--sans);font-size:10px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;background:rgba(255,255,255,.08);color:#e6ddd2;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:3px 5px;cursor:pointer;}
+.aisel option{color:#161616;}
+.aigear{background:rgba(255,255,255,.08);color:#e6ddd2;border:1px solid rgba(255,255,255,.18);border-radius:4px;cursor:pointer;font-size:12px;padding:3px 6px;line-height:1;}
+.aigear:hover{background:rgba(255,255,255,.16);}
 
 /* ---------- reports ---------- */
 .report{display:flex;gap:13px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line-soft);}
@@ -274,7 +279,12 @@ body{
     <!-- RIGHT -->
     <div class="col">
       <div class="card assistant">
-        <h2><span class="sq"></span>Assistant</h2>
+        <h2><span class="sq"></span>Assistant
+          <span class="aitools">
+            <select id="aiProvider" class="aisel"><option value="claude">Claude</option><option value="gpt">GPT</option></select>
+            <button id="aiSettings" class="aigear" title="Connect live assistant (paste proxy URL)">⚙</button>
+          </span>
+        </h2>
         <div class="chatlog" id="chatlog">
           <div class="msg a">Morning, Chris. Ask me anything, or tell me to do something — e.g. "add to-do: call the Greenway Plaza landlord", "draft a reply to Methodist", or "what should I focus on today?"</div>
         </div>
@@ -472,18 +482,28 @@ function renderMails(){
 /* assistant */
 const log=$('#chatlog');
 function addMsg(text,who,think){const d=document.createElement('div');d.className='msg '+who+(think?' think':'');d.textContent=text;log.appendChild(d);log.scrollTop=log.scrollHeight;return d;}
+function dashContext(){return {todos_business:getTodos('biz'),todos_personal:getTodos('personal'),todos_longterm:getTodos('longterm'),goals_short:store.get('goalShort',''),goals_long:store.get('goalLong',''),agenda:liveAgenda||agenda};}
 async function callClaude(prompt){
+  // Cowork preview path
   try{
     if(window.cowork&&window.cowork.askClaude){
-      const ctx=[{role:'context',todos_business:getTodos('biz'),todos_personal:getTodos('personal'),goals_short:store.get('goalShort',''),goals_long:store.get('goalLong',''),agenda:agenda}];
-      const r=await window.cowork.askClaude(prompt,ctx);
+      const r=await window.cowork.askClaude(prompt,[{role:'context',...dashContext()}]);
       if(typeof r==='string')return r;
       if(r&&r.text)return r.text;
       if(r&&r.content)return Array.isArray(r.content)?r.content.map(c=>c.text||'').join(''):r.content;
       return JSON.stringify(r);
     }
-  }catch(e){return '⚠️ '+e.message;}
-  return "I'm only fully responsive inside Cowork. Any \"add to-do\" commands were still handled directly.";
+  }catch(e){/* fall through to proxy */}
+  // live-site path: secure proxy (Cloudflare Worker)
+  const url=store.get('proxyUrl','');
+  if(url){
+    try{
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:store.get('aiProvider','claude'),prompt,context:dashContext()})});
+      const d=await r.json();
+      return d.text||('⚠️ '+(d.error||'no response from proxy'));
+    }catch(e){return '⚠️ Could not reach the assistant proxy: '+e.message;}
+  }
+  return "To turn on live answers, click ⚙ above and paste your assistant proxy URL. (Until then I still handle \"add to-do:\" commands directly.)";
 }
 async function handleAsk(){
   const q=$('#ask').value.trim();if(!q)return;
@@ -496,6 +516,16 @@ async function handleAsk(){
   thinking.remove();addMsg(ans,'a');
 }
 $('#send').onclick=handleAsk;
+// provider toggle + proxy URL setup
+$('#aiProvider').value=store.get('aiProvider','claude');
+$('#aiProvider').onchange=e=>store.set('aiProvider',e.target.value);
+$('#aiSettings').onclick=()=>{
+  const cur=store.get('proxyUrl','');
+  const u=prompt('Paste your assistant proxy URL (from your Cloudflare Worker, ends in .workers.dev). Leave blank to clear.', cur);
+  if(u===null)return;
+  store.set('proxyUrl',u.trim());
+  addMsg(u.trim()?'Live assistant connected ✓ — pick Claude or GPT above and ask away.':'Proxy URL cleared.','a');
+};
 $('#ask').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleAsk();}});
 $('#ask').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';});
 
