@@ -60,6 +60,8 @@ body{
 .c-inbox{--sec:var(--h-blue);background:linear-gradient(#f4f8fb,#ffffff 70px);}
 .c-goal{--sec:var(--h-sky);background:linear-gradient(#f5f9fc,#ffffff 70px);}
 .c-reports{--sec:var(--h-steel);background:linear-gradient(#f6f8fb,#ffffff 70px);}
+.c-fin{--sec:var(--h-navy);background:linear-gradient(#f5f7fa,#ffffff 70px);}
+.c-family{--sec:var(--h-sky);background:linear-gradient(#f6f9fc,#ffffff 70px);}
 .pill{font-size:9.5px;color:var(--grey);border:1px solid var(--line);border-radius:2px;padding:2px 7px;margin-left:auto;letter-spacing:1px;text-transform:uppercase;font-weight:500;}
 .pill.live{color:var(--accent-dk);border-color:#cdd9e0;background:var(--accent-soft);}
 
@@ -137,6 +139,40 @@ body{
 .report .rmeta{color:var(--grey);font-size:11px;letter-spacing:.5px;text-transform:uppercase;}
 .report .out{font-size:13px;color:var(--ink);margin-top:8px;background:var(--panel);border-radius:3px;padding:10px 12px;display:none;line-height:1.55;}
 .report .gen{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-dk);background:none;border:none;padding:6px 0 0;cursor:pointer;font-weight:600;}
+
+/* ---------- financial ---------- */
+.fin-sub{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent-dk);font-weight:600;margin:4px 0 6px;}
+.fin-sub:not(:first-child){margin-top:16px;}
+.frow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px;}
+.frow:last-child{border-bottom:none;}
+.frow .nm{flex:1;}
+.frow .nm small{display:block;color:var(--grey);font-size:11px;letter-spacing:.3px;}
+.frow .val{font-variant-numeric:tabular-nums;font-weight:600;}
+.frow .chg{font-variant-numeric:tabular-nums;font-size:12px;min-width:58px;text-align:right;}
+.chg.up{color:#3f7d54;} .chg.dn{color:#a8473f;}
+.frow .due{font-size:11px;color:var(--grey);min-width:78px;text-align:right;}
+.frow .due.soon{color:#a8473f;font-weight:600;}
+
+/* ---------- family hub ---------- */
+.familywrap{margin-top:26px;}
+.familywrap > h2{font-family:var(--sans);font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--ink);font-weight:600;display:flex;align-items:center;gap:9px;margin:0 0 14px;}
+.familywrap > h2 .sq{width:7px;height:7px;background:var(--h-sky);display:inline-block;}
+.fam-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
+@media(max-width:900px){.fam-grid{grid-template-columns:1fr;}}
+.kid{padding:9px 0;border-bottom:1px solid var(--line-soft);}
+.kid:last-child{border-bottom:none;}
+.kid .kn{font-family:var(--serif);font-size:16px;}
+.kid .kd{color:var(--grey);font-size:12.5px;}
+.kid .kd[contenteditable]:focus{outline:none;color:var(--ink);}
+.parsebox{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;font-size:13px;font-family:inherit;background:var(--bg);resize:vertical;min-height:74px;}
+.parsebox:focus{outline:none;border-color:var(--accent);}
+.parseout{font-size:12.5px;background:var(--panel);border-radius:3px;padding:10px 12px;margin-top:10px;display:none;line-height:1.55;}
+.filed{font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--line-soft);}
+.filed:last-child{border-bottom:none;}
+.filed .ft{font-weight:600;}
+.filed .fd{color:var(--grey);font-size:11px;}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.photos .ph{aspect-ratio:1;border-radius:3px;background:linear-gradient(135deg,#e9eef2,#dfe7ec);display:flex;align-items:center;justify-content:center;color:#aab8c2;font-size:18px;}
 
 .connect{font-size:11.5px;color:var(--grey);background:var(--panel);border:1px dashed var(--line);border-radius:3px;padding:10px 12px;margin-top:12px;line-height:1.5;}
 .connect b{color:var(--accent-dk);text-transform:uppercase;letter-spacing:1px;font-size:10px;}
@@ -219,9 +255,47 @@ body{
         </div>
       </div>
 
+      <div class="card c-fin">
+        <h2><span class="sq"></span>Financial Snapshot <span class="pill">Sample · connect accounts</span></h2>
+        <div class="fin-sub">Markets</div>
+        <div id="finStocks"></div>
+        <div class="fin-sub">Credit Cards</div>
+        <div id="finCards"></div>
+        <div class="fin-sub">Accounts</div>
+        <div id="finAccts"></div>
+        <div class="connect"><b>Go live</b><br>Connect a brokerage, your cards, or Digits to replace these samples with real balances, due dates, and prices.</div>
+      </div>
+
       <div class="card c-reports">
         <h2><span class="sq"></span>Automated Reports</h2>
         <div id="reports"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAMILY HUB -->
+  <div class="familywrap">
+    <h2><span class="sq"></span>Family Hub</h2>
+    <div class="fam-grid">
+      <div class="card c-family">
+        <h2><span class="sq"></span>Kids</h2>
+        <div id="kids"></div>
+        <div class="addrow"><input id="kidInput" placeholder="Add a child…"><button class="btn" id="kidAdd">Add</button></div>
+      </div>
+
+      <div class="card c-family">
+        <h2><span class="sq"></span>School Communication</h2>
+        <textarea class="parsebox" id="parseIn" placeholder="Paste a forwarded school email here — I'll summarize it and file it."></textarea>
+        <div style="margin-top:10px"><button class="btn" id="parseGo">Summarize &amp; file</button></div>
+        <div class="parseout" id="parseOut"></div>
+        <div class="fin-sub" style="margin-top:16px">Filed</div>
+        <div id="filed"></div>
+      </div>
+
+      <div class="card c-family">
+        <h2><span class="sq"></span>Photo Stream</h2>
+        <div class="photos" id="photos"></div>
+        <div class="connect"><b>Go live</b><br>Drop family photos into an <code>/img</code> folder in the repo (or connect a photo source) and they'll appear here.</div>
       </div>
     </div>
   </div>
@@ -354,8 +428,56 @@ $('#reports').querySelectorAll('.gen').forEach(b=>b.onclick=async()=>{
   out.textContent=await callClaude(reports[i].prompt);
 });
 
+/* ---------- financial snapshot (samples, editable later via connectors) ---------- */
+const stocks=[
+  {nm:'S&P 500',sym:'SPY',val:'548.20',chg:'+0.6%',up:true},
+  {nm:'Apple',sym:'AAPL',val:'212.44',chg:'+1.2%',up:true},
+  {nm:'Nvidia',sym:'NVDA',val:'126.09',chg:'-0.8%',up:false},
+];
+const cards=[
+  {nm:'Amex Business',sub:'••• 1007',bal:'$3,420',due:'Jul 3',soon:true},
+  {nm:'Chase Sapphire',sub:'••• 4412',bal:'$1,180',due:'Jul 15',soon:false},
+];
+const accts=[
+  {nm:'Business Checking',sub:'Operating',bal:'$24,860'},
+  {nm:'Savings',sub:'Reserve',bal:'$61,200'},
+];
+$('#finStocks').innerHTML=stocks.map(s=>`<div class="frow"><div class="nm">${esc(s.nm)} <small>${esc(s.sym)}</small></div><div class="val">${esc(s.val)}</div><div class="chg ${s.up?'up':'dn'}">${esc(s.chg)}</div></div>`).join('');
+$('#finCards').innerHTML=cards.map(c=>`<div class="frow"><div class="nm">${esc(c.nm)} <small>${esc(c.sub)}</small></div><div class="val">${esc(c.bal)}</div><div class="due ${c.soon?'soon':''}">Due ${esc(c.due)}</div></div>`).join('');
+$('#finAccts').innerHTML=accts.map(a=>`<div class="frow"><div class="nm">${esc(a.nm)} <small>${esc(a.sub)}</small></div><div class="val">${esc(a.bal)}</div></div>`).join('');
+
+/* ---------- family: kids ---------- */
+function getKids(){return store.get('kids',[{n:'Add your kids',d:'Tap their note to edit — track school, activities, reminders.'}]);}
+function setKids(v){store.set('kids',v);}
+function renderKids(){
+  const k=getKids();
+  $('#kids').innerHTML=k.map((kid,i)=>`<div class="kid"><div class="kn">${esc(kid.n)} <button class="del" data-i="${i}" style="float:right;border:none;background:none;color:var(--grey);cursor:pointer">✕</button></div><div class="kd" contenteditable="true" data-i="${i}">${esc(kid.d)}</div></div>`).join('');
+  $('#kids').querySelectorAll('.kd').forEach(el=>el.addEventListener('input',e=>{const a=getKids();a[e.target.dataset.i].d=e.target.textContent;setKids(a);}));
+  $('#kids').querySelectorAll('.del').forEach(b=>b.onclick=e=>{const a=getKids();a.splice(e.target.dataset.i,1);setKids(a);renderKids();});
+}
+$('#kidAdd').onclick=()=>{const v=$('#kidInput').value.trim();if(v){const a=getKids();a.push({n:v,d:'Add a note…'});setKids(a);$('#kidInput').value='';renderKids();}};
+$('#kidInput').onkeydown=e=>{if(e.key==='Enter')$('#kidAdd').click();};
+
+/* ---------- family: school communication parser ---------- */
+function getFiled(){return store.get('filed',[]);}
+function renderFiled(){
+  const f=getFiled();
+  $('#filed').innerHTML=f.length?f.map(x=>`<div class="filed"><div class="ft">${esc(x.t)}</div><div class="fd">${esc(x.d)}</div></div>`).join(''):'<div style="color:var(--grey);font-size:12px">Nothing filed yet.</div>';
+}
+$('#parseGo').onclick=async()=>{
+  const text=$('#parseIn').value.trim();if(!text)return;
+  const out=$('#parseOut');out.style.display='block';out.textContent='Summarizing…';
+  const summary=await callClaude('Summarize this school email for a busy parent in 2-3 short sentences: key dates, what action is needed, and any attachments mentioned. Then suggest a 3-5 word title.\n\n---\n'+text);
+  out.textContent=summary;
+  const f=getFiled();f.unshift({t:(text.split('\n')[0]||'School note').slice(0,40),d:new Date().toLocaleDateString()+' · filed'});store.set('filed',f.slice(0,8));renderFiled();
+  $('#parseIn').value='';
+};
+
+/* ---------- family: photo stream (placeholder tiles until photos added) ---------- */
+$('#photos').innerHTML=Array.from({length:6}).map(()=>'<div class="ph">◳</div>').join('');
+
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
-tick();renderTodos();
+tick();renderTodos();renderKids();renderFiled();
 </script>
 </body>
 </html>
