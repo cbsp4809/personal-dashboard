@@ -521,25 +521,24 @@ function gStatus(t){const el=$('#gstatus');if(el)el.textContent=t;}
 function renderChips(){
   $('#gchips').innerHTML=gAccounts.map(a=>`<span class="gchip"><span class="gdot" style="background:${a.color}"></span>${esc(a.email)}</span>`).join('');
 }
+let pendingResolve=null;
 function initGoogle(){
   if(tokenClient)return true;
   if(!(window.google&&google.accounts&&google.accounts.oauth2)){return false;}
   tokenClient=google.accounts.oauth2.initTokenClient({
-    client_id:GOOGLE_CLIENT_ID, scope:GOOGLE_SCOPES, prompt:'select_account',
-    callback: async (resp)=>{
-      if(resp.error||!resp.access_token){gStatus('Sign-in cancelled.');return;}
-      gStatus('Connecting…');
-      try{
-        const email=await gFetchEmail(resp.access_token);
-        const existing=gAccounts.find(a=>a.email===email);
-        if(existing){existing.token=resp.access_token;}
-        else{gAccounts.push({email,token:resp.access_token,color:ACCT_COLORS[gAccounts.length%ACCT_COLORS.length]});}
-        renderChips();
-        await refreshGoogle();
-      }catch(e){gStatus('Error: '+e.message);}
-    }
+    client_id:GOOGLE_CLIENT_ID, scope:GOOGLE_SCOPES,
+    callback:(resp)=>{const r=pendingResolve;pendingResolve=null;if(r)r(resp);}
   });
   return true;
+}
+// request a token; mode 'select' shows the account chooser, '' tries silently
+function acquireToken(hint, mode){
+  return new Promise(resolve=>{
+    pendingResolve=resolve;
+    const opts={prompt: mode==='select'?'select_account':''};
+    if(hint)opts.hint=hint;
+    try{tokenClient.requestAccessToken(opts);}catch(e){pendingResolve=null;resolve({error:e.message});}
+  });
 }
 async function gFetchEmail(token){
   const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile',{headers:{Authorization:'Bearer '+token}});
@@ -598,10 +597,47 @@ async function refreshGoogle(){
   const ac=$('#agendaConnect'),mc=$('#mailConnect');if(ac)ac.style.display='none';if(mc)mc.style.display='none';
   gStatus(gAccounts.length+' account'+(gAccounts.length>1?'s':'')+' connected · click + to add another');
 }
-$('#gconnect').onclick=()=>{
+function persistAccounts(){store.set('gaccts',gAccounts.map(a=>({email:a.email,color:a.color})));}
+async function addAccount(){
   if(!initGoogle()){gStatus('Google sign-in still loading — try again in a moment. (Only works on the live site, not the preview.)');return;}
-  tokenClient.requestAccessToken();
-};
+  gStatus('Opening Google sign-in…');
+  const resp=await acquireToken(null,'select');
+  if(resp.error||!resp.access_token){gStatus('Sign-in cancelled.');return;}
+  try{
+    const email=await gFetchEmail(resp.access_token);
+    const existing=gAccounts.find(a=>a.email===email);
+    if(existing){existing.token=resp.access_token;}
+    else{gAccounts.push({email,token:resp.access_token,color:ACCT_COLORS[gAccounts.length%ACCT_COLORS.length]});}
+    persistAccounts();renderChips();await refreshGoogle();
+  }catch(e){gStatus('Error: '+e.message);}
+}
+$('#gconnect').onclick=addAccount;
+// silently refresh tokens for already-linked accounts (no login screen when signed in)
+async function silentRefresh(){
+  if(!gAccounts.length||!initGoogle())return;
+  let ok=0;
+  for(const a of gAccounts){
+    const resp=await acquireToken(a.email,'');
+    if(resp&&resp.access_token){a.token=resp.access_token;ok++;}
+  }
+  if(ok)await refreshGoogle();
+  if(ok<gAccounts.length)gStatus('One or more accounts need a quick re-connect — click +');
+}
+// on load: restore saved accounts and pull data silently, no clicking
+(function restoreGoogle(){
+  const saved=store.get('gaccts',[]);
+  if(!saved.length)return;
+  gAccounts=saved.map(a=>({email:a.email,color:a.color,token:null}));
+  renderChips();gStatus('Reconnecting your accounts…');
+  let tries=0;
+  const t=setInterval(()=>{
+    tries++;
+    if(initGoogle()){clearInterval(t);silentRefresh();}
+    else if(tries>40){clearInterval(t);gStatus('Click + to connect.');}
+  },250);
+})();
+// keep tokens fresh in the background
+setInterval(silentRefresh, 45*60*1000);
 
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
 tick();renderTodos();renderMails();renderKids();renderFiled();
