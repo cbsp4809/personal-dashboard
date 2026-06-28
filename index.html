@@ -246,6 +246,12 @@ body{
     <span class="gstatus" id="gstatus">Sign in to merge calendar &amp; mail from all your accounts.</span>
   </div>
 
+  <div class="gbar" id="syncBar" style="margin-top:8px">
+    <span class="glabel">Sync</span>
+    <span id="syncStatus" style="font-size:11.5px;color:var(--grey)">This device only</span>
+    <button class="gbtn" id="syncBtn" style="margin-left:auto">Enable sync</button>
+  </div>
+
   <div class="grid">
     <!-- LEFT -->
     <div class="col">
@@ -365,8 +371,10 @@ body{
 <script>
 const $=s=>document.querySelector(s);
 const store={get:(k,d)=>{try{const v=localStorage.getItem('cb_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
-             set:(k,v)=>{try{localStorage.setItem('cb_'+k,JSON.stringify(v));}catch(e){}}};
+             set:(k,v)=>{try{localStorage.setItem('cb_'+k,JSON.stringify(v));}catch(e){} if(typeof scheduleSync==='function')scheduleSync();}};
 function esc(s){return (s+'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+const PROXY_DEFAULT='https://dashboard-assistant.chrisbailey.workers.dev';
+function proxyBase(){return (store.get('proxyUrl', PROXY_DEFAULT)||'').replace(/\/+$/,'');}
 
 /* clock & greeting */
 function tick(){
@@ -495,7 +503,7 @@ async function callClaude(prompt){
     }
   }catch(e){/* fall through to proxy */}
   // live-site path: secure proxy (Cloudflare Worker)
-  const url=store.get('proxyUrl','');
+  const url=proxyBase();
   if(url){
     try{
       const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:store.get('aiProvider','claude'),prompt,context:dashContext()})});
@@ -712,8 +720,9 @@ async function silentRefresh(){
   if(ok)await refreshGoogle();
   if(ok<gAccounts.length)gStatus('One or more accounts need a quick re-connect — click +');
 }
-// on load: restore saved accounts and pull data silently, no clicking
-(function restoreGoogle(){
+// restore saved accounts and pull data silently, no clicking (idempotent)
+function restoreGoogle(){
+  if(gAccounts.length){silentRefresh();return;}
   const saved=store.get('gaccts',[]);
   if(!saved.length)return;
   gAccounts=saved.map(a=>({email:a.email,color:a.color,token:null}));
@@ -724,7 +733,8 @@ async function silentRefresh(){
     if(initGoogle()){clearInterval(t);silentRefresh();}
     else if(tries>40){clearInterval(t);gStatus('Click + to connect.');}
   },250);
-})();
+}
+restoreGoogle();
 // keep tokens fresh in the background
 setInterval(silentRefresh, 45*60*1000);
 
@@ -786,8 +796,47 @@ function showImportPanel(data){
 }
 $('#msImport').onclick=msImportFlow;
 
+/* ---------- cross-device sync (KV via the Worker) ---------- */
+function getSyncKey(){return localStorage.getItem('cb_syncKey')||'';}
+let syncTimer=null;
+function scheduleSync(){ if(!getSyncKey())return; clearTimeout(syncTimer); syncTimer=setTimeout(pushState,1500); }
+async function pushState(){
+  const key=getSyncKey(), base=proxyBase(); if(!key||!base)return;
+  const data={}; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('cb_')&&k!=='cb_syncKey') data[k]=localStorage.getItem(k); });
+  try{ await fetch(base+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({k:key,data})}); }catch(e){}
+}
+async function pullState(){
+  const key=getSyncKey(), base=proxyBase(); if(!key||!base)return false;
+  try{ const r=await fetch(base+'/sync?k='+encodeURIComponent(key)); const d=await r.json();
+    if(d&&d.data&&Object.keys(d.data).length){ Object.entries(d.data).forEach(([k,v])=>{try{localStorage.setItem(k,v);}catch(e){}}); return true; }
+  }catch(e){}
+  return false;
+}
+function applyAll(){
+  renderTodos();renderMails();renderKids();renderFiled();
+  ['goalShort','goalLong','gratitude'].forEach(id=>{const el=$('#'+id); if(el) el.textContent=store.get(id,'')||'';});
+  const ap=$('#aiProvider'); if(ap) ap.value=store.get('aiProvider','claude');
+  restoreGoogle();
+}
+function renderSync(){ const k=getSyncKey(); const el=$('#syncStatus'); const b=$('#syncBtn'); if(el)el.textContent=k?('Synced ✓ · code '+k.slice(0,6)+'…'):'This device only'; if(b)b.textContent=k?'Sync code':'Enable sync'; }
+$('#syncBtn').onclick=async()=>{
+  if(!proxyBase()){alert('Set the assistant proxy first (⚙ in the Assistant).');return;}
+  const cur=getSyncKey();
+  const entered=prompt(cur?'Your sync code — paste this on your other devices to link them. Clear the box to unlink this device:':'Turn on sync across your devices.\\n\\nPaste an existing sync code to link this device, or leave blank to create a new one:', cur);
+  if(entered===null)return;
+  const code=entered.trim();
+  if(!code && !cur){ const k=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Date.now()+''+Math.random().toString(36).slice(2)); localStorage.setItem('cb_syncKey',k); await pushState(); renderSync(); alert('Sync is on. Your private code:\\n\\n'+k+'\\n\\nOn your other devices: open the dashboard, click Sync, and paste this code.'); return; }
+  if(!code && cur){ localStorage.removeItem('cb_syncKey'); renderSync(); alert('Sync turned off on this device.'); return; }
+  localStorage.setItem('cb_syncKey',code);
+  const ok=await pullState(); renderSync();
+  if(ok){ applyAll(); alert('Device linked — your synced data is loaded here now.'); }
+  else { await pushState(); alert('Linked. No data was stored under that code yet, so this device is now the source of truth.'); }
+};
+
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
-tick();renderTodos();renderMails();renderKids();renderFiled();
+tick();renderTodos();renderMails();renderKids();renderFiled();renderSync();
+// pull synced data on load, then apply
+(async function(){ if(getSyncKey()&&proxyBase()){ if(await pullState()) applyAll(); } })();
 </script>
 </body>
 </html>
