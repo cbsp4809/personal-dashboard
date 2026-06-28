@@ -10,10 +10,15 @@ export default {
   async fetch(request, env) {
     const cors = {
       "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+
+    // cross-device sync endpoint (stores the dashboard's data in KV)
+    const path = new URL(request.url).pathname;
+    if (path.endsWith("/sync")) return handleSync(request, env, cors);
+
     if (request.method !== "POST") return json({ error: "POST only" }, 405, cors);
 
     let body;
@@ -66,6 +71,25 @@ export default {
     }
   },
 };
+
+// --- cross-device sync (requires a KV namespace bound as DASH_KV) ---
+async function handleSync(request, env, cors) {
+  if (!env.DASH_KV) return json({ error: "Sync storage (KV) is not bound to this Worker yet." }, 400, cors);
+  const url = new URL(request.url);
+  if (request.method === "GET") {
+    const k = url.searchParams.get("k");
+    if (!k) return json({ error: "missing key" }, 400, cors);
+    const v = await env.DASH_KV.get("state:" + k);
+    return json({ data: v ? JSON.parse(v) : null }, 200, cors);
+  }
+  if (request.method === "POST") {
+    let body; try { body = await request.json(); } catch { return json({ error: "bad JSON" }, 400, cors); }
+    if (!body.k) return json({ error: "missing key" }, 400, cors);
+    await env.DASH_KV.put("state:" + body.k, JSON.stringify(body.data || {}));
+    return json({ ok: true }, 200, cors);
+  }
+  return json({ error: "method" }, 405, cors);
+}
 
 function json(obj, status, cors) {
   return new Response(JSON.stringify(obj), { status, headers: { ...cors, "Content-Type": "application/json" } });
