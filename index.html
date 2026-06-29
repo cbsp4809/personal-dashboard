@@ -110,6 +110,19 @@ body{
 .tctl .ic:hover{color:var(--ink);}
 .todo.star .star-b{color:#d9a441;}
 .tctl .duein{position:absolute;right:4px;bottom:-2px;width:1px;height:1px;opacity:0;pointer-events:none;}
+.todoscroll{max-height:330px;overflow-y:auto;margin:0 -2px;padding:0 2px;}
+.todoscroll.expanded{max-height:none;}
+.expandbtn{margin-top:10px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent-dk);background:none;border:none;cursor:pointer;font-weight:600;font-family:var(--sans);}
+.expandbtn:hover{color:var(--ink);}
+.todoempty{color:var(--grey);font-size:13px;padding:8px 2px;line-height:1.5;}
+.srctag{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--accent-dk);background:var(--accent-soft);border-radius:8px;padding:1px 6px;}
+.day-b.on{color:#e0a92b;}
+.tab[data-list="myday"]{color:#c98a1a;}
+.tab[data-list="myday"].active{border-color:#e0a92b;color:#a8710f;}
+.movemenu{position:fixed;z-index:60;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:6px;min-width:150px;}
+.movemenu .mm-title{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--grey);padding:3px 7px;}
+.movemenu button{display:block;width:100%;text-align:left;border:none;background:none;padding:7px 9px;font-size:13px;cursor:pointer;border-radius:4px;font-family:var(--sans);color:var(--ink);}
+.movemenu button:hover{background:var(--panel);}
 .addrow{display:flex;gap:8px;margin-top:14px;}
 .addrow input{flex:1;border:1px solid var(--line);border-radius:var(--radius);padding:9px 12px;font-size:13.5px;background:var(--bg);font-family:inherit;}
 .addrow input:focus{outline:none;border-color:var(--accent);}
@@ -263,16 +276,18 @@ body{
 
       <div class="card c-todo">
         <h2><span class="sq"></span>To-Dos <button class="imp-pill" id="msImport">⊕ Import To Do</button></h2>
-        <div class="tabs">
-          <div class="tab active" data-list="biz">Business</div>
-          <div class="tab" data-list="personal">Personal</div>
-          <div class="tab" data-list="longterm">Long-term</div>
-        </div>
-        <div id="todos"></div>
         <div class="addrow">
           <input id="todoInput" placeholder="Add a task and press Enter…">
           <button class="btn" id="todoAdd">Add</button>
         </div>
+        <div class="tabs">
+          <div class="tab active" data-list="myday">☀ My Day</div>
+          <div class="tab" data-list="biz">Business</div>
+          <div class="tab" data-list="personal">Personal</div>
+          <div class="tab" data-list="longterm">Long-term</div>
+        </div>
+        <div id="todos" class="todoscroll"></div>
+        <button class="expandbtn" id="todoExpand">Expand ▾</button>
       </div>
 
       <div class="card c-inbox">
@@ -416,52 +431,104 @@ function renderAgenda(){
 }
 
 /* to-dos */
-let curList='biz';
+let curList='myday';
+const LIST_NAMES={biz:'Business',personal:'Personal',longterm:'Long-term'};
 const defaults={biz:[{x:'Follow up on NACE2026 leads',d:false},{x:'Send Kinder Morgan headshot quote',d:false},{x:'Review photo-booth market report',d:false}],
                 personal:[{x:'Pick a gift for Reagan',d:false},{x:"Book kids' summer camp",d:false}],
                 longterm:[{x:'Open the Greenway Plaza Studio Pod location',d:false},{x:'Build out the AI headshot offering',d:false},{x:'Capture ideas & big-picture goals here…',d:false}]};
-function getTodos(l){return store.get('todos_'+l, defaults[l]);}
+function uid(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function getTodos(l){return store.get('todos_'+l, defaults[l]||[]);}
 function setTodos(l,v){store.set('todos_'+l,v);}
+function ensureIds(){['biz','personal','longterm'].forEach(l=>{let a=getTodos(l),ch=false;a.forEach(t=>{if(!t.id){t.id=uid();ch=true;}});if(ch)setTodos(l,a);});}
+function getMyDay(){return store.get('myday',[]);}
+function setMyDay(v){store.set('myday',v);}
+function inMyDay(l,id){return getMyDay().some(r=>r.l===l&&r.id===id);}
+function toggleMyDay(l,id){let m=getMyDay();const i=m.findIndex(r=>r.l===l&&r.id===id);if(i>=0)m.splice(i,1);else m.push({l,id});setMyDay(m);renderTodos();}
+function dailyReset(){const today=new Date().toDateString();if(store.get('mydayDate','')!==today){setMyDay([]);store.set('mydayDate',today);}}
 function fmtDue(d){return new Date(d+'T00:00').toLocaleDateString([], {month:'short',day:'numeric'});}
 function dueClass(d,done){if(!d||done)return '';const t=new Date();t.setHours(0,0,0,0);const diff=(new Date(d+'T00:00')-t)/86400000;if(diff<0)return 'over';if(diff<=2)return 'soon';return '';}
 let dragFrom=null;
-function renderTodos(){
-  const items=getTodos(curList);
-  $('#todos').innerHTML=items.map((it,i)=>{
-    const due=it.due||'';
-    return `<div class="todo ${it.d?'done':''} ${it.star?'star':''}" draggable="true" data-i="${i}">
+function rowHTML(it, srcList){
+  const due=it.due||'';
+  return `<div class="todo ${it.d?'done':''} ${it.star?'star':''}" draggable="true" data-l="${srcList}" data-id="${esc(it.id||'')}">
       <span class="drag">⋮⋮</span>
-      <input type="checkbox" class="chk" data-i="${i}" ${it.d?'checked':''}>
+      <input type="checkbox" class="chk" ${it.d?'checked':''}>
       <div class="tmain">
-        <div class="trow1"><label>${esc(it.x)}</label>${due?`<span class="duechip ${dueClass(due,it.d)}">${esc(fmtDue(due))}</span>`:''}${it.note?'<span class="noteflag">●</span>':''}</div>
-        <div class="tnote" data-i="${i}" style="display:none"><textarea class="noteta" data-i="${i}" placeholder="Details, links, sub-steps…">${esc(it.note||'')}</textarea></div>
+        <div class="trow1"><label>${esc(it.x)}</label>${curList==='myday'?`<span class="srctag">${esc(LIST_NAMES[srcList]||'')}</span>`:''}${due?`<span class="duechip ${dueClass(due,it.d)}">${esc(fmtDue(due))}</span>`:''}${it.note?'<span class="noteflag">●</span>':''}</div>
+        <div class="tnote" style="display:none"><textarea class="noteta" placeholder="Details, links, sub-steps…">${esc(it.note||'')}</textarea></div>
       </div>
       <div class="tctl">
-        <button class="ic star-b" data-i="${i}" title="Priority">${it.star?'★':'☆'}</button>
-        <button class="ic cal-b" data-i="${i}" title="Due date">📅</button>
-        <button class="ic note-b" data-i="${i}" title="Note">📝</button>
-        <button class="ic del" data-i="${i}" title="Delete">✕</button>
-        <input type="date" class="duein" data-i="${i}" value="${esc(due)}">
+        <button class="ic day-b ${inMyDay(srcList,it.id)?'on':''}" title="Add to My Day">☀</button>
+        <button class="ic star-b" title="Priority">${it.star?'★':'☆'}</button>
+        <button class="ic cal-b" title="Due date">📅</button>
+        <button class="ic note-b" title="Note">📝</button>
+        <button class="ic move-b" title="Move to list">⇄</button>
+        <button class="ic del" title="${curList==='myday'?'Remove from My Day':'Delete'}">✕</button>
+        <input type="date" class="duein" value="${esc(due)}">
       </div>
     </div>`;
-  }).join('')||'<div style="color:var(--grey);font-size:13px;padding:6px 0">Nothing here yet — add a task below.</div>';
+}
+function renderTodos(){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x.dataset.list===curList));
   const root=$('#todos');
-  root.querySelectorAll('.chk').forEach(c=>c.onchange=e=>{const a=getTodos(curList);a[+e.target.dataset.i].d=e.target.checked;setTodos(curList,a);renderTodos();});
-  root.querySelectorAll('.del').forEach(b=>b.onclick=e=>{const a=getTodos(curList);a.splice(+e.currentTarget.dataset.i,1);setTodos(curList,a);renderTodos();});
-  root.querySelectorAll('.star-b').forEach(b=>b.onclick=e=>{const i=+e.currentTarget.dataset.i;const a=getTodos(curList);a[i].star=!a[i].star;if(a[i].star){const[m]=a.splice(i,1);a.unshift(m);}setTodos(curList,a);renderTodos();});
-  root.querySelectorAll('.cal-b').forEach(b=>b.onclick=e=>{const inp=root.querySelector('.duein[data-i="'+e.currentTarget.dataset.i+'"]');if(inp){if(inp.showPicker){try{inp.showPicker();}catch(_){inp.focus();}}else inp.focus();}});
-  root.querySelectorAll('.duein').forEach(inp=>inp.onchange=e=>{const a=getTodos(curList);a[+e.target.dataset.i].due=e.target.value;setTodos(curList,a);renderTodos();});
-  root.querySelectorAll('.note-b').forEach(b=>b.onclick=e=>{const n=root.querySelector('.tnote[data-i="'+e.currentTarget.dataset.i+'"]');if(n){n.style.display=n.style.display==='none'?'block':'none';if(n.style.display==='block')n.querySelector('textarea').focus();}});
-  root.querySelectorAll('.noteta').forEach(t=>t.oninput=e=>{const a=getTodos(curList);a[+e.target.dataset.i].note=e.target.value;setTodos(curList,a);});
-  root.querySelectorAll('.todo').forEach(el=>{
-    el.ondragstart=()=>{dragFrom=+el.dataset.i;};
+  if(curList==='myday'){
+    const m=getMyDay(); const valid=[]; const html=[];
+    m.forEach(ref=>{const it=getTodos(ref.l).find(t=>t.id===ref.id); if(it){html.push(rowHTML(it,ref.l));valid.push(ref);}});
+    if(valid.length!==m.length)setMyDay(valid);
+    root.innerHTML=html.join('')||'<div class="todoempty">Nothing in My Day yet. Open a list and tap ☀ on the tasks you want to focus on today. It clears itself each morning.</div>';
+  } else {
+    const items=getTodos(curList);
+    root.innerHTML=items.map(it=>rowHTML(it,curList)).join('')||'<div class="todoempty">Nothing here yet — add a task above.</div>';
+  }
+  bindTodoHandlers();
+}
+function bindTodoHandlers(){
+  $('#todos').querySelectorAll('.todo').forEach(el=>{
+    const get=()=>{const l=el.dataset.l,id=el.dataset.id;const a=getTodos(l);return{l,id,a,idx:a.findIndex(t=>t.id===id)};};
+    el.querySelector('.chk').onchange=ev=>{const c=get();if(c.idx<0)return;c.a[c.idx].d=ev.target.checked;setTodos(c.l,c.a);renderTodos();};
+    el.querySelector('.del').onclick=()=>{ if(curList==='myday'){toggleMyDay(el.dataset.l,el.dataset.id);return;} const c=get();if(c.idx<0)return;c.a.splice(c.idx,1);setTodos(c.l,c.a);renderTodos(); };
+    el.querySelector('.day-b').onclick=()=>toggleMyDay(el.dataset.l,el.dataset.id);
+    el.querySelector('.star-b').onclick=()=>{const c=get();if(c.idx<0)return;c.a[c.idx].star=!c.a[c.idx].star;setTodos(c.l,c.a);renderTodos();};
+    el.querySelector('.cal-b').onclick=()=>{const inp=el.querySelector('.duein');if(inp.showPicker){try{inp.showPicker();}catch(_){inp.focus();}}else inp.focus();};
+    el.querySelector('.duein').onchange=ev=>{const c=get();if(c.idx<0)return;c.a[c.idx].due=ev.target.value;setTodos(c.l,c.a);renderTodos();};
+    el.querySelector('.note-b').onclick=()=>{const n=el.querySelector('.tnote');n.style.display=n.style.display==='none'?'block':'none';if(n.style.display==='block')n.querySelector('textarea').focus();};
+    el.querySelector('.noteta').oninput=ev=>{const c=get();if(c.idx<0)return;c.a[c.idx].note=ev.target.value;setTodos(c.l,c.a);};
+    el.querySelector('.move-b').onclick=ev=>openMoveMenu(ev.currentTarget, el.dataset.l, el.dataset.id);
+    el.ondragstart=()=>{dragFrom=el.dataset.id;};
     el.ondragover=e=>{e.preventDefault();el.classList.add('dragover');};
     el.ondragleave=()=>el.classList.remove('dragover');
-    el.ondrop=e=>{e.preventDefault();el.classList.remove('dragover');const to=+el.dataset.i;if(dragFrom==null||dragFrom===to)return;const a=getTodos(curList);const[m]=a.splice(dragFrom,1);a.splice(to,0,m);dragFrom=null;setTodos(curList,a);renderTodos();};
+    el.ondrop=e=>{e.preventDefault();el.classList.remove('dragover');if(curList==='myday')return;const a=getTodos(curList);const from=a.findIndex(t=>t.id===dragFrom),to=a.findIndex(t=>t.id===el.dataset.id);if(from<0||to<0||from===to)return;const[m]=a.splice(from,1);a.splice(to,0,m);setTodos(curList,a);renderTodos();};
   });
 }
-function addTodo(text,list){list=list||curList;const a=getTodos(list);a.push({x:text,d:false});setTodos(list,a);if(list===curList)renderTodos();}
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');curList=t.dataset.list;renderTodos();});
+function openMoveMenu(btn,l,id){
+  closeMoveMenu();
+  const targets=['biz','personal','longterm'].filter(x=>x!==l);
+  const m=document.createElement('div');m.className='movemenu';m.id='movemenu';
+  m.innerHTML='<div class="mm-title">Move to</div>'+targets.map(t=>`<button data-t="${t}">${LIST_NAMES[t]}</button>`).join('');
+  document.body.appendChild(m);
+  const r=btn.getBoundingClientRect();m.style.left=Math.min(r.left,window.innerWidth-170)+'px';m.style.top=(r.bottom+4)+'px';
+  m.querySelectorAll('button').forEach(b=>b.onclick=()=>{moveTask(l,id,b.dataset.t);closeMoveMenu();});
+  setTimeout(()=>document.addEventListener('click',closeMoveOnce),0);
+}
+function closeMoveMenu(){const e=$('#movemenu');if(e)e.remove();}
+function closeMoveOnce(e){if(!e.target.closest('#movemenu')){closeMoveMenu();document.removeEventListener('click',closeMoveOnce);}}
+function moveTask(from,id,to){const a=getTodos(from);const i=a.findIndex(t=>t.id===id);if(i<0)return;const[t]=a.splice(i,1);setTodos(from,a);const b=getTodos(to);b.push(t);setTodos(to,b);let md=getMyDay(),ch=false;md.forEach(r=>{if(r.l===from&&r.id===id){r.l=to;ch=true;}});if(ch)setMyDay(md);renderTodos();}
+function addTodo(text,list){
+  list=list||curList; const t={id:uid(),x:text,d:false};
+  if(list==='myday'){const home='personal';const a=getTodos(home);a.push(t);setTodos(home,a);const md=getMyDay();md.push({l:home,id:t.id});setMyDay(md);}
+  else {const a=getTodos(list);a.push(t);setTodos(list,a);}
+  renderTodos();
+}
+function parseAdd(q){
+  let m;
+  if(m=q.match(/^\s*add\s+(.+?)\s+to\s+(?:my\s+)?(personal|business|biz|long[\s-]?term|day|my\s*day)(?:\s+list)?\s*$/i)){const w=m[2].toLowerCase().replace(/[\s-]/g,'');const map={personal:'personal',business:'biz',biz:'biz',longterm:'longterm',day:'myday',myday:'myday'};return{list:map[w]||'biz',text:m[1].trim()};}
+  if(m=q.match(/^\s*add\s+to\s+my\s*day:?\s*(.+)/i))return{list:'myday',text:m[1].trim()};
+  if(m=q.match(/^\s*add\s+(?:a\s+)?(personal|business|biz|long[\s-]?term|day|my\s*day)\s+to-?do:?\s*(.+)/i)){const w=m[1].toLowerCase().replace(/[\s-]/g,'');const map={personal:'personal',business:'biz',biz:'biz',longterm:'longterm',day:'myday',myday:'myday'};return{list:map[w]||'biz',text:m[2].trim()};}
+  if(m=q.match(/^\s*add\s+to-?do:?\s*(.+)/i))return{list:'biz',text:m[1].trim()};
+  return null;
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{curList=t.dataset.list;renderTodos();});
+$('#todoExpand').onclick=()=>{const el=$('#todos');el.classList.toggle('expanded');$('#todoExpand').textContent=el.classList.contains('expanded')?'Collapse ▴':'Expand ▾';};
 $('#todoAdd').onclick=()=>{const v=$('#todoInput').value.trim();if(v){addTodo(v);$('#todoInput').value='';}};
 $('#todoInput').onkeydown=e=>{if(e.key==='Enter')$('#todoAdd').click();};
 
@@ -517,8 +584,8 @@ async function handleAsk(){
   const q=$('#ask').value.trim();if(!q)return;
   $('#ask').value='';$('#ask').style.height='auto';
   addMsg(q,'u');
-  const m=q.match(/^add\s+(personal\s+)?to-?do:?\s*(.+)/i);
-  if(m){const list=m[1]?'personal':'biz';addTodo(m[2].trim(),list);addMsg('Added to your '+(list==='biz'?'Business':'Personal')+' to-dos: "'+m[2].trim()+'" ✓','a');return;}
+  const p=parseAdd(q);
+  if(p){addTodo(p.text,p.list);addMsg('Added to '+(p.list==='myday'?'My Day':LIST_NAMES[p.list])+': "'+p.text+'" ✓','a');return;}
   const thinking=addMsg('Thinking…','a',true);
   const ans=await callClaude(q);
   thinking.remove();addMsg(ans,'a');
@@ -834,9 +901,14 @@ $('#syncBtn').onclick=async()=>{
 };
 
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
+ensureIds();dailyReset();
 tick();renderTodos();renderMails();renderKids();renderFiled();renderSync();
 // pull synced data on load, then apply
 (async function(){ if(getSyncKey()&&proxyBase()){ if(await pullState()) applyAll(); } })();
+// keep things fresh: daily My Day reset + re-pull on a timer and whenever you return to the tab
+function freshen(){ const before=store.get('mydayDate',''); dailyReset(); if(store.get('mydayDate','')!==before){ renderTodos(); } refreshGoogle(); if(getSyncKey()&&proxyBase()) pullState().then(ok=>{ if(ok) applyAll(); }); }
+setInterval(freshen, 5*60*1000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) freshen(); });
 </script>
 </body>
 </html>
