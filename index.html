@@ -210,6 +210,20 @@ body{
 .parsebox{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;font-size:13px;font-family:inherit;background:var(--bg);resize:vertical;min-height:74px;}
 .parsebox:focus{outline:none;border-color:var(--accent);}
 .parseout{font-size:12.5px;background:var(--panel);border-radius:3px;padding:10px 12px;margin-top:10px;display:none;line-height:1.55;}
+.senderchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px;}
+.senderchips .chipx{border:none;background:none;cursor:pointer;color:var(--grey);font-size:11px;margin-left:3px;padding:0;}
+.schoolstatus{font-size:11.5px;color:var(--grey);margin:4px 0 8px;min-height:14px;}
+.schoolitem{padding:10px 0;border-bottom:1px solid var(--line-soft);}
+.schoolitem:last-child{border-bottom:none;}
+.si-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.si-from{font-weight:600;font-size:13px;}
+.si-date{color:var(--grey);font-size:11px;margin-left:auto;}
+.si-subj{font-size:12.5px;color:var(--grey);margin:1px 0 5px;}
+.si-sum{font-size:12.5px;line-height:1.55;}
+.si-att{font-size:11.5px;color:var(--accent-dk);margin-top:5px;}
+.schoolmanual{margin-top:14px;}
+.schoolmanual summary{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent-dk);cursor:pointer;font-weight:600;}
+.schoolmanual .parsebox{margin-top:10px;}
 .filed{font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--line-soft);}
 .filed:last-child{border-bottom:none;}
 .filed .ft{font-weight:600;}
@@ -362,12 +376,19 @@ body{
       </div>
 
       <div class="card c-family">
-        <h2><span class="sq"></span>School Communication</h2>
-        <textarea class="parsebox" id="parseIn" placeholder="Paste a forwarded school email here — I'll summarize it and file it."></textarea>
-        <div style="margin-top:10px"><button class="btn" id="parseGo">Summarize &amp; file</button></div>
-        <div class="parseout" id="parseOut"></div>
-        <div class="fin-sub" style="margin-top:16px">Filed</div>
-        <div id="filed"></div>
+        <h2><span class="sq"></span>School Communication <button class="imp-pill" id="schoolScan">⟳ Scan</button></h2>
+        <div class="addrow">
+          <input id="senderInput" placeholder="Add a sender email (school, teacher)…">
+          <button class="btn" id="senderAdd">Add</button>
+        </div>
+        <div id="senderChips" class="senderchips"></div>
+        <div id="schoolStatus" class="schoolstatus"></div>
+        <div id="schoolItems"></div>
+        <details class="schoolmanual"><summary>Paste an email manually</summary>
+          <textarea class="parsebox" id="parseIn" placeholder="Paste a forwarded school email…"></textarea>
+          <div style="margin-top:8px"><button class="btn" id="parseGo">Summarize &amp; file</button></div>
+          <div class="parseout" id="parseOut"></div>
+        </details>
       </div>
 
       <div class="card c-family">
@@ -657,19 +678,68 @@ function renderKids(){
 $('#kidAdd').onclick=()=>{const v=$('#kidInput').value.trim();if(v){const a=getKids();a.push({n:v,d:'Add a note…'});setKids(a);$('#kidInput').value='';renderKids();}};
 $('#kidInput').onkeydown=e=>{if(e.key==='Enter')$('#kidAdd').click();};
 
-/* ---------- family: school communication parser ---------- */
-function getFiled(){return store.get('filed',[]);}
-function renderFiled(){
-  const f=getFiled();
-  $('#filed').innerHTML=f.length?f.map(x=>`<div class="filed"><div class="ft">${esc(x.t)}</div><div class="fd">${esc(x.d)}</div></div>`).join(''):'<div style="color:var(--grey);font-size:12px">Nothing filed yet.</div>';
+/* ---------- family: school communication (auto-pull from Gmail + summarize) ---------- */
+function getSenders(){return store.get('schoolSenders',[]);}
+function setSenders(v){store.set('schoolSenders',v);}
+function renderSenders(){
+  const el=$('#senderChips'); if(!el)return;
+  const a=getSenders();
+  el.innerHTML=a.length? a.map((e,i)=>`<span class="gchip"><span class="gdot" style="background:var(--h-sky)"></span>${esc(e)}<button class="chipx" data-i="${i}">✕</button></span>`).join('') : '<span style="font-size:11.5px;color:var(--grey)">Add the addresses your school/teachers email from, then tap Scan.</span>';
+  el.querySelectorAll('.chipx').forEach(b=>b.onclick=ev=>{const x=getSenders();x.splice(+ev.currentTarget.dataset.i,1);setSenders(x);renderSenders();});
 }
+function getSchool(){return store.get('schoolItems',[]);}
+function setSchool(v){store.set('schoolItems',v.slice(0,40));}
+function renderSchool(){
+  const el=$('#schoolItems'); if(!el)return;
+  const items=getSchool();
+  el.innerHTML=items.length? items.map(x=>`<div class="schoolitem"><div class="si-h"><span class="si-from">${esc(x.from)}</span>${x.account?`<span class="srctag">${esc(x.account)}</span>`:''}<span class="si-date">${esc(x.date||'')}</span></div><div class="si-subj">${esc(x.subj||'')}</div><div class="si-sum">${esc(x.summary||'').replace(/\n/g,'<br>')}</div>${(x.attachments&&x.attachments.length)?`<div class="si-att">📎 ${x.attachments.map(esc).join(', ')}</div>`:''}</div>`).join('') : '<div class="todoempty">No summaries yet. Add senders and tap Scan, or paste one below.</div>';
+}
+function b64d(d){try{return decodeURIComponent(escape(atob(String(d).replace(/-/g,'+').replace(/_/g,'/'))));}catch(e){try{return atob(String(d).replace(/-/g,'+').replace(/_/g,'/'));}catch(_){return '';}}}
+function parseGmail(full,label){
+  const h=(full.payload&&full.payload.headers)||[];
+  const gv=n=>((h.find(x=>x.name&&x.name.toLowerCase()===n)||{}).value||'');
+  const from=(gv('from').replace(/<[^>]*>/,'').replace(/"/g,'').trim())||gv('from');
+  let body='',atts=[];
+  (function walk(p){ if(!p)return; if(p.filename)atts.push(p.filename); if(p.mimeType==='text/plain'&&p.body&&p.body.data)body+=b64d(p.body.data)+'\n'; (p.parts||[]).forEach(walk); })(full.payload);
+  if(!body)body=full.snippet||'';
+  return {id:full.id, from, subj:gv('subject')||'(no subject)', date:gv('date')?new Date(gv('date')).toLocaleDateString():'', account:label, attachments:atts, body};
+}
+async function scanSchool(){
+  const st=$('#schoolStatus');
+  const senders=getSenders();
+  if(!senders.length){st.textContent='Add at least one sender email first.';return;}
+  if(!gAccounts.length){st.textContent='Connect Google at the top first, so I can read those emails.';return;}
+  st.textContent='Scanning your inboxes…';
+  const q='from:('+senders.join(' OR ')+') newer_than:45d';
+  const found=[];
+  for(const acct of gAccounts){
+    try{
+      const j=await (await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&q='+encodeURIComponent(q),{headers:{Authorization:'Bearer '+acct.token}})).json();
+      for(const mm of (j.messages||[]).slice(0,8)){
+        const f=await (await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/'+mm.id+'?format=full',{headers:{Authorization:'Bearer '+acct.token}})).json();
+        found.push(parseGmail(f, acct.email.split('@')[0]));
+      }
+    }catch(e){}
+  }
+  if(!found.length){st.textContent='No matching emails in the last 45 days.';return;}
+  const existing=getSchool(); const seen=new Set(existing.map(x=>x.id));
+  const fresh=found.filter(f=>!seen.has(f.id));
+  if(!fresh.length){st.textContent='Up to date — nothing new from those senders.';return;}
+  st.textContent='Summarizing '+fresh.length+' new email'+(fresh.length!==1?'s':'')+'…';
+  for(const f of fresh){ f.summary=await callClaude('Summarize this school email for a busy parent in 2–4 short bullet points using "- " bullets: key dates, what action is needed and by when, and note any attachments.\n\nFrom: '+f.from+'\nSubject: '+f.subj+'\n\n'+(f.body||'').slice(0,4000)); }
+  setSchool(fresh.concat(existing).slice(0,40)); renderSchool();
+  st.textContent='Done — '+fresh.length+' new summarized.';
+}
+$('#schoolScan').onclick=scanSchool;
+$('#senderAdd').onclick=()=>{const v=$('#senderInput').value.trim();if(v){const a=getSenders();if(!a.includes(v))a.push(v);setSenders(a);$('#senderInput').value='';renderSenders();}};
+$('#senderInput').onkeydown=e=>{if(e.key==='Enter')$('#senderAdd').click();};
 $('#parseGo').onclick=async()=>{
   const text=$('#parseIn').value.trim();if(!text)return;
   const out=$('#parseOut');out.style.display='block';out.textContent='Summarizing…';
-  const summary=await callClaude('Summarize this school email for a busy parent in 2-3 short sentences: key dates, what action is needed, and any attachments mentioned. Then suggest a 3-5 word title.\n\n---\n'+text);
-  out.textContent=summary;
-  const f=getFiled();f.unshift({t:(text.split('\n')[0]||'School note').slice(0,40),d:new Date().toLocaleDateString()+' · filed'});store.set('filed',f.slice(0,8));renderFiled();
-  $('#parseIn').value='';
+  const summary=await callClaude('Summarize this school email for a busy parent in 2–4 short bullets ("- "): key dates, action needed and by when, and any attachments.\n\n'+text);
+  out.style.display='none';
+  const items=getSchool();items.unshift({id:'manual'+Date.now(),from:'Pasted email',subj:(text.split('\n')[0]||'').slice(0,60),date:new Date().toLocaleDateString(),account:'',attachments:[],summary});
+  setSchool(items);renderSchool();$('#parseIn').value='';
 };
 
 /* ---------- family: photo stream (placeholder tiles until photos added) ---------- */
@@ -880,7 +950,7 @@ async function pullState(){
   return false;
 }
 function applyAll(){
-  renderTodos();renderMails();renderKids();renderFiled();
+  renderTodos();renderMails();renderKids();renderSchool();renderSenders();
   ['goalShort','goalLong','gratitude'].forEach(id=>{const el=$('#'+id); if(el) el.textContent=store.get(id,'')||'';});
   const ap=$('#aiProvider'); if(ap) ap.value=store.get('aiProvider','claude');
   restoreGoogle();
@@ -902,7 +972,7 @@ $('#syncBtn').onclick=async()=>{
 
 $('#connNote').textContent=(window.cowork&&window.cowork.askClaude)?'· assistant live':'';
 ensureIds();dailyReset();
-tick();renderTodos();renderMails();renderKids();renderFiled();renderSync();
+tick();renderTodos();renderMails();renderKids();renderSchool();renderSenders();renderSync();
 // pull synced data on load, then apply
 (async function(){ if(getSyncKey()&&proxyBase()){ if(await pullState()) applyAll(); } })();
 // keep things fresh: daily My Day reset + re-pull on a timer and whenever you return to the tab
