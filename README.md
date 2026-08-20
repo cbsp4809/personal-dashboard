@@ -17,8 +17,10 @@ Pages is enabled.
 ## Structure
 
 ```
-index.html   # morning dashboard — self-contained (HTML + CSS + JS inline)
-ops.html     # Ops board (Chris & Sydney) — separate page, same GitHub Pages site
+index.html          # morning dashboard — self-contained (HTML + CSS + JS inline)
+ops.html            # Ops board (Chris & Sydney) — separate page, same GitHub Pages site
+manifest.json       # web app manifest so Ops can be added to an iPhone home screen
+icons/              # original Ops mark (Apple 180, manifest 192/512)
 README.md
 .gitignore
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
@@ -57,6 +59,23 @@ it shows a clear "connect To Do" state instead of faking a sync.
 If a magic-link email does not return to this page, add
 `https://cbsp4809.github.io/personal-dashboard/ops.html` to the Supabase Auth
 redirect allow-list (password sign-in works without that).
+
+## Add Ops to an iPhone home screen
+
+Ops is a Safari web app, not an App Store download. Live URL:
+
+**https://cbsp4809.github.io/personal-dashboard/ops.html**
+
+On Chris’s iPhone:
+
+1. Open that link in **Safari** (Chrome and other browsers cannot add it the same way).
+2. Tap the **Share** button (the square with the arrow).
+3. Tap **Add to Home Screen**, name it Ops if asked, then **Add**.
+
+The home-screen icon opens the board full-screen, like an app. Sign-in uses the
+same Studio Pod account and stays on the phone (the session is already saved in
+the browser). After you add it, tapping the icon should land on Ops — not the
+morning dashboard.
 
 ## Local preview
 
