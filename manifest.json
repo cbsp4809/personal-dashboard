@@ -1,0 +1,27 @@
+{
+  "id": "/personal-dashboard/ops.html",
+  "name": "Ops",
+  "short_name": "Ops",
+  "description": "Chris and Sydney’s shared work board.",
+  "start_url": "/personal-dashboard/ops.html",
+  "scope": "/personal-dashboard/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#12110f",
+  "theme_color": "#12110f",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/personal-dashboard/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/personal-dashboard/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

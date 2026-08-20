@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Ops">
+  <title>Ops</title>
+  <rect width="512" height="512" fill="#12110f"/>
+  <rect x="92.160" y="425.984" width="327.680" height="9.216" rx="4.096" fill="#d4cdc0"/>
+  <rect x="92.160" y="183.910" width="57.344" height="235.930" rx="16.056" fill="#d4a09a"/>
+  <rect x="182.272" y="118.374" width="57.344" height="301.466" rx="16.056" fill="#c4a574"/>
+  <rect x="272.384" y="229.786" width="57.344" height="190.054" rx="16.056" fill="#8fa3b0"/>
+  <rect x="362.496" y="164.250" width="57.344" height="255.590" rx="16.056" fill="#9aaf98"/>
+</svg>
