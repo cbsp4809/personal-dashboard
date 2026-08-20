@@ -40,6 +40,10 @@ body{
 .brandmark{color:var(--accent);font-size:11px;letter-spacing:2px;margin-bottom:9px;}
 .wordmark{font-family:var(--serif);font-weight:400;text-transform:uppercase;letter-spacing:7px;font-size:30px;line-height:1.05;color:var(--ink);}
 .wordmark .sub{display:block;font-size:11px;letter-spacing:5px;color:var(--grey);margin-top:7px;}
+.mast-nav{display:flex;justify-content:center;gap:18px;margin-top:16px;}
+.mast-nav a,.mast-nav span{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;font-weight:600;text-decoration:none;color:var(--grey);}
+.mast-nav a:hover{color:var(--accent-dk);}
+.mast-nav .here{color:var(--ink);}
 .mast-meta{display:flex;justify-content:space-between;align-items:center;margin-top:22px;}
 .greet{font-family:var(--serif);font-size:21px;letter-spacing:.5px;color:var(--ink);font-weight:400;}
 .greet em{font-style:italic;color:var(--accent);}
@@ -257,6 +261,10 @@ body{
   <div class="mast">
     <div class="brandmark">■</div>
     <div class="wordmark">Chris Bailey<span class="sub">Photography · Personal Dashboard</span></div>
+    <nav class="mast-nav" aria-label="Dashboards">
+      <span class="here">Morning</span>
+      <a href="ops.html">Ops board</a>
+    </nav>
     <div class="mast-meta">
       <div class="greet" id="greet">Good morning, <em>Chris</em></div>
       <div class="clock">
