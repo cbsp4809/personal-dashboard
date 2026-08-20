@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ops · Chris &amp; Sydney</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#12110f;
+  --bg-2:#181612;
+  --panel:#1e1b17;
+  --card:#25221c;
+  --card-hover:#2c2821;
+  --ink:#f4efe6;
+  --soft:#d4cdc0;
+  --muted:#9a9286;
+  --line:rgba(244,239,230,.09);
+  --line-strong:rgba(244,239,230,.16);
+  --brass:#c4a574;
+  --brass-soft:rgba(196,165,116,.16);
+  --needs:#d4a09a;
+  --today:#c4a574;
+  --week:#8fa3b0;
+  --sydney:#9aaf98;
+  --over:#c97a6a;
+  --soon:#d4b06a;
+  --shadow:0 10px 40px rgba(0,0,0,.28);
+  --sans:"Figtree", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --serif:"Newsreader", Georgia, "Times New Roman", serif;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--brass)}
+.hidden{display:none !important}
+
+#boot{min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:12px;}
+
+#login{min-height:100vh;display:none;align-items:center;justify-content:center;padding:32px 20px;background:
+  radial-gradient(900px 420px at 50% -10%, rgba(196,165,116,.12), transparent 60%), var(--bg);}
+.login-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line-strong);border-radius:18px;padding:34px 32px 28px;box-shadow:var(--shadow);}
+.login-kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);margin-bottom:10px;}
+.login-card h1{font-family:var(--serif);font-weight:400;font-size:34px;margin:0 0 8px;letter-spacing:-.02em;}
+.login-card p{color:var(--muted);margin:0 0 22px;font-size:14px;}
+.login-card label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;}
+.login-card input{width:100%;background:var(--bg);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;margin-bottom:12px;}
+.login-card input:focus{outline:none;border-color:var(--brass);}
+.btn{background:var(--brass);color:#1a160f;border:none;border-radius:10px;padding:11px 16px;font-weight:700;letter-spacing:.04em;}
+.btn:hover{filter:brightness(1.06);}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
+.btn.ghost{background:transparent;color:var(--soft);border:1px solid var(--line-strong);}
+.btn.tiny{padding:6px 10px;font-size:12px;border-radius:8px;font-weight:600;letter-spacing:.02em;}
+.linkish{display:block;width:100%;margin-top:10px;background:none;border:none;color:var(--muted);font-size:13px;text-align:center;}
+.linkish:hover{color:var(--ink);}
+.login-msg{min-height:1.4em;margin-top:12px;color:var(--brass);font-size:13px;text-align:center;}
+.login-foot{margin-top:22px;text-align:center;font-size:12px;color:var(--muted);}
+.login-foot a{color:var(--soft);}
+
+#app{display:none;min-height:100vh;}
+.top{padding:22px 28px 0;max-width:1480px;margin:0 auto;}
+.mast{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid var(--line);}
+.brand .kicker{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);margin-bottom:6px;}
+.brand h1{font-family:var(--serif);font-weight:400;font-size:32px;margin:0;letter-spacing:-.03em;}
+.brand h1 em{font-style:italic;color:var(--soft);}
+.navlinks{display:flex;gap:16px;margin-top:10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;}
+.navlinks a{color:var(--muted);text-decoration:none;}
+.navlinks a:hover,.navlinks a.here{color:var(--ink);}
+.mast-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;text-align:right;}
+.clock .time{font-family:var(--serif);font-size:28px;letter-spacing:.02em;}
+.clock .date{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.who span{font-size:12px;color:var(--muted);}
+.actor{display:inline-flex;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:999px;padding:2px;}
+.actor button{background:transparent;border:none;color:var(--muted);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+.actor button.on{background:var(--brass-soft);color:var(--ink);}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0 6px;}
+.addbar{flex:1;min-width:280px;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;}
+.addbar input[type="text"]{flex:1;min-width:140px;background:transparent;border:none;padding:8px 10px;font-size:14.5px;}
+.addbar input[type="text"]:focus{outline:none;}
+.addbar input[type="date"],.addbar select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:12.5px;color:var(--soft);}
+.filters{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 18px;}
+.chip{background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;letter-spacing:.04em;}
+.chip.on{background:var(--brass-soft);border-color:transparent;color:var(--ink);}
+.status{font-size:12.5px;color:var(--muted);min-height:1.2em;padding-bottom:8px;}
+.status.err{color:var(--over);}
+
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:0 28px 48px;max-width:1480px;margin:0 auto;}
+@media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:700px){
+  .board{grid-template-columns:1fr;padding:0 16px 40px;}
+  .top{padding:18px 16px 0;}
+  .mast{flex-direction:column;}
+  .mast-right{align-items:flex-start;text-align:left;}
+  .who{justify-content:flex-start;}
+}
+.col{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;min-height:420px;display:flex;flex-direction:column;}
+.col.over{outline:1px dashed var(--brass);}
+.col-h{padding:16px 16px 12px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.col-h h2{margin:0;font-size:15px;font-weight:600;letter-spacing:.01em;}
+.col-h .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px;}
+.col-h .sub{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);font-weight:400;}
+.col[data-col="needs-you"] .col-h h2{color:var(--needs);}
+.col[data-col="today"] .col-h h2{color:var(--today);}
+.col[data-col="this-week"] .col-h h2{color:var(--week);}
+.col[data-col="sydney"] .col-h h2{color:var(--sydney);}
+.col-body{flex:1;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.empty{color:var(--muted);font-size:13px;padding:18px 8px;text-align:center;font-family:var(--serif);font-style:italic;}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);}
+.card:hover{background:var(--card-hover);}
+.card.dragging{opacity:.45;}
+.card-top{display:flex;align-items:flex-start;gap:8px;}
+.chk{width:16px;height:16px;margin-top:3px;accent-color:var(--brass);flex-shrink:0;}
+.title{flex:1;font-weight:600;font-size:14.5px;line-height:1.35;}
+.snippet{margin:6px 0 0 24px;color:var(--soft);font-size:13px;white-space:pre-wrap;}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;align-items:center;}
+.tag{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;border:1px solid var(--line-strong);color:var(--soft);}
+.tag.studio-pod{color:#d8c4a0;border-color:rgba(196,165,116,.35);}
+.tag.cbp{color:#b7c6d2;border-color:rgba(143,163,176,.4);}
+.tag.personal{color:#c9c2b4;border-color:var(--line-strong);}
+.duechip{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.04);color:var(--muted);}
+.duechip.soon{color:var(--soon);background:rgba(212,176,106,.12);}
+.duechip.over{color:#fff;background:var(--over);}
+.src{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.ctrls{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;}
+.ctrls select,.ctrls input[type="date"]{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:11.5px;color:var(--soft);}
+.note-toggle{background:none;border:none;color:var(--muted);font-size:12px;padding:0;margin-left:auto;}
+.note-toggle:hover{color:var(--ink);}
+.noteta{width:100%;margin:8px 0 0 24px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px;resize:vertical;min-height:56px;}
+.noteta:focus{outline:none;border-color:var(--brass);}
+
+.drawer-back{position:fixed;inset:0;background:rgba(0,0,0,.46);z-index:40;}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,94vw);background:var(--panel);border-left:1px solid var(--line-strong);z-index:41;padding:22px 20px;overflow:auto;box-shadow:var(--shadow);}
+.drawer h3{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 6px;}
+.drawer .sub{color:var(--muted);margin-bottom:16px;}
+.done-item{padding:12px 0;border-bottom:1px solid var(--line);}
+.done-item .t{font-weight:600;}
+.done-item .m{color:var(--muted);font-size:12px;margin-top:4px;}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal .box{background:var(--panel);border:1px solid var(--line-strong);border-radius:16px;max-width:520px;width:100%;padding:24px;max-height:86vh;overflow:auto;box-shadow:var(--shadow);}
+.modal h3{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 6px;}
+.modal .msub{color:var(--muted);font-size:13px;margin-bottom:14px;}
+.maprow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+.maprow .mn{flex:1;}
+.maprow .mn small{display:block;color:var(--muted);}
+.maprow select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;}
+.macts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.connect{font-size:13px;color:var(--muted);background:var(--bg-2);border:1px dashed var(--line-strong);border-radius:10px;padding:12px 14px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="boot">Opening the board…</div>
+
+<div id="login">
+  <div class="login-card">
+    <div class="login-kicker">Chris &amp; Sydney</div>
+    <h1>Ops</h1>
+    <p>The shared board. Sign in with the same Studio Pod account you already use.</p>
+    <label for="loginEmail">Email</label>
+    <input id="loginEmail" type="email" placeholder="you@work.com" autocomplete="email">
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="loginBtn" style="width:100%">Sign in</button>
+    <button class="linkish" id="magicBtn">Email me a login link instead</button>
+    <div class="login-msg" id="loginMsg"></div>
+    <div class="login-foot"><a href="index.html">← Morning dashboard</a></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="top">
+    <div class="mast">
+      <div class="brand">
+        <div class="kicker">Shared board</div>
+        <h1>Ops <em>for the week</em></h1>
+        <div class="navlinks">
+          <a href="index.html">Morning dashboard</a>
+          <a class="here" href="ops.html">Ops</a>
+        </div>
+      </div>
+      <div class="mast-right">
+        <div class="clock">
+          <div class="time" id="time">--:--</div>
+          <div class="date" id="date"></div>
+        </div>
+        <div class="who">
+          <span id="userLabel">Signed in</span>
+          <div class="actor" title="Who is acting on the board">
+            <button type="button" data-actor="chris" class="on">Chris</button>
+            <button type="button" data-actor="sydney">Sydney</button>
+          </div>
+          <button class="btn tiny ghost" id="signOutBtn">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="addbar">
+        <input id="addTitle" type="text" placeholder='Add a card, or type “add to-do: call the landlord”'>
+        <select id="addProject" title="Project">
+          <option value="studio-pod">Studio Pod</option>
+          <option value="cbp">CBP</option>
+          <option value="personal">Personal</option>
+        </select>
+        <select id="addOwner" title="Owner">
+          <option value="chris">Chris</option>
+          <option value="sydney">Sydney</option>
+        </select>
+        <select id="addColumn" title="Column">
+          <option value="needs-you">Needs you</option>
+          <option value="today">Today</option>
+          <option value="this-week">This week</option>
+          <option value="sydney">Sydney owns</option>
+        </select>
+        <input id="addDue" type="date" title="Due date">
+        <button class="btn tiny" id="addBtn">Add</button>
+      </div>
+      <button class="btn tiny ghost" id="msImport">Import To Do</button>
+      <button class="btn tiny ghost" id="doneBtn">Done <span id="doneCount">0</span></button>
+    </div>
+    <div class="filters">
+      <button class="chip on" data-project="">All projects</button>
+      <button class="chip" data-project="studio-pod">Studio Pod</button>
+      <button class="chip" data-project="cbp">CBP</button>
+      <button class="chip" data-project="personal">Personal</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="board" id="board"></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+const SB_URL = "https://daddiljpnhfuxcdqsulg.supabase.co";
+const SB_KEY = "sb_publishable_kklnADdWDTkXsJyjx9FMiA_gNbKjm7H";
+const sb = (window.supabase && supabase.createClient)
+  ? supabase.createClient(SB_URL, SB_KEY)
+  : null;
+
+const MS_CLIENT_ID = "6317e330-50ac-46f2-89c3-dc661be621f4";
+const MS_REDIRECT = "https://cbsp4809.github.io/personal-dashboard/";
+const MS_LIVE = /github\.io\/personal-dashboard/i.test(location.href);
+
+const COLUMNS = [
+  { key:"needs-you", label:"Needs you", sub:"Waiting on Chris" },
+  { key:"today", label:"Today", sub:"" },
+  { key:"this-week", label:"This week", sub:"Parked for the next few days" },
+  { key:"sydney", label:"Sydney owns", sub:"She writes these and can finish them" }
+];
+const PROJECTS = { "studio-pod":"Studio Pod", cbp:"CBP", personal:"Personal" };
+const OWNERS = { chris:"Chris", sydney:"Sydney" };
+const SOURCES = { chat:"chat", email:"email", todo:"To Do", calendar:"calendar" };
+
+let currentUser = null;
+let actor = localStorage.getItem("ops_actor") || "chris";
+let cards = [];
+let projectFilter = "";
+let drawerOpen = false;
+let dragId = null;
+
+function setStatus(msg, err){
+  const el = $("#status");
+  el.textContent = msg || "";
+  el.className = "status" + (err ? " err" : "");
+}
+function isoNow(){ return new Date().toISOString(); }
+function todayISO(){
+  const n = new Date();
+  return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
+}
+function startOfWeek(d){
+  const x = new Date(d); x.setHours(0,0,0,0);
+  const day = x.getDay(); x.setDate(x.getDate() - day);
+  return x;
+}
+function fmtDue(d){
+  if(!d) return "";
+  return new Date(d+"T00:00").toLocaleDateString([], { month:"short", day:"numeric" });
+}
+function dueClass(d){
+  if(!d) return "";
+  const t = new Date(); t.setHours(0,0,0,0);
+  const diff = (new Date(d+"T00:00") - t) / 86400000;
+  if(diff < 0) return "over";
+  if(diff <= 1) return "soon";
+  return "";
+}
+function openCards(){ return cards.filter(c => !c.done_at); }
+function doneCards(){ return cards.filter(c => c.done_at).sort((a,b)=> String(b.done_at).localeCompare(String(a.done_at))); }
+
+function tick(){
+  const n = new Date();
+  $("#time").textContent = n.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  $("#date").textContent = n.toLocaleDateString([], { weekday:"long", month:"long", day:"numeric" });
+  const todayCol = COLUMNS.find(c => c.key==="today");
+  if(todayCol) todayCol.sub = n.toLocaleDateString([], { weekday:"long", month:"short", day:"numeric" }) + " · daily focus";
+}
+setInterval(tick, 30000);
+
+function showLogin(){
+  $("#boot").classList.add("hidden");
+  $("#app").style.display = "none";
+  $("#login").style.display = "flex";
+}
+function showApp(){
+  $("#boot").classList.add("hidden");
+  $("#login").style.display = "none";
+  $("#app").style.display = "block";
+  $("#userLabel").textContent = currentUser && currentUser.email ? currentUser.email : "Signed in";
+  syncActorUI();
+  tick();
+  renderBoard();
+}
+
+function syncActorUI(){
+  $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
+  $("#addOwner").value = actor;
+  if(actor==="sydney") $("#addColumn").value = "sydney";
+}
+
+$$(".actor button").forEach(b => b.onclick = () => {
+  actor = b.dataset.actor;
+  localStorage.setItem("ops_actor", actor);
+  syncActorUI();
+});
+
+function redirectTo(){
+  return location.href.split("#")[0];
+}
+
+async function sendMagicLink(){
+  const email = $("#loginEmail").value.trim();
+  const msg = $("#loginMsg");
+  if(!email){ msg.textContent = "Enter your email first."; return; }
+  if(!sb){ msg.textContent = "Supabase failed to load. Refresh and try again."; return; }
+  msg.textContent = "Sending…";
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo() } });
+  msg.textContent = error ? ("Error: "+error.message) : "Check your email for the login link. If it does not open this page, use your password instead.";
+}
+async function signInPassword(){
+  const email = $("#loginEmail").value.trim();
+  const password = $("#loginPassword").value;
+  const msg = $("#loginMsg");
+  if(!email || !password){ msg.textContent = "Enter your email and password."; return; }
+  if(!sb){ msg.textContent = "Supabase failed to load. Refresh and try again."; return; }
+  msg.textContent = "Signing in…";
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error) msg.textContent = error.message + " — no password yet? Use the link option below, then set one on Studio Pod.";
+}
+async function signOut(){
+  if(sb) await sb.auth.signOut();
+  currentUser = null;
+  location.reload();
+}
+
+async function onSignedIn(session){
+  currentUser = { email: session.user.email, id: session.user.id };
+  showApp();
+  await loadCards();
+}
+
+async function loadCards(){
+  if(!sb){ setStatus("Supabase client missing.", true); return; }
+  const { data, error } = await sb.from("ops_cards")
+    .select("id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at")
+    .order("sort", { ascending:true })
+    .order("created_at", { ascending:true });
+  if(error){ setStatus("Could not load cards: "+error.message, true); return; }
+  cards = data || [];
+  setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
+  renderBoard();
+  if(drawerOpen) renderDrawer();
+}
+
+function visible(card){
+  return !projectFilter || card.project===projectFilter;
+}
+
+function renderBoard(){
+  tick();
+  const root = $("#board");
+  const open = openCards().filter(visible);
+  root.innerHTML = COLUMNS.map(col => {
+    const list = open.filter(c => c.column_key===col.key);
+    const body = list.length
+      ? list.map(cardHTML).join("")
+      : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":"Nothing here."}</div>`;
+    return `<section class="col" data-col="${col.key}">
+      <div class="col-h"><div><h2>${esc(col.label)}</h2><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
+      <div class="col-body">${body}</div>
+    </section>`;
+  }).join("");
+  $("#doneCount").textContent = String(doneCards().length);
+  bindBoard();
+}
+
+function cardHTML(c){
+  const due = c.due_on || "";
+  const src = SOURCES[c.source] || c.source || "chat";
+  return `<article class="card" draggable="true" data-id="${esc(c.id)}">
+    <div class="card-top">
+      <input type="checkbox" class="chk" title="Mark done">
+      <div class="title">${esc(c.title)}</div>
+    </div>
+    ${c.snippet ? `<div class="snippet">${esc(c.snippet)}</div>` : ""}
+    <div class="meta">
+      <span class="tag ${esc(c.project)}">${esc(PROJECTS[c.project]||c.project)}</span>
+      <span class="tag">${esc(OWNERS[c.owner]||c.owner)}</span>
+      ${due?`<span class="duechip ${dueClass(due)}">${esc(fmtDue(due))}</span>`:""}
+      <span class="src">${esc(src)}</span>
+      <button type="button" class="note-toggle">${c.snippet?"Edit note":"+ Note"}</button>
+    </div>
+    <div class="ctrls">
+      <select class="proj" title="Project">${Object.entries(PROJECTS).map(([k,v])=>`<option value="${k}" ${c.project===k?"selected":""}>${v}</option>`).join("")}</select>
+      <select class="own" title="Owner">${Object.entries(OWNERS).map(([k,v])=>`<option value="${k}" ${c.owner===k?"selected":""}>${v}</option>`).join("")}</select>
+      <select class="colsel" title="Move">${COLUMNS.map(col=>`<option value="${col.key}" ${c.column_key===col.key?"selected":""}>${col.label}</option>`).join("")}</select>
+      <input type="date" class="due" value="${esc(due)}" title="Due">
+    </div>
+    <textarea class="noteta hidden" placeholder="Snippet — context from chat or email…">${esc(c.snippet||"")}</textarea>
+  </article>`;
+}
+
+function bindBoard(){
+  $$(".col").forEach(col => {
+    col.ondragover = e => { e.preventDefault(); col.classList.add("over"); };
+    col.ondragleave = () => col.classList.remove("over");
+    col.ondrop = async e => {
+      e.preventDefault(); col.classList.remove("over");
+      if(!dragId) return;
+      await moveCard(dragId, col.dataset.col);
+    };
+  });
+  $$(".card").forEach(el => {
+    const id = el.dataset.id;
+    const card = cards.find(c => c.id===id);
+    if(!card) return;
+    el.ondragstart = () => { dragId = id; el.classList.add("dragging"); };
+    el.ondragend = () => { dragId = null; el.classList.remove("dragging"); };
+    el.querySelector(".chk").onchange = () => completeCard(card);
+    el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
+    el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
+    el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
+    el.querySelector(".due").onchange = e => patchCard(id, { due_on: e.target.value || null });
+    const note = el.querySelector(".noteta");
+    el.querySelector(".note-toggle").onclick = () => {
+      note.classList.toggle("hidden");
+      if(!note.classList.contains("hidden")) note.focus();
+    };
+    note.onblur = () => {
+      const v = note.value.trim();
+      if(v !== (card.snippet||"")) patchCard(id, { snippet:v });
+    };
+  });
+}
+
+async function patchCard(id, fields){
+  if(!sb) return;
+  const payload = Object.assign({ updated_at: isoNow() }, fields);
+  const { error } = await sb.from("ops_cards").update(payload).eq("id", id);
+  if(error){ setStatus("Update failed: "+error.message, true); return; }
+  const i = cards.findIndex(c => c.id===id);
+  if(i>=0) cards[i] = Object.assign({}, cards[i], payload);
+  renderBoard();
+}
+
+async function moveCard(id, column_key){
+  const card = cards.find(c => c.id===id);
+  if(!card || card.column_key===column_key) return;
+  const siblings = openCards().filter(c => c.column_key===column_key);
+  const nextSort = siblings.length ? Math.max(...siblings.map(c => c.sort||0)) + 1 : 0;
+  const fields = { column_key, sort: nextSort };
+  if(column_key==="sydney") fields.owner = "sydney";
+  if(column_key==="needs-you") fields.owner = "chris";
+  await patchCard(id, fields);
+}
+
+async function completeCard(card){
+  await patchCard(card.id, { done_at: isoNow(), done_by: actor });
+  setStatus("Moved to Done.");
+}
+
+async function reopenCard(id){
+  await patchCard(id, { done_at: null, done_by: null });
+  setStatus("Restored to the board.");
+}
+
+function parseAdd(raw){
+  const q = (raw||"").trim();
+  if(!q) return null;
+  let m, title=q, project=$("#addProject").value, owner=$("#addOwner").value, column_key=$("#addColumn").value, source="chat";
+
+  const projWord = "(studio\\s*pod|studio-pod|cbp|personal|business)";
+  const colWord = "(needs\\s*you|today|this\\s*week|sydney(?:\\s*owns)?)";
+  if(m = q.match(new RegExp("^\\s*add\\s+"+projWord+"\\s+"+colWord+":?\\s*(.+)","i"))){
+    project = normProject(m[1]); column_key = normColumn(m[2]); title = m[3].trim();
+  } else if(m = q.match(new RegExp("^\\s*add\\s+"+colWord+":?\\s*(.+)","i"))){
+    column_key = normColumn(m[1]); title = m[2].trim();
+  } else if(m = q.match(new RegExp("^\\s*add\\s+"+projWord+"\\s+to-?do:?\\s*(.+)","i"))){
+    project = normProject(m[1]); title = m[2].trim();
+  } else if(m = q.match(/^\s*add\s+(?:a\s+)?(personal|business|studio\s*pod)\s+to-?do:?\s*(.+)/i)){
+    project = normProject(m[1]); title = m[2].trim();
+  } else if(m = q.match(/^\s*add\s+to-?do:?\s*(.+)/i)){
+    title = m[1].trim(); source = "todo";
+  } else if(m = q.match(/^\s*sydney(?:\s+owns)?:?\s*(.+)/i)){
+    column_key = "sydney"; owner = "sydney"; title = m[1].trim();
+  } else if(m = q.match(/^\s*needs\s+you:?\s*(.+)/i)){
+    column_key = "needs-you"; owner = "chris"; title = m[1].trim();
+  } else if(m = q.match(/^\s*today:?\s*(.+)/i)){
+    column_key = "today"; title = m[1].trim();
+  } else if(m = q.match(/^\s*this\s+week:?\s*(.+)/i)){
+    column_key = "this-week"; title = m[1].trim();
+  }
+
+  if(column_key==="sydney") owner = "sydney";
+  if(column_key==="needs-you") owner = "chris";
+  return { title, project, owner, column_key, source };
+}
+function normProject(s){
+  s = String(s||"").toLowerCase().replace(/\s+/g,"-");
+  if(s==="studio-pod" || s==="business") return "studio-pod";
+  if(s==="cbp") return "cbp";
+  return "personal";
+}
+function normColumn(s){
+  s = String(s||"").toLowerCase().replace(/\s+/g,"-");
+  if(s.indexOf("need")===0) return "needs-you";
+  if(s.indexOf("today")===0) return "today";
+  if(s.indexOf("this")===0) return "this-week";
+  return "sydney";
+}
+
+async function addFromBar(){
+  const raw = $("#addTitle").value.trim();
+  if(!raw) return;
+  const parsed = parseAdd(raw);
+  const due = $("#addDue").value || null;
+  await createCard({
+    title: parsed.title,
+    snippet: "",
+    project: parsed.project,
+    column_key: parsed.column_key,
+    owner: parsed.owner,
+    due_on: due,
+    source: parsed.source || "chat"
+  });
+  $("#addTitle").value = "";
+}
+
+async function createCard(fields){
+  if(!sb){ setStatus("Not signed in.", true); return null; }
+  const siblings = openCards().filter(c => c.column_key===fields.column_key);
+  const sort = siblings.length ? Math.max(...siblings.map(c => c.sort||0)) + 1 : 0;
+  const row = {
+    title: fields.title,
+    snippet: fields.snippet || "",
+    project: fields.project,
+    column_key: fields.column_key,
+    owner: fields.owner,
+    due_on: fields.due_on || null,
+    source: fields.source || "chat",
+    source_ref: fields.source_ref || null,
+    sort,
+    done_at: null,
+    done_by: null,
+    updated_at: isoNow()
+  };
+  const { data, error } = await sb.from("ops_cards").insert(row).select("*").single();
+  if(error){ setStatus("Could not add card: "+error.message, true); return null; }
+  cards.push(data);
+  setStatus("Added.");
+  renderBoard();
+  return data;
+}
+
+$$(".filters .chip").forEach(ch => ch.onclick = () => {
+  projectFilter = ch.dataset.project || "";
+  $$(".filters .chip").forEach(x => x.classList.toggle("on", x===ch));
+  renderBoard();
+});
+
+$("#addBtn").onclick = addFromBar;
+$("#addTitle").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); addFromBar(); } };
+$("#loginBtn").onclick = signInPassword;
+$("#magicBtn").onclick = sendMagicLink;
+$("#loginPassword").onkeydown = e => { if(e.key==="Enter") signInPassword(); };
+$("#signOutBtn").onclick = signOut;
+
+function renderDrawer(){
+  const items = doneCards();
+  let panel = $("#doneDrawer");
+  if(!panel){
+    const back = document.createElement("div");
+    back.className = "drawer-back";
+    back.id = "doneBack";
+    back.onclick = closeDrawer;
+    const d = document.createElement("aside");
+    d.className = "drawer";
+    d.id = "doneDrawer";
+    document.body.appendChild(back);
+    document.body.appendChild(d);
+    panel = d;
+  }
+  panel.innerHTML = `<h3>Done</h3><div class="sub">Finished cards leave the board. Restore one if it came back.</div>` +
+    (items.length ? items.map(c => `<div class="done-item">
+      <div class="t">${esc(c.title)}</div>
+      <div class="m">${esc(PROJECTS[c.project]||c.project)} · ${esc(OWNERS[c.done_by]||c.done_by||"")} · ${c.done_at?new Date(c.done_at).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):""}</div>
+      <button class="btn tiny ghost" data-reopen="${esc(c.id)}" style="margin-top:8px">Restore</button>
+    </div>`).join("") : `<div class="empty">Nothing completed yet.</div>`);
+  panel.querySelectorAll("[data-reopen]").forEach(b => b.onclick = () => reopenCard(b.dataset.reopen));
+}
+function openDrawer(){ drawerOpen = true; renderDrawer(); }
+function closeDrawer(){
+  drawerOpen = false;
+  const a = $("#doneDrawer"), b = $("#doneBack");
+  if(a) a.remove(); if(b) b.remove();
+}
+$("#doneBtn").onclick = () => drawerOpen ? closeDrawer() : openDrawer();
+
+let msalApp = null;
+function initMsal(){
+  if(msalApp) return true;
+  if(!(window.msal && msal.PublicClientApplication)) return false;
+  msalApp = new msal.PublicClientApplication({
+    auth:{ clientId:MS_CLIENT_ID, authority:"https://login.microsoftonline.com/common", redirectUri:MS_REDIRECT },
+    cache:{ cacheLocation:"localStorage" }
+  });
+  return true;
+}
+async function msGraph(path, token){
+  const r = await fetch("https://graph.microsoft.com/v1.0"+path, { headers:{ Authorization:"Bearer "+token } });
+  if(!r.ok) throw new Error("Graph "+r.status);
+  return r.json();
+}
+function guessProject(name){
+  const n = (name||"").toLowerCase();
+  if(/studio|pod|franchise|lead|deal|planner/.test(n)) return "studio-pod";
+  if(/cbp|photo|wedding|portrait|client|shoot/.test(n)) return "cbp";
+  return "personal";
+}
+function guessColumn(task){
+  const due = (task.dueDateTime && task.dueDateTime.dateTime) ? task.dueDateTime.dateTime.slice(0,10) : "";
+  if(!due) return "this-week";
+  const t = new Date(); t.setHours(0,0,0,0);
+  const d = new Date(due+"T00:00");
+  const diff = (d - t) / 86400000;
+  if(diff < 0) return "needs-you";
+  if(diff === 0) return "today";
+  if(d <= new Date(startOfWeek(t).getTime() + 7*86400000)) return "this-week";
+  return "this-week";
+}
+function showConnectTodo(detail){
+  const wrap = document.createElement("div");
+  wrap.className = "modal";
+  wrap.innerHTML = `<div class="box"><h3>Connect To Do</h3>
+    <div class="msub">Import uses the same Microsoft sign-in already set up on the morning dashboard. It is not a fake sync.</div>
+    <div class="connect">${esc(detail)}</div>
+    <div class="macts"><button class="btn tiny ghost" id="todoClose">Close</button></div></div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector("#todoClose").onclick = () => wrap.remove();
+}
+async function msImportFlow(){
+  if(!MS_CLIENT_ID){
+    showConnectTodo("Microsoft To Do is not configured on this site yet.");
+    return;
+  }
+  if(!MS_LIVE){
+    showConnectTodo("To Do import is wired, but Microsoft only accepts the live GitHub Pages address. Open the published Ops page, then try Import To Do.");
+    return;
+  }
+  if(!initMsal()){
+    showConnectTodo("Microsoft sign-in is still loading. Wait a moment and try again on the live site.");
+    return;
+  }
+  try{
+    const login = await msalApp.loginPopup({ scopes:["Tasks.Read"], prompt:"select_account" });
+    let tok;
+    try{ tok = await msalApp.acquireTokenSilent({ scopes:["Tasks.Read"], account:login.account }); }
+    catch(_){ tok = await msalApp.acquireTokenPopup({ scopes:["Tasks.Read"] }); }
+    const token = tok.accessToken;
+    const lists = await msGraph("/me/todo/lists", token);
+    const data = [];
+    for(const l of (lists.value||[])){
+      const t = await msGraph("/me/todo/lists/"+l.id+"/tasks?$top=100&$filter="+encodeURIComponent("status ne 'completed'"), token);
+      data.push({
+        name: l.displayName || "List",
+        tasks: (t.value||[]).map(x => ({
+          title: x.title || "(untitled)",
+          snippet: (x.body && x.body.content) ? x.body.content.replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim() : "",
+          due: (x.dueDateTime && x.dueDateTime.dateTime) ? x.dueDateTime.dateTime.slice(0,10) : "",
+          source_ref: x.id || null,
+          column_key: guessColumn(x)
+        }))
+      });
+    }
+    showImportPanel(data);
+  }catch(e){
+    showConnectTodo("Microsoft import could not finish: "+(e && e.message ? e.message : e)+". If the popup was blocked, allow it and try again.");
+  }
+}
+function showImportPanel(data){
+  const total = data.reduce((s,l)=>s+l.tasks.length,0);
+  const wrap = document.createElement("div");
+  wrap.className = "modal";
+  wrap.innerHTML = `<div class="box"><h3>Import from Microsoft To Do</h3>
+    <div class="msub">${total} open task${total!==1?"s":""} across ${data.length} list${data.length!==1?"s":""}. Choose a project for each list. Due dates decide Today / This week / Needs you.</div>
+    <div id="maprows"></div>
+    <div class="macts">
+      <button class="btn tiny ghost" id="impCancel">Cancel</button>
+      <button class="btn tiny" id="impGo">Import</button>
+    </div></div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector("#maprows").innerHTML = data.map((l,i)=>`<div class="maprow"><div class="mn">${esc(l.name)} <small>${l.tasks.length} open</small></div>
+    <select data-i="${i}">
+      <option value="studio-pod"${guessProject(l.name)==="studio-pod"?" selected":""}>Studio Pod</option>
+      <option value="cbp"${guessProject(l.name)==="cbp"?" selected":""}>CBP</option>
+      <option value="personal"${guessProject(l.name)==="personal"?" selected":""}>Personal</option>
+      <option value="skip">Skip</option>
+    </select></div>`).join("");
+  wrap.querySelector("#impCancel").onclick = () => wrap.remove();
+  wrap.querySelector("#impGo").onclick = async () => {
+    let n = 0, skipped = 0;
+    const refs = new Set(cards.map(c => c.source_ref).filter(Boolean));
+    for(const s of wrap.querySelectorAll("select")){
+      const list = data[+s.dataset.i];
+      if(s.value==="skip") continue;
+      for(const t of list.tasks){
+        if(t.source_ref && refs.has(t.source_ref)){ skipped++; continue; }
+        const row = await createCard({
+          title: t.title,
+          snippet: t.snippet,
+          project: s.value,
+          column_key: t.column_key,
+          owner: "chris",
+          due_on: t.due || null,
+          source: "todo",
+          source_ref: t.source_ref
+        });
+        if(row){ n++; if(t.source_ref) refs.add(t.source_ref); }
+      }
+    }
+    wrap.remove();
+    setStatus("Imported "+n+" task"+(n!==1?"s":"")+(skipped?" · "+skipped+" already on the board":"")+".");
+  };
+}
+$("#msImport").onclick = msImportFlow;
+
+async function boot(){
+  if(!sb){
+    $("#boot").textContent = "Could not load the Supabase library.";
+    return;
+  }
+  const { data:{ session } } = await sb.auth.getSession();
+  sb.auth.onAuthStateChange((_e, s) => { if(s && !currentUser) onSignedIn(s); });
+  if(session) onSignedIn(session); else showLogin();
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden && currentUser) loadCards(); });
+setInterval(() => { if(currentUser) loadCards(); }, 45000);
+boot();
+</script>
+</body>
+</html>

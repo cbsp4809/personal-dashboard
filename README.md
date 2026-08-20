@@ -5,6 +5,9 @@ email, goals, an AI assistant, and automated report briefs. Styled to match the
 Chris Bailey Photography brand (fine-art editorial — serif wordmark, slate/navy
 palette on a light-beige canvas).
 
+A separate **Ops board** (`ops.html`) sits beside it — Chris and Sydney’s
+shared work, persisted in Supabase — without replacing this morning page.
+
 ## Live site
 
 Deploys automatically to **GitHub Pages** on every push to `main`
@@ -14,14 +17,46 @@ Pages is enabled.
 ## Structure
 
 ```
-index.html   # the whole dashboard — self-contained (HTML + CSS + JS inline)
+index.html   # morning dashboard — self-contained (HTML + CSS + JS inline)
+ops.html     # Ops board (Chris & Sydney) — separate page, same GitHub Pages site
 README.md
 .gitignore
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
 ```
 
+The morning dashboard stays the daily command center. Ops is a second page, not
+a rewrite of `index.html`. After deploy it lives at `/ops.html` (or
+`/personal-dashboard/ops.html` on the GitHub Pages project URL).
+
 Kept as one file on purpose while it's a single page. When it grows past that,
 split into `/css`, `/js`, and per-module partials.
+
+## Ops board (`ops.html`)
+
+A four-column board for work Chris and Sydney share:
+
+- **Needs you** — waiting on Chris
+- **Today** — the day's focus (the morning dashboard's "My Day" idea)
+- **This week** — parked for the next few days
+- **Sydney owns** — cards Sydney writes and can complete
+
+Cards persist in Supabase table `public.ops_cards` on the same Studio Pod
+project Chris already signs into (`daddiljpnhfuxcdqsulg`). Sign in with that
+account (password or magic link). Do not invent extra columns; Sydney (and
+anyone writing from chat/email) should insert/update rows on `ops_cards`.
+
+Each card has a title, optional snippet, project tag (`studio-pod` / `cbp` /
+`personal`), owner (`chris` / `sydney`), optional due date, and a source
+(`chat` / `email` / `todo` / `calendar`). Completing a card sets `done_at` /
+`done_by` and moves it into the Done drawer.
+
+**Import To Do** reuses the Microsoft MSAL client already on `index.html`. On
+the live GitHub Pages origin it imports open tasks as cards. Off that origin
+it shows a clear "connect To Do" state instead of faking a sync.
+
+If a magic-link email does not return to this page, add
+`https://cbsp4809.github.io/personal-dashboard/ops.html` to the Supabase Auth
+redirect allow-list (password sign-in works without that).
 
 ## Local preview
 
@@ -41,6 +76,8 @@ python3 -m http.server 8000   # then visit http://localhost:8000
   run inside Cowork.
 - **Automated Reports** — on-demand briefs (e.g. photo-booth market pulse).
 - To-dos, goals, and gratitude **persist in the browser** (localStorage).
+- **Ops board** (`ops.html`) — shared Chris/Sydney columns stored in
+  `ops_cards` on the Studio Pod Supabase project. Linked from the masthead.
 
 ## Roadmap — making it live
 
