@@ -36,11 +36,12 @@ split into `/css`, `/js`, and per-module partials.
 
 ## Ops board (`ops.html`)
 
-A four-column board for work Chris and Sydney share:
+A five-column board for work Chris and Sydney share:
 
 - **Needs you** — waiting on Chris
 - **Today** — the day's focus (the morning dashboard's "My Day" idea)
 - **This week** — parked for the next few days
+- **Later** — the long list outside this week
 - **Sydney owns** — cards Sydney writes and can complete
 
 Cards persist in Supabase table `public.ops_cards` on the same Studio Pod
@@ -53,8 +54,18 @@ Each card has a title, optional snippet, project tag (`studio-pod` / `cbp` /
 (`chat` / `email` / `todo` / `calendar`). Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
 
-A star on the add bar (and on each card) sends work to **Today** in one tap.
-Unstarring a Today card parks it in This week. The column dropdown stays.
+The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
+Needs you, Today, This week, and Later before a quiet Sydney owns column.
+Sydney sees Sydney owns first, then cards assigned to her in other columns.
+
+Intake is a sticky chat-style composer at the bottom. It loosely recognizes
+owner, project, and timeline words in a dictated or typed sentence, then shows
+what it parsed. Unsaid values default to the current person, Unfiled, and Today
+(Chris) or Sydney owns (Sydney). The standard iOS keyboard dictation works in
+the text field; browsers with Web Speech also get direct microphone input.
+
+Each card has a one-tap star for **Today**. Unstarring a Today card parks it in
+This week. The card column dropdown stays.
 
 Landing a card on **Sydney owns** (create, drag, or dropdown — not owner-only
 changes) writes `ops_events` (`event = moved_to_sydney`) so Sydney can poll
