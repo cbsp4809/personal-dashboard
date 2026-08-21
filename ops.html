@@ -462,7 +462,9 @@ function renderBoard(){
         .map(key => COLUMNS.find(col => col.key===key))
         .filter(col => col && (col.key==="sydney" || open.some(c => c.column_key===col.key && c.owner==="sydney")));
   root.innerHTML = ordered.map(col => {
-    const list = open.filter(c => c.column_key===col.key && (actor==="chris" || col.key==="sydney" || c.owner==="sydney"));
+    const list = open
+      .filter(c => c.column_key===col.key && (actor==="chris" || col.key==="sydney" || c.owner==="sydney"))
+      .sort((a,b) => (Number(a.sort)||0) - (Number(b.sort)||0) || String(a.created_at).localeCompare(String(b.created_at)));
     const body = list.length
       ? list.map(cardHTML).join("")
       : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
@@ -479,11 +481,12 @@ function renderBoard(){
 function cardHTML(c){
   const due = c.due_on || "";
   const src = SOURCES[c.source] || c.source || "chat";
+  const starred = c.column_key==="needs-you";
   return `<article class="card" draggable="true" data-id="${esc(c.id)}">
     <div class="card-top">
       <input type="checkbox" class="chk" title="Mark done">
       <div class="title">${esc(c.title)}</div>
-      <button type="button" class="star-btn card-star${c.column_key==="today"?" on":""}" draggable="false" title="${c.column_key==="today"?"Remove from Today":"Move to Today"}" aria-label="${c.column_key==="today"?"Remove from Today":"Move to Today"}" aria-pressed="${c.column_key==="today"?"true":"false"}">${c.column_key==="today"?"★":"☆"}</button>
+      <button type="button" class="star-btn card-star${starred?" on":""}" draggable="false" title="${starred?"Move to Today":"Move to Needs you"}" aria-label="${starred?"Move to Today":"Move to Needs you"}" aria-pressed="${starred?"true":"false"}">${starred?"★":"☆"}</button>
     </div>
     ${c.snippet ? `<div class="snippet">${esc(c.snippet)}</div>` : ""}
     <div class="meta">
@@ -522,7 +525,7 @@ function bindBoard(){
     el.querySelector(".chk").onchange = () => completeCard(card);
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
-    star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleToday(card); };
+    star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
@@ -549,11 +552,15 @@ async function patchCard(id, fields){
   renderBoard();
 }
 
-async function moveCard(id, column_key){
+async function moveCard(id, column_key, options){
   const card = cards.find(c => c.id===id);
   if(!card || card.column_key===column_key) return;
   const siblings = openCards().filter(c => c.column_key===column_key);
-  const nextSort = siblings.length ? Math.max(...siblings.map(c => c.sort||0)) + 1 : 0;
+  const siblingSorts = siblings.map(c => Number(c.sort)||0);
+  const atTop = options && options.atTop;
+  const nextSort = siblingSorts.length
+    ? (atTop ? Math.min(...siblingSorts) - 1 : Math.max(...siblingSorts) + 1)
+    : 0;
   const fields = { column_key, sort: nextSort };
   if(column_key==="sydney") fields.owner = "sydney";
   if(column_key==="needs-you") fields.owner = "chris";
@@ -564,10 +571,10 @@ async function moveCard(id, column_key){
   }
 }
 
-async function toggleToday(card){
+async function toggleNeedsYou(card){
   if(!card) return;
-  if(card.column_key==="today") await moveCard(card.id, "this-week");
-  else await moveCard(card.id, "today");
+  if(card.column_key==="needs-you") await moveCard(card.id, "today");
+  else await moveCard(card.id, "needs-you", { atTop:true });
 }
 
 async function notifySydneyOwns(card){
