@@ -24,6 +24,7 @@ icons/              # original Ops mark (Apple 180, manifest 192/512)
 README.md
 .gitignore
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
+sql/ops_events.sql             # Ops notify table (Sydney owns pings)
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
@@ -51,6 +52,14 @@ Each card has a title, optional snippet, project tag (`studio-pod` / `cbp` /
 `personal`), owner (`chris` / `sydney`), optional due date, and a source
 (`chat` / `email` / `todo` / `calendar`). Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
+
+A star on the add bar (and on each card) sends work to **Today** in one tap.
+Unstarring a Today card parks it in This week. The column dropdown stays.
+
+Landing a card on **Sydney owns** (create, drag, or dropdown — not owner-only
+changes) writes `ops_events` (`event = moved_to_sydney`) so Sydney can poll
+without a webhook secret in the page. Apply `sql/ops_events.sql` on the Studio
+Pod project if that table is not there yet.
 
 **Import To Do** reuses the Microsoft MSAL client already on `index.html`. On
 the live GitHub Pages origin it imports open tasks as cards. Off that origin

@@ -100,6 +100,10 @@ a{color:var(--brass)}
 .addbar input[type="text"]{flex:1;min-width:140px;background:transparent;border:none;padding:8px 10px;font-size:14.5px;}
 .addbar input[type="text"]:focus{outline:none;}
 .addbar input[type="date"],.addbar select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:12.5px;color:var(--soft);}
+.add-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.star-btn{appearance:none;background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:10px;width:40px;height:40px;min-width:40px;min-height:40px;padding:0;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:20px;line-height:1;-webkit-tap-highlight-color:transparent;}
+.star-btn:hover{color:var(--brass);border-color:rgba(196,165,116,.4);}
+.star-btn.on{color:var(--brass);background:var(--brass-soft);border-color:rgba(196,165,116,.45);}
 .filters{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 18px;}
 .chip{background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;letter-spacing:.04em;}
 .chip.on{background:var(--brass-soft);border-color:transparent;color:var(--ink);}
@@ -123,7 +127,9 @@ a{color:var(--brass)}
   .addbar{flex-wrap:wrap;min-width:0;width:100%;padding:10px;gap:8px;}
   .addbar input[type="text"]{flex:1 1 100%;min-width:0;min-height:44px;font-size:16px;}
   .addbar select,.addbar input[type="date"]{flex:1 1 calc(50% - 6px);min-width:0;min-height:44px;font-size:16px;}
-  .addbar .btn{flex:1 1 100%;min-height:44px;padding:12px 16px;font-size:15px;}
+  .add-actions{flex:1 1 100%;}
+  .add-actions .btn{flex:1;min-height:44px;padding:12px 16px;font-size:15px;}
+  .add-actions .star-btn,.card-star{width:44px;height:44px;min-width:44px;min-height:44px;font-size:22px;}
   .toolbar > .btn{min-height:44px;width:100%;}
   .chip{padding:8px 14px;min-height:36px;}
   .actor button{padding:8px 14px;min-height:36px;}
@@ -259,7 +265,10 @@ a{color:var(--brass)}
           <option value="sydney">Sydney owns</option>
         </select>
         <input id="addDue" type="date" title="Due date">
-        <button class="btn tiny" id="addBtn">Add</button>
+        <div class="add-actions">
+          <button class="btn tiny" id="addBtn">Add</button>
+          <button type="button" class="star-btn" id="addTodayBtn" title="Add to Today" aria-label="Add to Today">☆</button>
+        </div>
       </div>
       <button class="btn tiny ghost" id="msImport">Import To Do</button>
       <button class="btn tiny ghost" id="doneBtn">Done <span id="doneCount">0</span></button>
@@ -453,6 +462,7 @@ function cardHTML(c){
     <div class="card-top">
       <input type="checkbox" class="chk" title="Mark done">
       <div class="title">${esc(c.title)}</div>
+      <button type="button" class="star-btn card-star${c.column_key==="today"?" on":""}" draggable="false" title="${c.column_key==="today"?"Remove from Today":"Move to Today"}" aria-label="${c.column_key==="today"?"Remove from Today":"Move to Today"}" aria-pressed="${c.column_key==="today"?"true":"false"}">${c.column_key==="today"?"★":"☆"}</button>
     </div>
     ${c.snippet ? `<div class="snippet">${esc(c.snippet)}</div>` : ""}
     <div class="meta">
@@ -489,6 +499,9 @@ function bindBoard(){
     el.ondragstart = () => { dragId = id; el.classList.add("dragging"); };
     el.ondragend = () => { dragId = null; el.classList.remove("dragging"); };
     el.querySelector(".chk").onchange = () => completeCard(card);
+    const star = el.querySelector(".card-star");
+    star.onpointerdown = e => e.stopPropagation();
+    star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleToday(card); };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
@@ -524,6 +537,30 @@ async function moveCard(id, column_key){
   if(column_key==="sydney") fields.owner = "sydney";
   if(column_key==="needs-you") fields.owner = "chris";
   await patchCard(id, fields);
+  if(column_key==="sydney"){
+    const updated = cards.find(c => c.id===id) || Object.assign({}, card, fields);
+    await notifySydneyOwns(updated);
+  }
+}
+
+async function toggleToday(card){
+  if(!card) return;
+  if(card.column_key==="today") await moveCard(card.id, "this-week");
+  else await moveCard(card.id, "today");
+}
+
+async function notifySydneyOwns(card){
+  if(!sb || !card || !card.id || card.column_key!=="sydney") return;
+  const { error } = await sb.from("ops_events").insert({
+    card_id: card.id,
+    event: "moved_to_sydney",
+    payload: {
+      title: card.title || "",
+      snippet: card.snippet || "",
+      project: card.project || ""
+    }
+  });
+  if(error) setStatus("Card saved. Could not record Sydney ping: "+error.message, true);
 }
 
 async function completeCard(card){
@@ -604,6 +641,23 @@ async function addFromBar(){
   $("#addTitle").value = "";
 }
 
+async function addToTodayFromBar(){
+  const raw = $("#addTitle").value.trim();
+  if(!raw) return;
+  const parsed = parseAdd(raw);
+  const due = $("#addDue").value || null;
+  await createCard({
+    title: parsed.title,
+    snippet: "",
+    project: $("#addProject").value,
+    column_key: "today",
+    owner: "chris",
+    due_on: due,
+    source: parsed.source || "chat"
+  });
+  $("#addTitle").value = "";
+}
+
 async function createCard(fields){
   if(!sb){ setStatus("Not signed in.", true); return null; }
   const siblings = openCards().filter(c => c.column_key===fields.column_key);
@@ -627,6 +681,7 @@ async function createCard(fields){
   cards.push(data);
   setStatus("Added.");
   renderBoard();
+  if(data.column_key==="sydney") await notifySydneyOwns(data);
   return data;
 }
 
@@ -637,6 +692,7 @@ $$(".filters .chip").forEach(ch => ch.onclick = () => {
 });
 
 $("#addBtn").onclick = addFromBar;
+$("#addTodayBtn").onclick = addToTodayFromBar;
 $("#addTitle").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); addFromBar(); } };
 $("#loginBtn").onclick = signInPassword;
 $("#magicBtn").onclick = sendMagicLink;
