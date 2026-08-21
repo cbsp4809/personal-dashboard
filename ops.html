@@ -77,7 +77,7 @@ a{color:var(--brass)}
 .login-foot a{color:var(--soft);}
 .install-hint{margin-top:10px;font-size:12px;line-height:1.4;color:var(--muted);}
 
-#app{display:none;min-height:100vh;}
+#app{display:none;min-height:100vh;padding-bottom:calc(92px + env(safe-area-inset-bottom, 0px));}
 .top{padding:22px 28px 0;max-width:1720px;margin:0 auto;}
 .mast{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid var(--line);}
 .brand .kicker{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);margin-bottom:6px;}
@@ -95,40 +95,63 @@ a{color:var(--brass)}
 .actor button{background:transparent;border:none;color:var(--muted);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;}
 .actor button.on{background:var(--brass-soft);color:var(--ink);}
 
-.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0 6px;}
-.addbar{flex:1;min-width:280px;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;}
-.addbar input[type="text"]{flex:1;min-width:140px;background:transparent;border:none;padding:8px 10px;font-size:14.5px;}
-.addbar input[type="text"]:focus{outline:none;}
-.addbar input[type="date"],.addbar select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 8px;font-size:12.5px;color:var(--soft);}
-.filters{display:flex;gap:6px;flex-wrap:wrap;padding:8px 0 18px;}
+.viewbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 12px;}
+.viewbar-label{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
+.viewbar .actor button{min-width:92px;padding:9px 18px;font-size:13px;}
+.below-board{max-width:1720px;margin:0 auto;padding:0 28px 40px;}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:18px 0 4px;border-top:1px solid var(--line);}
+.star-btn{appearance:none;background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:10px;width:40px;height:40px;min-width:40px;min-height:40px;padding:0;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:20px;line-height:1;-webkit-tap-highlight-color:transparent;}
+.star-btn:hover{color:var(--brass);border-color:rgba(196,165,116,.4);}
+.star-btn.on{color:var(--brass);background:var(--brass-soft);border-color:rgba(196,165,116,.45);}
+.filters{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0 8px;}
 .chip{background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;letter-spacing:.04em;}
 .chip.on{background:var(--brass-soft);border-color:transparent;color:var(--ink);}
 .status{font-size:12.5px;color:var(--muted);min-height:1.2em;padding-bottom:8px;}
 .status.err{color:var(--over);}
 
-.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 48px;max-width:1720px;margin:0 auto;}
+.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1720px;margin:0 auto;}
+.col.deemphasized{opacity:.58;}
+.composer{position:fixed;z-index:30;left:0;right:0;bottom:0;background:rgba(18,17,15,.96);border-top:1px solid var(--line-strong);padding:8px max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+.composer-inner{max-width:900px;margin:0 auto;}
+.composer-confirm{height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--brass);font-size:11.5px;padding:0 6px 3px;}
+.composer-row{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line-strong);border-radius:18px;padding:6px;}
+.composer-row:focus-within{border-color:rgba(196,165,116,.55);}
+.composer input{flex:1;min-width:0;background:transparent;border:0;outline:0;padding:8px 6px;font-size:16px;}
+.composer button{width:44px;height:44px;min-width:44px;border-radius:14px;border:0;display:inline-flex;align-items:center;justify-content:center;}
+.mic-btn{background:transparent;color:var(--muted);font-size:19px;}
+.mic-btn.listening{color:var(--over);background:rgba(201,122,106,.12);}
+.send-btn{background:var(--brass);color:#1a160f;font-size:20px;font-weight:700;}
+.send-btn:disabled{opacity:.55;cursor:wait;}
 @media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:700px){
-  .board{grid-template-columns:1fr;padding:0 max(16px, env(safe-area-inset-right, 0px)) max(40px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));}
+  #app{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px));}
+  .board{grid-template-columns:1fr;padding:0 max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));}
+  .below-board{padding:0 max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));}
   .top{padding:max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));}
-  .mast{flex-direction:column;}
-  .mast-right{align-items:flex-start;text-align:left;}
+  .mast{align-items:center;padding-bottom:12px;}
+  .mast-right{align-items:flex-end;text-align:right;}
+  .clock{display:none;}
   .who{justify-content:flex-start;}
-  .brand h1{font-size:28px;}
+  .who #userLabel{display:none;}
+  .brand h1{font-size:27px;}
+  .brand .navlinks{display:none;}
+  .viewbar{padding:12px 0 10px;}
+  .viewbar-label{display:none;}
+  .viewbar .actor{width:100%;}
+  .viewbar .actor button{flex:1;min-height:44px;font-size:14px;}
   .login-card{padding:28px 20px 22px;}
   .login-card h1{font-size:30px;}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
-  .toolbar{flex-direction:column;align-items:stretch;}
-  .addbar{flex-wrap:wrap;min-width:0;width:100%;padding:10px;gap:8px;}
-  .addbar input[type="text"]{flex:1 1 100%;min-width:0;min-height:44px;font-size:16px;}
-  .addbar select,.addbar input[type="date"]{flex:1 1 calc(50% - 6px);min-width:0;min-height:44px;font-size:16px;}
-  .addbar .btn{flex:1 1 100%;min-height:44px;padding:12px 16px;font-size:15px;}
-  .toolbar > .btn{min-height:44px;width:100%;}
+  .toolbar .btn{min-height:44px;flex:1;}
+  .card-star{width:44px;height:44px;min-width:44px;min-height:44px;font-size:22px;}
   .chip{padding:8px 14px;min-height:36px;}
   .actor button{padding:8px 14px;min-height:36px;}
   .btn.tiny{padding:10px 14px;min-height:44px;}
   .linkish{min-height:44px;padding:12px 8px;}
+  .board .col{min-height:0;}
+  .col.deemphasized{opacity:.46;}
+  .composer-confirm{font-size:11px;}
 }
 .col{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;min-height:420px;display:flex;flex-direction:column;}
 .col.over{outline:1px dashed var(--brass);}
@@ -229,38 +252,22 @@ a{color:var(--brass)}
         </div>
         <div class="who">
           <span id="userLabel">Signed in</span>
-          <div class="actor" title="Who is acting on the board">
-            <button type="button" data-actor="chris" class="on">Chris</button>
-            <button type="button" data-actor="sydney">Sydney</button>
-          </div>
           <button class="btn tiny ghost" id="signOutBtn">Sign out</button>
         </div>
       </div>
     </div>
-
-    <div class="toolbar">
-      <div class="addbar">
-        <input id="addTitle" type="text" placeholder='Add a card, or type “add to-do: call the landlord”'>
-        <select id="addProject" title="Project">
-          <option value="studio-pod">Studio Pod</option>
-          <option value="cbp">CBP</option>
-          <option value="personal">Personal</option>
-          <option value="unfiled">Unfiled</option>
-        </select>
-        <select id="addOwner" title="Owner">
-          <option value="chris">Chris</option>
-          <option value="sydney">Sydney</option>
-        </select>
-        <select id="addColumn" title="Column">
-          <option value="needs-you">Needs you</option>
-          <option value="today">Today</option>
-          <option value="this-week">This week</option>
-          <option value="later">Later</option>
-          <option value="sydney">Sydney owns</option>
-        </select>
-        <input id="addDue" type="date" title="Due date">
-        <button class="btn tiny" id="addBtn">Add</button>
+    <div class="viewbar">
+      <span class="viewbar-label">Whose board?</span>
+      <div class="actor" title="Whose work to show">
+        <button type="button" data-actor="chris" class="on">Chris</button>
+        <button type="button" data-actor="sydney">Sydney</button>
       </div>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+  <div class="below-board">
+    <div class="toolbar">
       <button class="btn tiny ghost" id="msImport">Import To Do</button>
       <button class="btn tiny ghost" id="doneBtn">Done <span id="doneCount">0</span></button>
     </div>
@@ -274,7 +281,16 @@ a{color:var(--brass)}
     <div class="status" id="status"></div>
   </div>
 
-  <div class="board" id="board"></div>
+  <div class="composer" role="region" aria-label="Add a card">
+    <div class="composer-inner">
+      <div class="composer-confirm" id="composerConfirm" aria-live="polite"></div>
+      <div class="composer-row">
+        <button type="button" class="mic-btn" id="micBtn" title="Dictate" aria-label="Dictate">🎙</button>
+        <input id="composerInput" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" placeholder="Tell Ops what to add…">
+        <button type="button" class="send-btn" id="sendBtn" title="Add card" aria-label="Add card">↑</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -366,14 +382,17 @@ function showApp(){
 
 function syncActorUI(){
   $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
-  $("#addOwner").value = actor;
-  if(actor==="sydney") $("#addColumn").value = "sydney";
+  const input = $("#composerInput");
+  if(input) input.placeholder = actor==="chris"
+    ? "Tell Ops what to add…"
+    : "Tell Ops what Sydney should pick up…";
 }
 
 $$(".actor button").forEach(b => b.onclick = () => {
   actor = b.dataset.actor;
   localStorage.setItem("ops_actor", actor);
   syncActorUI();
+  renderBoard();
 });
 
 function redirectTo(){
@@ -432,12 +451,18 @@ function renderBoard(){
   tick();
   const root = $("#board");
   const open = openCards().filter(visible);
-  root.innerHTML = COLUMNS.map(col => {
-    const list = open.filter(c => c.column_key===col.key);
+  const ordered = actor==="chris"
+    ? COLUMNS
+    : ["sydney","today","this-week","later","needs-you"]
+        .map(key => COLUMNS.find(col => col.key===key))
+        .filter(col => col && (col.key==="sydney" || open.some(c => c.column_key===col.key && c.owner==="sydney")));
+  root.innerHTML = ordered.map(col => {
+    const list = open.filter(c => c.column_key===col.key && (actor==="chris" || col.key==="sydney" || c.owner==="sydney"));
     const body = list.length
       ? list.map(cardHTML).join("")
       : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
-    return `<section class="col" data-col="${col.key}">
+    const deemphasized = actor==="chris" && col.key==="sydney";
+    return `<section class="col${deemphasized?" deemphasized":""}" data-col="${col.key}">
       <div class="col-h"><div><h2>${esc(col.label)}</h2><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
       <div class="col-body">${body}</div>
     </section>`;
@@ -453,6 +478,7 @@ function cardHTML(c){
     <div class="card-top">
       <input type="checkbox" class="chk" title="Mark done">
       <div class="title">${esc(c.title)}</div>
+      <button type="button" class="star-btn card-star${c.column_key==="today"?" on":""}" draggable="false" title="${c.column_key==="today"?"Remove from Today":"Move to Today"}" aria-label="${c.column_key==="today"?"Remove from Today":"Move to Today"}" aria-pressed="${c.column_key==="today"?"true":"false"}">${c.column_key==="today"?"★":"☆"}</button>
     </div>
     ${c.snippet ? `<div class="snippet">${esc(c.snippet)}</div>` : ""}
     <div class="meta">
@@ -489,6 +515,9 @@ function bindBoard(){
     el.ondragstart = () => { dragId = id; el.classList.add("dragging"); };
     el.ondragend = () => { dragId = null; el.classList.remove("dragging"); };
     el.querySelector(".chk").onchange = () => completeCard(card);
+    const star = el.querySelector(".card-star");
+    star.onpointerdown = e => e.stopPropagation();
+    star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleToday(card); };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
@@ -524,6 +553,30 @@ async function moveCard(id, column_key){
   if(column_key==="sydney") fields.owner = "sydney";
   if(column_key==="needs-you") fields.owner = "chris";
   await patchCard(id, fields);
+  if(column_key==="sydney"){
+    const updated = cards.find(c => c.id===id) || Object.assign({}, card, fields);
+    await notifySydneyOwns(updated);
+  }
+}
+
+async function toggleToday(card){
+  if(!card) return;
+  if(card.column_key==="today") await moveCard(card.id, "this-week");
+  else await moveCard(card.id, "today");
+}
+
+async function notifySydneyOwns(card){
+  if(!sb || !card || !card.id || card.column_key!=="sydney") return;
+  const { error } = await sb.from("ops_events").insert({
+    card_id: card.id,
+    event: "moved_to_sydney",
+    payload: {
+      title: card.title || "",
+      snippet: card.snippet || "",
+      project: card.project || ""
+    }
+  });
+  if(error) setStatus("Card saved. Could not record Sydney ping: "+error.message, true);
 }
 
 async function completeCard(card){
@@ -536,72 +589,72 @@ async function reopenCard(id){
   setStatus("Restored to the board.");
 }
 
-function parseAdd(raw){
-  const q = (raw||"").trim();
-  if(!q) return null;
-  let m, title=q, project=$("#addProject").value, owner=$("#addOwner").value, column_key=$("#addColumn").value, source="chat";
+function parseComposer(raw, currentActor){
+  let title = String(raw||"").trim();
+  if(!title) return null;
+  let owner = currentActor==="sydney" ? "sydney" : "chris";
+  let project = "unfiled";
+  let column_key = currentActor==="sydney" ? "sydney" : "today";
 
-  const projWord = "(studio\\s*pod|studio-pod|cbp|personal|business|unfiled)";
-  const colWord = "(needs\\s*you|today|this\\s*week|later|sydney(?:\\s*owns)?)";
-  if(m = q.match(new RegExp("^\\s*add\\s+"+projWord+"\\s+"+colWord+":?\\s*(.+)","i"))){
-    project = normProject(m[1]); column_key = normColumn(m[2]); title = m[3].trim();
-  } else if(m = q.match(new RegExp("^\\s*add\\s+"+colWord+":?\\s*(.+)","i"))){
-    column_key = normColumn(m[1]); title = m[2].trim();
-  } else if(m = q.match(new RegExp("^\\s*add\\s+"+projWord+"\\s+to-?do:?\\s*(.+)","i"))){
-    project = normProject(m[1]); title = m[2].trim();
-  } else if(m = q.match(/^\s*add\s+(?:a\s+)?(personal|business|studio\s*pod|unfiled)\s+to-?do:?\s*(.+)/i)){
-    project = normProject(m[1]); title = m[2].trim();
-  } else if(m = q.match(/^\s*add\s+to-?do:?\s*(.+)/i)){
-    title = m[1].trim(); source = "todo";
-  } else if(m = q.match(/^\s*sydney(?:\s+owns)?:?\s*(.+)/i)){
-    column_key = "sydney"; owner = "sydney"; title = m[1].trim();
-  } else if(m = q.match(/^\s*needs\s+you:?\s*(.+)/i)){
-    column_key = "needs-you"; owner = "chris"; title = m[1].trim();
-  } else if(m = q.match(/^\s*today:?\s*(.+)/i)){
-    column_key = "today"; title = m[1].trim();
-  } else if(m = q.match(/^\s*this\s+week:?\s*(.+)/i)){
-    column_key = "this-week"; title = m[1].trim();
-  } else if(m = q.match(/^\s*later:?\s*(.+)/i)){
-    column_key = "later"; title = m[1].trim();
-  } else if(m = q.match(/^\s*unfiled:?\s*(.+)/i)){
-    project = "unfiled"; title = m[1].trim();
+  title = title
+    .replace(/^\s*(?:please\s+)?(?:add\s+)?(?:a\s+)?(?:to[\s-]?do|task)\s*:?\s*/i, "")
+    .replace(/^\s*(?:please\s+)?add\s*:?\s*/i, "");
+
+  const take = (pattern, apply) => {
+    if(pattern.test(title)){
+      apply();
+      title = title.replace(pattern, " ");
+    }
+  };
+
+  take(/\bneeds\s+you\b/i, () => { column_key = "needs-you"; owner = "chris"; });
+  take(/\bsydney(?:\s+owns)\b/i, () => { column_key = "sydney"; owner = "sydney"; });
+  take(/\bthis\s+week\b/i, () => { column_key = "this-week"; });
+  take(/\btoday\b/i, () => { column_key = "today"; });
+  take(/\blater\b/i, () => { column_key = "later"; });
+
+  take(/\bstudio[\s-]*pod\b/i, () => { project = "studio-pod"; });
+  take(/\bcbp\b/i, () => { project = "cbp"; });
+  take(/\bpersonal\b/i, () => { project = "personal"; });
+  take(/\bunfiled\b/i, () => { project = "unfiled"; });
+  take(/\bbusiness\b/i, () => { project = "studio-pod"; });
+
+  take(/\b(?:for\s+|assign(?:ed)?\s+to\s+)?(?:sydney|you)\b/i, () => { owner = "sydney"; });
+  take(/\b(?:for\s+|assign(?:ed)?\s+to\s+)?(?:chris|me)\b/i, () => { owner = "chris"; });
+
+  title = title.replace(/\s+([,.;:!?])/g, "$1").replace(/\s{2,}/g, " ").replace(/^[\s,.;:–—-]+|[\s,.;:–—-]+$/g, "");
+  if(!title) return null;
+  return { title, project, owner, column_key, source:"chat" };
+}
+
+function confirmAdded(card){
+  const col = COLUMNS.find(c => c.key===card.column_key);
+  $("#composerConfirm").textContent = `Added “${card.title}” · ${OWNERS[card.owner]} · ${PROJECTS[card.project]} · ${col ? col.label : card.column_key}`;
+}
+
+async function sendComposer(){
+  const input = $("#composerInput");
+  const parsed = parseComposer(input.value, actor);
+  if(!parsed){
+    $("#composerConfirm").textContent = "Say what you want Ops to add.";
+    input.focus();
+    return;
   }
-
-  if(column_key==="sydney") owner = "sydney";
-  if(column_key==="needs-you") owner = "chris";
-  return { title, project, owner, column_key, source };
-}
-function normProject(s){
-  s = String(s||"").toLowerCase().replace(/\s+/g,"-");
-  if(s==="studio-pod" || s==="business") return "studio-pod";
-  if(s==="cbp") return "cbp";
-  if(s==="unfiled") return "unfiled";
-  return "personal";
-}
-function normColumn(s){
-  s = String(s||"").toLowerCase().replace(/\s+/g,"-");
-  if(s.indexOf("need")===0) return "needs-you";
-  if(s.indexOf("today")===0) return "today";
-  if(s.indexOf("this")===0) return "this-week";
-  if(s.indexOf("later")===0) return "later";
-  return "sydney";
-}
-
-async function addFromBar(){
-  const raw = $("#addTitle").value.trim();
-  if(!raw) return;
-  const parsed = parseAdd(raw);
-  const due = $("#addDue").value || null;
-  await createCard({
+  $("#sendBtn").disabled = true;
+  const row = await createCard({
     title: parsed.title,
     snippet: "",
     project: parsed.project,
     column_key: parsed.column_key,
     owner: parsed.owner,
-    due_on: due,
-    source: parsed.source || "chat"
+    due_on: null,
+    source: parsed.source
   });
-  $("#addTitle").value = "";
+  $("#sendBtn").disabled = false;
+  if(!row) return;
+  input.value = "";
+  confirmAdded(row);
+  input.focus();
 }
 
 async function createCard(fields){
@@ -627,6 +680,7 @@ async function createCard(fields){
   cards.push(data);
   setStatus("Added.");
   renderBoard();
+  if(data.column_key==="sydney") await notifySydneyOwns(data);
   return data;
 }
 
@@ -636,12 +690,51 @@ $$(".filters .chip").forEach(ch => ch.onclick = () => {
   renderBoard();
 });
 
-$("#addBtn").onclick = addFromBar;
-$("#addTitle").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); addFromBar(); } };
+$("#sendBtn").onclick = sendComposer;
+$("#composerInput").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); sendComposer(); } };
 $("#loginBtn").onclick = signInPassword;
 $("#magicBtn").onclick = sendMagicLink;
 $("#loginPassword").onkeydown = e => { if(e.key==="Enter") signInPassword(); };
 $("#signOutBtn").onclick = signOut;
+
+let speechRecognition = null;
+function setupSpeech(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const mic = $("#micBtn");
+  const input = $("#composerInput");
+  if(!SpeechRecognition){
+    mic.title = "Use the keyboard microphone to dictate";
+    mic.onclick = () => input.focus();
+    return;
+  }
+  mic.onclick = () => {
+    if(speechRecognition){
+      speechRecognition.stop();
+      return;
+    }
+    speechRecognition = new SpeechRecognition();
+    speechRecognition.lang = "en-US";
+    speechRecognition.interimResults = false;
+    speechRecognition.maxAlternatives = 1;
+    speechRecognition.onstart = () => mic.classList.add("listening");
+    speechRecognition.onresult = e => {
+      const words = e.results[0][0].transcript.trim();
+      input.value = [input.value.trim(), words].filter(Boolean).join(" ");
+      input.focus();
+    };
+    speechRecognition.onerror = () => input.focus();
+    speechRecognition.onend = () => {
+      mic.classList.remove("listening");
+      speechRecognition = null;
+    };
+    try{ speechRecognition.start(); }
+    catch(_){
+      mic.classList.remove("listening");
+      speechRecognition = null;
+      input.focus();
+    }
+  };
+}
 
 function renderDrawer(){
   const items = doneCards();
@@ -810,6 +903,7 @@ function hideInstallHintsIfStandalone(){
 
 async function boot(){
   hideInstallHintsIfStandalone();
+  setupSpeech();
   if(!sb){
     $("#boot").textContent = "Could not load the Supabase library.";
     return;
