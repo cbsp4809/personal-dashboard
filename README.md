@@ -64,8 +64,9 @@ what it parsed. Unsaid values default to the current person, Unfiled, and Today
 (Chris) or Sydney owns (Sydney). The standard iOS keyboard dictation works in
 the text field; browsers with Web Speech also get direct microphone input.
 
-Each card has a one-tap star for **Today**. Unstarring a Today card parks it in
-This week. The card column dropdown stays.
+Each card has a one-tap star for **Needs you**. Starring a card moves it to the
+top of Needs you; unstarring it moves it to Today. The card column dropdown
+stays.
 
 Landing a card on **Sydney owns** (create, drag, or dropdown — not owner-only
 changes) writes `ops_events` (`event = moved_to_sydney`) so Sydney can poll
