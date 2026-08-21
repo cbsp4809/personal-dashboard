@@ -37,6 +37,7 @@
   --needs:#d4a09a;
   --today:#c4a574;
   --week:#8fa3b0;
+  --later:#8c877c;
   --sydney:#9aaf98;
   --over:#c97a6a;
   --soon:#d4b06a;
@@ -77,7 +78,7 @@ a{color:var(--brass)}
 .install-hint{margin-top:10px;font-size:12px;line-height:1.4;color:var(--muted);}
 
 #app{display:none;min-height:100vh;}
-.top{padding:22px 28px 0;max-width:1480px;margin:0 auto;}
+.top{padding:22px 28px 0;max-width:1720px;margin:0 auto;}
 .mast{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid var(--line);}
 .brand .kicker{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);margin-bottom:6px;}
 .brand h1{font-family:var(--serif);font-weight:400;font-size:32px;margin:0;letter-spacing:-.03em;}
@@ -105,7 +106,8 @@ a{color:var(--brass)}
 .status{font-size:12.5px;color:var(--muted);min-height:1.2em;padding-bottom:8px;}
 .status.err{color:var(--over);}
 
-.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:0 28px 48px;max-width:1480px;margin:0 auto;}
+.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 48px;max-width:1720px;margin:0 auto;}
+@media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:700px){
   .board{grid-template-columns:1fr;padding:0 max(16px, env(safe-area-inset-right, 0px)) max(40px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));}
@@ -137,6 +139,8 @@ a{color:var(--brass)}
 .col[data-col="needs-you"] .col-h h2{color:var(--needs);}
 .col[data-col="today"] .col-h h2{color:var(--today);}
 .col[data-col="this-week"] .col-h h2{color:var(--week);}
+.col[data-col="later"]{background:#151310;}
+.col[data-col="later"] .col-h h2{color:var(--later);font-weight:500;}
 .col[data-col="sydney"] .col-h h2{color:var(--sydney);}
 .col-body{flex:1;padding:10px;display:flex;flex-direction:column;gap:8px;}
 .empty{color:var(--muted);font-size:13px;padding:18px 8px;text-align:center;font-family:var(--serif);font-style:italic;}
@@ -153,6 +157,7 @@ a{color:var(--brass)}
 .tag.studio-pod{color:#d8c4a0;border-color:rgba(196,165,116,.35);}
 .tag.cbp{color:#b7c6d2;border-color:rgba(143,163,176,.4);}
 .tag.personal{color:#c9c2b4;border-color:var(--line-strong);}
+.tag.unfiled{color:#b0aaa0;border-color:rgba(176,170,160,.28);}
 .duechip{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;background:rgba(255,255,255,.04);color:var(--muted);}
 .duechip.soon{color:var(--soon);background:rgba(212,176,106,.12);}
 .duechip.over{color:#fff;background:var(--over);}
@@ -240,6 +245,7 @@ a{color:var(--brass)}
           <option value="studio-pod">Studio Pod</option>
           <option value="cbp">CBP</option>
           <option value="personal">Personal</option>
+          <option value="unfiled">Unfiled</option>
         </select>
         <select id="addOwner" title="Owner">
           <option value="chris">Chris</option>
@@ -249,6 +255,7 @@ a{color:var(--brass)}
           <option value="needs-you">Needs you</option>
           <option value="today">Today</option>
           <option value="this-week">This week</option>
+          <option value="later">Later</option>
           <option value="sydney">Sydney owns</option>
         </select>
         <input id="addDue" type="date" title="Due date">
@@ -262,6 +269,7 @@ a{color:var(--brass)}
       <button class="chip" data-project="studio-pod">Studio Pod</button>
       <button class="chip" data-project="cbp">CBP</button>
       <button class="chip" data-project="personal">Personal</button>
+      <button class="chip" data-project="unfiled">Unfiled</button>
     </div>
     <div class="status" id="status"></div>
   </div>
@@ -288,9 +296,10 @@ const COLUMNS = [
   { key:"needs-you", label:"Needs you", sub:"Waiting on Chris" },
   { key:"today", label:"Today", sub:"" },
   { key:"this-week", label:"This week", sub:"Parked for the next few days" },
+  { key:"later", label:"Later", sub:"The long list — not today, not this week" },
   { key:"sydney", label:"Sydney owns", sub:"She writes these and can finish them" }
 ];
-const PROJECTS = { "studio-pod":"Studio Pod", cbp:"CBP", personal:"Personal" };
+const PROJECTS = { "studio-pod":"Studio Pod", cbp:"CBP", personal:"Personal", unfiled:"Unfiled" };
 const OWNERS = { chris:"Chris", sydney:"Sydney" };
 const SOURCES = { chat:"chat", email:"email", todo:"To Do", calendar:"calendar" };
 
@@ -427,7 +436,7 @@ function renderBoard(){
     const list = open.filter(c => c.column_key===col.key);
     const body = list.length
       ? list.map(cardHTML).join("")
-      : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":"Nothing here."}</div>`;
+      : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
     return `<section class="col" data-col="${col.key}">
       <div class="col-h"><div><h2>${esc(col.label)}</h2><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
       <div class="col-body">${body}</div>
@@ -532,15 +541,15 @@ function parseAdd(raw){
   if(!q) return null;
   let m, title=q, project=$("#addProject").value, owner=$("#addOwner").value, column_key=$("#addColumn").value, source="chat";
 
-  const projWord = "(studio\\s*pod|studio-pod|cbp|personal|business)";
-  const colWord = "(needs\\s*you|today|this\\s*week|sydney(?:\\s*owns)?)";
+  const projWord = "(studio\\s*pod|studio-pod|cbp|personal|business|unfiled)";
+  const colWord = "(needs\\s*you|today|this\\s*week|later|sydney(?:\\s*owns)?)";
   if(m = q.match(new RegExp("^\\s*add\\s+"+projWord+"\\s+"+colWord+":?\\s*(.+)","i"))){
     project = normProject(m[1]); column_key = normColumn(m[2]); title = m[3].trim();
   } else if(m = q.match(new RegExp("^\\s*add\\s+"+colWord+":?\\s*(.+)","i"))){
     column_key = normColumn(m[1]); title = m[2].trim();
   } else if(m = q.match(new RegExp("^\\s*add\\s+"+projWord+"\\s+to-?do:?\\s*(.+)","i"))){
     project = normProject(m[1]); title = m[2].trim();
-  } else if(m = q.match(/^\s*add\s+(?:a\s+)?(personal|business|studio\s*pod)\s+to-?do:?\s*(.+)/i)){
+  } else if(m = q.match(/^\s*add\s+(?:a\s+)?(personal|business|studio\s*pod|unfiled)\s+to-?do:?\s*(.+)/i)){
     project = normProject(m[1]); title = m[2].trim();
   } else if(m = q.match(/^\s*add\s+to-?do:?\s*(.+)/i)){
     title = m[1].trim(); source = "todo";
@@ -552,6 +561,10 @@ function parseAdd(raw){
     column_key = "today"; title = m[1].trim();
   } else if(m = q.match(/^\s*this\s+week:?\s*(.+)/i)){
     column_key = "this-week"; title = m[1].trim();
+  } else if(m = q.match(/^\s*later:?\s*(.+)/i)){
+    column_key = "later"; title = m[1].trim();
+  } else if(m = q.match(/^\s*unfiled:?\s*(.+)/i)){
+    project = "unfiled"; title = m[1].trim();
   }
 
   if(column_key==="sydney") owner = "sydney";
@@ -562,6 +575,7 @@ function normProject(s){
   s = String(s||"").toLowerCase().replace(/\s+/g,"-");
   if(s==="studio-pod" || s==="business") return "studio-pod";
   if(s==="cbp") return "cbp";
+  if(s==="unfiled") return "unfiled";
   return "personal";
 }
 function normColumn(s){
@@ -569,6 +583,7 @@ function normColumn(s){
   if(s.indexOf("need")===0) return "needs-you";
   if(s.indexOf("today")===0) return "today";
   if(s.indexOf("this")===0) return "this-week";
+  if(s.indexOf("later")===0) return "later";
   return "sydney";
 }
 
