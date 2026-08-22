@@ -173,9 +173,13 @@ a{color:var(--brass)}
 .col-body{flex:1;min-width:0;max-width:100%;padding:10px;display:flex;flex-direction:column;gap:8px;}
 .empty{color:var(--muted);font-size:13px;padding:18px 8px;text-align:center;font-family:var(--serif);font-style:italic;}
 
-.card{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);}
+.card{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);-webkit-touch-callout:none;}
 .card:hover{background:var(--card-hover);}
 .card.dragging{opacity:.45;}
+.card.touch-dragging{opacity:.22;}
+.card.drop-before{box-shadow:0 -3px 0 var(--brass);}
+.touch-drag-ghost{position:fixed;z-index:60;pointer-events:none;margin:0;opacity:.96;transform:scale(1.02);box-shadow:0 18px 50px rgba(0,0,0,.48);user-select:none;-webkit-user-select:none;}
+body.touch-sorting{user-select:none;-webkit-user-select:none;}
 .card-top{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:8px;}
 .chk{width:16px;height:16px;margin-top:3px;accent-color:var(--brass);flex-shrink:0;}
 .title{flex:1;min-width:0;max-width:100%;overflow-wrap:anywhere;font-weight:600;font-size:14.5px;line-height:1.35;}
@@ -330,6 +334,14 @@ let cards = [];
 let projectFilter = "";
 let drawerOpen = false;
 let dragId = null;
+let savingOrder = false;
+let touchDrag = null;
+let touchScrollFrame = 0;
+let suppressTouchClickUntil = 0;
+
+const TOUCH_HOLD_MS = 450;
+const TOUCH_CANCEL_DISTANCE = 10;
+const TOUCH_CONTROL_SELECTOR = "button,input,select,textarea,a,label";
 
 function setStatus(msg, err){
   const el = $("#status");
@@ -436,6 +448,7 @@ async function onSignedIn(session){
 }
 
 async function loadCards(){
+  if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
   const { data, error } = await sb.from("ops_cards")
     .select("id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at")
@@ -452,6 +465,18 @@ function visible(card){
   return !projectFilter || card.project===projectFilter;
 }
 
+function compareCards(a, b){
+  return (Number(a.sort)||0) - (Number(b.sort)||0)
+    || String(a.created_at).localeCompare(String(b.created_at))
+    || String(a.id).localeCompare(String(b.id));
+}
+
+function cardsInColumn(columnKey, exceptId){
+  return openCards()
+    .filter(c => c.column_key===columnKey && c.id!==exceptId)
+    .sort(compareCards);
+}
+
 function renderBoard(){
   tick();
   const root = $("#board");
@@ -464,7 +489,7 @@ function renderBoard(){
   root.innerHTML = ordered.map(col => {
     const list = open
       .filter(c => c.column_key===col.key && (actor==="chris" || col.key==="sydney" || c.owner==="sydney"))
-      .sort((a,b) => (Number(a.sort)||0) - (Number(b.sort)||0) || String(a.created_at).localeCompare(String(b.created_at)));
+      .sort(compareCards);
     const body = list.length
       ? list.map(cardHTML).join("")
       : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
@@ -506,26 +531,232 @@ function cardHTML(c){
   </article>`;
 }
 
+function touchPoint(list, identifier){
+  return [...list].find(touch => touch.identifier===identifier) || null;
+}
+
+function clearDropMarkers(){
+  $$(".col.over").forEach(col => col.classList.remove("over"));
+  $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+}
+
+function beginTouchHold(e){
+  if(savingOrder || touchDrag || e.touches.length!==1 || e.target.closest(TOUCH_CONTROL_SELECTOR)) return;
+  const touch = e.changedTouches[0];
+  const el = e.currentTarget;
+  touchDrag = {
+    id: el.dataset.id,
+    identifier: touch.identifier,
+    el,
+    startX: touch.clientX,
+    startY: touch.clientY,
+    x: touch.clientX,
+    y: touch.clientY,
+    active: false,
+    timer: 0,
+    ghost: null,
+    offsetY: 0,
+    targetColumn: null,
+    beforeId: null,
+    scrollSpeed: 0
+  };
+  touchDrag.timer = setTimeout(activateTouchDrag, TOUCH_HOLD_MS);
+}
+
+function activateTouchDrag(){
+  const state = touchDrag;
+  if(!state || state.active || !state.el.isConnected) return;
+  state.active = true;
+  const rect = state.el.getBoundingClientRect();
+  const ghost = state.el.cloneNode(true);
+  ghost.className = "card touch-drag-ghost";
+  ghost.removeAttribute("data-id");
+  ghost.removeAttribute("draggable");
+  ghost.setAttribute("aria-hidden", "true");
+  Object.assign(ghost.style, {
+    width:rect.width+"px",
+    height:rect.height+"px",
+    left:rect.left+"px",
+    top:rect.top+"px"
+  });
+  state.ghost = ghost;
+  state.offsetY = state.y - rect.top;
+  state.el.classList.add("touch-dragging");
+  document.body.classList.add("touch-sorting");
+  document.body.appendChild(ghost);
+  const selection = window.getSelection && window.getSelection();
+  if(selection) selection.removeAllRanges();
+  if(navigator.vibrate) navigator.vibrate(18);
+  moveTouchGhost();
+  updateTouchDropTarget();
+}
+
+function moveTouchGhost(){
+  if(!touchDrag || !touchDrag.active || !touchDrag.ghost) return;
+  const top = Math.max(4, Math.min(innerHeight - touchDrag.ghost.offsetHeight - 4, touchDrag.y - touchDrag.offsetY));
+  touchDrag.ghost.style.top = top+"px";
+}
+
+function touchColumnBodyAt(x, y){
+  const hit = document.elementFromPoint(x, y);
+  if(!hit) return null;
+  const direct = hit.closest(".col-body");
+  if(direct) return direct;
+  const column = hit.closest(".col");
+  return column ? column.querySelector(".col-body") : null;
+}
+
+function updateTouchDropTarget(){
+  const state = touchDrag;
+  if(!state || !state.active) return;
+  clearDropMarkers();
+  state.targetColumn = null;
+  state.beforeId = null;
+  const body = touchColumnBodyAt(state.x, state.y);
+  if(!body) return;
+  const column = body.closest(".col");
+  const anchor = [...body.querySelectorAll(".card:not(.touch-dragging)")]
+    .find(card => state.y < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
+  column.classList.add("over");
+  if(anchor) anchor.classList.add("drop-before");
+  state.targetColumn = column.dataset.col;
+  state.beforeId = anchor ? anchor.dataset.id : null;
+}
+
+function runTouchAutoScroll(){
+  touchScrollFrame = 0;
+  const state = touchDrag;
+  if(!state || !state.active || !state.scrollSpeed) return;
+  window.scrollBy(0, state.scrollSpeed);
+  updateTouchDropTarget();
+  touchScrollFrame = requestAnimationFrame(runTouchAutoScroll);
+}
+
+function updateTouchAutoScroll(){
+  const state = touchDrag;
+  if(!state || !state.active) return;
+  const edge = 88;
+  const bottomEdge = innerHeight - 112;
+  state.scrollSpeed = state.y < edge
+    ? -Math.ceil((edge - state.y) / 5)
+    : state.y > bottomEdge
+      ? Math.ceil((state.y - bottomEdge) / 5)
+      : 0;
+  state.scrollSpeed = Math.max(-18, Math.min(18, state.scrollSpeed));
+  if(state.scrollSpeed && !touchScrollFrame) touchScrollFrame = requestAnimationFrame(runTouchAutoScroll);
+  if(!state.scrollSpeed && touchScrollFrame){
+    cancelAnimationFrame(touchScrollFrame);
+    touchScrollFrame = 0;
+  }
+}
+
+function cancelTouchDrag(){
+  const state = touchDrag;
+  if(!state) return;
+  clearTimeout(state.timer);
+  if(touchScrollFrame) cancelAnimationFrame(touchScrollFrame);
+  touchScrollFrame = 0;
+  if(state.el) state.el.classList.remove("touch-dragging");
+  if(state.ghost) state.ghost.remove();
+  document.body.classList.remove("touch-sorting");
+  clearDropMarkers();
+  touchDrag = null;
+}
+
+function onTouchMove(e){
+  const state = touchDrag;
+  if(!state) return;
+  const touch = touchPoint(e.touches, state.identifier);
+  if(!touch) return;
+  state.x = touch.clientX;
+  state.y = touch.clientY;
+  if(!state.active){
+    if(Math.hypot(state.x-state.startX, state.y-state.startY) > TOUCH_CANCEL_DISTANCE) cancelTouchDrag();
+    return;
+  }
+  e.preventDefault();
+  moveTouchGhost();
+  updateTouchDropTarget();
+  updateTouchAutoScroll();
+}
+
+function onTouchEnd(e){
+  const state = touchDrag;
+  if(!state || !touchPoint(e.changedTouches, state.identifier)) return;
+  if(!state.active){
+    cancelTouchDrag();
+    return;
+  }
+  e.preventDefault();
+  const id = state.id;
+  const column = state.targetColumn;
+  const beforeId = state.beforeId;
+  suppressTouchClickUntil = Date.now()+500;
+  cancelTouchDrag();
+  if(column) reorderCard(id, column, beforeId);
+}
+
+document.addEventListener("touchmove", onTouchMove, { passive:false });
+document.addEventListener("touchend", onTouchEnd, { passive:false });
+document.addEventListener("touchcancel", cancelTouchDrag, { passive:true });
+document.addEventListener("click", e => {
+  if(Date.now() < suppressTouchClickUntil){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);
+
 function bindBoard(){
   $$(".col").forEach(col => {
-    col.ondragover = e => { e.preventDefault(); col.classList.add("over"); };
-    col.ondragleave = () => col.classList.remove("over");
-    col.ondrop = async e => {
-      e.preventDefault(); col.classList.remove("over");
+    const body = col.querySelector(".col-body");
+    body.ondragover = e => {
+      e.preventDefault();
+      col.classList.add("over");
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+      const anchor = [...body.querySelectorAll(".card:not(.dragging)")]
+        .find(card => e.clientY < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
+      if(anchor) anchor.classList.add("drop-before");
+    };
+    body.ondragleave = e => {
+      if(body.contains(e.relatedTarget)) return;
+      col.classList.remove("over");
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+    };
+    body.ondrop = async e => {
+      e.preventDefault();
+      const anchor = body.querySelector(".card.drop-before");
+      col.classList.remove("over");
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
       if(!dragId) return;
-      await moveCard(dragId, col.dataset.col);
+      await reorderCard(dragId, col.dataset.col, anchor ? anchor.dataset.id : null);
     };
   });
   $$(".card").forEach(el => {
     const id = el.dataset.id;
     const card = cards.find(c => c.id===id);
     if(!card) return;
-    el.ondragstart = () => { dragId = id; el.classList.add("dragging"); };
-    el.ondragend = () => { dragId = null; el.classList.remove("dragging"); };
+    el.ondragstart = e => {
+      dragId = id;
+      el.classList.add("dragging");
+      if(e.dataTransfer){
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", id);
+      }
+    };
+    el.ondragend = () => {
+      dragId = null;
+      el.classList.remove("dragging");
+      $$(".col.over").forEach(col => col.classList.remove("over"));
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+    };
     el.querySelector(".chk").onchange = () => completeCard(card);
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
     star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
+    el.addEventListener("touchstart", beginTouchHold, { passive:true });
+    el.oncontextmenu = e => {
+      if(touchDrag && touchDrag.el===el) e.preventDefault();
+    };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
@@ -552,23 +783,60 @@ async function patchCard(id, fields){
   renderBoard();
 }
 
+async function reorderCard(id, column_key, beforeId){
+  const card = cards.find(c => c.id===id);
+  if(!card || savingOrder) return;
+
+  const sourceColumn = card.column_key;
+  const destination = cardsInColumn(column_key, id);
+  let insertAt = beforeId ? destination.findIndex(c => c.id===beforeId) : destination.length;
+  if(insertAt<0) insertAt = destination.length;
+  destination.splice(insertAt, 0, card);
+
+  const source = sourceColumn===column_key ? [] : cardsInColumn(sourceColumn, id);
+  const stacks = sourceColumn===column_key ? [destination] : [source, destination];
+  const originalOrder = cardsInColumn(sourceColumn).map(c => c.id);
+  const nextOrder = sourceColumn===column_key ? destination.map(c => c.id) : [];
+  if(sourceColumn===column_key && originalOrder.every((cardId, index) => cardId===nextOrder[index])) return;
+
+  const snapshot = cards.map(c => Object.assign({}, c));
+  const now = isoNow();
+  const updates = [];
+  stacks.forEach(stack => stack.forEach((item, sort) => {
+    const fields = { sort, updated_at:now };
+    if(item.id===id && sourceColumn!==column_key){
+      fields.column_key = column_key;
+      if(column_key==="sydney") fields.owner = "sydney";
+      if(column_key==="needs-you") fields.owner = "chris";
+    }
+    if(Number(item.sort)!==sort || fields.column_key || fields.owner) updates.push({ id:item.id, fields });
+    Object.assign(item, fields);
+  }));
+
+  savingOrder = true;
+  renderBoard();
+  const results = await Promise.all(updates.map(update =>
+    sb.from("ops_cards").update(update.fields).eq("id", update.id)
+  ));
+  const failed = results.find(result => result.error);
+  savingOrder = false;
+  if(failed){
+    cards = snapshot;
+    renderBoard();
+    setStatus("Could not save card order: "+failed.error.message, true);
+    return;
+  }
+  setStatus("Order saved.");
+  if(sourceColumn!=="sydney" && column_key==="sydney"){
+    await notifySydneyOwns(cards.find(c => c.id===id));
+  }
+}
+
 async function moveCard(id, column_key, options){
   const card = cards.find(c => c.id===id);
   if(!card || card.column_key===column_key) return;
-  const siblings = openCards().filter(c => c.column_key===column_key);
-  const siblingSorts = siblings.map(c => Number(c.sort)||0);
-  const atTop = options && options.atTop;
-  const nextSort = siblingSorts.length
-    ? (atTop ? Math.min(...siblingSorts) - 1 : Math.max(...siblingSorts) + 1)
-    : 0;
-  const fields = { column_key, sort: nextSort };
-  if(column_key==="sydney") fields.owner = "sydney";
-  if(column_key==="needs-you") fields.owner = "chris";
-  await patchCard(id, fields);
-  if(column_key==="sydney"){
-    const updated = cards.find(c => c.id===id) || Object.assign({}, card, fields);
-    await notifySydneyOwns(updated);
-  }
+  const first = options && options.atTop ? cardsInColumn(column_key)[0] : null;
+  await reorderCard(id, column_key, first ? first.id : null);
 }
 
 async function toggleNeedsYou(card){
