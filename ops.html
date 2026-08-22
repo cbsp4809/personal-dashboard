@@ -146,7 +146,6 @@ a{color:var(--brass)}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
   .toolbar .btn{min-height:44px;flex:1;}
   .card-star{width:44px;height:44px;min-width:44px;min-height:44px;font-size:22px;}
-  .order-btn{width:44px;height:44px;font-size:18px;}
   .chip{padding:8px 14px;min-height:36px;}
   .actor button{padding:8px 14px;min-height:36px;}
   .btn.tiny{padding:10px 14px;min-height:44px;}
@@ -174,10 +173,13 @@ a{color:var(--brass)}
 .col-body{flex:1;min-width:0;max-width:100%;padding:10px;display:flex;flex-direction:column;gap:8px;}
 .empty{color:var(--muted);font-size:13px;padding:18px 8px;text-align:center;font-family:var(--serif);font-style:italic;}
 
-.card{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);}
+.card{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);-webkit-touch-callout:none;}
 .card:hover{background:var(--card-hover);}
 .card.dragging{opacity:.45;}
+.card.touch-dragging{opacity:.22;}
 .card.drop-before{box-shadow:0 -3px 0 var(--brass);}
+.touch-drag-ghost{position:fixed;z-index:60;pointer-events:none;margin:0;opacity:.96;transform:scale(1.02);box-shadow:0 18px 50px rgba(0,0,0,.48);user-select:none;-webkit-user-select:none;}
+body.touch-sorting{user-select:none;-webkit-user-select:none;}
 .card-top{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:8px;}
 .chk{width:16px;height:16px;margin-top:3px;accent-color:var(--brass);flex-shrink:0;}
 .title{flex:1;min-width:0;max-width:100%;overflow-wrap:anywhere;font-weight:600;font-size:14.5px;line-height:1.35;}
@@ -192,10 +194,6 @@ a{color:var(--brass)}
 .duechip.soon{color:var(--soon);background:rgba(212,176,106,.12);}
 .duechip.over{color:#fff;background:var(--over);}
 .src{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
-.order-controls{display:inline-flex;gap:3px;}
-.order-btn{appearance:none;background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:7px;width:28px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;-webkit-tap-highlight-color:transparent;}
-.order-btn:hover{color:var(--ink);border-color:rgba(196,165,116,.4);}
-.order-btn:disabled{opacity:.25;cursor:default;}
 .ctrls{display:flex;min-width:0;max-width:calc(100% - 24px);flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;}
 .ctrls select,.ctrls input[type="date"]{min-width:0;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:11.5px;color:var(--soft);}
 .note-toggle{background:none;border:none;color:var(--muted);font-size:12px;padding:0;margin-left:auto;}
@@ -337,6 +335,13 @@ let projectFilter = "";
 let drawerOpen = false;
 let dragId = null;
 let savingOrder = false;
+let touchDrag = null;
+let touchScrollFrame = 0;
+let suppressTouchClickUntil = 0;
+
+const TOUCH_HOLD_MS = 450;
+const TOUCH_CANCEL_DISTANCE = 10;
+const TOUCH_CONTROL_SELECTOR = "button,input,select,textarea,a,label";
 
 function setStatus(msg, err){
   const el = $("#status");
@@ -443,7 +448,7 @@ async function onSignedIn(session){
 }
 
 async function loadCards(){
-  if(savingOrder) return;
+  if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
   const { data, error } = await sb.from("ops_cards")
     .select("id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at")
@@ -514,10 +519,6 @@ function cardHTML(c){
       <span class="tag">${esc(OWNERS[c.owner]||c.owner)}</span>
       ${due?`<span class="duechip ${dueClass(due)}">${esc(fmtDue(due))}</span>`:""}
       <span class="src">${esc(src)}</span>
-      <span class="order-controls" aria-label="Reorder card">
-        <button type="button" class="order-btn order-up" draggable="false" title="Move up" aria-label="Move ${esc(c.title)} up">↑</button>
-        <button type="button" class="order-btn order-down" draggable="false" title="Move down" aria-label="Move ${esc(c.title)} down">↓</button>
-      </span>
       <button type="button" class="note-toggle">${c.snippet?"Edit note":"+ Note"}</button>
     </div>
     <div class="ctrls">
@@ -529,6 +530,181 @@ function cardHTML(c){
     <textarea class="noteta hidden" placeholder="Snippet — context from chat or email…">${esc(c.snippet||"")}</textarea>
   </article>`;
 }
+
+function touchPoint(list, identifier){
+  return [...list].find(touch => touch.identifier===identifier) || null;
+}
+
+function clearDropMarkers(){
+  $$(".col.over").forEach(col => col.classList.remove("over"));
+  $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+}
+
+function beginTouchHold(e){
+  if(savingOrder || touchDrag || e.touches.length!==1 || e.target.closest(TOUCH_CONTROL_SELECTOR)) return;
+  const touch = e.changedTouches[0];
+  const el = e.currentTarget;
+  touchDrag = {
+    id: el.dataset.id,
+    identifier: touch.identifier,
+    el,
+    startX: touch.clientX,
+    startY: touch.clientY,
+    x: touch.clientX,
+    y: touch.clientY,
+    active: false,
+    timer: 0,
+    ghost: null,
+    offsetY: 0,
+    targetColumn: null,
+    beforeId: null,
+    scrollSpeed: 0
+  };
+  touchDrag.timer = setTimeout(activateTouchDrag, TOUCH_HOLD_MS);
+}
+
+function activateTouchDrag(){
+  const state = touchDrag;
+  if(!state || state.active || !state.el.isConnected) return;
+  state.active = true;
+  const rect = state.el.getBoundingClientRect();
+  const ghost = state.el.cloneNode(true);
+  ghost.className = "card touch-drag-ghost";
+  ghost.removeAttribute("data-id");
+  ghost.removeAttribute("draggable");
+  ghost.setAttribute("aria-hidden", "true");
+  Object.assign(ghost.style, {
+    width:rect.width+"px",
+    height:rect.height+"px",
+    left:rect.left+"px",
+    top:rect.top+"px"
+  });
+  state.ghost = ghost;
+  state.offsetY = state.y - rect.top;
+  state.el.classList.add("touch-dragging");
+  document.body.classList.add("touch-sorting");
+  document.body.appendChild(ghost);
+  const selection = window.getSelection && window.getSelection();
+  if(selection) selection.removeAllRanges();
+  if(navigator.vibrate) navigator.vibrate(18);
+  moveTouchGhost();
+  updateTouchDropTarget();
+}
+
+function moveTouchGhost(){
+  if(!touchDrag || !touchDrag.active || !touchDrag.ghost) return;
+  const top = Math.max(4, Math.min(innerHeight - touchDrag.ghost.offsetHeight - 4, touchDrag.y - touchDrag.offsetY));
+  touchDrag.ghost.style.top = top+"px";
+}
+
+function touchColumnBodyAt(x, y){
+  const hit = document.elementFromPoint(x, y);
+  if(!hit) return null;
+  const direct = hit.closest(".col-body");
+  if(direct) return direct;
+  const column = hit.closest(".col");
+  return column ? column.querySelector(".col-body") : null;
+}
+
+function updateTouchDropTarget(){
+  const state = touchDrag;
+  if(!state || !state.active) return;
+  clearDropMarkers();
+  state.targetColumn = null;
+  state.beforeId = null;
+  const body = touchColumnBodyAt(state.x, state.y);
+  if(!body) return;
+  const column = body.closest(".col");
+  const anchor = [...body.querySelectorAll(".card:not(.touch-dragging)")]
+    .find(card => state.y < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
+  column.classList.add("over");
+  if(anchor) anchor.classList.add("drop-before");
+  state.targetColumn = column.dataset.col;
+  state.beforeId = anchor ? anchor.dataset.id : null;
+}
+
+function runTouchAutoScroll(){
+  touchScrollFrame = 0;
+  const state = touchDrag;
+  if(!state || !state.active || !state.scrollSpeed) return;
+  window.scrollBy(0, state.scrollSpeed);
+  updateTouchDropTarget();
+  touchScrollFrame = requestAnimationFrame(runTouchAutoScroll);
+}
+
+function updateTouchAutoScroll(){
+  const state = touchDrag;
+  if(!state || !state.active) return;
+  const edge = 88;
+  const bottomEdge = innerHeight - 112;
+  state.scrollSpeed = state.y < edge
+    ? -Math.ceil((edge - state.y) / 5)
+    : state.y > bottomEdge
+      ? Math.ceil((state.y - bottomEdge) / 5)
+      : 0;
+  state.scrollSpeed = Math.max(-18, Math.min(18, state.scrollSpeed));
+  if(state.scrollSpeed && !touchScrollFrame) touchScrollFrame = requestAnimationFrame(runTouchAutoScroll);
+  if(!state.scrollSpeed && touchScrollFrame){
+    cancelAnimationFrame(touchScrollFrame);
+    touchScrollFrame = 0;
+  }
+}
+
+function cancelTouchDrag(){
+  const state = touchDrag;
+  if(!state) return;
+  clearTimeout(state.timer);
+  if(touchScrollFrame) cancelAnimationFrame(touchScrollFrame);
+  touchScrollFrame = 0;
+  if(state.el) state.el.classList.remove("touch-dragging");
+  if(state.ghost) state.ghost.remove();
+  document.body.classList.remove("touch-sorting");
+  clearDropMarkers();
+  touchDrag = null;
+}
+
+function onTouchMove(e){
+  const state = touchDrag;
+  if(!state) return;
+  const touch = touchPoint(e.touches, state.identifier);
+  if(!touch) return;
+  state.x = touch.clientX;
+  state.y = touch.clientY;
+  if(!state.active){
+    if(Math.hypot(state.x-state.startX, state.y-state.startY) > TOUCH_CANCEL_DISTANCE) cancelTouchDrag();
+    return;
+  }
+  e.preventDefault();
+  moveTouchGhost();
+  updateTouchDropTarget();
+  updateTouchAutoScroll();
+}
+
+function onTouchEnd(e){
+  const state = touchDrag;
+  if(!state || !touchPoint(e.changedTouches, state.identifier)) return;
+  if(!state.active){
+    cancelTouchDrag();
+    return;
+  }
+  e.preventDefault();
+  const id = state.id;
+  const column = state.targetColumn;
+  const beforeId = state.beforeId;
+  suppressTouchClickUntil = Date.now()+500;
+  cancelTouchDrag();
+  if(column) reorderCard(id, column, beforeId);
+}
+
+document.addEventListener("touchmove", onTouchMove, { passive:false });
+document.addEventListener("touchend", onTouchEnd, { passive:false });
+document.addEventListener("touchcancel", cancelTouchDrag, { passive:true });
+document.addEventListener("click", e => {
+  if(Date.now() < suppressTouchClickUntil){
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);
 
 function bindBoard(){
   $$(".col").forEach(col => {
@@ -577,23 +753,9 @@ function bindBoard(){
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
     star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
-    const visibleIds = [...el.parentElement.querySelectorAll(".card")].map(item => item.dataset.id);
-    const visibleIndex = visibleIds.indexOf(id);
-    const up = el.querySelector(".order-up");
-    const down = el.querySelector(".order-down");
-    up.disabled = visibleIndex<=0;
-    down.disabled = visibleIndex<0 || visibleIndex>=visibleIds.length-1;
-    up.onpointerdown = down.onpointerdown = e => e.stopPropagation();
-    up.onclick = e => {
-      e.preventDefault();
-      e.stopPropagation();
-      if(visibleIndex>0) reorderCard(id, card.column_key, visibleIds[visibleIndex-1]);
-    };
-    down.onclick = e => {
-      e.preventDefault();
-      e.stopPropagation();
-      if(visibleIndex<0 || visibleIndex>=visibleIds.length-1) return;
-      reorderCard(id, card.column_key, visibleIds[visibleIndex+2] || null);
+    el.addEventListener("touchstart", beginTouchHold, { passive:true });
+    el.oncontextmenu = e => {
+      if(touchDrag && touchDrag.el===el) e.preventDefault();
     };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
