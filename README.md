@@ -25,6 +25,7 @@ README.md
 .gitignore
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
 sql/ops_events.sql             # Ops notify table (Sydney owns pings)
+sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
@@ -51,7 +52,9 @@ anyone writing from chat/email) should insert/update rows on `ops_cards`.
 
 Each card has a title, optional snippet, project tag (`studio-pod` / `cbp` /
 `personal`), owner (`chris` / `sydney`), optional due date, and a source
-(`chat` / `email` / `todo` / `calendar`). Completing a card sets `done_at` /
+(`chat` / `email` / `todo` / `calendar`). Email cards may also set
+`received_at` to the source email's receipt time; the Emails view falls back to
+the card's `created_at` when it is absent. Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
 
 The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
