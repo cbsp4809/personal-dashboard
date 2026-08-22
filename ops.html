@@ -137,7 +137,8 @@ a{color:var(--brass)}
 .email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
 .email-card{padding:0;overflow:hidden;}
 .email-card-row{display:flex;min-width:0;align-items:stretch;}
-.email-card .chk{width:19px;height:19px;margin:16px 0 0 16px;}
+.email-check{width:44px;height:44px;min-width:44px;margin:4px 0 0 4px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.email-card .chk{width:19px;height:19px;margin:0;}
 .email-card-toggle{display:block;flex:1;min-width:0;max-width:100%;min-height:76px;padding:13px 16px 12px 12px;background:transparent;border:0;color:inherit;text-align:left;}
 .email-card-toggle:hover,.email-card-toggle:focus-visible{background:rgba(255,255,255,.025);outline:none;}
 .email-card.open .email-card-toggle{background:rgba(196,165,116,.045);}
@@ -200,7 +201,7 @@ a{color:var(--brass)}
   .email-filterbar{display:block;padding-bottom:14px;}
   .email-filterbar .viewbar-label{display:block;margin-bottom:8px;}
   .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
-  .email-card .chk{margin:16px 0 0 12px;}
+  .email-check{margin-left:0;}
   .email-card-toggle{min-height:78px;padding-right:12px;}
   .email-detail-head{padding:12px;}
   .email-segment{width:100%;}
@@ -1019,7 +1020,9 @@ function emailCardHTML(c){
     </section>` : "";
   return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
     <div class="email-card-row">
-      <input type="checkbox" class="chk" title="Mark manually done" aria-label="Mark ${esc(subject)} done">
+      <label class="email-check" title="Mark manually done">
+        <input type="checkbox" class="chk" aria-label="Mark ${esc(subject)} done">
+      </label>
       <button type="button" class="email-card-toggle" aria-expanded="${open}">
         <span class="email-from">${esc(from)}</span>
         <span class="email-subject">${esc(subject)}</span>
