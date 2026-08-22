@@ -141,6 +141,7 @@ a{color:var(--brass)}
 .email-card .title{font-size:16px;}
 .email-draft{min-width:0;max-width:100%;margin:12px 0 0 30px;padding:12px 13px;border-left:2px solid rgba(196,165,116,.45);background:rgba(18,17,15,.52);border-radius:0 8px 8px 0;color:var(--soft);font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
 .email-meta{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0 0 30px;}
+.email-wait{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;color:#e4cfaa;background:rgba(196,165,116,.14);border:1px solid rgba(196,165,116,.28);font-variant-numeric:tabular-nums;}
 .email-actions{display:flex;justify-content:flex-end;margin:13px 0 0 30px;}
 .copy-draft{min-width:112px;}
 .email-empty{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:42px 20px;}
@@ -393,6 +394,13 @@ const COLUMNS = [
 const PROJECTS = { "studio-pod":"Studio Pod", cbp:"CBP", personal:"Personal", unfiled:"Unfiled" };
 const OWNERS = { chris:"Chris", sydney:"Sydney" };
 const SOURCES = { chat:"chat", email:"email", todo:"To Do", calendar:"calendar" };
+const OPS_TIME_ZONE = "America/Chicago";
+const OPS_DATE_PARTS = new Intl.DateTimeFormat("en-US", {
+  timeZone:OPS_TIME_ZONE, year:"numeric", month:"numeric", day:"numeric"
+});
+const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
+  timeZone:OPS_TIME_ZONE, month:"short", day:"numeric", year:"numeric"
+});
 
 let currentUser = null;
 let actor = localStorage.getItem("ops_actor") || "chris";
@@ -456,6 +464,7 @@ function tick(){
   $("#date").textContent = n.toLocaleDateString([], { weekday:"long", month:"long", day:"numeric" });
   const todayCol = COLUMNS.find(c => c.key==="today");
   if(todayCol) todayCol.sub = n.toLocaleDateString([], { weekday:"long", month:"short", day:"numeric" }) + " · daily focus";
+  refreshEmailWaitChips(n);
 }
 setInterval(tick, 30000);
 
@@ -810,10 +819,20 @@ async function onSignedIn(session){
 async function loadCards(){
   if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
-  const { data, error } = await sb.from("ops_cards")
-    .select("id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at")
+  const fields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,received_at,created_at,updated_at";
+  const legacyFields = fields.replace("received_at,", "");
+  let result = await sb.from("ops_cards")
+    .select(fields)
     .order("sort", { ascending:true })
     .order("created_at", { ascending:true });
+  if(result.error && (result.error.code==="42703" || /received_at/i.test(result.error.message||""))){
+    result = await sb.from("ops_cards")
+      .select(legacyFields)
+      .order("sort", { ascending:true })
+      .order("created_at", { ascending:true });
+    if(!result.error) result.data = (result.data||[]).map(card => ({ ...card, received_at:null }));
+  }
+  const { data, error } = result;
   if(error){ setStatus("Could not load cards: "+error.message, true); return; }
   cards = data || [];
   setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
@@ -841,10 +860,51 @@ function isEmailCard(card){
   return String(card.source||"").trim().toLowerCase()==="email";
 }
 
+function receivedAt(card){
+  return card.received_at || card.created_at || "";
+}
+
+function chicagoDayNumber(value){
+  const date = value instanceof Date ? value : new Date(value);
+  if(Number.isNaN(date.getTime())) return null;
+  const parts = Object.fromEntries(OPS_DATE_PARTS.formatToParts(date).map(part => [part.type, part.value]));
+  return Date.UTC(Number(parts.year), Number(parts.month)-1, Number(parts.day)) / 86400000;
+}
+
+function emailWaitDays(card, now=new Date()){
+  const receivedDay = chicagoDayNumber(receivedAt(card));
+  const today = chicagoDayNumber(now);
+  if(receivedDay===null || today===null) return 0;
+  return Math.max(0, today-receivedDay);
+}
+
+function emailWaitLabel(card, now=new Date()){
+  const days = emailWaitDays(card, now);
+  if(days===0) return "Today";
+  return days===1 ? "1 day" : `${days} days`;
+}
+
+function receivedTitle(card){
+  const date = new Date(receivedAt(card));
+  return Number.isNaN(date.getTime()) ? "Received date unavailable" : `Received ${OPS_RECEIVED_FORMAT.format(date)}`;
+}
+
+function refreshEmailWaitChips(now=new Date()){
+  $$(".email-wait[data-card-id]").forEach(chip => {
+    const card = cards.find(item => String(item.id)===chip.dataset.cardId);
+    if(card) chip.textContent = emailWaitLabel(card, now);
+  });
+}
+
 function compareEmailPriority(a, b){
   const dueA = a.due_on || "9999-12-31";
   const dueB = b.due_on || "9999-12-31";
-  return String(dueA).localeCompare(String(dueB)) || compareCards(a, b);
+  const receivedA = Date.parse(receivedAt(a));
+  const receivedB = Date.parse(receivedAt(b));
+  return String(dueA).localeCompare(String(dueB))
+    || (Number.isNaN(receivedA) ? Number.MAX_SAFE_INTEGER : receivedA)
+      - (Number.isNaN(receivedB) ? Number.MAX_SAFE_INTEGER : receivedB)
+    || compareCards(a, b);
 }
 
 function emailUrgency(card){
@@ -871,6 +931,7 @@ function emailCardHTML(c){
     </div>
     <div class="email-meta">
       <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
+      <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
       <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
     </div>
     ${draft ? `<div class="email-draft">${esc(draft)}</div>` : `<div class="email-draft">No draft added yet.</div>`}
