@@ -146,6 +146,7 @@ a{color:var(--brass)}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
   .toolbar .btn{min-height:44px;flex:1;}
   .card-star{width:44px;height:44px;min-width:44px;min-height:44px;font-size:22px;}
+  .order-btn{width:44px;height:44px;font-size:18px;}
   .chip{padding:8px 14px;min-height:36px;}
   .actor button{padding:8px 14px;min-height:36px;}
   .btn.tiny{padding:10px 14px;min-height:44px;}
@@ -176,6 +177,7 @@ a{color:var(--brass)}
 .card{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);}
 .card:hover{background:var(--card-hover);}
 .card.dragging{opacity:.45;}
+.card.drop-before{box-shadow:0 -3px 0 var(--brass);}
 .card-top{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:8px;}
 .chk{width:16px;height:16px;margin-top:3px;accent-color:var(--brass);flex-shrink:0;}
 .title{flex:1;min-width:0;max-width:100%;overflow-wrap:anywhere;font-weight:600;font-size:14.5px;line-height:1.35;}
@@ -190,6 +192,10 @@ a{color:var(--brass)}
 .duechip.soon{color:var(--soon);background:rgba(212,176,106,.12);}
 .duechip.over{color:#fff;background:var(--over);}
 .src{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.order-controls{display:inline-flex;gap:3px;}
+.order-btn{appearance:none;background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:7px;width:28px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;-webkit-tap-highlight-color:transparent;}
+.order-btn:hover{color:var(--ink);border-color:rgba(196,165,116,.4);}
+.order-btn:disabled{opacity:.25;cursor:default;}
 .ctrls{display:flex;min-width:0;max-width:calc(100% - 24px);flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;}
 .ctrls select,.ctrls input[type="date"]{min-width:0;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:11.5px;color:var(--soft);}
 .note-toggle{background:none;border:none;color:var(--muted);font-size:12px;padding:0;margin-left:auto;}
@@ -330,6 +336,7 @@ let cards = [];
 let projectFilter = "";
 let drawerOpen = false;
 let dragId = null;
+let savingOrder = false;
 
 function setStatus(msg, err){
   const el = $("#status");
@@ -436,6 +443,7 @@ async function onSignedIn(session){
 }
 
 async function loadCards(){
+  if(savingOrder) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
   const { data, error } = await sb.from("ops_cards")
     .select("id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at")
@@ -452,6 +460,18 @@ function visible(card){
   return !projectFilter || card.project===projectFilter;
 }
 
+function compareCards(a, b){
+  return (Number(a.sort)||0) - (Number(b.sort)||0)
+    || String(a.created_at).localeCompare(String(b.created_at))
+    || String(a.id).localeCompare(String(b.id));
+}
+
+function cardsInColumn(columnKey, exceptId){
+  return openCards()
+    .filter(c => c.column_key===columnKey && c.id!==exceptId)
+    .sort(compareCards);
+}
+
 function renderBoard(){
   tick();
   const root = $("#board");
@@ -464,7 +484,7 @@ function renderBoard(){
   root.innerHTML = ordered.map(col => {
     const list = open
       .filter(c => c.column_key===col.key && (actor==="chris" || col.key==="sydney" || c.owner==="sydney"))
-      .sort((a,b) => (Number(a.sort)||0) - (Number(b.sort)||0) || String(a.created_at).localeCompare(String(b.created_at)));
+      .sort(compareCards);
     const body = list.length
       ? list.map(cardHTML).join("")
       : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
@@ -494,6 +514,10 @@ function cardHTML(c){
       <span class="tag">${esc(OWNERS[c.owner]||c.owner)}</span>
       ${due?`<span class="duechip ${dueClass(due)}">${esc(fmtDue(due))}</span>`:""}
       <span class="src">${esc(src)}</span>
+      <span class="order-controls" aria-label="Reorder card">
+        <button type="button" class="order-btn order-up" draggable="false" title="Move up" aria-label="Move ${esc(c.title)} up">↑</button>
+        <button type="button" class="order-btn order-down" draggable="false" title="Move down" aria-label="Move ${esc(c.title)} down">↓</button>
+      </span>
       <button type="button" class="note-toggle">${c.snippet?"Edit note":"+ Note"}</button>
     </div>
     <div class="ctrls">
@@ -508,24 +532,69 @@ function cardHTML(c){
 
 function bindBoard(){
   $$(".col").forEach(col => {
-    col.ondragover = e => { e.preventDefault(); col.classList.add("over"); };
-    col.ondragleave = () => col.classList.remove("over");
-    col.ondrop = async e => {
-      e.preventDefault(); col.classList.remove("over");
+    const body = col.querySelector(".col-body");
+    body.ondragover = e => {
+      e.preventDefault();
+      col.classList.add("over");
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+      const anchor = [...body.querySelectorAll(".card:not(.dragging)")]
+        .find(card => e.clientY < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
+      if(anchor) anchor.classList.add("drop-before");
+    };
+    body.ondragleave = e => {
+      if(body.contains(e.relatedTarget)) return;
+      col.classList.remove("over");
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+    };
+    body.ondrop = async e => {
+      e.preventDefault();
+      const anchor = body.querySelector(".card.drop-before");
+      col.classList.remove("over");
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
       if(!dragId) return;
-      await moveCard(dragId, col.dataset.col);
+      await reorderCard(dragId, col.dataset.col, anchor ? anchor.dataset.id : null);
     };
   });
   $$(".card").forEach(el => {
     const id = el.dataset.id;
     const card = cards.find(c => c.id===id);
     if(!card) return;
-    el.ondragstart = () => { dragId = id; el.classList.add("dragging"); };
-    el.ondragend = () => { dragId = null; el.classList.remove("dragging"); };
+    el.ondragstart = e => {
+      dragId = id;
+      el.classList.add("dragging");
+      if(e.dataTransfer){
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", id);
+      }
+    };
+    el.ondragend = () => {
+      dragId = null;
+      el.classList.remove("dragging");
+      $$(".col.over").forEach(col => col.classList.remove("over"));
+      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+    };
     el.querySelector(".chk").onchange = () => completeCard(card);
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
     star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
+    const visibleIds = [...el.parentElement.querySelectorAll(".card")].map(item => item.dataset.id);
+    const visibleIndex = visibleIds.indexOf(id);
+    const up = el.querySelector(".order-up");
+    const down = el.querySelector(".order-down");
+    up.disabled = visibleIndex<=0;
+    down.disabled = visibleIndex<0 || visibleIndex>=visibleIds.length-1;
+    up.onpointerdown = down.onpointerdown = e => e.stopPropagation();
+    up.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      if(visibleIndex>0) reorderCard(id, card.column_key, visibleIds[visibleIndex-1]);
+    };
+    down.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      if(visibleIndex<0 || visibleIndex>=visibleIds.length-1) return;
+      reorderCard(id, card.column_key, visibleIds[visibleIndex+2] || null);
+    };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
@@ -552,23 +621,60 @@ async function patchCard(id, fields){
   renderBoard();
 }
 
+async function reorderCard(id, column_key, beforeId){
+  const card = cards.find(c => c.id===id);
+  if(!card || savingOrder) return;
+
+  const sourceColumn = card.column_key;
+  const destination = cardsInColumn(column_key, id);
+  let insertAt = beforeId ? destination.findIndex(c => c.id===beforeId) : destination.length;
+  if(insertAt<0) insertAt = destination.length;
+  destination.splice(insertAt, 0, card);
+
+  const source = sourceColumn===column_key ? [] : cardsInColumn(sourceColumn, id);
+  const stacks = sourceColumn===column_key ? [destination] : [source, destination];
+  const originalOrder = cardsInColumn(sourceColumn).map(c => c.id);
+  const nextOrder = sourceColumn===column_key ? destination.map(c => c.id) : [];
+  if(sourceColumn===column_key && originalOrder.every((cardId, index) => cardId===nextOrder[index])) return;
+
+  const snapshot = cards.map(c => Object.assign({}, c));
+  const now = isoNow();
+  const updates = [];
+  stacks.forEach(stack => stack.forEach((item, sort) => {
+    const fields = { sort, updated_at:now };
+    if(item.id===id && sourceColumn!==column_key){
+      fields.column_key = column_key;
+      if(column_key==="sydney") fields.owner = "sydney";
+      if(column_key==="needs-you") fields.owner = "chris";
+    }
+    if(Number(item.sort)!==sort || fields.column_key || fields.owner) updates.push({ id:item.id, fields });
+    Object.assign(item, fields);
+  }));
+
+  savingOrder = true;
+  renderBoard();
+  const results = await Promise.all(updates.map(update =>
+    sb.from("ops_cards").update(update.fields).eq("id", update.id)
+  ));
+  const failed = results.find(result => result.error);
+  savingOrder = false;
+  if(failed){
+    cards = snapshot;
+    renderBoard();
+    setStatus("Could not save card order: "+failed.error.message, true);
+    return;
+  }
+  setStatus("Order saved.");
+  if(sourceColumn!=="sydney" && column_key==="sydney"){
+    await notifySydneyOwns(cards.find(c => c.id===id));
+  }
+}
+
 async function moveCard(id, column_key, options){
   const card = cards.find(c => c.id===id);
   if(!card || card.column_key===column_key) return;
-  const siblings = openCards().filter(c => c.column_key===column_key);
-  const siblingSorts = siblings.map(c => Number(c.sort)||0);
-  const atTop = options && options.atTop;
-  const nextSort = siblingSorts.length
-    ? (atTop ? Math.min(...siblingSorts) - 1 : Math.max(...siblingSorts) + 1)
-    : 0;
-  const fields = { column_key, sort: nextSort };
-  if(column_key==="sydney") fields.owner = "sydney";
-  if(column_key==="needs-you") fields.owner = "chris";
-  await patchCard(id, fields);
-  if(column_key==="sydney"){
-    const updated = cards.find(c => c.id===id) || Object.assign({}, card, fields);
-    await notifySydneyOwns(updated);
-  }
+  const first = options && options.atTop ? cardsInColumn(column_key)[0] : null;
+  await reorderCard(id, column_key, first ? first.id : null);
 }
 
 async function toggleNeedsYou(card){

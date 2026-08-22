@@ -68,6 +68,12 @@ Each card has a one-tap star for **Needs you**. Starring a card moves it to the
 top of Needs you; unstarring it moves it to Today. The card column dropdown
 stays.
 
+Cards can be dragged to an exact position within or between columns on desktop.
+The up/down buttons provide the same within-column reorder on touch devices.
+Stack positions persist in the existing `ops_cards.sort` field. The live table
+already has that field and its `(column_key, sort)` index; `sql/ops_card_order.sql`
+is an idempotent setup/backfill script for another environment.
+
 Landing a card on **Sydney owns** (create, drag, or dropdown — not owner-only
 changes) writes `ops_events` (`event = moved_to_sydney`) so Sydney can poll
 without a webhook secret in the page. Apply `sql/ops_events.sql` on the Studio
