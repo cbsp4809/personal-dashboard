@@ -105,6 +105,26 @@ same Studio Pod account and stays on the phone (the session is already saved in
 the browser). After you add it, tapping the icon should land on Ops — not the
 morning dashboard.
 
+## Ops alerts
+
+Run `sql/ops_alerts.sql` manually on Studio Pod before using the alert bell. It
+creates the RLS-protected alert table and enables Supabase Realtime for it. The
+web page never uses a service-role key.
+
+Signed-in browser code can insert an alert without `user_id`; it defaults to the
+current user. Server-side inbox/Sydney writers must set `user_id` to Chris's
+Supabase Auth user ID. One `ops_alerts` insert is the complete integration:
+`title`, `body`, `kind`, and optional `href` or `card_id`.
+
+Opening the bell is the one-time user gesture that requests notification
+permission. While Ops is open, new rows update the in-app count, Home Screen or
+Dock badge where `setAppBadge` is supported, and show a system notification
+where allowed. The included service worker supports foreground notifications
+and notification clicks; it does not implement remote Web Push. Consequently,
+alerts do not reliably arrive on an iPhone lock screen after the GitHub Pages
+PWA has been closed. That requires a push subscription store, VAPID keys, and a
+trusted server-side sender.
+
 ## Local preview
 
 Just open `index.html` in a browser, or serve it:
