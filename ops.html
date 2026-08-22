@@ -99,6 +99,8 @@ a{color:var(--brass)}
 .viewbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 12px;}
 .viewbar-label{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
 .viewbar .actor button{min-width:92px;padding:9px 18px;font-size:13px;}
+.email-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:0 0 16px;}
+.email-filterbar .filters{justify-content:flex-end;padding:0;}
 .below-board{width:100%;min-width:0;max-width:1720px;margin:0 auto;padding:0 28px 40px;}
 .toolbar{display:flex;min-width:0;max-width:100%;gap:10px;align-items:center;flex-wrap:wrap;padding:18px 0 4px;border-top:1px solid var(--line);}
 .star-btn{appearance:none;background:transparent;border:1px solid var(--line-strong);color:var(--muted);border-radius:10px;width:40px;height:40px;min-width:40px;min-height:40px;padding:0;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:20px;line-height:1;-webkit-tap-highlight-color:transparent;}
@@ -111,6 +113,17 @@ a{color:var(--brass)}
 .status.err{color:var(--over);}
 
 .board{display:grid;width:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1720px;margin:0 auto;}
+.board.email-board{display:block;max-width:900px;}
+.email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
+.email-card{padding:16px;}
+.email-card .card-top{gap:11px;}
+.email-card .chk{width:19px;height:19px;margin-top:1px;}
+.email-card .title{font-size:16px;}
+.email-draft{min-width:0;max-width:100%;margin:12px 0 0 30px;padding:12px 13px;border-left:2px solid rgba(196,165,116,.45);background:rgba(18,17,15,.52);border-radius:0 8px 8px 0;color:var(--soft);font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
+.email-meta{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0 0 30px;}
+.email-actions{display:flex;justify-content:flex-end;margin:13px 0 0 30px;}
+.copy-draft{min-width:112px;}
+.email-empty{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:42px 20px;}
 .col.deemphasized{opacity:.58;}
 .composer{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;max-width:100vw;overflow:hidden;background:rgba(18,17,15,.96);border-top:1px solid var(--line-strong);padding:8px max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
 .composer-inner{width:100%;min-width:0;max-width:900px;margin:0 auto;}
@@ -140,7 +153,14 @@ a{color:var(--brass)}
   .viewbar{padding:12px 0 10px;}
   .viewbar-label{display:none;}
   .viewbar .actor{width:100%;}
+  .viewbar .actor{display:flex;}
   .viewbar .actor button{flex:1;min-height:44px;font-size:14px;}
+  .email-filterbar{display:block;padding-bottom:14px;}
+  .email-filterbar .viewbar-label{display:block;margin-bottom:8px;}
+  .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
+  .email-card{padding:14px 12px;}
+  .email-draft,.email-meta,.email-actions{margin-left:30px;max-width:calc(100% - 30px);}
+  .email-actions .copy-draft{width:100%;min-height:44px;}
   .login-card{padding:28px 20px 22px;}
   .login-card h1{font-size:30px;}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
@@ -270,6 +290,16 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
       <div class="actor" title="Whose work to show">
         <button type="button" data-actor="chris" class="on">Chris</button>
         <button type="button" data-actor="sydney">Sydney</button>
+        <button type="button" data-actor="emails">Emails</button>
+      </div>
+    </div>
+    <div class="email-filterbar hidden" id="emailFilters">
+      <span class="viewbar-label">Inbox</span>
+      <div class="filters" aria-label="Filter email replies by inbox">
+        <button class="chip on" data-email-project="">All</button>
+        <button class="chip" data-email-project="cbp">CBP</button>
+        <button class="chip" data-email-project="studio-pod">Studio Pod</button>
+        <button class="chip" data-email-project="personal">Personal</button>
       </div>
     </div>
   </div>
@@ -280,7 +310,7 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
       <button class="btn tiny ghost" id="msImport">Import To Do</button>
       <button class="btn tiny ghost" id="doneBtn">Done <span id="doneCount">0</span></button>
     </div>
-    <div class="filters">
+    <div class="filters" id="projectFilters">
       <button class="chip on" data-project="">All projects</button>
       <button class="chip" data-project="studio-pod">Studio Pod</button>
       <button class="chip" data-project="cbp">CBP</button>
@@ -330,8 +360,10 @@ const SOURCES = { chat:"chat", email:"email", todo:"To Do", calendar:"calendar" 
 
 let currentUser = null;
 let actor = localStorage.getItem("ops_actor") || "chris";
+if(!["chris","sydney","emails"].includes(actor)) actor = "chris";
 let cards = [];
 let projectFilter = "";
+let emailProjectFilter = "";
 let drawerOpen = false;
 let dragId = null;
 let savingOrder = false;
@@ -399,10 +431,15 @@ function showApp(){
 
 function syncActorUI(){
   $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
+  const showingEmails = actor==="emails";
+  $("#emailFilters").classList.toggle("hidden", !showingEmails);
+  $("#projectFilters").classList.toggle("hidden", showingEmails);
+  $("#msImport").classList.toggle("hidden", showingEmails);
+  $(".viewbar-label").textContent = showingEmails ? "View" : "Whose board?";
   const input = $("#composerInput");
-  if(input) input.placeholder = actor==="chris"
-    ? "Tell Ops what to add…"
-    : "Tell Ops what Sydney should pick up…";
+  if(input) input.placeholder = actor==="sydney"
+    ? "Tell Ops what Sydney should pick up…"
+    : "Tell Ops what to add…";
 }
 
 $$(".actor button").forEach(b => b.onclick = () => {
@@ -471,6 +508,67 @@ function compareCards(a, b){
     || String(a.id).localeCompare(String(b.id));
 }
 
+function projectKey(value){
+  const key = String(value||"").trim().toLowerCase().replace(/[\s_]+/g, "-");
+  if(key==="studiopod") return "studio-pod";
+  return key;
+}
+
+function isEmailCard(card){
+  return String(card.source||"").trim().toLowerCase()==="email";
+}
+
+function compareEmailPriority(a, b){
+  const dueA = a.due_on || "9999-12-31";
+  const dueB = b.due_on || "9999-12-31";
+  return String(dueA).localeCompare(String(dueB)) || compareCards(a, b);
+}
+
+function emailUrgency(card){
+  if(!card.due_on){
+    const col = COLUMNS.find(c => c.key===card.column_key);
+    return col ? col.label : "Queued";
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(card.due_on+"T00:00");
+  const diff = Math.round((due-today)/86400000);
+  if(diff<0) return "Overdue";
+  if(diff===0) return "Due today";
+  if(diff===1) return "Due tomorrow";
+  return "Due "+fmtDue(card.due_on);
+}
+
+function emailCardHTML(c){
+  const inbox = projectKey(c.project);
+  const draft = c.snippet || "";
+  return `<article class="card email-card" data-id="${esc(c.id)}">
+    <div class="card-top">
+      <input type="checkbox" class="chk" title="I responded" aria-label="Mark ${esc(c.title)} responded">
+      <div class="title">${esc(c.title)}</div>
+    </div>
+    <div class="email-meta">
+      <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
+      <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
+    </div>
+    ${draft ? `<div class="email-draft">${esc(draft)}</div>` : `<div class="email-draft">No draft added yet.</div>`}
+    <div class="email-actions">
+      <button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy draft</button>
+    </div>
+  </article>`;
+}
+
+function renderEmails(root){
+  const list = openCards()
+    .filter(isEmailCard)
+    .filter(c => !emailProjectFilter || projectKey(c.project)===emailProjectFilter)
+    .sort(compareEmailPriority);
+  root.classList.add("email-board");
+  root.innerHTML = list.length
+    ? `<div class="email-list">${list.map(emailCardHTML).join("")}</div>`
+    : `<div class="empty email-empty">No email replies waiting${emailProjectFilter ? " in this inbox" : ""}.</div>`;
+  bindEmailCards();
+}
+
 function cardsInColumn(columnKey, exceptId){
   return openCards()
     .filter(c => c.column_key===columnKey && c.id!==exceptId)
@@ -480,6 +578,12 @@ function cardsInColumn(columnKey, exceptId){
 function renderBoard(){
   tick();
   const root = $("#board");
+  $("#doneCount").textContent = String(doneCards().length);
+  if(actor==="emails"){
+    renderEmails(root);
+    return;
+  }
+  root.classList.remove("email-board");
   const open = openCards().filter(visible);
   const ordered = actor==="chris"
     ? COLUMNS
@@ -499,7 +603,6 @@ function renderBoard(){
       <div class="col-body">${body}</div>
     </section>`;
   }).join("");
-  $("#doneCount").textContent = String(doneCards().length);
   bindBoard();
 }
 
@@ -749,7 +852,7 @@ function bindBoard(){
       $$(".col.over").forEach(col => col.classList.remove("over"));
       $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
     };
-    el.querySelector(".chk").onchange = () => completeCard(card);
+    el.querySelector(".chk").onchange = e => completeCard(card, e.target);
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
     star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
@@ -773,14 +876,53 @@ function bindBoard(){
   });
 }
 
+async function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  area.setSelectionRange(0, area.value.length);
+  const copied = document.execCommand("copy");
+  area.remove();
+  if(!copied) throw new Error("Copy is not available");
+}
+
+function bindEmailCards(){
+  $$(".email-card").forEach(el => {
+    const card = cards.find(c => c.id===el.dataset.id);
+    if(!card) return;
+    el.querySelector(".chk").onchange = e => completeCard(card, e.target);
+    const copy = el.querySelector(".copy-draft");
+    copy.onclick = async () => {
+      if(!card.snippet) return;
+      try{
+        await copyText(card.snippet);
+        copy.textContent = "Copied";
+        setStatus("Draft copied.");
+        setTimeout(() => { if(copy.isConnected) copy.textContent = "Copy draft"; }, 1600);
+      }catch(_){
+        setStatus("Could not copy the draft. Press and hold the draft text to copy it.", true);
+      }
+    };
+  });
+}
+
 async function patchCard(id, fields){
-  if(!sb) return;
+  if(!sb) return false;
   const payload = Object.assign({ updated_at: isoNow() }, fields);
   const { error } = await sb.from("ops_cards").update(payload).eq("id", id);
-  if(error){ setStatus("Update failed: "+error.message, true); return; }
+  if(error){ setStatus("Update failed: "+error.message, true); return false; }
   const i = cards.findIndex(c => c.id===id);
   if(i>=0) cards[i] = Object.assign({}, cards[i], payload);
   renderBoard();
+  return true;
 }
 
 async function reorderCard(id, column_key, beforeId){
@@ -859,9 +1001,15 @@ async function notifySydneyOwns(card){
   if(error) setStatus("Card saved. Could not record Sydney ping: "+error.message, true);
 }
 
-async function completeCard(card){
-  await patchCard(card.id, { done_at: isoNow(), done_by: actor });
-  setStatus("Moved to Done.");
+async function completeCard(card, checkbox){
+  if(checkbox) checkbox.disabled = true;
+  const doneBy = actor==="sydney" ? "sydney" : "chris";
+  const saved = await patchCard(card.id, { done_at: isoNow(), done_by: doneBy });
+  if(saved) setStatus(actor==="emails" ? "Marked responded and moved to Done." : "Moved to Done.");
+  else if(checkbox){
+    checkbox.disabled = false;
+    checkbox.checked = false;
+  }
 }
 
 async function reopenCard(id){
@@ -967,6 +1115,12 @@ async function createCard(fields){
 $$(".filters .chip").forEach(ch => ch.onclick = () => {
   projectFilter = ch.dataset.project || "";
   $$(".filters .chip").forEach(x => x.classList.toggle("on", x===ch));
+  renderBoard();
+});
+
+$$("[data-email-project]").forEach(ch => ch.onclick = () => {
+  emailProjectFilter = ch.dataset.emailProject || "";
+  $$("[data-email-project]").forEach(x => x.classList.toggle("on", x===ch));
   renderBoard();
 });
 
