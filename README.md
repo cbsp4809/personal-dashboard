@@ -57,6 +57,21 @@ Each card has a title, optional snippet, project tag (`studio-pod` / `cbp` /
 the card's `created_at` when it is absent. Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
 
+For email reply cards, `snippet` is the editable reply draft. Apply the
+idempotent `sql/ops_email_replies.sql` manually before using the queue flow.
+The inbox watch should populate `inbound_from`, `inbound_subject`,
+`inbound_body` (plain text), and `inbound_message_id`. Clicking **Send** saves
+the draft, asks for confirmation, and sets `send_requested_at` /
+`send_requested_by`; it does not send Gmail or mark the card done. Sydney's
+inbox watch owns the actual send and completion. The current dashboard treats
+`project` as the inbox label. `source_ref` is available to the watch alongside
+`inbound_message_id`, but this repository does not establish which Gmail
+identifier existing producers store there.
+
+If those email columns have not been applied yet, Ops retries its legacy
+`ops_cards` select so the page still loads. Sending remains disabled until the
+queue columns exist.
+
 The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
 Needs you, Today, This week, and Later before a quiet Sydney owns column.
 Sydney sees Sydney owns first, then cards assigned to her in other columns.

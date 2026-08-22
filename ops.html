@@ -135,15 +135,35 @@ a{color:var(--brass)}
 .board{display:grid;width:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1720px;margin:0 auto;}
 .board.email-board{display:block;max-width:900px;}
 .email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
-.email-card{padding:16px;}
-.email-card .card-top{gap:11px;}
-.email-card .chk{width:19px;height:19px;margin-top:1px;}
-.email-card .title{font-size:16px;}
-.email-draft{min-width:0;max-width:100%;margin:12px 0 0 30px;padding:12px 13px;border-left:2px solid rgba(196,165,116,.45);background:rgba(18,17,15,.52);border-radius:0 8px 8px 0;color:var(--soft);font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
-.email-meta{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0 0 30px;}
+.email-card{padding:0;overflow:hidden;}
+.email-card-row{display:flex;min-width:0;align-items:stretch;}
+.email-card .chk{width:19px;height:19px;margin:16px 0 0 16px;}
+.email-card-toggle{display:block;flex:1;min-width:0;max-width:100%;min-height:76px;padding:13px 16px 12px 12px;background:transparent;border:0;color:inherit;text-align:left;}
+.email-card-toggle:hover,.email-card-toggle:focus-visible{background:rgba(255,255,255,.025);outline:none;}
+.email-card.open .email-card-toggle{background:rgba(196,165,116,.045);}
+.email-from{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:13px;font-weight:700;}
+.email-subject{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;color:var(--soft);font-size:15px;font-weight:500;}
+.email-preview{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;color:var(--muted);font-size:12px;}
+.email-meta{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:7px;margin-top:8px;}
 .email-wait{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;color:#e4cfaa;background:rgba(196,165,116,.14);border:1px solid rgba(196,165,116,.28);font-variant-numeric:tabular-nums;}
-.email-actions{display:flex;justify-content:flex-end;margin:13px 0 0 30px;}
-.copy-draft{min-width:112px;}
+.email-queued{font-size:10.5px;font-weight:700;color:var(--sydney);}
+.email-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);}
+.email-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 10px;}
+.email-segment{display:inline-flex;min-width:0;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:999px;padding:2px;}
+.email-segment button{min-width:92px;min-height:40px;padding:8px 15px;background:transparent;border:0;border-radius:999px;color:var(--muted);font-size:13px;font-weight:600;}
+.email-segment button.on{background:var(--brass-soft);color:var(--ink);}
+.email-detail-scroll{min-width:0;max-height:min(420px,50dvh);overflow-y:auto;padding:2px 16px 16px;overscroll-behavior:contain;}
+.email-incoming-head{padding:8px 0 12px;border-bottom:1px solid var(--line);}
+.email-incoming-from{font-weight:700;overflow-wrap:anywhere;}
+.email-incoming-subject{margin-top:4px;color:var(--soft);font-size:16px;overflow-wrap:anywhere;}
+.email-incoming-body{margin:14px 0 0;color:var(--soft);font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
+.email-reply-label{display:block;margin:5px 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.email-reply{display:block;width:100%;min-width:0;min-height:190px;resize:vertical;padding:12px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;}
+.email-reply:focus{outline:none;border-color:var(--brass);}
+.email-actions{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:8px;padding:10px 16px max(12px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);}
+.email-save-state{flex:1;min-width:0;color:var(--muted);font-size:11px;}
+.copy-draft{min-width:92px;}
+.queue-send{min-width:120px;}
 .email-empty{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:42px 20px;}
 .col.deemphasized{opacity:.58;}
 .composer{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;max-width:100vw;overflow:hidden;background:rgba(18,17,15,.96);border-top:1px solid var(--line-strong);padding:8px max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
@@ -180,9 +200,17 @@ a{color:var(--brass)}
   .email-filterbar{display:block;padding-bottom:14px;}
   .email-filterbar .viewbar-label{display:block;margin-bottom:8px;}
   .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
-  .email-card{padding:14px 12px;}
-  .email-draft,.email-meta,.email-actions{margin-left:30px;max-width:calc(100% - 30px);}
-  .email-actions .copy-draft{width:100%;min-height:44px;}
+  .email-card .chk{margin:16px 0 0 12px;}
+  .email-card-toggle{min-height:78px;padding-right:12px;}
+  .email-detail-head{padding:12px;}
+  .email-segment{width:100%;}
+  .email-segment button{flex:1;min-width:0;min-height:44px;}
+  .email-detail-scroll{max-height:48dvh;padding:2px 12px 12px;}
+  .email-reply{min-height:180px;}
+  .email-actions{padding:10px 12px max(12px,env(safe-area-inset-bottom,0px));}
+  .email-actions .btn{min-height:44px;}
+  .email-actions .copy-draft{min-width:44px;}
+  .email-actions .queue-send{flex:1;max-width:190px;}
   .login-card{padding:28px 20px 22px;}
   .login-card h1{font-size:30px;}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
@@ -406,6 +434,9 @@ let currentUser = null;
 let actor = localStorage.getItem("ops_actor") || "chris";
 if(!["chris","sydney","emails"].includes(actor)) actor = "chris";
 let cards = [];
+let openEmailCardId = null;
+let openEmailPanel = "reply";
+let emailQueueColumnsAvailable = true;
 let projectFilter = "";
 let emailProjectFilter = "";
 let drawerOpen = false;
@@ -819,22 +850,46 @@ async function onSignedIn(session){
 async function loadCards(){
   if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
-  const fields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,received_at,created_at,updated_at";
-  const legacyFields = fields.replace("received_at,", "");
+  const baseFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,received_at,created_at,updated_at";
+  const emailFields = "inbound_from,inbound_subject,inbound_body,inbound_message_id,send_requested_at,send_requested_by";
+  const legacyFields = baseFields.replace("received_at,", "");
+  const emptyEmailFields = {
+    inbound_from:null,
+    inbound_subject:null,
+    inbound_body:null,
+    inbound_message_id:null,
+    send_requested_at:null,
+    send_requested_by:null
+  };
   let result = await sb.from("ops_cards")
-    .select(fields)
+    .select(baseFields+","+emailFields)
     .order("sort", { ascending:true })
     .order("created_at", { ascending:true });
+  emailQueueColumnsAvailable = !result.error;
+  if(result.error && (result.error.code==="42703" || /inbound_|send_requested/i.test(result.error.message||""))){
+    result = await sb.from("ops_cards")
+      .select(baseFields)
+      .order("sort", { ascending:true })
+      .order("created_at", { ascending:true });
+    if(!result.error) result.data = (result.data||[]).map(card => ({ ...card, ...emptyEmailFields }));
+  }
   if(result.error && (result.error.code==="42703" || /received_at/i.test(result.error.message||""))){
     result = await sb.from("ops_cards")
       .select(legacyFields)
       .order("sort", { ascending:true })
       .order("created_at", { ascending:true });
-    if(!result.error) result.data = (result.data||[]).map(card => ({ ...card, received_at:null }));
+    if(!result.error) result.data = (result.data||[]).map(card => ({
+      ...card,
+      received_at:null,
+      ...emptyEmailFields
+    }));
   }
   const { data, error } = result;
   if(error){ setStatus("Could not load cards: "+error.message, true); return; }
   cards = data || [];
+  if(openEmailCardId && !cards.some(card => card.id===openEmailCardId && !card.done_at)){
+    openEmailCardId = null;
+  }
   setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
   renderBoard();
   if(drawerOpen) renderDrawer();
@@ -921,23 +976,63 @@ function emailUrgency(card){
   return "Due "+fmtDue(card.due_on);
 }
 
+function emailPreview(card){
+  const text = String(card.inbound_body||"").replace(/\s+/g, " ").trim();
+  return text || "Incoming message unavailable";
+}
+
 function emailCardHTML(c){
   const inbox = projectKey(c.project);
   const draft = c.snippet || "";
-  return `<article class="card email-card" data-id="${esc(c.id)}">
-    <div class="card-top">
-      <input type="checkbox" class="chk" title="I responded" aria-label="Mark ${esc(c.title)} responded">
-      <div class="title">${esc(c.title)}</div>
+  const from = c.inbound_from || "Sender unavailable";
+  const subject = c.inbound_subject || c.title || "(no subject)";
+  const open = c.id===openEmailCardId;
+  const queued = !!c.send_requested_at;
+  const queueDisabled = queued || !emailQueueColumnsAvailable;
+  const detail = open ? `
+    <section class="email-detail" aria-label="Email details">
+      <div class="email-detail-head">
+        <div class="email-segment" role="group" aria-label="Choose incoming email or reply draft">
+          <button type="button" class="email-panel-btn${openEmailPanel==="incoming"?" on":""}" data-panel="incoming" aria-pressed="${openEmailPanel==="incoming"}">Incoming</button>
+          <button type="button" class="email-panel-btn${openEmailPanel==="reply"?" on":""}" data-panel="reply" aria-pressed="${openEmailPanel==="reply"}">Reply</button>
+        </div>
+      </div>
+      <div class="email-detail-scroll">
+        ${openEmailPanel==="incoming" ? `
+          <div class="email-incoming">
+            <div class="email-incoming-head">
+              <div class="email-incoming-from">From: ${esc(from)}</div>
+              <div class="email-incoming-subject">${esc(subject)}</div>
+            </div>
+            <div class="email-incoming-body">${esc(c.inbound_body||"Received message body unavailable.")}</div>
+          </div>
+        ` : `
+          <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
+          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
+        `}
+      </div>
+      <div class="email-actions">
+        <span class="email-save-state" aria-live="polite">${queued?"Queued for Sydney":""}</span>
+        ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
+        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${!emailQueueColumnsAvailable?"Apply sql/ops_email_replies.sql before queueing replies":queued?"Reply is queued for Sydney":"Save and queue this reply"}">${queued?"Sending…":emailQueueColumnsAvailable?"Send":"Setup required"}</button>
+      </div>
+    </section>` : "";
+  return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
+    <div class="email-card-row">
+      <input type="checkbox" class="chk" title="Mark manually done" aria-label="Mark ${esc(subject)} done">
+      <button type="button" class="email-card-toggle" aria-expanded="${open}">
+        <span class="email-from">${esc(from)}</span>
+        <span class="email-subject">${esc(subject)}</span>
+        <span class="email-preview">${esc(emailPreview(c))}</span>
+        <span class="email-meta">
+          <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
+          <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
+          <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
+          ${queued?`<span class="email-queued">Queued</span>`:""}
+        </span>
+      </button>
     </div>
-    <div class="email-meta">
-      <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
-      <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
-      <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
-    </div>
-    ${draft ? `<div class="email-draft">${esc(draft)}</div>` : `<div class="email-draft">No draft added yet.</div>`}
-    <div class="email-actions">
-      <button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy draft</button>
-    </div>
+    ${detail}
   </article>`;
 }
 
@@ -1283,29 +1378,93 @@ function bindEmailCards(){
     const card = cards.find(c => c.id===el.dataset.id);
     if(!card) return;
     el.querySelector(".chk").onchange = e => completeCard(card, e.target);
+    el.querySelector(".email-card-toggle").onclick = async () => {
+      if(reply && !(await persistDraft())) return;
+      if(openEmailCardId===card.id){
+        openEmailCardId = null;
+      }else{
+        openEmailCardId = card.id;
+        openEmailPanel = "reply";
+      }
+      renderBoard();
+    };
+    el.querySelectorAll(".email-panel-btn").forEach(button => {
+      button.onclick = async () => {
+        if(reply && !(await persistDraft())) return;
+        openEmailPanel = button.dataset.panel;
+        renderBoard();
+      };
+    });
+    const reply = el.querySelector(".email-reply");
+    const saveState = el.querySelector(".email-save-state");
+    let savePromise = null;
+    const persistDraft = async () => {
+      if(!reply) return true;
+      if(savePromise){
+        await savePromise;
+        return reply.value===(card.snippet||"") ? true : persistDraft();
+      }
+      if(reply.value===(card.snippet||"")) return true;
+      if(saveState) saveState.textContent = "Saving…";
+      savePromise = patchCard(card.id, { snippet:reply.value }, { render:false });
+      const saved = await savePromise;
+      savePromise = null;
+      if(saveState) saveState.textContent = saved ? "Draft saved" : "Draft not saved";
+      return saved;
+    };
+    if(reply){
+      reply.oninput = () => {
+        if(saveState) saveState.textContent = "Unsaved";
+        const copyButton = el.querySelector(".copy-draft");
+        if(copyButton) copyButton.disabled = !reply.value;
+      };
+      reply.onchange = persistDraft;
+      reply.onblur = persistDraft;
+    }
     const copy = el.querySelector(".copy-draft");
-    copy.onclick = async () => {
-      if(!card.snippet) return;
+    if(copy) copy.onclick = async () => {
+      const text = reply ? reply.value : card.snippet;
+      if(!text) return;
       try{
-        await copyText(card.snippet);
+        await copyText(text);
         copy.textContent = "Copied";
         setStatus("Draft copied.");
-        setTimeout(() => { if(copy.isConnected) copy.textContent = "Copy draft"; }, 1600);
+        setTimeout(() => { if(copy.isConnected) copy.textContent = "Copy"; }, 1600);
       }catch(_){
-        setStatus("Could not copy the draft. Press and hold the draft text to copy it.", true);
+        setStatus("Could not copy the draft.", true);
+      }
+    };
+    const send = el.querySelector(".queue-send");
+    if(send && !send.disabled) send.onclick = async () => {
+      if(!(await persistDraft())) return;
+      if(!window.confirm(`Queue this reply to ${card.inbound_from||"the sender"} for Sydney to send?`)) return;
+      send.disabled = true;
+      send.textContent = "Sending…";
+      if(saveState) saveState.textContent = "Queueing…";
+      const saved = await patchCard(card.id, {
+        send_requested_at:isoNow(),
+        send_requested_by:"chris"
+      }, { render:false });
+      if(saved){
+        setStatus("Reply queued. Sydney will send it from the correct inbox.");
+        renderBoard();
+      }else{
+        send.disabled = false;
+        send.textContent = "Send";
+        if(saveState) saveState.textContent = "Not queued";
       }
     };
   });
 }
 
-async function patchCard(id, fields){
+async function patchCard(id, fields, options){
   if(!sb) return false;
   const payload = Object.assign({ updated_at: isoNow() }, fields);
   const { error } = await sb.from("ops_cards").update(payload).eq("id", id);
   if(error){ setStatus("Update failed: "+error.message, true); return false; }
   const i = cards.findIndex(c => c.id===id);
   if(i>=0) cards[i] = Object.assign({}, cards[i], payload);
-  renderBoard();
+  if(!options || options.render!==false) renderBoard();
   return true;
 }
 
