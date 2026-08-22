@@ -92,6 +92,26 @@ a{color:var(--brass)}
 .clock .date{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
 .who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 .who span{font-size:12px;color:var(--muted);}
+.alert-wrap{position:relative;flex-shrink:0;}
+.alert-btn{position:relative;z-index:46;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:transparent;color:var(--soft);border:1px solid var(--line-strong);border-radius:12px;-webkit-tap-highlight-color:transparent;}
+.alert-btn:hover,.alert-btn[aria-expanded="true"]{color:var(--ink);border-color:rgba(196,165,116,.45);background:var(--brass-soft);}
+.alert-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.alert-badge{position:absolute;top:-5px;right:-5px;min-width:21px;height:21px;padding:0 5px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);border-radius:999px;background:#df3f4d;color:#fff!important;font-size:10px!important;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
+.alert-back{position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.4);}
+.alert-panel{position:absolute;z-index:45;top:calc(100% + 8px);right:0;width:min(380px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:min(560px,calc(100dvh - 100px));overflow:hidden;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line-strong);border-radius:16px;box-shadow:var(--shadow);text-align:left;}
+.alert-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 14px 10px;border-bottom:1px solid var(--line);}
+.alert-head h2{margin:0;font-family:var(--serif);font-size:23px;font-weight:400;}
+.alert-mark-all{min-height:44px;background:none;border:0;color:var(--brass);font-size:12px;font-weight:600;padding:8px;}
+.alert-mark-all:disabled{color:var(--muted);opacity:.65;cursor:default;}
+.alert-list{min-width:0;overflow-y:auto;overscroll-behavior:contain;}
+.alert-item{width:100%;min-width:0;min-height:64px;padding:11px 14px;display:block;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--soft);text-align:left;}
+.alert-item:hover,.alert-item:focus-visible{background:var(--card);outline:none;}
+.alert-item.unread{box-shadow:inset 3px 0 #df3f4d;}
+.alert-item-title{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:13.5px;font-weight:600;}
+.alert-item-body{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px;color:var(--muted);font-size:12px;}
+.alert-item-time{display:block;margin-top:4px;color:var(--muted);font-size:10.5px;}
+.alert-empty{padding:28px 16px;text-align:center;color:var(--muted);font-family:var(--serif);font-style:italic;}
+.alert-foot{padding:9px 14px;color:var(--muted);font-size:10.5px;border-top:1px solid var(--line);}
 .actor{display:inline-flex;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:999px;padding:2px;}
 .actor button{background:transparent;border:none;color:var(--muted);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;}
 .actor button.on{background:var(--brass-soft);color:var(--ink);}
@@ -148,6 +168,7 @@ a{color:var(--brass)}
   .clock{display:none;}
   .who{justify-content:flex-start;}
   .who #userLabel{display:none;}
+  .alert-panel{position:fixed;top:max(72px,calc(env(safe-area-inset-top, 0px) + 58px));right:max(12px,env(safe-area-inset-right, 0px));left:max(12px,env(safe-area-inset-left, 0px));width:auto;max-width:none;max-height:calc(100dvh - max(88px,calc(env(safe-area-inset-top, 0px) + 74px)));}
   .brand h1{font-size:27px;}
   .brand .navlinks{display:none;}
   .viewbar{padding:12px 0 10px;}
@@ -281,6 +302,21 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
         </div>
         <div class="who">
           <span id="userLabel">Signed in</span>
+          <div class="alert-wrap">
+            <button type="button" class="alert-btn" id="alertBtn" aria-label="Alerts" aria-controls="alertPanel" aria-expanded="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+              <span class="alert-badge hidden" id="alertBadge" aria-live="polite">0</span>
+            </button>
+            <div class="alert-back hidden" id="alertBack"></div>
+            <aside class="alert-panel hidden" id="alertPanel" aria-label="Alerts">
+              <div class="alert-head">
+                <h2>Alerts</h2>
+                <button type="button" class="alert-mark-all" id="alertMarkAll">Mark all read</button>
+              </div>
+              <div class="alert-list" id="alertList"></div>
+              <div class="alert-foot" id="alertFoot"></div>
+            </aside>
+          </div>
           <button class="btn tiny ghost" id="signOutBtn">Sign out</button>
         </div>
       </div>
@@ -370,6 +406,15 @@ let savingOrder = false;
 let touchDrag = null;
 let touchScrollFrame = 0;
 let suppressTouchClickUntil = 0;
+let alerts = [];
+let alertsInitialized = false;
+let alertsAvailable = true;
+let alertChannel = null;
+let alertPollTimer = 0;
+let alertRealtimeTimer = 0;
+let alertPanelOpen = false;
+let serviceWorkerRegistration = null;
+const knownAlertIds = new Set();
 
 const TOUCH_HOLD_MS = 450;
 const TOUCH_CANCEL_DISTANCE = 10;
@@ -429,6 +474,279 @@ function showApp(){
   renderBoard();
 }
 
+function unreadAlertCount(){
+  return alerts.filter(alert => !alert.read_at).length;
+}
+
+function alertTime(value){
+  if(!value) return "";
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString([], { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+}
+
+function notificationFootText(){
+  if(!("Notification" in window)) return "System notifications are not available in this app.";
+  if(Notification.permission==="granted") return "System notifications are on while Ops is open.";
+  if(Notification.permission==="denied") return "System notifications are blocked in device settings.";
+  return "Opening Alerts once asks this device for notification permission.";
+}
+
+function syncAppBadge(count){
+  try{
+    if(count>0 && typeof navigator.setAppBadge==="function"){
+      Promise.resolve(navigator.setAppBadge(count)).catch(()=>{});
+    }else if(count===0 && typeof navigator.clearAppBadge==="function"){
+      Promise.resolve(navigator.clearAppBadge()).catch(()=>{});
+    }
+  }catch(_){}
+}
+
+function renderAlerts(){
+  const unread = unreadAlertCount();
+  const badge = $("#alertBadge");
+  badge.textContent = unread>99 ? "99+" : String(unread);
+  badge.classList.toggle("hidden", unread===0);
+  $("#alertBtn").setAttribute("aria-label", unread ? `Alerts, ${unread} unread` : "Alerts, none unread");
+  $("#alertMarkAll").disabled = unread===0 || !alertsAvailable;
+  syncAppBadge(unread);
+
+  const list = $("#alertList");
+  if(!alertsAvailable){
+    list.innerHTML = `<div class="alert-empty">Alerts need the database setup in sql/ops_alerts.sql.</div>`;
+  }else if(!alerts.length){
+    list.innerHTML = `<div class="alert-empty">No alerts yet.</div>`;
+  }else{
+    list.innerHTML = alerts.map(alert => `<button type="button" class="alert-item${alert.read_at?"":" unread"}" data-alert-id="${esc(alert.id)}">
+      <span class="alert-item-title">${esc(alert.title)}</span>
+      <span class="alert-item-body">${esc(alert.body||"")}</span>
+      <span class="alert-item-time">${esc(alertTime(alert.created_at))}</span>
+    </button>`).join("");
+    list.querySelectorAll("[data-alert-id]").forEach(button => {
+      button.onclick = () => openAlert(button.dataset.alertId);
+    });
+  }
+  $("#alertFoot").textContent = notificationFootText();
+}
+
+function openAlertPanel(){
+  alertPanelOpen = true;
+  $("#alertBtn").setAttribute("aria-expanded", "true");
+  $("#alertPanel").classList.remove("hidden");
+  $("#alertBack").classList.remove("hidden");
+  renderAlerts();
+}
+
+function closeAlertPanel(){
+  alertPanelOpen = false;
+  $("#alertBtn").setAttribute("aria-expanded", "false");
+  $("#alertPanel").classList.add("hidden");
+  $("#alertBack").classList.add("hidden");
+}
+
+async function requestNotificationPermissionOnce(){
+  if(!("Notification" in window) || Notification.permission!=="default") return;
+  if(localStorage.getItem("ops_notification_prompted")==="1") return;
+  localStorage.setItem("ops_notification_prompted", "1");
+  try{
+    await Notification.requestPermission();
+  }catch(_){}
+  renderAlerts();
+}
+
+function safeAlertUrl(href){
+  if(!href) return "";
+  try{
+    const url = new URL(href, location.href);
+    return url.origin===location.origin ? url.href : "";
+  }catch(_){
+    return "";
+  }
+}
+
+async function showSystemNotification(alert){
+  if(!alert || alert.read_at || !("Notification" in window) || Notification.permission!=="granted") return;
+  const target = safeAlertUrl(alert.href) || new URL("ops.html", location.href).href;
+  const options = {
+    body: alert.body || "",
+    icon: "icons/icon-192.png",
+    badge: "icons/favicon-32.png",
+    tag: "ops-alert-"+alert.id,
+    data: { url:target }
+  };
+  try{
+    if(serviceWorkerRegistration && serviceWorkerRegistration.showNotification){
+      await serviceWorkerRegistration.showNotification(alert.title, options);
+    }else{
+      const notification = new Notification(alert.title, options);
+      notification.onclick = () => {
+        window.focus();
+        if(target) location.href = target;
+        notification.close();
+      };
+    }
+  }catch(_){}
+}
+
+function applyAlertRow(row, notify){
+  if(!row || !row.id) return;
+  const isNew = !knownAlertIds.has(row.id);
+  knownAlertIds.add(row.id);
+  const index = alerts.findIndex(alert => alert.id===row.id);
+  if(index>=0) alerts[index] = row;
+  else alerts.push(row);
+  alerts.sort((a,b) => String(b.created_at||"").localeCompare(String(a.created_at||"")));
+  alerts = alerts.slice(0, 50);
+  renderAlerts();
+  if(notify && isNew && !row.read_at) showSystemNotification(row);
+}
+
+async function loadAlerts(options){
+  if(!sb || !currentUser) return;
+  const notifyNew = !!(options && options.notifyNew && alertsInitialized);
+  const { data, error } = await sb.from("ops_alerts")
+    .select("id,title,body,kind,href,card_id,read_at,created_at")
+    .order("created_at", { ascending:false })
+    .limit(50);
+  if(error){
+    alertsAvailable = false;
+    alerts = [];
+    renderAlerts();
+    return;
+  }
+  alertsAvailable = true;
+  const rows = data || [];
+  if(notifyNew){
+    rows.filter(row => !knownAlertIds.has(row.id) && !row.read_at).forEach(showSystemNotification);
+  }
+  alerts = rows;
+  rows.forEach(row => knownAlertIds.add(row.id));
+  alertsInitialized = true;
+  renderAlerts();
+}
+
+function startAlertPolling(){
+  if(alertPollTimer) return;
+  alertPollTimer = setInterval(() => {
+    if(currentUser && !document.hidden) loadAlerts({ notifyNew:true });
+  }, 20000);
+}
+
+function stopAlertPolling(){
+  if(alertPollTimer) clearInterval(alertPollTimer);
+  alertPollTimer = 0;
+}
+
+function subscribeToAlerts(){
+  if(!sb || !currentUser || alertChannel) return;
+  startAlertPolling();
+  alertChannel = sb.channel("ops-alerts-"+currentUser.id)
+    .on("postgres_changes", {
+      event:"*",
+      schema:"public",
+      table:"ops_alerts",
+      filter:"user_id=eq."+currentUser.id
+    }, payload => {
+      if(payload.eventType==="DELETE"){
+        loadAlerts();
+        return;
+      }
+      applyAlertRow(payload.new, payload.eventType==="INSERT");
+    })
+    .subscribe(status => {
+      if(status==="SUBSCRIBED"){
+        stopAlertPolling();
+        clearTimeout(alertRealtimeTimer);
+        loadAlerts({ notifyNew:true });
+      }else if(status==="CHANNEL_ERROR" || status==="TIMED_OUT" || status==="CLOSED"){
+        startAlertPolling();
+      }
+    });
+  alertRealtimeTimer = setTimeout(startAlertPolling, 8000);
+}
+
+async function markAlertRead(id){
+  const alert = alerts.find(item => item.id===id);
+  if(!alert || alert.read_at) return true;
+  const previous = alert.read_at;
+  alert.read_at = isoNow();
+  renderAlerts();
+  const { error } = await sb.from("ops_alerts").update({ read_at:alert.read_at }).eq("id", id).is("read_at", null);
+  if(error){
+    alert.read_at = previous;
+    renderAlerts();
+    return false;
+  }
+  return true;
+}
+
+async function markAllAlertsRead(){
+  const unread = alerts.filter(alert => !alert.read_at);
+  if(!unread.length || !sb || !currentUser) return;
+  const now = isoNow();
+  unread.forEach(alert => { alert.read_at = now; });
+  renderAlerts();
+  const { error } = await sb.from("ops_alerts")
+    .update({ read_at:now })
+    .eq("user_id", currentUser.id)
+    .is("read_at", null);
+  if(error) await loadAlerts();
+}
+
+async function openAlert(id){
+  const alert = alerts.find(item => item.id===id);
+  if(!alert) return;
+  await markAlertRead(id);
+  const target = safeAlertUrl(alert.href);
+  if(target){
+    location.href = target;
+    return;
+  }
+  closeAlertPanel();
+  if(!alert.card_id) return;
+  const card = cards.find(item => item.id===alert.card_id);
+  if(!card) return;
+  actor = isEmailCard(card) ? "emails" : (card.owner==="sydney" ? "sydney" : "chris");
+  localStorage.setItem("ops_actor", actor);
+  syncActorUI();
+  renderBoard();
+  const cardElement = document.querySelector(`[data-id="${CSS.escape(card.id)}"]`);
+  if(cardElement) cardElement.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+
+async function createOpsAlert(fields){
+  if(!sb || !currentUser || !fields || !fields.title) return null;
+  const { data, error } = await sb.from("ops_alerts").insert({
+    title: fields.title,
+    body: fields.body || "",
+    kind: fields.kind || "general",
+    href: fields.href || null,
+    card_id: fields.card_id || null
+  }).select("id,title,body,kind,href,card_id,read_at,created_at").single();
+  if(error){
+    setStatus("Card saved. Could not create alert: "+error.message, true);
+    return null;
+  }
+  applyAlertRow(data, false);
+  return data;
+}
+
+async function createAlertForCard(card){
+  if(!card) return;
+  if(isEmailCard(card)){
+    await createOpsAlert({ title:"New email reply", body:card.title, kind:"email", card_id:card.id });
+  }else if(card.column_key==="needs-you"){
+    await createOpsAlert({ title:"Needs you", body:card.title, kind:"needs-you", card_id:card.id });
+  }
+}
+
+async function registerServiceWorker(){
+  if(!("serviceWorker" in navigator) || !window.isSecureContext) return;
+  try{
+    serviceWorkerRegistration = await navigator.serviceWorker.register("sw.js", { scope:"./" });
+  }catch(_){}
+}
+
 function syncActorUI(){
   $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
   const showingEmails = actor==="emails";
@@ -473,6 +791,9 @@ async function signInPassword(){
   if(error) msg.textContent = error.message + " — no password yet? Use the link option below, then set one on Studio Pod.";
 }
 async function signOut(){
+  if(alertChannel && sb) await sb.removeChannel(alertChannel);
+  stopAlertPolling();
+  syncAppBadge(0);
   if(sb) await sb.auth.signOut();
   currentUser = null;
   location.reload();
@@ -482,6 +803,8 @@ async function onSignedIn(session){
   currentUser = { email: session.user.email, id: session.user.id };
   showApp();
   await loadCards();
+  await loadAlerts();
+  subscribeToAlerts();
 }
 
 async function loadCards(){
@@ -1077,7 +1400,7 @@ async function sendComposer(){
     owner: parsed.owner,
     due_on: null,
     source: parsed.source
-  });
+  }, { createAlert:true });
   $("#sendBtn").disabled = false;
   if(!row) return;
   input.value = "";
@@ -1085,7 +1408,7 @@ async function sendComposer(){
   input.focus();
 }
 
-async function createCard(fields){
+async function createCard(fields, options){
   if(!sb){ setStatus("Not signed in.", true); return null; }
   const siblings = openCards().filter(c => c.column_key===fields.column_key);
   const sort = siblings.length ? Math.max(...siblings.map(c => c.sort||0)) + 1 : 0;
@@ -1109,6 +1432,7 @@ async function createCard(fields){
   setStatus("Added.");
   renderBoard();
   if(data.column_key==="sydney") await notifySydneyOwns(data);
+  if(options && options.createAlert) await createAlertForCard(data);
   return data;
 }
 
@@ -1130,6 +1454,15 @@ $("#loginBtn").onclick = signInPassword;
 $("#magicBtn").onclick = sendMagicLink;
 $("#loginPassword").onkeydown = e => { if(e.key==="Enter") signInPassword(); };
 $("#signOutBtn").onclick = signOut;
+$("#alertBtn").onclick = () => {
+  requestNotificationPermissionOnce();
+  if(alertPanelOpen) closeAlertPanel(); else openAlertPanel();
+};
+$("#alertBack").onclick = closeAlertPanel;
+$("#alertMarkAll").onclick = markAllAlertsRead;
+document.addEventListener("keydown", e => {
+  if(e.key==="Escape" && alertPanelOpen) closeAlertPanel();
+});
 
 let speechRecognition = null;
 function setupSpeech(){
@@ -1338,6 +1671,8 @@ function hideInstallHintsIfStandalone(){
 async function boot(){
   hideInstallHintsIfStandalone();
   setupSpeech();
+  registerServiceWorker();
+  renderAlerts();
   if(!sb){
     $("#boot").textContent = "Could not load the Supabase library.";
     return;
@@ -1346,7 +1681,12 @@ async function boot(){
   sb.auth.onAuthStateChange((_e, s) => { if(s && !currentUser) onSignedIn(s); });
   if(session) onSignedIn(session); else showLogin();
 }
-document.addEventListener("visibilitychange", () => { if(!document.hidden && currentUser) loadCards(); });
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden && currentUser){
+    loadCards();
+    loadAlerts({ notifyNew:true });
+  }
+});
 setInterval(() => { if(currentUser) loadCards(); }, 45000);
 boot();
 </script>
