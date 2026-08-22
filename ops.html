@@ -584,7 +584,7 @@ function renderBoard(){
     return;
   }
   root.classList.remove("email-board");
-  const open = openCards().filter(visible);
+  const open = openCards().filter(c => !isEmailCard(c)).filter(visible);
   const ordered = actor==="chris"
     ? COLUMNS
     : ["sydney","today","this-week","later","needs-you"]
