@@ -438,6 +438,7 @@ let cards = [];
 let openEmailCardId = null;
 let openEmailPanel = "reply";
 let emailQueueColumnsAvailable = true;
+const emailDrafts = new Map();
 let projectFilter = "";
 let emailProjectFilter = "";
 let drawerOpen = false;
@@ -459,6 +460,7 @@ const knownAlertIds = new Set();
 const TOUCH_HOLD_MS = 450;
 const TOUCH_CANCEL_DISTANCE = 10;
 const TOUCH_CONTROL_SELECTOR = "button,input,select,textarea,a,label";
+const EMAIL_DRAFT_SAVE_DELAY_MS = 800;
 
 function setStatus(msg, err){
   const el = $("#status");
@@ -747,6 +749,7 @@ async function openAlert(id){
   if(!alert.card_id) return;
   const card = cards.find(item => item.id===alert.card_id);
   if(!card) return;
+  if(!(await finishOpenEmailDraft())) return;
   actor = isEmailCard(card) ? "emails" : (card.owner==="sydney" ? "sydney" : "chris");
   localStorage.setItem("ops_actor", actor);
   syncActorUI();
@@ -801,7 +804,8 @@ function syncActorUI(){
     : "Tell Ops what to add…";
 }
 
-$$(".actor button").forEach(b => b.onclick = () => {
+$$(".actor button").forEach(b => b.onclick = async () => {
+  if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
   actor = b.dataset.actor;
   localStorage.setItem("ops_actor", actor);
   syncActorUI();
@@ -888,10 +892,21 @@ async function loadCards(){
   const { data, error } = result;
   if(error){ setStatus("Could not load cards: "+error.message, true); return; }
   cards = data || [];
+  emailDrafts.forEach((draft, cardId) => {
+    const card = cards.find(item => item.id===cardId);
+    if(card) card.snippet = draft.value;
+  });
   if(openEmailCardId && !cards.some(card => card.id===openEmailCardId && !card.done_at)){
+    discardEmailDraft(openEmailCardId);
     openEmailCardId = null;
   }
   setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
+  if(shouldPreserveOpenEmailReply()){
+    $("#doneCount").textContent = String(doneCards().length);
+    refreshEmailWaitChips();
+    if(drawerOpen) renderDrawer();
+    return;
+  }
   renderBoard();
   if(drawerOpen) renderDrawer();
 }
@@ -982,9 +997,32 @@ function emailPreview(card){
   return text || "Incoming message unavailable";
 }
 
+function emailDraftFor(card){
+  let draft = emailDrafts.get(card.id);
+  if(!draft){
+    const value = card.snippet || "";
+    draft = { value, savedValue:value, dirty:false, savePromise:null, saveTimer:0 };
+    emailDrafts.set(card.id, draft);
+  }
+  return draft;
+}
+
+function discardEmailDraft(cardId){
+  const draft = emailDrafts.get(cardId);
+  if(draft && draft.saveTimer) clearTimeout(draft.saveTimer);
+  emailDrafts.delete(cardId);
+}
+
+function shouldPreserveOpenEmailReply(){
+  if(actor!=="emails" || openEmailPanel!=="reply" || !openEmailCardId || !emailDrafts.has(openEmailCardId)) return false;
+  const reply = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-reply`);
+  return !!(reply && !reply.readOnly);
+}
+
 function emailCardHTML(c){
   const inbox = projectKey(c.project);
-  const draft = c.snippet || "";
+  const localDraft = emailDrafts.get(c.id);
+  const draft = localDraft ? localDraft.value : (c.snippet || "");
   const from = c.inbound_from || "Sender unavailable";
   const subject = c.inbound_subject || c.title || "(no subject)";
   const open = c.id===openEmailCardId;
@@ -1009,13 +1047,13 @@ function emailCardHTML(c){
           </div>
         ` : `
           <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
-          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
+          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…"${queued?" readonly":""}>${esc(draft)}</textarea>
         `}
       </div>
       <div class="email-actions">
         <span class="email-save-state" aria-live="polite">${queued?"Queued for Sydney":""}</span>
         ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
-        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${!emailQueueColumnsAvailable?"Apply sql/ops_email_replies.sql before queueing replies":queued?"Reply is queued for Sydney":"Save and queue this reply"}">${queued?"Sending…":emailQueueColumnsAvailable?"Send":"Setup required"}</button>
+        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${!emailQueueColumnsAvailable?"Apply sql/ops_email_replies.sql before queueing replies":queued?"Reply is queued for Sydney":"Save and queue this reply"}">${queued?"Queued":emailQueueColumnsAvailable?"Send":"Setup required"}</button>
       </div>
     </section>` : "";
   return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
@@ -1382,7 +1420,7 @@ function bindEmailCards(){
     if(!card) return;
     el.querySelector(".chk").onchange = e => completeCard(card, e.target);
     el.querySelector(".email-card-toggle").onclick = async () => {
-      if(reply && !(await persistDraft())) return;
+      if(!(await finishOpenEmailDraft())) return;
       if(openEmailCardId===card.id){
         openEmailCardId = null;
       }else{
@@ -1393,36 +1431,30 @@ function bindEmailCards(){
     };
     el.querySelectorAll(".email-panel-btn").forEach(button => {
       button.onclick = async () => {
-        if(reply && !(await persistDraft())) return;
+        if(openEmailPanel==="reply" && !(await finishOpenEmailDraft())) return;
         openEmailPanel = button.dataset.panel;
         renderBoard();
       };
     });
     const reply = el.querySelector(".email-reply");
     const saveState = el.querySelector(".email-save-state");
-    let savePromise = null;
-    const persistDraft = async () => {
-      if(!reply) return true;
-      if(savePromise){
-        await savePromise;
-        return reply.value===(card.snippet||"") ? true : persistDraft();
-      }
-      if(reply.value===(card.snippet||"")) return true;
-      if(saveState) saveState.textContent = "Saving…";
-      savePromise = patchCard(card.id, { snippet:reply.value }, { render:false });
-      const saved = await savePromise;
-      savePromise = null;
-      if(saveState) saveState.textContent = saved ? "Draft saved" : "Draft not saved";
-      return saved;
-    };
-    if(reply){
+    if(reply && !reply.readOnly){
+      const draft = emailDraftFor(card);
+      reply.value = draft.value;
       reply.oninput = () => {
+        draft.value = reply.value;
+        draft.dirty = draft.value!==draft.savedValue;
         if(saveState) saveState.textContent = "Unsaved";
         const copyButton = el.querySelector(".copy-draft");
         if(copyButton) copyButton.disabled = !reply.value;
+        if(draft.saveTimer) clearTimeout(draft.saveTimer);
+        draft.saveTimer = setTimeout(() => {
+          draft.saveTimer = 0;
+          persistEmailDraft(card.id);
+        }, EMAIL_DRAFT_SAVE_DELAY_MS);
       };
-      reply.onchange = persistDraft;
-      reply.onblur = persistDraft;
+      reply.onchange = () => persistEmailDraft(card.id);
+      reply.onblur = () => persistEmailDraft(card.id);
     }
     const copy = el.querySelector(".copy-draft");
     if(copy) copy.onclick = async () => {
@@ -1439,7 +1471,7 @@ function bindEmailCards(){
     };
     const send = el.querySelector(".queue-send");
     if(send && !send.disabled) send.onclick = async () => {
-      if(!(await persistDraft())) return;
+      if(!(await persistEmailDraft(card.id))) return;
       if(!window.confirm(`Queue this reply to ${card.inbound_from||"the sender"} for Sydney to send?`)) return;
       send.disabled = true;
       send.textContent = "Sending…";
@@ -1449,6 +1481,7 @@ function bindEmailCards(){
         send_requested_by:"chris"
       }, { render:false });
       if(saved){
+        discardEmailDraft(card.id);
         setStatus("Reply queued. Sydney will send it from the correct inbox.");
         renderBoard();
       }else{
@@ -1458,6 +1491,49 @@ function bindEmailCards(){
       }
     };
   });
+}
+
+function updateEmailDraftSaveState(cardId, text){
+  const card = document.querySelector(`.email-card[data-id="${CSS.escape(cardId)}"]`);
+  const saveState = card && card.querySelector(".email-save-state");
+  if(saveState) saveState.textContent = text;
+}
+
+async function persistEmailDraft(cardId){
+  const draft = emailDrafts.get(cardId);
+  if(!draft) return true;
+  if(draft.saveTimer){
+    clearTimeout(draft.saveTimer);
+    draft.saveTimer = 0;
+  }
+  if(draft.savePromise){
+    const saved = await draft.savePromise;
+    if(!saved) return false;
+    return draft.dirty ? persistEmailDraft(cardId) : true;
+  }
+  if(!draft.dirty) return true;
+  const value = draft.value;
+  updateEmailDraftSaveState(cardId, "Saving…");
+  draft.savePromise = patchCard(cardId, { snippet:value }, { render:false });
+  const saved = await draft.savePromise;
+  draft.savePromise = null;
+  if(saved){
+    draft.savedValue = value;
+    draft.dirty = draft.value!==value;
+    updateEmailDraftSaveState(cardId, draft.dirty ? "Unsaved" : "Draft saved");
+    return draft.dirty ? persistEmailDraft(cardId) : true;
+  }
+  draft.dirty = true;
+  updateEmailDraftSaveState(cardId, "Draft not saved");
+  return false;
+}
+
+async function finishOpenEmailDraft(){
+  if(!openEmailCardId || !emailDrafts.has(openEmailCardId)) return true;
+  const cardId = openEmailCardId;
+  const saved = await persistEmailDraft(cardId);
+  if(saved) discardEmailDraft(cardId);
+  return saved;
 }
 
 async function patchCard(id, fields, options){
@@ -1665,7 +1741,8 @@ $$(".filters .chip").forEach(ch => ch.onclick = () => {
   renderBoard();
 });
 
-$$("[data-email-project]").forEach(ch => ch.onclick = () => {
+$$("[data-email-project]").forEach(ch => ch.onclick = async () => {
+  if(!(await finishOpenEmailDraft())) return;
   emailProjectFilter = ch.dataset.emailProject || "";
   $$("[data-email-project]").forEach(x => x.classList.toggle("on", x===ch));
   renderBoard();
