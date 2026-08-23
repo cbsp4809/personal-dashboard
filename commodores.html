@@ -172,6 +172,31 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .go-tab{border:0;padding:0;background:none;color:var(--gold);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .plain-list{margin:8px 0 0;padding-left:18px;color:var(--soft)}
 .plain-list li+li{margin-top:6px}
+.drill-wrap{margin:0 0 22px}
+.drill-grid{display:grid;gap:10px}
+.drill-card{width:100%;min-height:88px;padding:14px 15px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:inherit;text-align:left}
+.drill-card:focus{outline:2px solid var(--gold);outline-offset:2px}
+.drill-card .drill-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.drill-card b{font:500 20px/1.15 var(--serif)}
+.drill-card p{margin:0;color:var(--soft);font-size:13px}
+.drill-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px}
+.drill-add{margin-left:auto;color:var(--gold);font-size:12px;font-weight:700}
+.drill-board{margin-top:14px;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.drill-controls{display:grid;gap:10px;margin-bottom:12px}
+.drill-controls .row{align-items:end}
+.same-time{display:flex;flex-wrap:wrap;gap:8px}
+.same-time .btn{min-height:44px;flex:1}
+.same-time .btn.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
+.board-empty{color:var(--muted);font-size:13px}
+.board-block{padding:10px 0;border-bottom:1px solid var(--line)}
+.board-block:last-child{border:0}
+.board-same{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-left:12px;border-left:2px solid var(--gold)}
+.board-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
+.board-item h4{margin:0 0 3px;font-size:14px}
+.board-item p{margin:0;color:var(--muted);font-size:12.5px}
+.board-item .remove-station{min-height:44px;min-width:44px;padding:8px 10px}
+.drill-soon{margin-top:10px;color:var(--muted);font-size:12.5px}
+.draft-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .diagram .area{fill:none;stroke:#777777;stroke-width:1;opacity:.55}
 .diagram .grass{fill:rgba(207,174,112,.16);stroke:#CFAE70;stroke-width:1.6}
 .diagram .kid{fill:#CFAE70;stroke:#1C1C1C;stroke-width:2}
@@ -216,6 +241,8 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
   .quick-grid{grid-template-columns:1fr}.quick{padding:13px}
   .station{grid-template-columns:58px minmax(0,1fr)}.coach{grid-column:2;text-align:left}
   .season-list{grid-template-columns:1fr}.attendance{grid-template-columns:1fr 1fr}
+  .board-same{grid-template-columns:1fr}
+  .drill-add{margin-left:0}
   .milestone{grid-template-columns:1fr}.mile-date{padding:11px 15px}
 }
 @media(max-width:390px){
@@ -367,6 +394,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     <section class="page" id="page-playbook">
       <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Core 5 ladder</h2></div><p>Kid language first. Coach terms translated.</p></div>
       <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Everything else is sitting in the binder. No third play in week one.</div>
+      <div class="binder-note"><b>Skills / drills:</b> Catch, Route feet, and Don’t look live in the drill picker. They are not a third play. Tap one onto a practice on the <button class="go-tab" data-go="season" data-jump="drill-library" type="button">Season board</button>.</div>
       <div class="play-grid">
         <article class="play-card" id="game-defense" style="grid-column:1/-1">
           <div id="playbookDefensePicture"></div>
@@ -600,6 +628,8 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     <section class="page" id="page-season">
       <div class="section-head"><div><div class="eyebrow">Practice shells</div><h2>Season board</h2></div><p>Official book: GameChanger · games not set</p></div>
       <div class="season-note"><b>Time check for staff:</b> Peter’s official shells below are Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6. Chris’s usual post-today working slots are Thursday 7:00–8:00 p.m. reps and Sunday 3:00–4:00 p.m. install. Correct the shells when staff confirms. Today’s 1:00 p.m. locked hour is not overwritten.</div>
+      <div class="section-head" id="drill-library"><div><div class="eyebrow">Skills / drills</div><h2>Drill picker</h2></div><p>Tap a drill onto the practice you’re building</p></div>
+      <div class="drill-wrap" id="drillPicker"></div>
       <div class="shell-tools">
         <button class="btn ghost" id="expandShells" type="button">Open next four</button>
         <span class="badge">Thursday written before leaving Sunday</span>
@@ -643,6 +673,32 @@ const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b
 const STORE_PREFIX="commodores_v1_";
 const ROSTER=["Brett","Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
 const STAFF_FIRST=["Peter","Chris","Ben"];
+const DRILL_LIBRARY=[
+  {
+    id:"catch-basics",
+    name:"Catch",
+    minutes:5,
+    group:"skills",
+    how:"Partner catch at 5–7 yards. Hands out. Thumbs together if the ball is at the face, pinkies together if it’s low. Eyes on the ball until it hits the hands. Tuck to the chest, then look up. If it hits the body, that rep doesn’t count. Mike / Teddy / Brett throw. Swap every 5 catches.",
+    noLines:true
+  },
+  {
+    id:"route-feet",
+    name:"Route feet",
+    minutes:5,
+    group:"skills",
+    how:"Four cones: go, slant, out, hitch (Slam short). No ball first. Three steps, plant the outside foot, then cut. Not allowed to peek at the thrower until after the plant. If they look early, send them back. Add a throw the last two minutes.",
+    noLines:true
+  },
+  {
+    id:"cut-then-look",
+    name:"Don’t look before the cut",
+    minutes:5,
+    group:"skills",
+    how:"Same out / hitch. Coach stands where the QB is. Kid runs, plants, THEN they may look. Coach holds up 1 or 2 fingers after the cut. Kid yells the number and catches. Cut first, then find the ball.",
+    noLines:true
+  }
+];
 const NOTE_AFTER="after-practice";
 const NOTE_NEXT="next-install";
 const SB_URL="https://daddiljpnhfuxcdqsulg.supabase.co";
@@ -901,12 +957,12 @@ async function sha256(value){
   const hash=await crypto.subtle.digest("SHA-256",bytes);
   return [...new Uint8Array(hash)].map(byte=>byte.toString(16).padStart(2,"0")).join("");
 }
-function showPage(name){
+function showPage(name,options){
   const button=$(`.tabs button[data-page="${name}"]`);
   if(!button) return;
   $$(".tabs button").forEach(item=>item.classList.toggle("on",item===button));
   $$(".page").forEach(page=>page.classList.toggle("on",page.id==="page-"+name));
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(!(options&&options.keepScroll)) window.scrollTo({top:0,behavior:"smooth"});
 }
 function openFromHash(){
   const hash=location.hash.replace(/^#/,"");
@@ -1056,6 +1112,7 @@ async function loadCloudPlans(){
     plans.sort((a,b)=>(a.date+" "+a.time).localeCompare(b.date+" "+b.time));
     setStore("plans",plans);
     renderSeason();
+    renderDrillPicker();
     $("#importStatus").textContent="Loaded newer shared practice plans.";
   }
 }
@@ -1063,6 +1120,7 @@ async function openApp(){
   $("#gate").classList.add("hidden");
   $("#app").style.display="block";
   renderSeason();
+  renderDrillPicker();
   renderAttendance();
   renderDefenseBook();
   renderOffenseBook();
@@ -1112,7 +1170,9 @@ document.addEventListener("click",event=>{
   const link=event.target.closest("[data-go]");
   if(!link) return;
   event.preventDefault();
-  showPage(link.dataset.go);
+  showPage(link.dataset.go,{keepScroll:!!link.dataset.jump});
+  const jump=link.dataset.jump&&document.getElementById(link.dataset.jump);
+  if(jump) requestAnimationFrame(()=>jump.scrollIntoView({behavior:"smooth",block:"start"}));
 });
 
 const afterNotes=$("#afterNotes");
@@ -1715,6 +1775,246 @@ plans=plans.map(plan=>({
 }));
 if(JSON.stringify(plans)!==savedPlansBeforeDefenseUpdate) setStore("plans",plans);
 
+function emptyPracticeDraft(){
+  return {coach:"Chris",concurrent:"",targetId:"",stations:[]};
+}
+function loadPracticeDraft(){
+  const saved=getStore("practice_draft",null);
+  if(!saved||typeof saved!=="object"||!Array.isArray(saved.stations)) return emptyPracticeDraft();
+  return {
+    coach:STAFF_FIRST.includes(saved.coach)?saved.coach:"Chris",
+    concurrent:saved.concurrent==="split-a"||saved.concurrent==="split-b"?saved.concurrent:"",
+    targetId:typeof saved.targetId==="string"?saved.targetId:"",
+    stations:saved.stations.filter(station=>station&&typeof station.name==="string").map(station=>({
+      minutes:Number(station.minutes)||0,
+      name:station.name,
+      detail:station.detail||"",
+      coach:station.coach||"Unassigned",
+      drillId:station.drillId||"",
+      ...(station.noLines?{noLines:true}:{}),
+      ...(station.concurrent?{concurrent:station.concurrent}:{})
+    }))
+  };
+}
+let practiceDraft=loadPracticeDraft();
+function persistPracticeDraft(){
+  setStore("practice_draft",practiceDraft);
+}
+function drillById(id){
+  return DRILL_LIBRARY.find(drill=>drill.id===id);
+}
+function oneLineHow(how){
+  const text=String(how||"").trim();
+  if(text.length<=110) return text;
+  const stop=text.lastIndexOf(".",110);
+  return stop>=40?text.slice(0,stop+1):text.slice(0,109).trim()+"…";
+}
+function parseClockMinutes(time){
+  const match=String(time||"").match(/(\d{1,2}):(\d{2})\s*([ap])\.?m\.?/i);
+  if(!match) return null;
+  let hour=Number(match[1]);
+  const minute=Number(match[2]);
+  const ap=match[3].toLowerCase();
+  if(ap==="p"&&hour<12) hour+=12;
+  if(ap==="a"&&hour===12) hour=0;
+  return hour*60+minute;
+}
+function clockLabel(total){
+  let hour=((Math.floor(total/60)%24)+24)%24;
+  const minute=total%60;
+  const ap=hour>=12?"p.m.":"a.m.";
+  hour=hour%12||12;
+  return `${hour}:${String(minute).padStart(2,"0")} ${ap}`;
+}
+function draftTargetPlan(){
+  return plans.find(plan=>plan.id===practiceDraft.targetId)||null;
+}
+function boardBlocks(stations){
+  const blocks=[];
+  let index=0;
+  while(index<stations.length){
+    if(stations[index].concurrent){
+      const items=[];
+      while(index<stations.length&&stations[index].concurrent){
+        items.push({station:stations[index],index});
+        index+=1;
+      }
+      blocks.push({same:true,items,minutes:Math.max(...items.map(item=>item.station.minutes||0))});
+    }else{
+      blocks.push({same:false,items:[{station:stations[index],index}],minutes:stations[index].minutes||0});
+      index+=1;
+    }
+  }
+  return blocks;
+}
+function boardTimeLabel(elapsed,minutes){
+  const target=draftTargetPlan();
+  const start=target?parseClockMinutes(target.time):null;
+  if(start==null) return `+${elapsed} · ${minutes}m`;
+  return `${clockLabel(start+elapsed)} · ${minutes}m`;
+}
+function stationToDraftItem(station,index){
+  const flags=[station.noLines?"No lines":"",station.drillId||""].filter(Boolean).join(" · ");
+  return `<div class="board-item" data-station-index="${index}">
+    <div>
+      <h4>${esc(station.name)}</h4>
+      <p>${esc(station.detail||oneLineHow(station.name))}</p>
+      <div class="meta">${esc(station.coach||"Unassigned")}${flags?` · ${esc(flags)}`:""}</div>
+    </div>
+    <button class="btn ghost remove-station" type="button" data-remove-station="${index}" aria-label="Remove ${esc(station.name)}">Remove</button>
+  </div>`;
+}
+function draftBoardHTML(){
+  if(!practiceDraft.stations.length){
+    return `<div class="board-empty">No drills on this board yet. Tap a card above. Today’s locked Sunday hour stays as it is.</div>`;
+  }
+  let elapsed=0;
+  return boardBlocks(practiceDraft.stations).map(block=>{
+    const label=boardTimeLabel(elapsed,block.minutes);
+    elapsed+=block.minutes;
+    if(block.same){
+      const colA=block.items.filter(item=>item.station.concurrent==="split-a").map(item=>stationToDraftItem(item.station,item.index)).join("")||`<div class="board-empty">Same-time A is open</div>`;
+      const colB=block.items.filter(item=>item.station.concurrent==="split-b").map(item=>stationToDraftItem(item.station,item.index)).join("")||`<div class="board-empty">Same-time B is open</div>`;
+      return `<div class="board-block">
+        <div class="concurrent-label">Same-time · ${esc(label)}</div>
+        <div class="board-same"><div>${colA}</div><div>${colB}</div></div>
+      </div>`;
+    }
+    const item=block.items[0];
+    return `<div class="board-block">
+      <div class="station-time">${esc(label)}</div>
+      ${stationToDraftItem(item.station,item.index)}
+    </div>`;
+  }).join("");
+}
+function targetOptions(){
+  const options=['<option value="">Working draft · not saved to a day</option>'];
+  plans.forEach(plan=>{
+    const filled=plan.stations&&plan.stations.length?`${plan.stations.length} stations`:"empty shell";
+    options.push(`<option value="${esc(plan.id)}">${esc(labelDate(plan.date))} · ${esc(plan.time)} · ${esc(filled)}</option>`);
+  });
+  return options.join("");
+}
+function addDrillToDraft(drill){
+  if(!drill) return;
+  practiceDraft.stations.push({
+    minutes:drill.minutes,
+    name:drill.name,
+    detail:drill.how,
+    coach:practiceDraft.coach,
+    drillId:drill.id,
+    ...(drill.noLines?{noLines:true}:{}),
+    ...(practiceDraft.concurrent?{concurrent:practiceDraft.concurrent}:{})
+  });
+  persistPracticeDraft();
+  renderDrillPicker();
+  const status=$("#drillStatus");
+  if(status) status.textContent=`Added ${drill.name} (${drill.minutes} min) to the practice board.`;
+}
+function saveDraftToShell(){
+  const status=$("#drillStatus");
+  if(!practiceDraft.targetId){
+    if(status) status.textContent="Pick a shell first. This does not lock a Thursday hour.";
+    return;
+  }
+  if(!practiceDraft.stations.length){
+    if(status) status.textContent="Add a drill first.";
+    return;
+  }
+  const index=plans.findIndex(plan=>plan.id===practiceDraft.targetId);
+  if(index<0){
+    if(status) status.textContent="That shell is gone. Pick another.";
+    return;
+  }
+  const incoming=practiceDraft.stations.map(station=>({
+    minutes:station.minutes,
+    name:station.name,
+    detail:station.detail||"",
+    coach:station.coach||"Unassigned",
+    ...(station.concurrent?{concurrent:station.concurrent}:{}),
+    ...(station.drillId?{drillId:station.drillId}:{}),
+    ...(station.noLines?{noLines:true}:{})
+  }));
+  plans[index]={...plans[index],stations:[...(plans[index].stations||[]),...incoming]};
+  setStore("plans",plans);
+  upsertCloudPlan(plans[index]);
+  practiceDraft.stations=[];
+  persistPracticeDraft();
+  renderSeason();
+  renderDrillPicker();
+  if(status) status.textContent=`Added drills to ${labelDate(plans[index].date)} · ${plans[index].time}. Coaches still choose the hour — nothing was auto-locked.`;
+}
+function renderDrillPicker(){
+  const host=$("#drillPicker");
+  if(!host) return;
+  const cards=DRILL_LIBRARY.map(drill=>`<button class="drill-card" type="button" data-add-drill="${esc(drill.id)}">
+    <div class="drill-top"><b>${esc(drill.name)}</b><span class="badge live">${esc(drill.minutes)} min</span></div>
+    <p>${esc(oneLineHow(drill.how))}</p>
+    <div class="drill-meta">
+      <span class="badge">${esc(drill.group)}</span>
+      ${drill.noLines?'<span class="badge">No lines</span>':""}
+      <span class="drill-add">Tap to add</span>
+    </div>
+  </button>`).join("");
+  host.innerHTML=`<div class="drill-grid">${cards}</div>
+    <p class="drill-soon">More drills get added to this list. Smash + Overload stay the only taught plays. This picker does not write a Thursday hour or change today’s locked Sunday hour.</p>
+    <div class="drill-board">
+      <div class="eyebrow">Practice being built</div>
+      <div class="drill-controls">
+        <div class="row">
+          <div class="field"><label for="draftTarget">Add onto this shell</label><select id="draftTarget">${targetOptions()}</select></div>
+          <div class="field"><label for="draftCoach">Coach on the next tap</label><select id="draftCoach">${STAFF_FIRST.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("")}</select></div>
+        </div>
+        <div>
+          <div class="library-label">Same-time board</div>
+          <div class="same-time" role="group" aria-label="Same-time group">
+            <button class="btn ghost${practiceDraft.concurrent===""?" on":""}" type="button" data-concurrent="">Own block</button>
+            <button class="btn ghost${practiceDraft.concurrent==="split-a"?" on":""}" type="button" data-concurrent="split-a">Same time A</button>
+            <button class="btn ghost${practiceDraft.concurrent==="split-b"?" on":""}" type="button" data-concurrent="split-b">Same time B</button>
+          </div>
+        </div>
+      </div>
+      <div id="draftBoard">${draftBoardHTML()}</div>
+      <div class="draft-actions">
+        <button class="btn" id="saveDraftStations" type="button">Add board to selected shell</button>
+        <button class="btn ghost" id="clearDraftStations" type="button">Clear board</button>
+      </div>
+      <div class="status-line" id="drillStatus" aria-live="polite">Tap a drill. You choose the shell. No hour is locked from here.</div>
+    </div>`;
+  const target=$("#draftTarget");
+  const coach=$("#draftCoach");
+  if(target){
+    if([...target.options].some(option=>option.value===practiceDraft.targetId)) target.value=practiceDraft.targetId;
+    else practiceDraft.targetId="";
+    target.onchange=()=>{practiceDraft.targetId=target.value;persistPracticeDraft();renderDrillPicker();};
+  }
+  if(coach){
+    coach.value=practiceDraft.coach;
+    coach.onchange=()=>{practiceDraft.coach=coach.value;persistPracticeDraft();};
+  }
+  $$("[data-add-drill]").forEach(button=>button.onclick=()=>addDrillToDraft(drillById(button.dataset.addDrill)));
+  $$("[data-concurrent]").forEach(button=>button.onclick=()=>{
+    practiceDraft.concurrent=button.dataset.concurrent||"";
+    persistPracticeDraft();
+    renderDrillPicker();
+  });
+  $$("[data-remove-station]").forEach(button=>button.onclick=()=>{
+    practiceDraft.stations=practiceDraft.stations.filter((_,index)=>index!==Number(button.dataset.removeStation));
+    persistPracticeDraft();
+    renderDrillPicker();
+  });
+  const save=$("#saveDraftStations");
+  const clear=$("#clearDraftStations");
+  if(save) save.onclick=saveDraftToShell;
+  if(clear) clear.onclick=()=>{
+    practiceDraft.stations=[];
+    persistPracticeDraft();
+    renderDrillPicker();
+    const status=$("#drillStatus");
+    if(status) status.textContent="Board cleared. Shells were not changed.";
+  };
+}
+
 function stationSummary(plan){
   if(!plan.stations||!plan.stations.length) return "Empty shell · goal is set · add the hour before practice.";
   return plan.stations.map(station=>`${station.name} — ${station.coach||"Unassigned"}`).join(" · ");
@@ -1764,6 +2064,7 @@ function renderSeason(){
     setStore("plans",plans);
     upsertCloudPlan(plans[index]);
     renderSeason();
+    renderDrillPicker();
   });
 }
 $("#expandShells").onclick=()=>{
@@ -1812,6 +2113,7 @@ function importPayload(raw){
     if(saved) upsertCloudPlan(saved);
   });
   renderSeason();
+  renderDrillPicker();
   $("#importStatus").textContent=`Imported ${incoming.length} plan${incoming.length===1?"":"s"} into the shared book.`;
 }
 $("#importJson").onclick=()=>{
