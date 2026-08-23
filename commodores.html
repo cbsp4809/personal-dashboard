@@ -732,9 +732,9 @@ document.addEventListener("visibilitychange",()=>{
 });
 $("#postComment").onclick=postStaffComment;
 
-const PLAY_SEED=7;
-const SMASH_HOW="All five eligible kids plus the thrower. 2x2 shotgun. Outside sit is throw 1. Inside kid on that side runs the far corner. The other two kids still line up. Center sits at about 6 yards. Flip both ways. First throw must land past the line. 5-second clock.";
-const OVERLOAD_HOW="Pile extra kids on one side. First throw past the line is 1. Flip is one button — that makes 51. One kid stays backside.";
+const PLAY_SEED=8;
+const SMASH_HOW="All five plus the thrower. Outside kid: three steps and sit. Inside kid on that side runs the far corner. The other two stay lined up and occupy. Center sits at 6 yards. Flip both ways. First throw must land past the line. 5-second clock.";
+const OVERLOAD_HOW="Extra kids to one side. Flip makes 51. First open past the line on the piled side, or the leftover kid if the helper stays middle.";
 const DEFENSE_HOW="Six kids cover named areas: L short, M short, R short, L deep, M deep, R deep. Helper has no spot — drag him toward extra bodies. Watch the thrower. Do not run at him. Do not follow one kid all over. Flip swaps left and right.";
 const PLAY3_HOW="Parked. Staff picks this third play after Smash and Overload are clean. Do not install in week one.";
 const STARBURST_HOW="Parked deep shot. Line up, then all eligible kids burst to different deep spots. Save for later.";
@@ -776,9 +776,11 @@ function seedBuiltPlays(){
         {id:"s-z",x:292,y:218,player:"",label:"O"}
       ],
       routes:[
-        {id:"s-hitch",from:"s-out",points:[{x:72,y:188}],look:1,label:"sit"},
-        {id:"s-corner",from:"s-in",points:[{x:118,y:128},{x:42,y:64}],look:2,label:"corner"},
-        {id:"s-sit-c",from:"s-c",points:[{x:180,y:176}],look:0,label:"sit"}
+        {id:"s-hitch",from:"s-out",points:[{x:72,y:198}],look:1,label:"sit"},
+        {id:"s-corner",from:"s-in",points:[{x:118,y:128},{x:42,y:64}],look:0,label:"corner"},
+        {id:"s-sit-c",from:"s-c",points:[{x:180,y:186}],look:0,label:"sit"},
+        {id:"s-occ-y",from:"s-y",points:[{x:242,y:200}],look:0,label:"occupy"},
+        {id:"s-occ-z",from:"s-z",points:[{x:292,y:200}],look:0,label:"occupy"}
       ]
     },
     {
@@ -970,12 +972,12 @@ function canWatch(play){return !!(play&&!isDefensePlay(play)&&(play.routes||[]).
 function playReactions(play){
   if(!play) return [];
   if(play.id==="smash") return [
-    {id:"jump-sit",title:"Jumps the sit",hint:"Throw 2 · corner",look:2,helper:"sit"},
-    {id:"stay-deep",title:"Stays deep",hint:"Throw 1 · sit",look:1,helper:"deep"}
+    {id:"look-a",title:"Look A",hint:"Jumps the sit → corner",helper:"sit",throwTo:"corner"},
+    {id:"look-b",title:"Look B",hint:"Stays back → sit",helper:"back",throwTo:"sit"}
   ];
   if(play.id==="overload-50-51") return [
-    {id:"crash-pile",title:"Crash the pile",hint:"First open / backside",look:0,highlight:"backside",helper:"pile"},
-    {id:"hole",title:"Helper to the pile",hint:"Hole he left",look:0,highlight:"hole",helper:"pile"}
+    {id:"look-a",title:"Look A",hint:"Follows the pile → first open",helper:"pile",throwTo:"first"},
+    {id:"look-b",title:"Look B",hint:"Stays middle → leftover",helper:"back",throwTo:"backside"}
   ];
   return [];
 }
@@ -1010,20 +1012,19 @@ function helperHome(){
   return helper?{x:Number(helper.x),y:Number(helper.y)}:{x:180,y:122};
 }
 function smashSide(play){
-  const sit=(play.routes||[]).find(route=>route.look===1);
+  const sit=sitRoute(play);
   const end=sit&&routeEnd(play,sit);
   return end&&end.x>180?"right":"left";
 }
+function sitRoute(play){return (play.routes||[]).find(route=>route.look===1)||null}
+function cornerRoute(play){return (play.routes||[]).find(route=>(route.label||"")==="corner")||null}
+function firstThrowRoute(play){return (play.routes||[]).find(route=>route.look===1||(route.label||"")==="first throw")||null}
 function helperTarget(play,reaction){
   const side=smashSide(play);
-  if(!reaction||reaction.helper==="home") return helperHome();
+  if(!reaction||reaction.helper==="home"||reaction.helper==="back") return helperHome();
   if(reaction.helper==="sit"){
-    const sit=(play.routes||[]).find(route=>route.look===1);
-    return (sit&&routeEnd(play,sit))||{x:side==="right"?282:72,y:188};
-  }
-  if(reaction.helper==="deep"){
-    const deep=DEFENSE_AREAS.find(area=>area.id===(side==="right"?"right-deep":"left-deep"));
-    return deep||{x:70,y:78};
+    const sit=sitRoute(play);
+    return (sit&&routeEnd(play,sit))||{x:side==="right"?282:72,y:198};
   }
   if(reaction.helper==="pile"){
     const extras=(play.spots||[]).filter(spot=>spot.label!=="QB"&&spot.label!=="thrower"&&spot.label!=="C");
@@ -1041,41 +1042,63 @@ function backsideSpot(play){
   const pileLeft=left.length>=extras.length-left.length;
   return extras.filter(spot=>pileLeft?spot.x>180:spot.x<180)[0]||null;
 }
+function throwRoute(play,reaction){
+  if(!reaction) return sitRoute(play);
+  if(reaction.throwTo==="corner") return cornerRoute(play);
+  if(reaction.throwTo==="first") return firstThrowRoute(play);
+  if(reaction.throwTo==="sit") return sitRoute(play);
+  return null;
+}
+function markOnePos(play,t,reaction){
+  const sit=sitRoute(play);
+  const sitEnd=sit&&routeEnd(play,sit);
+  const corner=cornerRoute(play);
+  const cornerEnd=corner&&routeEnd(play,corner);
+  if(reaction&&reaction.throwTo==="corner"&&sitEnd&&cornerEnd&&t>=0.32){
+    return lerpPoint(sitEnd,cornerEnd,easeWatch(Math.min(1,(t-0.32)/0.4)));
+  }
+  if(reaction&&reaction.throwTo==="first"){
+    const first=firstThrowRoute(play);
+    return (first&&routeEnd(play,first))||sitEnd;
+  }
+  if(reaction&&reaction.throwTo==="backside"){
+    const back=backsideSpot(play);
+    return back?{x:Number(back.x),y:Number(back.y)-18}:sitEnd;
+  }
+  return sitEnd;
+}
 function watchFrame(play,t,reaction){
   const move=easeWatch(Math.min(1,t));
-  const lit=t>=0.42?reaction&&reaction.look||0:0;
-  const highlight=t>=0.42?(reaction&&reaction.highlight||""):"";
+  const ready=t>=0.38;
   const start=helperHome();
   const helper=lerpPoint(start,helperTarget(play,reaction),move);
+  const hot=ready?throwRoute(play,reaction):null;
   const kids=(play.spots||[]).map(spot=>{
     const route=(play.routes||[]).find(item=>item.from===spot.id);
     const pos=route?alongPath(routePoints(play,route),move):{x:Number(spot.x),y:Number(spot.y)};
-    const thrower=spot.label==="QB"||spot.label==="thrower";
-    return {...spot,px:pos.x,py:pos.y,thrower};
+    return {...spot,px:pos.x,py:pos.y};
   });
-  return {helper,kids,lit,highlight,hole:highlight==="hole"?start:null};
+  return {helper,kids,hot,mark:markOnePos(play,t,reaction),backside:ready&&reaction&&reaction.throwTo==="backside"};
 }
 function watchSVG(play,t,reaction){
   const frame=watchFrame(play,t,reaction);
+  const back=backsideSpot(play);
   return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} watch">
     <rect width="360" height="300" fill="#000000"></rect>
     <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
     ${DEFENSE_AREAS.map(area=>`<circle class="area-pad" cx="${area.x}" cy="${area.y}" r="14"></circle><text class="area-label" x="${area.x}" y="${area.y-20}">${esc(area.short)}</text><circle class="def-kid" cx="${area.x}" cy="${area.y}" r="7"></circle>`).join("")}
     <circle class="helper-kid" cx="${frame.helper.x}" cy="${frame.helper.y}" r="10" stroke="#1C1C1C" stroke-width="2"></circle>
     <text x="${frame.helper.x}" y="${frame.helper.y+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">helper</text>
-    ${(play.routes||[]).map(route=>`<path class="${frame.lit&&route.look===frame.lit?"hot":""}" d="${esc(routePath(play,route))}" fill="none" stroke="${frame.lit&&route.look===frame.lit?"#ECB748":"#FFFFFF"}" stroke-width="${frame.lit&&route.look===frame.lit?5:3}" stroke-linecap="round" stroke-linejoin="round"></path>`).join("")}
-    ${routeLabels(play)}
-    ${frame.hole?`<circle class="hole" cx="${frame.hole.x}" cy="${frame.hole.y}" r="16"></circle><text class="route-label" x="${frame.hole.x}" y="${frame.hole.y-22}">hole</text>`:""}
-    ${frame.kids.map(kid=>{
-      const hot=frame.highlight==="backside"&&backsideSpot(play)&&kid.id===backsideSpot(play).id;
-      return `<circle class="${hot?"hot-kid":""}" cx="${kid.px}" cy="${kid.py}" r="10" fill="#CFAE70" stroke="${hot?"#ECB748":"#1C1C1C"}" stroke-width="${hot?3:2}"></circle><text x="${kid.px}" y="${kid.py+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">${esc((kid.player||kid.label||"O").slice(0,8))}</text>`;
-    }).join("")}
     ${(play.routes||[]).map(route=>{
-      const end=routeEnd(play,route);
-      if(!end||(route.look!==1&&route.look!==2)) return "";
-      const on=frame.lit===route.look;
-      return `<circle class="look-ring${on?" lit":""}" cx="${end.x}" cy="${end.y-18}" r="${on?10:8}"></circle><text class="look" x="${end.x}" y="${end.y-15}">${route.look}</text>`;
+      const hot=frame.hot&&route.id===frame.hot.id;
+      return `<path d="${esc(routePath(play,route))}" fill="none" stroke="${hot?"#ECB748":"#FFFFFF"}" stroke-width="${hot?5:3}" stroke-linecap="round" stroke-linejoin="round"></path>`;
     }).join("")}
+    ${routeLabels(play)}
+    ${frame.kids.map(kid=>{
+      const hot=frame.backside&&back&&kid.id===back.id;
+      return `<circle cx="${kid.px}" cy="${kid.py}" r="10" fill="#CFAE70" stroke="${hot?"#ECB748":"#1C1C1C"}" stroke-width="${hot?3:2}"></circle><text x="${kid.px}" y="${kid.py+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">${esc((kid.player||kid.label||"O").slice(0,8))}</text>`;
+    }).join("")}
+    ${frame.mark?`<circle class="look-ring${frame.hot?" lit":""}" cx="${frame.mark.x}" cy="${frame.mark.y-18}" r="${frame.hot?10:8}"></circle><text class="look" x="${frame.mark.x}" y="${frame.mark.y-15}">1</text>`:""}
   </svg>`;
 }
 function watchBarHTML(play,reactionId){
