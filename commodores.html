@@ -158,6 +158,10 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .kid-row span{font-weight:600}.kid-row select{width:96px;padding:7px 8px;font-size:12px}
 .status-line{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12px}
 .staff-note{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
+.go-tab{border:0;padding:0;background:none;color:var(--gold);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.plain-list{margin:8px 0 0;padding-left:18px;color:var(--soft)}
+.plain-list li+li{margin-top:6px}
+.diagram .area{fill:none;stroke:#777777;stroke-width:1;opacity:.55}
 @media(max-width:760px){
   .mast-inner{padding:14px max(16px,env(safe-area-inset-right,0px)) 11px max(16px,env(safe-area-inset-left,0px))}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
   .tabs{padding:0 max(16px,env(safe-area-inset-right,0px)) 9px max(16px,env(safe-area-inset-left,0px))}main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
@@ -206,6 +210,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
       <button data-page="playbook" type="button">Playbook</button>
+      <button data-page="defense" type="button">Defense</button>
       <button data-page="builder" type="button">Play builder</button>
       <button data-page="milestones" type="button">Milestones</button>
       <button data-page="season" type="button">Season board</button>
@@ -231,7 +236,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       <div class="quick-grid">
         <div class="quick"><b>1:00–2:00 p.m.</b><span>Frostwood · 60 minutes · 13 kids ages 8–10</span></div>
         <div class="quick"><b>Offense today</b><span>Smash + Overload only. No third play.</span></div>
-        <div class="quick"><b>Game defense today</b><span>Six kids each cover a spot (an area). One kid roams and helps. No rush.</span></div>
+        <div class="quick"><b>Game defense today</b><span>Six kids each cover a spot (an area). One kid roams and helps. No rush. Full look on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</span></div>
       </div>
 
       <article class="practice-card">
@@ -290,7 +295,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Core 5 ladder</h2></div><p>Kid language first. Coach terms translated.</p></div>
       <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Everything else is sitting in the binder. No third play in week one.</div>
       <div class="play-grid">
-        <article class="play-card" style="grid-column:1/-1">
+        <article class="play-card" id="game-defense" style="grid-column:1/-1">
           <svg class="diagram" viewBox="0 0 720 240" role="img" aria-label="Six kids covering six areas with one roaming helper diagram">
             <path class="line muted" d="M20 205H700"/><text x="26" y="198">line</text>
             <path class="line muted" opacity=".35" d="M20 25H700M20 25V205M247 25V205M473 25V205M700 25V205M20 115H700"/>
@@ -308,6 +313,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
             <div class="play-head"><h3>Game defense · six areas + one helper</h3><span class="badge taught">Base from week 1</span></div>
             <p>Six kids each cover a spot (an area). Keep eyes on the thrower and protect your area instead of following one receiver everywhere. When a receiver leaves your area, let the next kid take them. The seventh kid roams in the middle and helps where the ball goes. No rush on the QB. Finish with a one-hand touch below the neck.</p>
             <div class="when">Hip-stay / “pick a guy” / Man-Free is a drill only. It is not the game defense or another package.</div>
+            <div class="when">Full look lives on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
           </div>
         </article>
         <article class="play-card">
@@ -388,7 +394,70 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       </div>
       <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Play builder.</p></div>
       <div class="play-grid" id="builtPlaybook"></div>
-      <div class="binder-note" style="margin-top:14px"><b>Do not add:</b> pitches, anything that blocks, offense concepts not selected on the Core 5 ladder, or extra defense packages. Game defense stays six kids covering six areas + one kid roaming to help, with no rush. Hip-stay / “pick a guy” / Man-Free is drill-only, never the game plan.</div>
+      <div class="binder-note" style="margin-top:14px"><b>Do not add:</b> pitches, anything that blocks, offense concepts not selected on the Core 5 ladder, or extra defense packages. Game defense stays six kids covering six areas + one kid roaming to help, with no rush. Hip-stay / “pick a guy” / Man-Free is drill-only, never the game plan. Full defense look is on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
+    </section>
+
+    <section class="page" id="page-defense">
+      <div class="section-head"><div><div class="eyebrow">Locked game look</div><h2>Six areas + one helper</h2></div><p>Kid language first. One game defense.</p></div>
+      <div class="binder-note"><b>This is the game defense.</b> Six kids each cover a spot (an area). One kid roams and helps. No rush. Hip-stay / pick-a-guy / Man-Free is a drill only — never the plan and never a second package.</div>
+
+      <article class="play-card" id="defense-base" style="margin-bottom:14px">
+        <svg class="diagram" viewBox="0 0 720 250" role="img" aria-label="Six kids covering six areas of grass with one roaming helper">
+          <path class="area" d="M20 25H247V115H20Z"/><path class="area" d="M247 25H473V115H247Z"/><path class="area" d="M473 25H700V115H473Z"/>
+          <path class="area" d="M20 115H247V205H20Z"/><path class="area" d="M247 115H473V205H247Z"/><path class="area" d="M473 115H700V205H473Z"/>
+          <path class="line muted" d="M20 205H700"/><text x="26" y="198">line</text>
+          <circle class="def" cx="133" cy="70" r="10"/><text x="112" y="48">deep L</text>
+          <circle class="def" cx="360" cy="70" r="10"/><text x="336" y="48">deep M</text>
+          <circle class="def" cx="587" cy="70" r="10"/><text x="564" y="48">deep R</text>
+          <circle class="def" cx="133" cy="158" r="10"/><text x="112" y="180">near L</text>
+          <circle class="def" cx="360" cy="158" r="10"/><text x="336" y="180">near M</text>
+          <circle class="def" cx="587" cy="158" r="10"/><text x="564" y="180">near R</text>
+          <circle class="ball" cx="360" cy="113" r="12"/><text x="340" y="117">HELPER</text>
+          <path class="line" d="M360 128C330 145 305 154 270 158M360 98C395 83 425 76 465 72"/>
+          <text x="26" y="232">Stand in your grass · don’t chase · no rush · one-hand touch below the neck</text>
+        </svg>
+        <div class="play-copy">
+          <div class="play-head"><h3>Base look · your grass</h3><span class="badge taught">Game defense</span></div>
+          <p>Stand in your grass. That patch is yours. Don’t chase a kid who leaves it — the next area takes them. If the ball comes to you, catch it. Tag with a one-hand touch below the neck. The helper goes where they put extra people (Overload). No rush on the thrower. League forbids rushing the QB.</p>
+          <div class="when">“Area” just means your spot of grass. The area look is the zone — do not add zone later as a new package.</div>
+        </div>
+      </article>
+
+      <div class="play-grid">
+        <article class="play-card">
+          <div class="play-copy">
+            <div class="play-head"><h3>Stay on a hip</h3><span class="badge parked">Drill only</span></div>
+            <p>Pick a kid. Stay on their hip. This is a practice drill so kids learn to stay close. It is <b>not</b> the game defense. Do not call it in a game. Do not treat it as a second look.</p>
+            <div class="when">Coach terms for the same drill: hip-stay / pick-a-guy / Man-Free. Never the plan.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <div class="play-copy">
+            <div class="play-head"><h3>Two defense groups</h3><span class="badge live">Set before the quarter</span></div>
+            <p>We use two defense groups. No free swapping in the middle of a quarter. Set who is in each group before the quarter starts, then keep that group on the field.</p>
+            <div class="when">About 13 kids: two groups of about seven. Adjust the last spot so both groups have a helper.</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="season-note" style="margin-top:14px">
+        <b>Do not add:</b>
+        <ul class="plain-list">
+          <li>No rush. The league does not allow rushing the thrower.</li>
+          <li>No second package. One game look all year unless staff later writes a new one here.</li>
+          <li>If they look lost, do not sneak hip-stay / man back in. Make the areas simpler instead.</li>
+          <li>Do not add “zone” as a new package. The six areas already are that look.</li>
+        </ul>
+      </div>
+
+      <div class="section-head"><div><div class="eyebrow">Defense only</div><h2>Season ladder</h2></div><p>Same game defense. Cleaner over time.</p></div>
+      <div class="milestones">
+        <article class="milestone"><div class="mile-date">Now–Aug 30</div><div class="mile-copy"><h3>Same look</h3><p>Six areas + one helper. Kids stand in their grass, don’t chase, and tag below the neck. No rush. Hip-stay stays a drill.</p><div class="ladder"><span class="badge live">6 areas + helper</span><span class="badge parked">Hip-stay · drill only</span></div></div></article>
+        <article class="milestone"><div class="mile-date">Early September</div><div class="mile-copy"><h3>Same look, cleaner</h3><p>Kids can name their area and stay put. Helper goes to the extra-people side. Still no second package.</p><div class="ladder"><span class="badge live">Same game defense</span><span class="badge">Name your grass</span></div></div></article>
+        <article class="milestone"><div class="mile-date">Late September</div><div class="mile-copy"><h3>Still the same game defense</h3><p>Do not add zone as a new package. The area look is the zone. Keep no rush and one helper.</p><div class="ladder"><span class="badge live">Same game defense</span><span class="badge parked">No new package</span></div></div></article>
+        <article class="milestone"><div class="mile-date">October</div><div class="mile-copy"><h3>Same look + situations</h3><p>Keep six areas + helper. Practice two situations: 3rd-and-long, and inside the 15. Do not change the game defense to run them.</p><div class="ladder"><span class="badge">3rd-and-long</span><span class="badge">Inside the 15</span></div></div></article>
+        <article class="milestone"><div class="mile-date">November</div><div class="mile-copy"><h3>Point it at that week’s opponent</h3><p>Same game defense. Adjust where the helper starts or which grass we crowd. Do not install a new look.</p><div class="ladder"><span class="badge">Opponent notes</span><span class="badge">Helper adjust only</span></div></div></article>
+      </div>
     </section>
 
     <section class="page" id="page-builder">
@@ -508,11 +577,32 @@ async function sha256(value){
   const hash=await crypto.subtle.digest("SHA-256",bytes);
   return [...new Uint8Array(hash)].map(byte=>byte.toString(16).padStart(2,"0")).join("");
 }
+function showPage(name){
+  const button=$(`.tabs button[data-page="${name}"]`);
+  if(!button) return;
+  $$(".tabs button").forEach(item=>item.classList.toggle("on",item===button));
+  $$(".page").forEach(page=>page.classList.toggle("on",page.id==="page-"+name));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function openFromHash(){
+  const hash=location.hash.replace(/^#/,"");
+  if(!hash) return;
+  if($(`.tabs button[data-page="${hash}"]`)){
+    showPage(hash);
+    return;
+  }
+  const target=document.getElementById(hash);
+  const page=target&&target.closest(".page");
+  if(!page||!page.id.startsWith("page-")) return;
+  showPage(page.id.slice(5));
+  requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
+}
 function openApp(){
   $("#gate").classList.add("hidden");
   $("#app").style.display="block";
   renderSeason();
   renderAttendance();
+  openFromHash();
 }
 $("#pinForm").onsubmit=async event=>{
   event.preventDefault();
@@ -540,10 +630,12 @@ $("#lockBtn").onclick=()=>{
   location.reload();
 };
 
-$$(".tabs button").forEach(button=>button.onclick=()=>{
-  $$(".tabs button").forEach(item=>item.classList.toggle("on",item===button));
-  $$(".page").forEach(page=>page.classList.toggle("on",page.id==="page-"+button.dataset.page));
-  window.scrollTo({top:0,behavior:"smooth"});
+$$(".tabs button").forEach(button=>button.onclick=()=>showPage(button.dataset.page));
+document.addEventListener("click",event=>{
+  const link=event.target.closest("[data-go]");
+  if(!link) return;
+  event.preventDefault();
+  showPage(link.dataset.go);
 });
 
 const afterNotes=$("#afterNotes");
