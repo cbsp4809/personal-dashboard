@@ -147,7 +147,10 @@ a{color:var(--brass)}
 .email-preview{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;color:var(--muted);font-size:12px;}
 .email-meta{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:7px;margin-top:8px;}
 .email-wait{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;color:#e4cfaa;background:rgba(196,165,116,.14);border:1px solid rgba(196,165,116,.28);font-variant-numeric:tabular-nums;}
-.email-queued{font-size:10.5px;font-weight:700;color:var(--sydney);}
+.email-queued-row{display:flex;min-width:0;align-items:center;gap:10px;padding:12px 14px;}
+.email-queued-copy{flex:1;min-width:0;}
+.email-queued-chip{flex-shrink:0;border:1px solid rgba(154,175,152,.32);border-radius:999px;padding:3px 8px;color:var(--sydney);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.cancel-queue{flex-shrink:0;}
 .email-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);}
 .email-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 10px;}
 .email-segment{display:inline-flex;min-width:0;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:999px;padding:2px;}
@@ -203,6 +206,8 @@ a{color:var(--brass)}
   .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
   .email-check{margin-left:0;}
   .email-card-toggle{min-height:78px;padding-right:12px;}
+  .email-queued-row{gap:8px;padding:10px 12px;}
+  .cancel-queue{min-width:70px;}
   .email-detail-head{padding:12px;}
   .email-segment{width:100%;}
   .email-segment button{flex:1;min-width:0;min-height:44px;}
@@ -1025,9 +1030,21 @@ function emailCardHTML(c){
   const draft = localDraft ? localDraft.value : (c.snippet || "");
   const from = c.inbound_from || "Sender unavailable";
   const subject = c.inbound_subject || c.title || "(no subject)";
-  const open = c.id===openEmailCardId;
   const queued = !!c.send_requested_at;
-  const queueDisabled = queued || !emailQueueColumnsAvailable;
+  if(queued){
+    return `<article class="card email-card queued" data-id="${esc(c.id)}">
+      <div class="email-queued-row">
+        <div class="email-queued-copy">
+          <span class="email-from">${esc(from)}</span>
+          <span class="email-subject">${esc(subject)}</span>
+        </div>
+        <span class="email-queued-chip">Queued</span>
+        <button type="button" class="btn tiny ghost cancel-queue">Cancel</button>
+      </div>
+    </article>`;
+  }
+  const open = c.id===openEmailCardId;
+  const queueDisabled = !emailQueueColumnsAvailable;
   const detail = open ? `
     <section class="email-detail" aria-label="Email details">
       <div class="email-detail-head">
@@ -1047,13 +1064,13 @@ function emailCardHTML(c){
           </div>
         ` : `
           <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
-          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…"${queued?" readonly":""}>${esc(draft)}</textarea>
+          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
         `}
       </div>
       <div class="email-actions">
-        <span class="email-save-state" aria-live="polite">${queued?"Queued for Sydney":""}</span>
+        <span class="email-save-state" aria-live="polite"></span>
         ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
-        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${!emailQueueColumnsAvailable?"Apply sql/ops_email_replies.sql before queueing replies":queued?"Reply is queued for Sydney":"Save and queue this reply"}">${queued?"Queued":emailQueueColumnsAvailable?"Send":"Setup required"}</button>
+        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${!emailQueueColumnsAvailable?"Apply sql/ops_email_replies.sql before queueing replies":"Save and queue this reply"}">${emailQueueColumnsAvailable?"Send":"Setup required"}</button>
       </div>
     </section>` : "";
   return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
@@ -1069,7 +1086,6 @@ function emailCardHTML(c){
           <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
           <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
           <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
-          ${queued?`<span class="email-queued">Queued</span>`:""}
         </span>
       </button>
     </div>
@@ -1418,6 +1434,27 @@ function bindEmailCards(){
   $$(".email-card").forEach(el => {
     const card = cards.find(c => c.id===el.dataset.id);
     if(!card) return;
+    const cancel = el.querySelector(".cancel-queue");
+    if(cancel){
+      cancel.onclick = async () => {
+        cancel.disabled = true;
+        cancel.textContent = "Canceling…";
+        const saved = await patchCard(card.id, {
+          send_requested_at:null,
+          send_requested_by:null
+        }, { render:false });
+        if(saved){
+          openEmailCardId = null;
+          discardEmailDraft(card.id);
+          setStatus("Queue canceled. The reply draft is ready to edit.");
+          renderBoard();
+        }else{
+          cancel.disabled = false;
+          cancel.textContent = "Cancel";
+        }
+      };
+      return;
+    }
     el.querySelector(".chk").onchange = e => completeCard(card, e.target);
     el.querySelector(".email-card-toggle").onclick = async () => {
       if(!(await finishOpenEmailDraft())) return;
@@ -1482,6 +1519,7 @@ function bindEmailCards(){
       }, { render:false });
       if(saved){
         discardEmailDraft(card.id);
+        openEmailCardId = null;
         setStatus("Reply queued. Sydney will send it from the correct inbox.");
         renderBoard();
       }else{

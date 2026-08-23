@@ -63,7 +63,9 @@ The inbox watch should populate `inbound_from`, `inbound_subject`,
 `inbound_body` (plain text), and `inbound_message_id`. Clicking **Send** saves
 the draft, asks for confirmation, and sets `send_requested_at` /
 `send_requested_by`; it does not send Gmail or mark the card done. Sydney's
-inbox watch owns the actual send and completion. The current dashboard treats
+inbox watch owns the actual send and completion. Queued cards collapse to a
+compact row; **Cancel** clears the two queue fields without clearing `snippet`,
+so the reply can be edited and queued again. The current dashboard treats
 `project` as the inbox label. `source_ref` is available to the watch alongside
 `inbound_message_id`, but this repository does not establish which Gmail
 identifier existing producers store there.
