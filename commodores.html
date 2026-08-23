@@ -112,6 +112,18 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .play-card h3{margin:0 0 8px;font:500 23px/1.1 var(--serif)}
 .play-card p{margin:0;color:var(--soft)}
 .play-card .when{margin-top:11px;color:var(--muted);font-size:12px}
+.watch{background:#000000}
+.watch-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px 12px;border-top:1px solid var(--line)}
+.watch-bar .btn{min-height:48px;min-width:92px}
+.watch-clock{min-width:3.2ch;color:var(--highlight);font:700 22px/1 var(--sans);font-variant-numeric:tabular-nums}
+.watch-looks{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 180px}
+.chip{min-height:42px;border:1px solid var(--strong);border-radius:999px;padding:8px 12px;background:transparent;color:var(--soft);font-size:12px;font-weight:700;text-align:left}
+.chip.on{border-color:rgba(207,174,112,.48);background:var(--gold-soft);color:var(--ink)}
+.chip small{display:block;color:var(--muted);font-size:10px;font-weight:600}
+.diagram .look-ring.lit{fill:#ECB748;stroke:#FFFFFF;stroke-width:2}
+.diagram .route.hot{stroke:#ECB748;stroke-width:5}
+.diagram .hole{fill:none;stroke:#ECB748;stroke-width:2;stroke-dasharray:5 4}
+.diagram .hot-kid{stroke:#ECB748;stroke-width:3}
 .diagram{display:block;width:100%;max-width:100%;height:auto;background:#000000;border-top:1px solid var(--line)}
 .diagram text{fill:#E0D5C0;font:600 9px var(--sans)}
 .diagram .line{fill:none;stroke:#CFAE70;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -335,7 +347,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 
     <section class="page" id="page-offense">
       <div class="section-head"><div><div class="eyebrow">Plays only</div><h2>Offense</h2></div><p>Taught vs binder · Smash + Overload through Aug 30</p></div>
-      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Pictures come from the shared play builder. No third play in week one.</div>
+      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Pictures come from the shared play builder. Tap Play to watch the 5-second clock. Not a sim.</div>
       <div class="play-grid" id="offenseTaught"></div>
       <div class="section-head"><div><div class="eyebrow">Not taught</div><h2>Binder</h2></div><p>Parked until the first two are clean</p></div>
       <div class="binder-note"><b>Parked:</b> Play 3, StarBurst, and Goal Line 5/6 stay in the binder. Do not install them in week one.</div>
@@ -434,6 +446,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
             <div class="field"><label>Kids on the field</label><div class="badge" id="spotCount">0 / 7</div></div>
           </div>
           <p class="builder-help" id="builderHelp">Tap empty grass to add a kid. Drag a kid to move him. Tap a kid, then drag onto the grass to draw his route. Extra taps bend it.</p>
+          <div class="watch" id="builderWatch"></div>
           <div class="builder-actions">
             <button class="btn" id="savePlay" type="button">Save for all coaches</button>
           </div>
@@ -943,15 +956,240 @@ function playPreview(play){
 }
 function playCardHTML(play){
   return `<article class="play-card">
-    ${playPreview(play)}
+    ${canWatch(play)?watchMount(play):playPreview(play)}
     <div class="play-copy">
       <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge ${play.status==="taught"?"taught":"parked"}">${play.status==="taught"?"Taught":"Binder"}</span></div>
       <p>${esc(play.how)}</p>
-      <div class="when">${play.status==="taught"?"Taught through Aug 30. Same picture as Play builder.":"Parked in the binder. Same picture as Play builder."}</div>
+      <div class="when">${play.status==="taught"?"Taught through Aug 30. Same picture as Play builder.":"Parked in the binder. Same picture as Play builder."}${canWatch(play)?" Tap Play to watch.":""}</div>
     </div>
   </article>`;
 }
+const CLOCK_MS=5000;
+const watchers=new Set();
+function canWatch(play){return !!(play&&!isDefensePlay(play)&&(play.routes||[]).length)}
+function playReactions(play){
+  if(!play) return [];
+  if(play.id==="smash") return [
+    {id:"jump-sit",title:"Jumps the sit",hint:"Throw 2 · corner",look:2,helper:"sit"},
+    {id:"stay-deep",title:"Stays deep",hint:"Throw 1 · sit",look:1,helper:"deep"}
+  ];
+  if(play.id==="overload-50-51") return [
+    {id:"crash-pile",title:"Crash the pile",hint:"First open / backside",look:0,highlight:"backside",helper:"pile"},
+    {id:"hole",title:"Helper to the pile",hint:"Hole he left",look:0,highlight:"hole",helper:"pile"}
+  ];
+  return [];
+}
+function easeWatch(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+function routePoints(play,route){
+  const start=(play.spots||[]).find(spot=>spot.id===route.from);
+  if(!start) return [];
+  return [{x:Number(start.x),y:Number(start.y)},...(route.points||[]).map(point=>({x:Number(point.x),y:Number(point.y)}))];
+}
+function alongPath(pts,t){
+  if(!pts.length) return {x:180,y:218};
+  if(pts.length===1||t<=0) return pts[0];
+  if(t>=1) return pts[pts.length-1];
+  let total=0;
+  for(let i=1;i<pts.length;i++) total+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+  if(total<=0) return pts[0];
+  let left=t*total;
+  for(let i=1;i<pts.length;i++){
+    const seg=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+    if(left<=seg){
+      const u=seg?left/seg:1;
+      return {x:pts[i-1].x+(pts[i].x-pts[i-1].x)*u,y:pts[i-1].y+(pts[i].y-pts[i-1].y)*u};
+    }
+    left-=seg;
+  }
+  return pts[pts.length-1];
+}
+function lerpPoint(a,b,t){return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t}}
+function helperHome(){
+  const defense=builtPlays.find(isDefensePlay);
+  const helper=defense&&(defense.spots||[]).find(spot=>spot.role==="helper");
+  return helper?{x:Number(helper.x),y:Number(helper.y)}:{x:180,y:122};
+}
+function smashSide(play){
+  const sit=(play.routes||[]).find(route=>route.look===1);
+  const end=sit&&routeEnd(play,sit);
+  return end&&end.x>180?"right":"left";
+}
+function helperTarget(play,reaction){
+  const side=smashSide(play);
+  if(!reaction||reaction.helper==="home") return helperHome();
+  if(reaction.helper==="sit"){
+    const sit=(play.routes||[]).find(route=>route.look===1);
+    return (sit&&routeEnd(play,sit))||{x:side==="right"?282:72,y:188};
+  }
+  if(reaction.helper==="deep"){
+    const deep=DEFENSE_AREAS.find(area=>area.id===(side==="right"?"right-deep":"left-deep"));
+    return deep||{x:70,y:78};
+  }
+  if(reaction.helper==="pile"){
+    const extras=(play.spots||[]).filter(spot=>spot.label!=="QB"&&spot.label!=="thrower"&&spot.label!=="C");
+    const left=extras.filter(spot=>spot.x<180);
+    const pile=left.length>=extras.length-left.length?left:extras.filter(spot=>spot.x>180);
+    if(!pile.length) return {x:108,y:168};
+    const x=pile.reduce((sum,spot)=>sum+spot.x,0)/pile.length;
+    return {x,y:168};
+  }
+  return helperHome();
+}
+function backsideSpot(play){
+  const extras=(play.spots||[]).filter(spot=>!["QB","thrower","C"].includes(spot.label));
+  const left=extras.filter(spot=>spot.x<180);
+  const pileLeft=left.length>=extras.length-left.length;
+  return extras.filter(spot=>pileLeft?spot.x>180:spot.x<180)[0]||null;
+}
+function watchFrame(play,t,reaction){
+  const move=easeWatch(Math.min(1,t));
+  const lit=t>=0.42?reaction&&reaction.look||0:0;
+  const highlight=t>=0.42?(reaction&&reaction.highlight||""):"";
+  const start=helperHome();
+  const helper=lerpPoint(start,helperTarget(play,reaction),move);
+  const kids=(play.spots||[]).map(spot=>{
+    const route=(play.routes||[]).find(item=>item.from===spot.id);
+    const pos=route?alongPath(routePoints(play,route),move):{x:Number(spot.x),y:Number(spot.y)};
+    const thrower=spot.label==="QB"||spot.label==="thrower";
+    return {...spot,px:pos.x,py:pos.y,thrower};
+  });
+  return {helper,kids,lit,highlight,hole:highlight==="hole"?start:null};
+}
+function watchSVG(play,t,reaction){
+  const frame=watchFrame(play,t,reaction);
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} watch">
+    <rect width="360" height="300" fill="#000000"></rect>
+    <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
+    ${DEFENSE_AREAS.map(area=>`<circle class="area-pad" cx="${area.x}" cy="${area.y}" r="14"></circle><text class="area-label" x="${area.x}" y="${area.y-20}">${esc(area.short)}</text><circle class="def-kid" cx="${area.x}" cy="${area.y}" r="7"></circle>`).join("")}
+    <circle class="helper-kid" cx="${frame.helper.x}" cy="${frame.helper.y}" r="10" stroke="#1C1C1C" stroke-width="2"></circle>
+    <text x="${frame.helper.x}" y="${frame.helper.y+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">helper</text>
+    ${(play.routes||[]).map(route=>`<path class="${frame.lit&&route.look===frame.lit?"hot":""}" d="${esc(routePath(play,route))}" fill="none" stroke="${frame.lit&&route.look===frame.lit?"#ECB748":"#FFFFFF"}" stroke-width="${frame.lit&&route.look===frame.lit?5:3}" stroke-linecap="round" stroke-linejoin="round"></path>`).join("")}
+    ${routeLabels(play)}
+    ${frame.hole?`<circle class="hole" cx="${frame.hole.x}" cy="${frame.hole.y}" r="16"></circle><text class="route-label" x="${frame.hole.x}" y="${frame.hole.y-22}">hole</text>`:""}
+    ${frame.kids.map(kid=>{
+      const hot=frame.highlight==="backside"&&backsideSpot(play)&&kid.id===backsideSpot(play).id;
+      return `<circle class="${hot?"hot-kid":""}" cx="${kid.px}" cy="${kid.py}" r="10" fill="#CFAE70" stroke="${hot?"#ECB748":"#1C1C1C"}" stroke-width="${hot?3:2}"></circle><text x="${kid.px}" y="${kid.py+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">${esc((kid.player||kid.label||"O").slice(0,8))}</text>`;
+    }).join("")}
+    ${(play.routes||[]).map(route=>{
+      const end=routeEnd(play,route);
+      if(!end||(route.look!==1&&route.look!==2)) return "";
+      const on=frame.lit===route.look;
+      return `<circle class="look-ring${on?" lit":""}" cx="${end.x}" cy="${end.y-18}" r="${on?10:8}"></circle><text class="look" x="${end.x}" y="${end.y-15}">${route.look}</text>`;
+    }).join("")}
+  </svg>`;
+}
+function watchBarHTML(play,reactionId){
+  const looks=playReactions(play);
+  const current=looks.find(item=>item.id===reactionId)||looks[0];
+  return `<div class="watch-bar">
+    <button class="btn watch-toggle" type="button">Play</button>
+    <span class="watch-clock" aria-live="polite">5.0</span>
+    <div class="watch-looks">${looks.map(item=>`<button class="chip${current&&item.id===current.id?" on":""}" type="button" data-reaction="${esc(item.id)}">${esc(item.title)}<small>${esc(item.hint)}</small></button>`).join("")}</div>
+  </div>`;
+}
+function watchMount(play){
+  const looks=playReactions(play);
+  const first=looks[0]||null;
+  return `<div class="watch" data-watch="${esc(play.id)}">${watchSVG(play,0,first)}${watchBarHTML(play,first&&first.id)}</div>`;
+}
+function stopWatcher(el){
+  if(!el||!el._watch) return;
+  if(el._watch.raf) cancelAnimationFrame(el._watch.raf);
+  el._watch.playing=false;
+  el._watch.raf=0;
+  const toggle=el.querySelector(".watch-toggle");
+  if(toggle) toggle.textContent=el._watch.t>0&&el._watch.t<1?"Play":(el._watch.t>=1?"Replay":"Play");
+}
+function stopAllWatchers(except){
+  watchers.forEach(el=>{if(el!==except) stopWatcher(el)});
+}
+function paintWatcher(el){
+  const state=el._watch;
+  if(!state) return;
+  const svg=watchSVG(state.play,state.t,state.reaction);
+  const current=el.querySelector(".diagram");
+  if(current) current.outerHTML=svg;
+  const clock=el.querySelector(".watch-clock");
+  if(clock) clock.textContent=(Math.max(0,5-state.t*5)).toFixed(1);
+  const toggle=el.querySelector(".watch-toggle");
+  if(toggle) toggle.textContent=state.playing?"Pause":(state.t>=1?"Replay":"Play");
+  el.querySelectorAll(".chip").forEach(chip=>chip.classList.toggle("on",state.reaction&&chip.dataset.reaction===state.reaction.id));
+}
+function tickWatcher(el,now){
+  const state=el._watch;
+  if(!state||!state.playing) return;
+  const start=state.started||now;
+  state.t=Math.min(1,(now-start)/CLOCK_MS);
+  paintWatcher(el);
+  if(state.t>=1){
+    state.playing=false;
+    state.raf=0;
+    const toggle=el.querySelector(".watch-toggle");
+    if(toggle) toggle.textContent="Replay";
+    return;
+  }
+  state.raf=requestAnimationFrame(time=>tickWatcher(el,time));
+}
+function bindWatcher(el,play){
+  if(!el||!play) return;
+  stopWatcher(el);
+  const looks=playReactions(play);
+  el._watch={play,t:0,playing:false,raf:0,started:0,reaction:looks[0]||null};
+  watchers.add(el);
+  const toggle=el.querySelector(".watch-toggle");
+  if(toggle) toggle.onclick=()=>{
+    const state=el._watch;
+    if(!state) return;
+    if(state.playing){stopWatcher(el);return}
+    stopAllWatchers(el);
+    if(state.t>=1) state.t=0;
+    state.playing=true;
+    state.started=performance.now()-state.t*CLOCK_MS;
+    toggle.textContent="Pause";
+    state.raf=requestAnimationFrame(time=>tickWatcher(el,time));
+  };
+  el.querySelectorAll(".chip").forEach(chip=>chip.onclick=()=>{
+    const state=el._watch;
+    const next=looks.find(item=>item.id===chip.dataset.reaction);
+    if(!state||!next) return;
+    state.reaction=next;
+    state.t=0;
+    state.started=0;
+    if(state.playing){
+      stopAllWatchers(el);
+      state.playing=true;
+      state.started=performance.now();
+      paintWatcher(el);
+      state.raf=requestAnimationFrame(time=>tickWatcher(el,time));
+    }else paintWatcher(el);
+  });
+  paintWatcher(el);
+}
+function bindWatchers(root){
+  (root?root.querySelectorAll(".watch[data-watch]"):$$(".watch[data-watch]")).forEach(el=>{
+    if(el.id==="builderWatch") return;
+    const play=builtPlays.find(item=>item.id===el.dataset.watch);
+    if(play) bindWatcher(el,play);
+  });
+}
+function renderBuilderWatch(){
+  const el=$("#builderWatch");
+  if(!el) return;
+  stopWatcher(el);
+  if(!canWatch(playDraft)){
+    el.innerHTML="";
+    el._watch=null;
+    return;
+  }
+  const looks=playReactions(playDraft);
+  const first=looks[0]||null;
+  el.dataset.watch=playDraft.id;
+  el.innerHTML=watchSVG(playDraft,0,first)+watchBarHTML(playDraft,first&&first.id);
+  bindWatcher(el,structuredClone(playDraft));
+}
 function renderPlayCards(){
+  stopAllWatchers();
+  watchers.clear();
   const offense=builtPlays.filter(play=>!isDefensePlay(play));
   const taught=offense.filter(play=>play.status==="taught");
   const parked=offense.filter(play=>play.status==="parked");
@@ -963,10 +1201,12 @@ function renderPlayCards(){
   $("#defenseDiagram").innerHTML=defensePicture;
   $("#playbookDefense").innerHTML=defensePicture;
   renderBuiltPlaybook();
+  bindWatchers();
+  renderBuilderWatch();
 }
 function renderBuiltPlaybook(){
   $("#builtPlaybook").innerHTML=builtPlays.map(play=>`<article class="play-card">
-    ${playPreview(play)}
+    ${canWatch(play)?watchMount(play):playPreview(play)}
     <div class="play-copy"><div class="play-head"><h3>${esc(play.name)}</h3><span class="badge ${play.status==="taught"?"taught":"parked"}">${play.status==="taught"?"Taught":"Binder"}</span></div>
     <p>${esc(play.how)}</p><button class="btn ghost edit-built" type="button" data-id="${esc(play.id)}" style="margin-top:12px">Open in builder</button></div>
   </article>`).join("");
@@ -1044,6 +1284,7 @@ function openPlay(id){
   selectedRouteId="";
   bendingRouteId="";
   renderBuilder();
+  renderBuilderWatch();
 }
 function syncPlayFields(){
   playDraft.name=$("#playName").value.trim();
@@ -1147,6 +1388,7 @@ function applyStarter(kind){
   bendingRouteId="";
   setBuilderStatus("Starter lined up. Draw routes, then save for all coaches.");
   renderBuilder();
+  renderBuilderWatch();
 }
 function markLook(n){
   const route=selectedRoute()||(selectedSpotId?routeForSpot(selectedSpotId):null);
@@ -1188,6 +1430,7 @@ $("#flipPlay").onclick=()=>{
     setBuilderStatus("Flipped 50 / 51. Save so the other coaches see this side.");
   }
   renderBuilder();
+  renderBuilderWatch();
 };
 $("#markLook1").onclick=()=>{
   if(isDefensePlay(playDraft)){setBuilderStatus("Defense has no throw numbers. Do not draw man.");return}
@@ -1322,7 +1565,9 @@ $("#deleteItem").onclick=()=>{
 $("#newPlay").onclick=()=>{
   playDraft={id:uid("play"),name:"New play",status:"parked",kind:"offense",how:"",seed:PLAY_SEED,spots:[],ghosts:[],routes:[]};
   selectedSpotId="";selectedRouteId="";bendingRouteId="";
-  renderBuilder();$("#playName").select();
+  renderBuilder();
+  renderBuilderWatch();
+  $("#playName").select();
 };
 async function upsertCloudPlay(play){
   if(!sb||!play||!play.id) return {ok:false,error:"Shared plays unavailable"};
