@@ -237,8 +237,15 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .team-card{min-width:0;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
 .team-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
 .team-card-top b{min-width:0;overflow-wrap:anywhere;font-size:18px}
-.team-avg{flex:none;color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700}
+.team-avg{flex:none;color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
 .team-avg span{display:block;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.scoring-as{margin:0 0 14px}
+.scoring-as-label{margin:0 0 8px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.scoring-as-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.scoring-as-chips button{min-width:0;min-height:56px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-weight:700}
+.scoring-as-chips button.on{border-color:rgba(207,174,112,.55);background:var(--gold);color:#1C1C1C}
+.coach-breakdown{margin:-2px 0 10px;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.02em}
+.team-table .coach-breakdown{margin:3px 0 0;font-size:10px;font-weight:600}
 .rate-row{display:grid;gap:6px;margin-top:8px;min-width:0}
 .rate-row.overall{margin-top:0;padding:8px;border-radius:10px;background:var(--gold-soft)}
 .rate-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
@@ -437,7 +444,15 @@ body.team-dragging{overflow:hidden;touch-action:none}
 
     <section class="page" id="page-team">
       <div class="section-head"><div><div class="eyebrow">Staff ranks + lineups</div><h2>Team</h2></div><p>First names only · shared with staff</p></div>
-      <div class="binder-note"><b>Ranks:</b> tap 1–5. 5 is strongest. Overall is set by staff and is never auto-filled. Average is the mean of filled scores among the eight skills; empty cells are skipped.</div>
+      <div class="binder-note"><b>Ranks:</b> pick who you are scoring as, then tap 1–5 on your sheet. 5 is strongest. Overall is set by that coach and is never auto-filled. Coach Average is the mean of that coach’s filled scores among the eight skills. Staff Average (the number that sorts the roster) is the mean of every filled skill-cell across Peter, Chris, and Ben. Empty coach scores are skipped.</div>
+      <div class="scoring-as">
+        <div class="scoring-as-label" id="scoringAsLabel">Scoring as</div>
+        <div class="scoring-as-chips" id="scoringAsChips" role="radiogroup" aria-labelledby="scoringAsLabel">
+          <button type="button" data-scoring-coach="Peter" role="radio" aria-checked="false">Peter</button>
+          <button type="button" data-scoring-coach="Chris" role="radio" aria-checked="false">Chris</button>
+          <button type="button" data-scoring-coach="Ben" role="radio" aria-checked="false">Ben</button>
+        </div>
+      </div>
       <div class="team-cards" id="teamCards"></div>
       <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
 
@@ -2212,6 +2227,7 @@ $("#exportJson").onclick=()=>{
 };
 
 function emptyLine(){return [null,null,null,null,null,null,null]}
+function emptyCoachSkills(){return {Peter:{},Chris:{},Ben:{}}}
 function cleanScore(value){
   const n=Number(value);
   return Number.isInteger(n)&&n>=1&&n<=5?n:null;
@@ -2236,6 +2252,20 @@ function cleanSkills(raw){
   });
   return out;
 }
+function cleanSkillsByCoach(raw){
+  const out=emptyCoachSkills();
+  if(!raw||typeof raw!=="object") return out;
+  STAFF_FIRST.forEach(coach=>{out[coach]=cleanSkills(raw[coach])});
+  return out;
+}
+function isSkillsByCoachEmpty(byCoach){
+  return STAFF_FIRST.every(coach=>!Object.keys((byCoach&&byCoach[coach])||{}).length);
+}
+function rawNeedsSkillMigration(raw){
+  if(!raw||typeof raw!=="object") return false;
+  if(!isSkillsByCoachEmpty(cleanSkillsByCoach(raw.skillsByCoach))) return false;
+  return Object.keys(cleanSkills(raw.skills)).length>0;
+}
 function cleanLine(arr){
   const line=emptyLine();
   if(!Array.isArray(arr)) return line;
@@ -2251,32 +2281,108 @@ function cleanLine(arr){
 }
 function normalizeLineup(raw){
   if(!raw||typeof raw!=="object") return null;
+  let skillsByCoach=cleanSkillsByCoach(raw.skillsByCoach);
+  // Old shape was skills[FirstName][skill]. Copy into Chris (original rater) once.
+  if(isSkillsByCoachEmpty(skillsByCoach)){
+    const legacy=cleanSkills(raw.skills);
+    if(Object.keys(legacy).length) skillsByCoach={Peter:{},Chris:legacy,Ben:{}};
+  }
   return {
-    skills:cleanSkills(raw.skills),
+    skillsByCoach,
     offense:cleanLine(raw.offense),
     defense:cleanLine(raw.defense),
     updatedAt:raw.updatedAt||raw.updated_at||""
   };
 }
+function emptyTeamState(){
+  return {skillsByCoach:emptyCoachSkills(),offense:emptyLine(),defense:emptyLine(),updatedAt:""};
+}
 function hasTeamContent(state){
   if(!state) return false;
-  if(Object.keys(state.skills||{}).length) return true;
+  if(!isSkillsByCoachEmpty(state.skillsByCoach)) return true;
   return (state.offense||[]).some(Boolean)||(state.defense||[]).some(Boolean);
 }
-function skillRow(name){return teamState.skills[name]||{}}
+function lineupPayload(state){
+  const source=state||teamState;
+  return {
+    id:LINEUP_ID,
+    skillsByCoach:{
+      Peter:source.skillsByCoach&&source.skillsByCoach.Peter||{},
+      Chris:source.skillsByCoach&&source.skillsByCoach.Chris||{},
+      Ben:source.skillsByCoach&&source.skillsByCoach.Ben||{}
+    },
+    offense:source.offense,
+    defense:source.defense,
+    updatedAt:source.updatedAt
+  };
+}
+const SCORING_COACH_KEY="scoring_coach";
+function readScoringCoach(){
+  const stored=getStore(SCORING_COACH_KEY,null);
+  return STAFF_FIRST.includes(stored)?stored:"Chris";
+}
+let scoringAs=readScoringCoach();
+function setScoringCoach(name){
+  if(!STAFF_FIRST.includes(name)) return;
+  scoringAs=name;
+  setStore(SCORING_COACH_KEY,name);
+  renderScoringCoach();
+  renderTeamRatings();
+}
+function renderScoringCoach(){
+  $$("#scoringAsChips [data-scoring-coach]").forEach(button=>{
+    const on=button.dataset.scoringCoach===scoringAs;
+    button.classList.toggle("on",on);
+    button.setAttribute("aria-checked",on?"true":"false");
+  });
+}
+function skillRow(name,coach){
+  const who=STAFF_FIRST.includes(coach)?coach:scoringAs;
+  return ((teamState.skillsByCoach||{})[who]||{})[name]||{};
+}
 function skillAverage(row){
   const vals=RATE_KEYS.map(key=>row&&row[key]).filter(n=>Number.isFinite(n)&&n>=1&&n<=5);
   if(!vals.length) return null;
   return Math.round(vals.reduce((sum,n)=>sum+n,0)/vals.length*10)/10;
 }
-function skillAverageText(name){
-  const avg=skillAverage(skillRow(name));
+function formatAvg(avg){
   return avg==null?"—":avg.toFixed(1);
+}
+function coachSkillAverage(name,coach){
+  return skillAverage(skillRow(name,coach));
+}
+// Staff Average = mean of every filled skill-cell across coaches for that kid.
+// A coach who only ranked Speed still counts; blank coaches are skipped.
+function staffSkillAverage(name){
+  const vals=[];
+  STAFF_FIRST.forEach(coach=>{
+    const row=skillRow(name,coach);
+    RATE_KEYS.forEach(key=>{
+      const n=row[key];
+      if(Number.isFinite(n)&&n>=1&&n<=5) vals.push(n);
+    });
+  });
+  if(!vals.length) return null;
+  return Math.round(vals.reduce((sum,n)=>sum+n,0)/vals.length*10)/10;
+}
+function staffAverageText(name){
+  return formatAvg(staffSkillAverage(name));
+}
+function coachesWhoScored(name){
+  return STAFF_FIRST.filter(coach=>Object.keys(skillRow(name,coach)).length);
+}
+function coachBreakdown(name){
+  if(coachesWhoScored(name).length<2) return "";
+  const initials={Peter:"P",Chris:"C",Ben:"B"};
+  return STAFF_FIRST.map(coach=>{
+    const avg=coachSkillAverage(name,coach);
+    return `${initials[coach]} ${avg==null?"—":(Number.isInteger(avg)?String(avg):avg.toFixed(1))}`;
+  }).join(" · ");
 }
 function rosterByAverage(){
   return ROSTER.slice().sort((a,b)=>{
-    const av=skillAverage(skillRow(a));
-    const bv=skillAverage(skillRow(b));
+    const av=staffSkillAverage(a);
+    const bv=staffSkillAverage(b);
     if(av==null&&bv==null) return a.localeCompare(b);
     if(av==null) return 1;
     if(bv==null) return -1;
@@ -2290,22 +2396,26 @@ function setTeamStatus(message){
 }
 function persistTeamLocal(){
   teamState.updatedAt=new Date().toISOString();
-  setStore("staff_lineup",teamState);
+  setStore("staff_lineup",lineupPayload());
 }
 function setSkill(name,key,value){
   if(!ROSTER.includes(name)||!RATE_KEYS.includes(key)) return;
+  const coach=scoringAs;
   const next=cleanScore(value);
-  const row={...skillRow(name)};
+  const row={...skillRow(name,coach)};
   if(next) row[key]=next; else delete row[key];
-  if(Object.keys(row).length) teamState.skills[name]=row; else delete teamState.skills[name];
+  if(!teamState.skillsByCoach) teamState.skillsByCoach=emptyCoachSkills();
+  if(!teamState.skillsByCoach[coach]) teamState.skillsByCoach[coach]={};
+  if(Object.keys(row).length) teamState.skillsByCoach[coach][name]=row;
+  else delete teamState.skillsByCoach[coach][name];
   persistTeamLocal();
   renderTeam();
   saveStaffLineupDebounced();
 }
 function rateChips(name,key,compact){
-  const current=skillRow(name)[key];
+  const current=skillRow(name,scoringAs)[key];
   const klass=compact?"rate-mini":"rate-chips";
-  const buttons=[1,2,3,4,5].map(n=>`<button type="button" class="${current===n?"on":""}" data-rate-name="${esc(name)}" data-rate-key="${key}" data-rate-value="${n}" aria-label="${esc(name)} ${esc(RATE_LABELS[key])} ${n}" aria-pressed="${current===n?"true":"false"}">${n}</button>`).join("");
+  const buttons=[1,2,3,4,5].map(n=>`<button type="button" class="${current===n?"on":""}" data-rate-name="${esc(name)}" data-rate-key="${key}" data-rate-value="${n}" aria-label="${esc(scoringAs)} ${esc(name)} ${esc(RATE_LABELS[key])} ${n}" aria-pressed="${current===n?"true":"false"}">${n}</button>`).join("");
   return `<div class="${klass}">${buttons}</div>`;
 }
 function bindRateButtons(root){
@@ -2313,13 +2423,13 @@ function bindRateButtons(root){
     const name=button.dataset.rateName;
     const key=button.dataset.rateKey;
     const value=Number(button.dataset.rateValue);
-    setSkill(name,key,skillRow(name)[key]===value?null:value);
+    setSkill(name,key,skillRow(name,scoringAs)[key]===value?null:value);
   });
 }
 function nameChip(name,side,index){
-  const avg=skillAverageText(name);
+  const avg=staffAverageText(name);
   const source=side?` data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
-  return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(name)} ${avg==="—"?"":"average "+avg}">${esc(name)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
+  return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(name)} ${avg==="—"?"":"staff average "+avg}">${esc(name)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
 }
 function renderTeamRatings(){
   const order=rosterByAverage();
@@ -2329,14 +2439,18 @@ function renderTeamRatings(){
     cards.innerHTML=order.map(name=>{
       const keys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
       const rows=keys.map(key=>`<div class="rate-row${key==="overall"?" overall":""}"><label>${esc(RATE_LABELS[key])}</label>${rateChips(name,key,false)}</div>`).join("");
-      return `<article class="team-card"><div class="team-card-top"><b>${esc(name)}</b><div class="team-avg"><span>Average</span>${skillAverageText(name)}</div></div>${rows}</article>`;
+      const breakdown=coachBreakdown(name);
+      return `<article class="team-card"><div class="team-card-top"><b>${esc(name)}</b><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</article>`;
     }).join("");
     bindRateButtons("#teamCards");
   }
   if(table){
     const tableKeys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
-    const head=`<thead><tr><th>Name</th><th>Avg</th>${tableKeys.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
-    const body=order.map(name=>`<tr><td>${esc(name)}</td><td class="avg-cell">${skillAverageText(name)}</td>${tableKeys.map(key=>`<td>${rateChips(name,key,true)}</td>`).join("")}</tr>`).join("");
+    const head=`<thead><tr><th>Name</th><th>Staff avg</th>${tableKeys.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
+    const body=order.map(name=>{
+      const breakdown=coachBreakdown(name);
+      return `<tr><td>${esc(name)}</td><td class="avg-cell">${staffAverageText(name)}${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}</td>${tableKeys.map(key=>`<td>${rateChips(name,key,true)}</td>`).join("")}</tr>`;
+    }).join("");
     table.innerHTML=head+`<tbody>${body}</tbody>`;
     bindRateButtons("#teamTable");
   }
@@ -2362,10 +2476,12 @@ function renderTeamLineup(){
   bindTeamDrag();
 }
 function renderTeam(){
+  renderScoringCoach();
   renderTeamRatings();
   renderTeamLineup();
 }
-let teamState=normalizeLineup(getStore("staff_lineup",null))||{skills:{},offense:emptyLine(),defense:emptyLine(),updatedAt:""};
+let teamState=normalizeLineup(getStore("staff_lineup",null))||emptyTeamState();
+$$("#scoringAsChips [data-scoring-coach]").forEach(button=>button.onclick=()=>setScoringCoach(button.dataset.scoringCoach));
 const TEAM_HOLD_MS=450;
 const TEAM_CANCEL_DIST=10;
 let teamDrag=null;
@@ -2539,12 +2655,12 @@ document.addEventListener("pointercancel",cancelTeamDrag,{passive:true});
 
 async function saveStaffLineup(){
   teamState.updatedAt=new Date().toISOString();
-  setStore("staff_lineup",teamState);
+  const payload=lineupPayload();
+  setStore("staff_lineup",payload);
   if(!sb){
     setTeamStatus("Saved on this device only · shared tables not reachable");
     return;
   }
-  const payload={id:LINEUP_ID,skills:teamState.skills,offense:teamState.offense,defense:teamState.defense,updatedAt:teamState.updatedAt};
   const {error}=await sb.from("commodores_plans").upsert({
     id:LINEUP_ID,payload,updated_at:teamState.updatedAt
   },{onConflict:"id"});
@@ -2552,16 +2668,20 @@ async function saveStaffLineup(){
 }
 const saveStaffLineupDebounced=debounce(saveStaffLineup,700);
 async function loadStaffLineup(){
-  const local=normalizeLineup(getStore("staff_lineup",null));
+  const localRaw=getStore("staff_lineup",null);
+  const local=normalizeLineup(localRaw);
   if(local) teamState=local;
   renderTeam();
+  const localMigrated=rawNeedsSkillMigration(localRaw);
   if(!sb){
-    setTeamStatus("Shared lineup unavailable · this device only");
+    if(localMigrated&&hasTeamContent(teamState)) await saveStaffLineup();
+    else setTeamStatus("Shared lineup unavailable · this device only");
     return;
   }
   const {data,error}=await sb.from("commodores_plans").select("id,payload,updated_at").eq("id",LINEUP_ID).maybeSingle();
   if(error){
-    setTeamStatus("Could not load shared lineup: "+error.message+" · using this device");
+    if(localMigrated&&hasTeamContent(teamState)) await saveStaffLineup();
+    else setTeamStatus("Could not load shared lineup: "+error.message+" · using this device");
     return;
   }
   if(!data){
@@ -2569,17 +2689,22 @@ async function loadStaffLineup(){
     else setTeamStatus("Ready · ranks and lineups save for staff");
     return;
   }
-  const cloud=normalizeLineup({...(data.payload&&typeof data.payload==="object"?data.payload:{}),updatedAt:data.updated_at});
+  const cloudRaw={...(data.payload&&typeof data.payload==="object"?data.payload:{}),updatedAt:data.updated_at};
+  const cloud=normalizeLineup(cloudRaw);
   const cloudTime=Date.parse(data.updated_at)||0;
   const localTime=Date.parse(teamState.updatedAt)||0;
   if(cloud&&cloudTime>=localTime){
     teamState=cloud;
-    setStore("staff_lineup",teamState);
+    setStore("staff_lineup",lineupPayload());
     renderTeam();
+    if(rawNeedsSkillMigration(cloudRaw)&&hasTeamContent(teamState)){
+      await saveStaffLineup();
+      return;
+    }
     setTeamStatus("Shared lineup loaded");
     return;
   }
-  if(localTime>cloudTime&&hasTeamContent(teamState)) await saveStaffLineup();
+  if((localTime>cloudTime||localMigrated)&&hasTeamContent(teamState)) await saveStaffLineup();
 }
 
 if(isDeviceUnlocked()) openApp();
