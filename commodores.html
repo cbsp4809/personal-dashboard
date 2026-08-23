@@ -233,6 +233,46 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .binder-rank{color:var(--gold);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .binder-row b{display:block;min-width:0;overflow-wrap:anywhere;word-break:break-word}
 .binder-row .badge{justify-self:end}
+.team-cards{display:none;gap:10px}
+.team-card{min-width:0;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.team-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+.team-card-top b{min-width:0;overflow-wrap:anywhere;font-size:18px}
+.team-avg{flex:none;color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700}
+.team-avg span{display:block;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.rate-row{display:grid;gap:6px;margin-top:8px;min-width:0}
+.rate-row.overall{margin-top:0;padding:8px;border-radius:10px;background:var(--gold-soft)}
+.rate-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.rate-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.rate-chips button{min-width:0;min-height:56px;border:1px solid var(--strong);border-radius:10px;padding:0;background:var(--bg-2);color:var(--soft);font-weight:700}
+.rate-chips button.on{border-color:rgba(207,174,112,.55);background:var(--gold);color:#1C1C1C}
+.team-table-wrap{overflow:hidden;max-width:100%}
+.team-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 8px}
+.team-table th{padding:0 4px 6px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left}
+.team-table td{padding:6px 4px;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle}
+.team-table td:first-child{padding-left:10px;border-left:1px solid var(--line);border-radius:11px 0 0 11px;font-weight:700;overflow-wrap:anywhere}
+.team-table td:last-child{padding-right:10px;border-right:1px solid var(--line);border-radius:0 11px 11px 0}
+.team-table .avg-cell{color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700}
+.rate-mini{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+.rate-mini button{min-width:0;min-height:36px;border:1px solid var(--strong);border-radius:6px;padding:0;background:var(--bg-2);color:var(--soft);font-size:11px;font-weight:700}
+.rate-mini button.on{border-color:rgba(207,174,112,.55);background:var(--gold);color:#1C1C1C}
+.roster-pool{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.name-chip{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:56px;min-height:56px;padding:8px 12px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-weight:700;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.name-chip .chip-avg{color:var(--gold);font-variant-numeric:tabular-nums;font-size:12px}
+.name-chip.is-dragging{opacity:.28}
+.team-clear{display:grid;place-items:center;min-height:56px;margin-bottom:12px;border:1px dashed var(--strong);border-radius:12px;color:var(--muted);font-size:12.5px;font-weight:700}
+.team-clear.drop-on{border-color:var(--highlight);background:rgba(236,183,72,.12);color:var(--highlight)}
+.team-boards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.team-board{min-width:0;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.team-board h3{margin:0 0 10px;font:500 20px/1.15 var(--serif)}
+.line-spot{display:grid;grid-template-columns:minmax(88px,104px) minmax(0,1fr);gap:8px;align-items:center;min-height:56px;margin-bottom:8px;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+.line-spot:last-child{margin-bottom:0}
+.line-spot.drop-on{border-color:var(--highlight);background:rgba(236,183,72,.12)}
+.line-spot .spot-label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.line-spot .spot-slot{min-width:0;min-height:56px;display:flex;align-items:center}
+.line-spot .name-chip{width:100%}
+.line-spot .spot-empty{display:grid;place-items:center;width:100%;min-height:56px;border:1px dashed var(--strong);border-radius:10px;color:var(--muted);font-size:12px}
+.team-drag-ghost{position:fixed;z-index:80;pointer-events:none;margin:0;opacity:.96;box-shadow:var(--shadow);-webkit-user-select:none;user-select:none}
+body.team-dragging{overflow:hidden;touch-action:none}
 @media(max-width:760px){
   .mast-inner{padding:14px max(16px,env(safe-area-inset-right,0px)) 11px max(16px,env(safe-area-inset-left,0px))}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
   .tabs{padding:0 max(16px,env(safe-area-inset-right,0px)) 9px max(16px,env(safe-area-inset-left,0px))}main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
@@ -244,6 +284,9 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
   .board-same{grid-template-columns:1fr}
   .drill-add{margin-left:0}
   .milestone{grid-template-columns:1fr}.mile-date{padding:11px 15px}
+  .team-table-wrap{display:none}.team-cards{display:grid}
+  .team-boards{grid-template-columns:1fr}
+  .line-spot{grid-template-columns:minmax(0,1fr);gap:4px}
 }
 @media(max-width:390px){
   .gate-card{padding:28px 20px 23px}.gate h1{font-size:31px}
@@ -287,6 +330,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     </div>
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
+      <button data-page="team" type="button">Team</button>
       <button data-page="playbook" type="button">Playbook</button>
       <button data-page="offense" type="button">Offense</button>
       <button data-page="defense" type="button">Defense</button>
@@ -389,6 +433,29 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
           <button class="btn ghost" id="postComment" type="button">Post comment</button>
         </div>
       </div>
+    </section>
+
+    <section class="page" id="page-team">
+      <div class="section-head"><div><div class="eyebrow">Staff ranks + lineups</div><h2>Team</h2></div><p>First names only · shared with staff</p></div>
+      <div class="binder-note"><b>Ranks:</b> tap 1–5. 5 is strongest. Overall is set by staff and is never auto-filled. Average is the mean of filled scores among the eight skills; empty cells are skipped.</div>
+      <div class="team-cards" id="teamCards"></div>
+      <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
+
+      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup boards</h2></div><p>7 offense · 7 defense · same kid can be on both</p></div>
+      <div class="binder-note"><b>QB lock:</b> Mike QB1 · Teddy QB2 · Brett QB3. Teddy still runs routes. Michael on this roster is Mike. Five receivers + center; 3 and 2 by play. Drag a name onto a spot. Drag it off, or onto Clear, to empty. Dropping on a filled spot replaces it. The same kid may be on offense and defense at once.</div>
+      <div class="roster-pool" id="teamPool"></div>
+      <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · drop a name here</div>
+      <div class="team-boards">
+        <div class="team-board">
+          <h3>Offense · 7</h3>
+          <div id="offenseBoard"></div>
+        </div>
+        <div class="team-board">
+          <h3>Defense · 7</h3>
+          <div id="defenseBoard"></div>
+        </div>
+      </div>
+      <div class="status-line" id="teamStatus" aria-live="polite"></div>
     </section>
 
     <section class="page" id="page-playbook">
@@ -661,7 +728,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       </div>
     </section>
 
-    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · notes and plans are shared for staff · defense drawing is the shared staff book</div>
+    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · notes, plans, and team lineup are shared for staff · defense drawing is the shared staff book</div>
   </main>
 </div>
 
@@ -672,6 +739,12 @@ const $$=s=>[...document.querySelectorAll(s)];
 const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const STORE_PREFIX="commodores_v1_";
 const ROSTER=["Brett","Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+const LINEUP_ID="staff-lineup";
+const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
+const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
+const RATE_SHORT={speed:"Speed",catching:"Catch",passing:"Pass",agility:"Agility",listening:"Listen",routes:"Routes",coverage:"Cover",overall:"Overall"};
+const OFFENSE_SPOTS=["QB","Center","Receiver 1","Receiver 2","Receiver 3","Receiver 4","Receiver 5"];
+const DEFENSE_SPOTS=["left short","middle short","right short","left deep","middle deep","right deep","helper"];
 const STAFF_FIRST=["Peter","Chris","Ben"];
 const DRILL_LIBRARY=[
   {
@@ -1097,7 +1170,7 @@ async function loadCloudPlans(){
   }
   let changed=false;
   (data||[]).forEach(row=>{
-    if(!row||!row.id) return;
+    if(!row||!row.id||row.id===LINEUP_ID) return;
     const cloud=cloudPlanFromRow(row);
     if(!validPlan(cloud)) return;
     const index=plans.findIndex(plan=>plan.id===row.id);
@@ -1122,6 +1195,7 @@ async function openApp(){
   renderSeason();
   renderDrillPicker();
   renderAttendance();
+  renderTeam();
   renderDefenseBook();
   renderOffenseBook();
   pullDefenseLooks().then(ok=>{
@@ -1137,6 +1211,7 @@ async function openApp(){
   });
   await loadComments();
   await loadCloudPlans();
+  await loadStaffLineup();
   openFromHash();
 }
 $("#pinForm").onsubmit=async event=>{
@@ -1190,6 +1265,7 @@ document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="hidden"){
     upsertNote(NOTE_AFTER,afterNotes.value);
     upsertNote(NOTE_NEXT,nextInstall.value);
+    if(typeof teamState!=="undefined"&&isDeviceUnlocked()) saveStaffLineup();
   }
 });
 $("#postComment").onclick=postStaffComment;
@@ -2134,6 +2210,377 @@ $("#exportJson").onclick=()=>{
   setTimeout(()=>URL.revokeObjectURL(link.href),1000);
   $("#importStatus").textContent="Downloaded this device’s practice plans.";
 };
+
+function emptyLine(){return [null,null,null,null,null,null,null]}
+function cleanScore(value){
+  const n=Number(value);
+  return Number.isInteger(n)&&n>=1&&n<=5?n:null;
+}
+function cleanSkills(raw){
+  const out={};
+  if(!raw||typeof raw!=="object") return out;
+  ROSTER.forEach(name=>{
+    const row=raw[name];
+    if(typeof row==="number"){
+      const overall=cleanScore(row);
+      if(overall) out[name]={overall};
+      return;
+    }
+    if(!row||typeof row!=="object") return;
+    const clean={};
+    RATE_KEYS.forEach(key=>{
+      const n=cleanScore(row[key]);
+      if(n) clean[key]=n;
+    });
+    if(Object.keys(clean).length) out[name]=clean;
+  });
+  return out;
+}
+function cleanLine(arr){
+  const line=emptyLine();
+  if(!Array.isArray(arr)) return line;
+  const seen=new Set();
+  for(let i=0;i<7;i++){
+    const name=arr[i];
+    if(ROSTER.includes(name)&&!seen.has(name)){
+      line[i]=name;
+      seen.add(name);
+    }
+  }
+  return line;
+}
+function normalizeLineup(raw){
+  if(!raw||typeof raw!=="object") return null;
+  return {
+    skills:cleanSkills(raw.skills),
+    offense:cleanLine(raw.offense),
+    defense:cleanLine(raw.defense),
+    updatedAt:raw.updatedAt||raw.updated_at||""
+  };
+}
+function hasTeamContent(state){
+  if(!state) return false;
+  if(Object.keys(state.skills||{}).length) return true;
+  return (state.offense||[]).some(Boolean)||(state.defense||[]).some(Boolean);
+}
+function skillRow(name){return teamState.skills[name]||{}}
+function skillAverage(row){
+  const vals=RATE_KEYS.map(key=>row&&row[key]).filter(n=>Number.isFinite(n)&&n>=1&&n<=5);
+  if(!vals.length) return null;
+  return Math.round(vals.reduce((sum,n)=>sum+n,0)/vals.length*10)/10;
+}
+function skillAverageText(name){
+  const avg=skillAverage(skillRow(name));
+  return avg==null?"—":avg.toFixed(1);
+}
+function rosterByAverage(){
+  return ROSTER.slice().sort((a,b)=>{
+    const av=skillAverage(skillRow(a));
+    const bv=skillAverage(skillRow(b));
+    if(av==null&&bv==null) return a.localeCompare(b);
+    if(av==null) return 1;
+    if(bv==null) return -1;
+    if(bv!==av) return bv-av;
+    return a.localeCompare(b);
+  });
+}
+function setTeamStatus(message){
+  const el=$("#teamStatus");
+  if(el) el.textContent=message;
+}
+function persistTeamLocal(){
+  teamState.updatedAt=new Date().toISOString();
+  setStore("staff_lineup",teamState);
+}
+function setSkill(name,key,value){
+  if(!ROSTER.includes(name)||!RATE_KEYS.includes(key)) return;
+  const next=cleanScore(value);
+  const row={...skillRow(name)};
+  if(next) row[key]=next; else delete row[key];
+  if(Object.keys(row).length) teamState.skills[name]=row; else delete teamState.skills[name];
+  persistTeamLocal();
+  renderTeam();
+  saveStaffLineupDebounced();
+}
+function rateChips(name,key,compact){
+  const current=skillRow(name)[key];
+  const klass=compact?"rate-mini":"rate-chips";
+  const buttons=[1,2,3,4,5].map(n=>`<button type="button" class="${current===n?"on":""}" data-rate-name="${esc(name)}" data-rate-key="${key}" data-rate-value="${n}" aria-label="${esc(name)} ${esc(RATE_LABELS[key])} ${n}" aria-pressed="${current===n?"true":"false"}">${n}</button>`).join("");
+  return `<div class="${klass}">${buttons}</div>`;
+}
+function bindRateButtons(root){
+  $$(root+" [data-rate-name]").forEach(button=>button.onclick=()=>{
+    const name=button.dataset.rateName;
+    const key=button.dataset.rateKey;
+    const value=Number(button.dataset.rateValue);
+    setSkill(name,key,skillRow(name)[key]===value?null:value);
+  });
+}
+function nameChip(name,side,index){
+  const avg=skillAverageText(name);
+  const source=side?` data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
+  return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(name)} ${avg==="—"?"":"average "+avg}">${esc(name)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
+}
+function renderTeamRatings(){
+  const order=rosterByAverage();
+  const cards=$("#teamCards");
+  const table=$("#teamTable");
+  if(cards){
+    cards.innerHTML=order.map(name=>{
+      const keys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
+      const rows=keys.map(key=>`<div class="rate-row${key==="overall"?" overall":""}"><label>${esc(RATE_LABELS[key])}</label>${rateChips(name,key,false)}</div>`).join("");
+      return `<article class="team-card"><div class="team-card-top"><b>${esc(name)}</b><div class="team-avg"><span>Average</span>${skillAverageText(name)}</div></div>${rows}</article>`;
+    }).join("");
+    bindRateButtons("#teamCards");
+  }
+  if(table){
+    const tableKeys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
+    const head=`<thead><tr><th>Name</th><th>Avg</th>${tableKeys.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
+    const body=order.map(name=>`<tr><td>${esc(name)}</td><td class="avg-cell">${skillAverageText(name)}</td>${tableKeys.map(key=>`<td>${rateChips(name,key,true)}</td>`).join("")}</tr>`).join("");
+    table.innerHTML=head+`<tbody>${body}</tbody>`;
+    bindRateButtons("#teamTable");
+  }
+}
+function renderTeamLineup(){
+  const pool=$("#teamPool");
+  const offense=$("#offenseBoard");
+  const defense=$("#defenseBoard");
+  if(pool) pool.innerHTML=ROSTER.map(name=>nameChip(name)).join("");
+  if(offense){
+    offense.innerHTML=OFFENSE_SPOTS.map((label,index)=>{
+      const name=teamState.offense[index];
+      const hint=index===0?"Mike 1 · Teddy 2 · Brett 3":"";
+      return `<div class="line-spot" data-drop-side="offense" data-drop-index="${index}"><div class="spot-label">${esc(label)}${hint?`<div>${esc(hint)}</div>`:""}</div><div class="spot-slot">${name?nameChip(name,"offense",index):`<div class="spot-empty">Drop first name</div>`}</div></div>`;
+    }).join("");
+  }
+  if(defense){
+    defense.innerHTML=DEFENSE_SPOTS.map((label,index)=>{
+      const name=teamState.defense[index];
+      return `<div class="line-spot" data-drop-side="defense" data-drop-index="${index}"><div class="spot-label">${esc(label)}</div><div class="spot-slot">${name?nameChip(name,"defense",index):`<div class="spot-empty">Drop first name</div>`}</div></div>`;
+    }).join("");
+  }
+  bindTeamDrag();
+}
+function renderTeam(){
+  renderTeamRatings();
+  renderTeamLineup();
+}
+let teamState=normalizeLineup(getStore("staff_lineup",null))||{skills:{},offense:emptyLine(),defense:emptyLine(),updatedAt:""};
+const TEAM_HOLD_MS=450;
+const TEAM_CANCEL_DIST=10;
+let teamDrag=null;
+let teamScrollFrame=0;
+function setTeamDrop(el,on){if(el) el.classList.toggle("drop-on",!!on)}
+function clearTeamDrops(){$$(".line-spot.drop-on,.team-clear.drop-on").forEach(el=>el.classList.remove("drop-on"))}
+function runTeamAutoScroll(){
+  teamScrollFrame=0;
+  const state=teamDrag;
+  if(!state||!state.active||!state.scrollSpeed) return;
+  window.scrollBy(0,state.scrollSpeed);
+  highlightTeamDrop(state.x,state.y);
+  teamScrollFrame=requestAnimationFrame(runTeamAutoScroll);
+}
+function updateTeamAutoScroll(){
+  const state=teamDrag;
+  if(!state||!state.active) return;
+  const edge=88;
+  const bottom=innerHeight-112;
+  state.scrollSpeed=state.y<edge? -Math.ceil((edge-state.y)/5):state.y>bottom?Math.ceil((state.y-bottom)/5):0;
+  state.scrollSpeed=Math.max(-18,Math.min(18,state.scrollSpeed));
+  if(state.scrollSpeed&&!teamScrollFrame) teamScrollFrame=requestAnimationFrame(runTeamAutoScroll);
+  if(!state.scrollSpeed&&teamScrollFrame){
+    cancelAnimationFrame(teamScrollFrame);
+    teamScrollFrame=0;
+  }
+}
+function teamDropAt(x,y){
+  const hit=document.elementFromPoint(x,y);
+  if(!hit) return null;
+  const clear=hit.closest("[data-team-clear]");
+  if(clear) return {kind:"clear",el:clear};
+  const spot=hit.closest("[data-drop-side]");
+  if(!spot) return null;
+  return {kind:"spot",side:spot.dataset.dropSide,index:Number(spot.dataset.dropIndex),el:spot};
+}
+function highlightTeamDrop(x,y){
+  clearTeamDrops();
+  const drop=teamDropAt(x,y);
+  if(drop&&drop.el) setTeamDrop(drop.el,true);
+}
+function placeOnSide(side,index,name){
+  const line=teamState[side];
+  if(!line) return;
+  const existing=line.indexOf(name);
+  const displaced=line[index]||null;
+  if(existing===index) return;
+  if(existing>=0){
+    line[existing]=displaced;
+    line[index]=name;
+    return;
+  }
+  line[index]=name;
+}
+function applyTeamDrop(name,source,drop){
+  if(!ROSTER.includes(name)) return;
+  if(!drop){
+    if(source.kind==="spot") teamState[source.side][source.index]=null;
+    return;
+  }
+  if(drop.kind==="clear"){
+    if(source.kind==="spot") teamState[source.side][source.index]=null;
+    return;
+  }
+  if(source.kind==="spot"&&source.side===drop.side){
+    placeOnSide(drop.side,drop.index,name);
+    return;
+  }
+  placeOnSide(drop.side,drop.index,name);
+}
+function activateTeamDrag(){
+  const state=teamDrag;
+  if(!state||state.active||!state.el.isConnected) return;
+  state.active=true;
+  const rect=state.el.getBoundingClientRect();
+  const ghost=state.el.cloneNode(true);
+  ghost.classList.add("team-drag-ghost");
+  ghost.removeAttribute("data-name");
+  ghost.setAttribute("aria-hidden","true");
+  Object.assign(ghost.style,{width:rect.width+"px",height:rect.height+"px",left:rect.left+"px",top:rect.top+"px"});
+  state.ghost=ghost;
+  state.el.classList.add("is-dragging");
+  document.body.classList.add("team-dragging");
+  document.body.appendChild(ghost);
+  const selection=window.getSelection&&window.getSelection();
+  if(selection) selection.removeAllRanges();
+  if(navigator.vibrate) navigator.vibrate(18);
+  highlightTeamDrop(state.x,state.y);
+}
+function moveTeamGhost(){
+  if(!teamDrag||!teamDrag.active||!teamDrag.ghost) return;
+  const ghost=teamDrag.ghost;
+  ghost.style.left=Math.max(4,Math.min(innerWidth-ghost.offsetWidth-4,teamDrag.x-ghost.offsetWidth/2))+"px";
+  ghost.style.top=Math.max(4,Math.min(innerHeight-ghost.offsetHeight-4,teamDrag.y-ghost.offsetHeight/2))+"px";
+}
+function cancelTeamDrag(){
+  const state=teamDrag;
+  if(!state) return;
+  clearTimeout(state.timer);
+  if(teamScrollFrame) cancelAnimationFrame(teamScrollFrame);
+  teamScrollFrame=0;
+  if(state.el) state.el.classList.remove("is-dragging");
+  if(state.ghost) state.ghost.remove();
+  document.body.classList.remove("team-dragging");
+  clearTeamDrops();
+  teamDrag=null;
+}
+function beginTeamDrag(event){
+  if(teamDrag||event.button) return;
+  const el=event.currentTarget;
+  const name=el.dataset.name;
+  if(!ROSTER.includes(name)) return;
+  const source=el.dataset.side?{kind:"spot",side:el.dataset.side,index:Number(el.dataset.index)}:{kind:"pool"};
+  teamDrag={
+    pointerId:event.pointerId,
+    name,
+    source,
+    el,
+    startX:event.clientX,
+    startY:event.clientY,
+    x:event.clientX,
+    y:event.clientY,
+    active:false,
+    timer:0,
+    ghost:null,
+    scrollSpeed:0
+  };
+  if(event.pointerType==="touch") teamDrag.timer=setTimeout(activateTeamDrag,TEAM_HOLD_MS);
+  else activateTeamDrag();
+}
+function onTeamPointerMove(event){
+  const state=teamDrag;
+  if(!state||event.pointerId!==state.pointerId) return;
+  state.x=event.clientX;
+  state.y=event.clientY;
+  if(!state.active){
+    if(Math.hypot(state.x-state.startX,state.y-state.startY)>TEAM_CANCEL_DIST) cancelTeamDrag();
+    return;
+  }
+  event.preventDefault();
+  moveTeamGhost();
+  highlightTeamDrop(state.x,state.y);
+  updateTeamAutoScroll();
+}
+function onTeamPointerUp(event){
+  const state=teamDrag;
+  if(!state||event.pointerId!==state.pointerId) return;
+  if(!state.active){
+    cancelTeamDrag();
+    return;
+  }
+  event.preventDefault();
+  const drop=teamDropAt(state.x,state.y);
+  applyTeamDrop(state.name,state.source,drop);
+  persistTeamLocal();
+  cancelTeamDrag();
+  renderTeamLineup();
+  saveStaffLineupDebounced();
+}
+function bindTeamDrag(){
+  $$("#page-team .name-chip").forEach(chip=>{
+    chip.onpointerdown=beginTeamDrag;
+    chip.oncontextmenu=event=>{
+      if(teamDrag&&teamDrag.el===chip) event.preventDefault();
+    };
+  });
+}
+document.addEventListener("pointermove",onTeamPointerMove,{passive:false});
+document.addEventListener("pointerup",onTeamPointerUp,{passive:false});
+document.addEventListener("pointercancel",cancelTeamDrag,{passive:true});
+
+async function saveStaffLineup(){
+  teamState.updatedAt=new Date().toISOString();
+  setStore("staff_lineup",teamState);
+  if(!sb){
+    setTeamStatus("Saved on this device only · shared tables not reachable");
+    return;
+  }
+  const payload={id:LINEUP_ID,skills:teamState.skills,offense:teamState.offense,defense:teamState.defense,updatedAt:teamState.updatedAt};
+  const {error}=await sb.from("commodores_plans").upsert({
+    id:LINEUP_ID,payload,updated_at:teamState.updatedAt
+  },{onConflict:"id"});
+  setTeamStatus(error?"Saved on this device · shared write failed: "+error.message:"Shared with staff");
+}
+const saveStaffLineupDebounced=debounce(saveStaffLineup,700);
+async function loadStaffLineup(){
+  const local=normalizeLineup(getStore("staff_lineup",null));
+  if(local) teamState=local;
+  renderTeam();
+  if(!sb){
+    setTeamStatus("Shared lineup unavailable · this device only");
+    return;
+  }
+  const {data,error}=await sb.from("commodores_plans").select("id,payload,updated_at").eq("id",LINEUP_ID).maybeSingle();
+  if(error){
+    setTeamStatus("Could not load shared lineup: "+error.message+" · using this device");
+    return;
+  }
+  if(!data){
+    if(hasTeamContent(teamState)) await saveStaffLineup();
+    else setTeamStatus("Ready · ranks and lineups save for staff");
+    return;
+  }
+  const cloud=normalizeLineup({...(data.payload&&typeof data.payload==="object"?data.payload:{}),updatedAt:data.updated_at});
+  const cloudTime=Date.parse(data.updated_at)||0;
+  const localTime=Date.parse(teamState.updatedAt)||0;
+  if(cloud&&cloudTime>=localTime){
+    teamState=cloud;
+    setStore("staff_lineup",teamState);
+    renderTeam();
+    setTeamStatus("Shared lineup loaded");
+    return;
+  }
+  if(localTime>cloudTime&&hasTeamContent(teamState)) await saveStaffLineup();
+}
 
 if(isDeviceUnlocked()) openApp();
 </script>
