@@ -179,6 +179,14 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .btn.flip{min-height:56px;width:100%;font-size:20px;letter-spacing:.08em;text-transform:uppercase}
 .library-label{margin:14px 0 7px;color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .defense-tools{display:grid;gap:8px;margin:12px 0}
+.play-react{margin-top:12px;display:grid;gap:8px}
+.react-toggle{display:flex;flex-wrap:wrap;gap:8px}
+.react-toggle .btn.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
+.btn.play-now{min-height:48px;font-size:16px}
+.play-cue{color:var(--muted);font-size:12.5px}
+.diagram .extra-kid{fill:#FFFFFF;stroke:#CFAE70;stroke-width:2}
+.diagram .extra-label{fill:#ECB748;font:700 8px var(--sans);text-anchor:middle}
+.diagram .pile-hint{fill:none;stroke:#ECB748;stroke-width:2;stroke-dasharray:5 5;opacity:.7}
 @media(max-width:760px){
   .mast-inner{padding:14px max(16px,env(safe-area-inset-right,0px)) 11px max(16px,env(safe-area-inset-left,0px))}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
   .tabs{padding:0 max(16px,env(safe-area-inset-right,0px)) 9px max(16px,env(safe-area-inset-left,0px))}main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
@@ -605,13 +613,13 @@ function defensePictureInner(look){
   const box=grassSize(look);
   const kids=look.spots.map(spot=>{
     if(spot.kind==="helper"){
-      return `<g class="builder-spot" data-spot-id="${esc(spot.id)}"><polygon class="helper" points="${helperPoints(spot.x,spot.y)}"></polygon><text class="spot-name" x="${spot.x}" y="${spot.y+24}">helper · no spot</text></g>`;
+      return `<g class="builder-spot helper-mark" data-spot-id="${esc(spot.id)}" data-helper-mark="1" data-home-x="${spot.x}" data-home-y="${spot.y}"><polygon class="helper" points="${helperPoints(spot.x,spot.y)}"></polygon><text class="spot-name" x="${spot.x}" y="${spot.y+24}">helper · no spot</text></g>`;
     }
     return `<g class="builder-spot" data-spot-id="${esc(spot.id)}"><rect class="grass" x="${spot.x-box.w/2}" y="${spot.y-box.h/2}" width="${box.w}" height="${box.h}" rx="10"></rect><circle class="kid" cx="${spot.x}" cy="${spot.y}" r="${look.spotSize==="big"?12:9}"></circle><text class="spot-name" x="${spot.x}" y="${spot.y+box.h/2-8}">${esc(spot.name)}</text></g>`;
   }).join("");
   const paths=(look.paths||[]).map(path=>`<path class="def-path" data-route-id="${esc(path.id)}" d="${esc(defensePathD(look,path))}"></path>`).join("");
   const thrower=`<g><circle class="thrower" cx="${look.thrower.x}" cy="${look.thrower.y}" r="11"></circle><text class="no-rush" x="${look.thrower.x}" y="${look.thrower.y+26}" text-anchor="middle">thrower · do not rush</text></g>`;
-  return `${paths}${kids}${thrower}`;
+  return `${paths}<g class="play-extras"></g>${kids}${thrower}`;
 }
 function defenseCardSVG(look){
   return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(look.name)}: left short, middle short, right short, left deep, middle deep, right deep, plus a helper. Thrower shown. No rush.">
@@ -621,6 +629,68 @@ function defenseCardSVG(look){
     <text x="22" y="213" fill="#E0D5C0" font-size="9">line</text>
     ${defensePictureInner(look)}
   </svg>`;
+}
+function helperHome(look){
+  return look.spots.find(spot=>spot.kind==="helper")||{x:180,y:118};
+}
+function pilePoint(look){
+  const helper=helperHome(look);
+  const path=(look.paths||[]).find(item=>item.from===helper.id&&item.points&&item.points.length);
+  if(path) return path.points[path.points.length-1];
+  const shorts=look.spots.filter(spot=>spot.kind==="area"&&/short$/.test(spot.name));
+  return shorts.slice().sort((a,b)=>Math.abs(b.x-180)-Math.abs(a.x-180))[0]||{x:286,y:162};
+}
+function extraKidPoints(pile){
+  const dir=pile.x>=180?1:-1;
+  return [
+    {x:pile.x+dir*8,y:pile.y-18},
+    {x:pile.x+dir*20,y:pile.y-2},
+    {x:pile.x+dir*8,y:pile.y+16}
+  ];
+}
+function easeInOut(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+let defenseAnim=null;
+function stopDefenseAnim(){
+  if(!defenseAnim) return;
+  if(defenseAnim.frame) cancelAnimationFrame(defenseAnim.frame);
+  if(defenseAnim.timer) clearTimeout(defenseAnim.timer);
+  defenseAnim=null;
+}
+function playDefenseLook(look,reaction,card){
+  if(!look||!card) return;
+  stopDefenseAnim();
+  const svg=card.querySelector(".diagram");
+  const mark=svg&&svg.querySelector("[data-helper-mark]");
+  const extras=svg&&svg.querySelector(".play-extras");
+  const cue=card.querySelector("[data-play-cue]");
+  if(!mark||!extras) return;
+  const home=helperHome(look);
+  const pile=pilePoint(look);
+  extras.innerHTML=extraKidPoints(pile).map(point=>`<circle class="extra-kid" cx="${point.x}" cy="${point.y}" r="6"></circle>`).join("")
+    +`<text class="extra-label" x="${pile.x}" y="${pile.y+(pile.x>=180?32:-28)}">extra kids</text>`
+    +(reaction==="middle"?`<path class="pile-hint" d="M${home.x} ${home.y} L${pile.x} ${pile.y}"></path>`:"");
+  const dest=reaction==="pile"?pile:home;
+  cue.textContent=reaction==="pile"
+    ?"Play: helper runs to the pile. The six do not chase."
+    :"Play: helper stays in the middle. The six do not chase.";
+  const start=performance.now();
+  const hold=reaction==="pile"?1600:900;
+  defenseAnim={frame:0,timer:0};
+  const tick=now=>{
+    const t=Math.min(1,(now-start)/hold);
+    const p=easeInOut(t);
+    const x=home.x+(dest.x-home.x)*p;
+    const y=home.y+(dest.y-home.y)*p;
+    mark.setAttribute("transform",`translate(${x-home.x} ${y-home.y})`);
+    if(t<1){defenseAnim.frame=requestAnimationFrame(tick);return}
+    defenseAnim.timer=setTimeout(()=>{
+      mark.removeAttribute("transform");
+      extras.innerHTML="";
+      cue.textContent="Watch the helper. The six stay in their grass. They do not chase.";
+      defenseAnim=null;
+    },1100);
+  };
+  defenseAnim.frame=requestAnimationFrame(tick);
 }
 function nextAreaName(look){
   const used=new Set(look.spots.filter(spot=>spot.kind==="area").map(spot=>spot.name));
@@ -652,8 +722,16 @@ function renderDefenseBook(){
       <div class="play-head"><h3>${esc(look.name)}</h3><span class="badge taught">Game defense</span></div>
       <p>${esc(look.how)}</p>
       <div class="when">Drawn from Play builder. Helper has no grass. Hip-stay is never drawn here.</div>
+      <div class="play-react">
+        <div class="react-toggle" role="group" aria-label="Helper reaction">
+          <button class="btn ghost on" data-react="pile" type="button">Helper to the pile</button>
+          <button class="btn ghost" data-react="middle" type="button">Helper stays middle</button>
+        </div>
+        <button class="btn play-now" data-play="${esc(look.id)}" type="button">Play</button>
+        <div class="play-cue" data-play-cue>Watch the helper. The six stay in their grass. They do not chase.</div>
+      </div>
       <div class="when" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
-        <button class="btn" data-bigger="${esc(look.id)}" type="button">${look.spotSize==="big"?"Spots are big · tap to shrink":"Kids look lost · make spots bigger"}</button>
+        <button class="btn ghost" data-bigger="${esc(look.id)}" type="button">${look.spotSize==="big"?"Spots are big · tap to shrink":"Kids look lost · make spots bigger"}</button>
         <button class="btn ghost edit-defense" data-id="${esc(look.id)}" type="button">Open in builder</button>
       </div>
     </div>
@@ -675,6 +753,20 @@ function renderDefenseBook(){
   $$("#defenseBook .edit-defense").forEach(button=>button.onclick=()=>{
     openDefense(button.dataset.id);
     showPage("builder");
+  });
+  $$("#defenseBook [data-react]").forEach(button=>button.onclick=()=>{
+    const group=button.closest(".react-toggle");
+    [...group.querySelectorAll("[data-react]")].forEach(item=>item.classList.toggle("on",item===button));
+    group.dataset.reaction=button.dataset.react;
+    const cue=button.closest(".play-react").querySelector("[data-play-cue]");
+    cue.textContent=button.dataset.react==="pile"
+      ?"Helper runs to the extra kids. The six stay in their grass."
+      :"Helper stays in the middle. The six stay in their grass.";
+  });
+  $$("#defenseBook [data-play]").forEach(button=>button.onclick=()=>{
+    const look=defenseLooks.find(item=>item.id===button.dataset.play);
+    const reaction=button.closest(".play-react").querySelector(".react-toggle .on")?.dataset.react||"pile";
+    playDefenseLook(look,reaction,button.closest(".play-card"));
   });
 }
 function persistDefenseLooks(message){
