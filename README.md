@@ -58,17 +58,22 @@ the card's `created_at` when it is absent. Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
 
 For email reply cards, `snippet` is the editable reply draft. Apply the
-idempotent `sql/ops_email_replies.sql` manually before using the queue flow.
+idempotent `sql/ops_email_replies.sql` and `sql/ops_email_recipients.sql`
+manually before using the queue flow.
 The inbox watch should populate `inbound_from`, `inbound_subject`,
-`inbound_body` (plain text), and `inbound_message_id`. Clicking **Send** saves
-the draft, asks for confirmation, and sets `send_requested_at` /
-`send_requested_by`; it does not send Gmail or mark the card done. Sydney's
-inbox watch owns the actual send and completion. Queued cards collapse to a
-compact row; **Cancel** clears the two queue fields without clearing `snippet`,
-so the reply can be edited and queued again. The current dashboard treats
-`project` as the inbox label. `source_ref` is available to the watch alongside
-`inbound_message_id`, but this repository does not establish which Gmail
-identifier existing producers store there.
+`inbound_to`, `inbound_cc`, `inbound_body` (plain text),
+`inbound_message_id`, and `inbound_account` (the Chris-owned receiving
+address). Replies default to reply-all while excluding `inbound_account`; Chris
+can switch to sender-only and edit To / Cc / Bcc. The dashboard autosaves
+`reply_all`, `reply_to`, `reply_cc`, and `reply_bcc`. Clicking **Send** saves
+those exact recipients with the draft, asks for confirmation, and sets
+`send_requested_at` / `send_requested_by`; it does not send Gmail or mark the
+card done. Sydney's inbox watch owns the actual send and completion. Queued
+cards collapse to a compact row; **Cancel** clears only the two queue fields,
+leaving the draft and recipient choices ready to edit. The current dashboard
+treats `project` as the inbox label. `source_ref` is available to the watch
+alongside `inbound_message_id`, but this repository does not establish which
+Gmail identifier existing producers store there.
 
 If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the

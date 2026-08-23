@@ -149,6 +149,7 @@ a{color:var(--brass)}
 .email-wait{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;color:#e4cfaa;background:rgba(196,165,116,.14);border:1px solid rgba(196,165,116,.28);font-variant-numeric:tabular-nums;}
 .email-queued-row{display:flex;min-width:0;align-items:center;gap:10px;padding:12px 14px;}
 .email-queued-copy{flex:1;min-width:0;}
+.email-queued-recipients{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;color:var(--muted);font-size:11px;}
 .email-queued-chip{flex-shrink:0;border:1px solid rgba(154,175,152,.32);border-radius:999px;padding:3px 8px;color:var(--sydney);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
 .cancel-queue{flex-shrink:0;}
 .email-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);}
@@ -160,7 +161,32 @@ a{color:var(--brass)}
 .email-incoming-head{padding:8px 0 12px;border-bottom:1px solid var(--line);}
 .email-incoming-from{font-weight:700;overflow-wrap:anywhere;}
 .email-incoming-subject{margin-top:4px;color:var(--soft);font-size:16px;overflow-wrap:anywhere;}
+.email-participants{min-width:0;margin:0 0 14px;padding:10px 0;border-bottom:1px solid var(--line);}
+.email-participants-title{margin-bottom:7px;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.email-participant-row{display:grid;min-width:0;grid-template-columns:42px minmax(0,1fr);gap:8px;padding:3px 0;color:var(--soft);font-size:12.5px;}
+.email-participant-label{color:var(--muted);}
+.email-participant-list{min-width:0;overflow-wrap:anywhere;}
+.email-participant{display:flex;min-width:0;align-items:center;gap:6px;margin-bottom:4px;}
+.email-participant:last-child{margin-bottom:0;}
+.email-participant-address{flex:1;min-width:0;overflow-wrap:anywhere;}
+.email-participant-add{flex-shrink:0;max-width:88px;background:var(--bg);border:1px solid var(--line-strong);border-radius:7px;padding:4px 5px;color:var(--muted);font-size:11px;}
 .email-incoming-body{margin:14px 0 0;color:var(--soft);font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
+.email-recipients{min-width:0;margin:0 0 12px;}
+.email-reply-mode{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;}
+.email-reply-mode-label{color:var(--soft);font-size:12px;font-weight:600;}
+.email-reply-mode-buttons{display:inline-flex;min-width:0;padding:2px;border:1px solid var(--line-strong);border-radius:999px;background:var(--bg-2);}
+.email-reply-mode-buttons button{min-height:34px;padding:6px 10px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-size:11.5px;font-weight:600;}
+.email-reply-mode-buttons button.on{background:var(--brass-soft);color:var(--ink);}
+.email-recipient-row{display:grid;min-width:0;grid-template-columns:34px minmax(0,1fr);align-items:start;gap:8px;margin-bottom:7px;}
+.email-recipient-label{padding-top:9px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;}
+.email-recipient-field{display:flex;min-width:0;min-height:40px;align-items:center;flex-wrap:wrap;gap:5px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:9px;background:var(--bg);}
+.email-recipient-field:focus-within{border-color:var(--brass);}
+.email-recipient-token{display:inline-flex;min-width:0;max-width:100%;align-items:center;gap:3px;padding:3px 4px 3px 7px;border-radius:999px;background:var(--brass-soft);color:var(--soft);font-size:11.5px;}
+.email-recipient-token span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.email-recipient-remove{width:22px;height:22px;min-width:22px;padding:0;border:0;border-radius:999px;background:transparent;color:var(--muted);font-size:16px;line-height:1;}
+.email-recipient-remove:hover,.email-recipient-remove:focus-visible{background:rgba(255,255,255,.08);color:var(--ink);outline:none;}
+.email-recipient-input{flex:1 1 150px;min-width:90px;max-width:100%;height:28px;padding:2px;border:0;background:transparent;color:var(--ink);font-size:16px;outline:none;}
+.email-recipient-hint{margin:-2px 0 10px 42px;color:var(--muted);font-size:10.5px;}
 .email-reply-label{display:block;margin:5px 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
 .email-reply{display:block;width:100%;min-width:0;min-height:190px;resize:vertical;padding:12px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;}
 .email-reply:focus{outline:none;border-color:var(--brass);}
@@ -212,6 +238,14 @@ a{color:var(--brass)}
   .email-segment{width:100%;}
   .email-segment button{flex:1;min-width:0;min-height:44px;}
   .email-detail-scroll{max-height:48dvh;padding:2px 12px 12px;}
+  .email-participant-row{grid-template-columns:36px minmax(0,1fr);}
+  .email-participant{align-items:flex-start;flex-wrap:wrap;}
+  .email-participant-add{margin-left:44px;}
+  .email-reply-mode{align-items:flex-start;flex-direction:column;}
+  .email-reply-mode-buttons{display:flex;width:100%;}
+  .email-reply-mode-buttons button{flex:1;min-width:0;min-height:40px;}
+  .email-recipient-row{grid-template-columns:28px minmax(0,1fr);gap:6px;}
+  .email-recipient-hint{margin-left:34px;}
   .email-reply{min-height:180px;}
   .email-actions{padding:10px 12px max(12px,env(safe-area-inset-bottom,0px));}
   .email-actions .btn{min-height:44px;}
@@ -443,6 +477,7 @@ let cards = [];
 let openEmailCardId = null;
 let openEmailPanel = "reply";
 let emailQueueColumnsAvailable = true;
+let emailRecipientColumnsAvailable = true;
 const emailDrafts = new Map();
 let projectFilter = "";
 let emailProjectFilter = "";
@@ -862,6 +897,7 @@ async function loadCards(){
   if(!sb){ setStatus("Supabase client missing.", true); return; }
   const baseFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,received_at,created_at,updated_at";
   const emailFields = "inbound_from,inbound_subject,inbound_body,inbound_message_id,send_requested_at,send_requested_by";
+  const recipientFields = "inbound_to,inbound_cc,inbound_account,reply_all,reply_to,reply_cc,reply_bcc";
   const legacyFields = baseFields.replace("received_at,", "");
   const emptyEmailFields = {
     inbound_from:null,
@@ -869,13 +905,32 @@ async function loadCards(){
     inbound_body:null,
     inbound_message_id:null,
     send_requested_at:null,
-    send_requested_by:null
+    send_requested_by:null,
+    inbound_to:null,
+    inbound_cc:null,
+    inbound_account:null,
+    reply_all:null,
+    reply_to:null,
+    reply_cc:null,
+    reply_bcc:null
   };
   let result = await sb.from("ops_cards")
-    .select(baseFields+","+emailFields)
+    .select(baseFields+","+emailFields+","+recipientFields)
     .order("sort", { ascending:true })
     .order("created_at", { ascending:true });
   emailQueueColumnsAvailable = !result.error;
+  emailRecipientColumnsAvailable = !result.error;
+  if(result.error && (result.error.code==="42703" || /inbound_to|inbound_cc|inbound_account|reply_/i.test(result.error.message||""))){
+    result = await sb.from("ops_cards")
+      .select(baseFields+","+emailFields)
+      .order("sort", { ascending:true })
+      .order("created_at", { ascending:true });
+    emailQueueColumnsAvailable = !result.error;
+    if(!result.error) result.data = (result.data||[]).map(card => ({ ...card, ...{
+      inbound_to:null, inbound_cc:null, inbound_account:null, reply_all:null,
+      reply_to:null, reply_cc:null, reply_bcc:null
+    } }));
+  }
   if(result.error && (result.error.code==="42703" || /inbound_|send_requested/i.test(result.error.message||""))){
     result = await sb.from("ops_cards")
       .select(baseFields)
@@ -899,7 +954,13 @@ async function loadCards(){
   cards = data || [];
   emailDrafts.forEach((draft, cardId) => {
     const card = cards.find(item => item.id===cardId);
-    if(card) card.snippet = draft.value;
+    if(card){
+      card.snippet = draft.value;
+      card.reply_all = draft.replyAll;
+      card.reply_to = [...draft.recipients.to];
+      card.reply_cc = [...draft.recipients.cc];
+      card.reply_bcc = [...draft.recipients.bcc];
+    }
   });
   if(openEmailCardId && !cards.some(card => card.id===openEmailCardId && !card.done_at)){
     discardEmailDraft(openEmailCardId);
@@ -1002,14 +1063,170 @@ function emailPreview(card){
   return text || "Incoming message unavailable";
 }
 
+function emailHeader(body, name){
+  const lines = String(body||"").split(/\r?\n/).slice(0, 60);
+  const pattern = new RegExp("^"+name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")+"\\s*:\\s*(.*)$", "i");
+  for(let index=0; index<lines.length; index++){
+    const match = lines[index].match(pattern);
+    if(!match) continue;
+    let value = match[1].trim();
+    while(index+1<lines.length && /^\s+\S/.test(lines[index+1])) value += " "+lines[++index].trim();
+    return value;
+  }
+  return "";
+}
+
+function splitMailboxValues(value){
+  if(Array.isArray(value)) return value.flatMap(splitMailboxValues);
+  const parts = [];
+  let current = "", quoted = false, angleDepth = 0;
+  for(const char of String(value||"")){
+    if(char==='"') quoted = !quoted;
+    if(!quoted && char==="<") angleDepth++;
+    if(!quoted && char===">" && angleDepth) angleDepth--;
+    if(!quoted && angleDepth===0 && (char==="," || char===";")){
+      if(current.trim()) parts.push(current.trim());
+      current = "";
+    }else{
+      current += char;
+    }
+  }
+  if(current.trim()) parts.push(current.trim());
+  return parts;
+}
+
+function mailbox(value){
+  const raw = String(value||"").trim();
+  const emailMatch = raw.match(/[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  if(!emailMatch) return null;
+  const email = emailMatch[0].toLowerCase();
+  const name = raw.replace(emailMatch[0], "").replace(/[<>"']/g, "").trim().replace(/^[,;]+|[,;]+$/g, "").trim();
+  return { email, label:name ? `${name} <${email}>` : email };
+}
+
+function mailboxes(value){
+  const seen = new Set();
+  return splitMailboxValues(value).map(mailbox).filter(item => {
+    if(!item || seen.has(item.email)) return false;
+    seen.add(item.email);
+    return true;
+  });
+}
+
+function originalParticipants(card){
+  const fromRaw = card.inbound_from || emailHeader(card.inbound_body, "from");
+  const toRaw = card.inbound_to || emailHeader(card.inbound_body, "to");
+  const ccRaw = card.inbound_cc || emailHeader(card.inbound_body, "cc");
+  return {
+    from:mailboxes(fromRaw),
+    to:mailboxes(toRaw),
+    cc:mailboxes(ccRaw),
+    raw:{ from:fromRaw, to:toRaw, cc:ccRaw }
+  };
+}
+
+function recipientArray(value){
+  if(Array.isArray(value)) return mailboxes(value).map(item => item.email);
+  return mailboxes(value).map(item => item.email);
+}
+
+function uniqueEmails(values){
+  const seen = new Set();
+  return values.map(value => String(value||"").trim().toLowerCase()).filter(value => {
+    if(!mailbox(value) || seen.has(value)) return false;
+    seen.add(value);
+    return true;
+  });
+}
+
+function ownInboxAddresses(card, participants){
+  const explicit = recipientArray(card.inbound_account);
+  if(explicit.length) return new Set(explicit);
+  const current = String(currentUser && currentUser.email || "").toLowerCase();
+  return new Set(participants.to.concat(participants.cc)
+    .map(item => item.email)
+    .filter(email => email===current));
+}
+
+function replyDefaults(card, replyAll){
+  const participants = originalParticipants(card);
+  const own = ownInboxAddresses(card, participants);
+  const sender = participants.from[0] ? [participants.from[0].email] : [];
+  if(!replyAll) return { to:sender, cc:[], bcc:[] };
+  const to = uniqueEmails(sender.concat(participants.to.map(item => item.email).filter(email => !own.has(email))));
+  const toSet = new Set(to);
+  const cc = uniqueEmails(participants.cc.map(item => item.email).filter(email => !own.has(email) && !toSet.has(email)));
+  return { to, cc, bcc:[] };
+}
+
+function sameRecipients(a, b){
+  return ["to","cc","bcc"].every(kind => JSON.stringify(a[kind])===JSON.stringify(b[kind]));
+}
+
+function cloneRecipients(value){
+  return { to:[...value.to], cc:[...value.cc], bcc:[...value.bcc] };
+}
+
+function recipientCount(card){
+  const state = emailDrafts.get(card.id);
+  const lists = state ? state.recipients : {
+    to:recipientArray(card.reply_to),
+    cc:recipientArray(card.reply_cc),
+    bcc:recipientArray(card.reply_bcc)
+  };
+  return lists.to.length + lists.cc.length + lists.bcc.length;
+}
+
 function emailDraftFor(card){
   let draft = emailDrafts.get(card.id);
   if(!draft){
     const value = card.snippet || "";
-    draft = { value, savedValue:value, dirty:false, savePromise:null, saveTimer:0 };
+    const replyAll = card.reply_all==null ? true : !!card.reply_all;
+    const defaults = replyDefaults(card, replyAll);
+    const hasSavedRecipients = card.reply_to!=null || card.reply_cc!=null || card.reply_bcc!=null;
+    const recipients = hasSavedRecipients ? {
+      to:recipientArray(card.reply_to),
+      cc:recipientArray(card.reply_cc),
+      bcc:recipientArray(card.reply_bcc)
+    } : defaults;
+    const allOriginalEmails = new Set(Object.values(replyDefaults(card, true)).flat());
+    const extras = { to:[], cc:[], bcc:[] };
+    for(const kind of ["to","cc","bcc"]){
+      extras[kind] = recipients[kind].filter(email => !allOriginalEmails.has(email));
+    }
+    draft = {
+      value,
+      savedValue:value,
+      replyAll,
+      savedReplyAll:card.reply_all==null ? null : !!card.reply_all,
+      recipients:cloneRecipients(recipients),
+      savedRecipients:hasSavedRecipients ? cloneRecipients(recipients) : { to:[], cc:[], bcc:[] },
+      extras,
+      dirty:false,
+      savePromise:null,
+      saveTimer:0
+    };
     emailDrafts.set(card.id, draft);
   }
   return draft;
+}
+
+function updateEmailDraftDirty(draft){
+  draft.dirty = draft.value!==draft.savedValue
+    || draft.replyAll!==draft.savedReplyAll
+    || !sameRecipients(draft.recipients, draft.savedRecipients);
+}
+
+function scheduleEmailDraftSave(cardId){
+  const draft = emailDrafts.get(cardId);
+  if(!draft) return;
+  updateEmailDraftDirty(draft);
+  updateEmailDraftSaveState(cardId, draft.dirty ? "Unsaved" : "Draft saved");
+  if(draft.saveTimer) clearTimeout(draft.saveTimer);
+  draft.saveTimer = setTimeout(() => {
+    draft.saveTimer = 0;
+    persistEmailDraft(cardId);
+  }, EMAIL_DRAFT_SAVE_DELAY_MS);
 }
 
 function discardEmailDraft(cardId){
@@ -1022,6 +1239,69 @@ function shouldPreserveOpenEmailReply(){
   if(actor!=="emails" || openEmailPanel!=="reply" || !openEmailCardId || !emailDrafts.has(openEmailCardId)) return false;
   const reply = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-reply`);
   return !!(reply && !reply.readOnly);
+}
+
+function participantsHTML(card, allowAdd){
+  const participants = originalParticipants(card);
+  const rows = [
+    ["From", participants.from, participants.raw.from],
+    ["To", participants.to, participants.raw.to],
+    ["Cc", participants.cc, participants.raw.cc]
+  ].filter(([,items,raw]) => items.length || raw);
+  if(!rows.length) return `<div class="email-participants"><div class="email-participants-title">Original participants</div><div class="email-participant-row"><span class="email-participant-label">From</span><span class="email-participant-list">Unavailable</span></div></div>`;
+  return `<div class="email-participants">
+    <div class="email-participants-title">Original participants</div>
+    ${rows.map(([label,items,raw]) => `<div class="email-participant-row">
+      <span class="email-participant-label">${label}</span>
+      <span class="email-participant-list">${items.length ? items.map(item => `<span class="email-participant">
+        <span class="email-participant-address">${esc(item.label)}</span>
+        ${allowAdd ? `<select class="email-participant-add" data-original-email="${esc(item.email)}" aria-label="Add ${esc(item.email)} to reply">
+          <option value="">Add to…</option><option value="to">To</option><option value="cc">Cc</option><option value="bcc">Bcc</option>
+        </select>` : ""}
+      </span>`).join("") : esc(raw)}</span>
+    </div>`).join("")}
+  </div>`;
+}
+
+function recipientEditorHTML(card, draft, kind, label){
+  return `<div class="email-recipient-row">
+    <label class="email-recipient-label" for="recipient-${kind}-${esc(card.id)}">${label}</label>
+    <div class="email-recipient-field">
+      ${draft.recipients[kind].map(email => `<span class="email-recipient-token">
+        <span title="${esc(email)}">${esc(email)}</span>
+        <button type="button" class="email-recipient-remove" data-recipient-kind="${kind}" data-recipient-email="${esc(email)}" aria-label="Remove ${esc(email)} from ${label}">×</button>
+      </span>`).join("")}
+      <input class="email-recipient-input" id="recipient-${kind}-${esc(card.id)}" data-recipient-kind="${kind}" type="text" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Add email">
+    </div>
+  </div>`;
+}
+
+function recipientControlsHTML(card, draft){
+  return `<div class="email-reply-mode">
+      <span class="email-reply-mode-label">Who gets this reply?</span>
+      <span class="email-reply-mode-buttons" role="group" aria-label="Reply recipients">
+        <button type="button" class="email-reply-mode-btn${draft.replyAll?" on":""}" data-reply-all="true" aria-pressed="${draft.replyAll}">Reply all</button>
+        <button type="button" class="email-reply-mode-btn${draft.replyAll?"":" on"}" data-reply-all="false" aria-pressed="${!draft.replyAll}">Sender only</button>
+      </span>
+    </div>
+    ${recipientEditorHTML(card, draft, "to", "To")}
+    ${recipientEditorHTML(card, draft, "cc", "Cc")}
+    ${recipientEditorHTML(card, draft, "bcc", "Bcc")}
+    <div class="email-recipient-hint">Type an address and press Enter, or add someone from the original email above.</div>`;
+}
+
+function queuedRecipientsLabel(card){
+  const saved = {
+    to:recipientArray(card.reply_to),
+    cc:recipientArray(card.reply_cc),
+    bcc:recipientArray(card.reply_bcc)
+  };
+  const lists = saved.to.length || saved.cc.length || saved.bcc.length
+    ? saved
+    : replyDefaults(card, card.reply_all==null ? true : !!card.reply_all);
+  const first = lists.to[0] || lists.cc[0] || lists.bcc[0] || "No recipient";
+  const extra = lists.to.length + lists.cc.length + lists.bcc.length - 1;
+  return `To ${first}${extra>0 ? ` +${extra}` : ""}`;
 }
 
 function emailCardHTML(c){
@@ -1037,6 +1317,7 @@ function emailCardHTML(c){
         <div class="email-queued-copy">
           <span class="email-from">${esc(from)}</span>
           <span class="email-subject">${esc(subject)}</span>
+          <span class="email-queued-recipients">${esc(queuedRecipientsLabel(c))}</span>
         </div>
         <span class="email-queued-chip">Queued</span>
         <button type="button" class="btn tiny ghost cancel-queue">Cancel</button>
@@ -1044,7 +1325,8 @@ function emailCardHTML(c){
     </article>`;
   }
   const open = c.id===openEmailCardId;
-  const queueDisabled = !emailQueueColumnsAvailable;
+  const queueDisabled = !emailQueueColumnsAvailable || !emailRecipientColumnsAvailable;
+  const replyDraft = open && openEmailPanel==="reply" ? emailDraftFor(c) : null;
   const detail = open ? `
     <section class="email-detail" aria-label="Email details">
       <div class="email-detail-head">
@@ -1057,12 +1339,16 @@ function emailCardHTML(c){
         ${openEmailPanel==="incoming" ? `
           <div class="email-incoming">
             <div class="email-incoming-head">
-              <div class="email-incoming-from">From: ${esc(from)}</div>
+              ${participantsHTML(c, false)}
               <div class="email-incoming-subject">${esc(subject)}</div>
             </div>
             <div class="email-incoming-body">${esc(c.inbound_body||"Received message body unavailable.")}</div>
           </div>
         ` : `
+          ${participantsHTML(c, true)}
+          <div class="email-recipients">
+            ${recipientControlsHTML(c, replyDraft)}
+          </div>
           <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
           <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
         `}
@@ -1070,7 +1356,7 @@ function emailCardHTML(c){
       <div class="email-actions">
         <span class="email-save-state" aria-live="polite"></span>
         ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
-        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${!emailQueueColumnsAvailable?"Apply sql/ops_email_replies.sql before queueing replies":"Save and queue this reply"}">${emailQueueColumnsAvailable?"Send":"Setup required"}</button>
+        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${queueDisabled?"Apply the Ops email SQL files before queueing replies":"Save and queue this reply"}">${queueDisabled?"Setup required":"Send"}</button>
       </div>
     </section>` : "";
   return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
@@ -1430,6 +1716,109 @@ async function copyText(text){
   if(!copied) throw new Error("Copy is not available");
 }
 
+function addEmailRecipient(draft, kind, raw, rememberExtra){
+  const additions = mailboxes(raw).map(item => item.email);
+  if(!additions.length) return false;
+  for(const email of additions){
+    for(const listKind of ["to","cc","bcc"]){
+      draft.recipients[listKind] = draft.recipients[listKind].filter(value => value!==email);
+      draft.extras[listKind] = draft.extras[listKind].filter(value => value!==email);
+    }
+    draft.recipients[kind].push(email);
+    if(rememberExtra) draft.extras[kind].push(email);
+  }
+  return true;
+}
+
+function setReplyMode(card, draft, replyAll){
+  if(draft.replyAll===replyAll) return;
+  const extras = cloneRecipients(draft.extras);
+  draft.replyAll = replyAll;
+  draft.recipients = replyDefaults(card, replyAll);
+  for(const kind of ["to","cc","bcc"]){
+    for(const email of extras[kind]){
+      for(const listKind of ["to","cc","bcc"]){
+        draft.recipients[listKind] = draft.recipients[listKind].filter(value => value!==email);
+      }
+      draft.recipients[kind].push(email);
+    }
+  }
+  draft.extras = extras;
+}
+
+function refreshRecipientControls(el, card, draft, focusKind){
+  const controls = el.querySelector(".email-recipients");
+  if(!controls) return;
+  controls.innerHTML = recipientControlsHTML(card, draft);
+  bindRecipientControls(el, card, draft);
+  if(focusKind){
+    const input = controls.querySelector(`.email-recipient-input[data-recipient-kind="${focusKind}"]`);
+    if(input) input.focus();
+  }
+}
+
+function bindRecipientControls(el, card, draft){
+  el.querySelectorAll(".email-reply-mode-btn").forEach(button => {
+    button.onclick = () => {
+      setReplyMode(card, draft, button.dataset.replyAll==="true");
+      scheduleEmailDraftSave(card.id);
+      refreshRecipientControls(el, card, draft);
+    };
+  });
+  el.querySelectorAll(".email-recipient-remove").forEach(button => {
+    button.onclick = () => {
+      const kind = button.dataset.recipientKind;
+      const email = button.dataset.recipientEmail;
+      draft.recipients[kind] = draft.recipients[kind].filter(value => value!==email);
+      draft.extras[kind] = draft.extras[kind].filter(value => value!==email);
+      scheduleEmailDraftSave(card.id);
+      refreshRecipientControls(el, card, draft, kind);
+    };
+  });
+  el.querySelectorAll(".email-recipient-input").forEach(input => {
+    const commit = () => {
+      const raw = input.value.trim();
+      if(!raw) return true;
+      if(!addEmailRecipient(draft, input.dataset.recipientKind, raw, true)){
+        input.setCustomValidity("Enter a valid email address.");
+        input.reportValidity();
+        return false;
+      }
+      input.setCustomValidity("");
+      input.value = "";
+      scheduleEmailDraftSave(card.id);
+      refreshRecipientControls(el, card, draft, input.dataset.recipientKind);
+      return true;
+    };
+    input.oninput = () => input.setCustomValidity("");
+    input.onkeydown = event => {
+      if(event.key==="Enter" || event.key==="," || event.key===";"){
+        event.preventDefault();
+        commit();
+      }
+      if(event.key==="Backspace" && !input.value && draft.recipients[input.dataset.recipientKind].length){
+        const kind = input.dataset.recipientKind;
+        const email = draft.recipients[kind].at(-1);
+        draft.recipients[kind].pop();
+        draft.extras[kind] = draft.extras[kind].filter(value => value!==email);
+        scheduleEmailDraftSave(card.id);
+        refreshRecipientControls(el, card, draft, kind);
+      }
+    };
+    input.onblur = commit;
+  });
+  el.querySelectorAll(".email-participant-add").forEach(select => {
+    select.onchange = () => {
+      if(!select.value) return;
+      const kind = select.value;
+      addEmailRecipient(draft, kind, select.dataset.originalEmail, true);
+      scheduleEmailDraftSave(card.id);
+      refreshRecipientControls(el, card, draft, kind);
+      select.value = "";
+    };
+  });
+}
+
 function bindEmailCards(){
   $$(".email-card").forEach(el => {
     const card = cards.find(c => c.id===el.dataset.id);
@@ -1477,18 +1866,15 @@ function bindEmailCards(){
     const saveState = el.querySelector(".email-save-state");
     if(reply && !reply.readOnly){
       const draft = emailDraftFor(card);
+      bindRecipientControls(el, card, draft);
       reply.value = draft.value;
       reply.oninput = () => {
         draft.value = reply.value;
-        draft.dirty = draft.value!==draft.savedValue;
-        if(saveState) saveState.textContent = "Unsaved";
+        updateEmailDraftDirty(draft);
+        if(saveState) saveState.textContent = draft.dirty ? "Unsaved" : "Draft saved";
         const copyButton = el.querySelector(".copy-draft");
         if(copyButton) copyButton.disabled = !reply.value;
-        if(draft.saveTimer) clearTimeout(draft.saveTimer);
-        draft.saveTimer = setTimeout(() => {
-          draft.saveTimer = 0;
-          persistEmailDraft(card.id);
-        }, EMAIL_DRAFT_SAVE_DELAY_MS);
+        scheduleEmailDraftSave(card.id);
       };
       reply.onchange = () => persistEmailDraft(card.id);
       reply.onblur = () => persistEmailDraft(card.id);
@@ -1508,12 +1894,25 @@ function bindEmailCards(){
     };
     const send = el.querySelector(".queue-send");
     if(send && !send.disabled) send.onclick = async () => {
+      const draft = emailDraftFor(card);
+      if(!draft.recipients.to.length){
+        setStatus("Add at least one To recipient before queueing.", true);
+        const toInput = el.querySelector('.email-recipient-input[data-recipient-kind="to"]');
+        if(toInput) toInput.focus();
+        return;
+      }
       if(!(await persistEmailDraft(card.id))) return;
-      if(!window.confirm(`Queue this reply to ${card.inbound_from||"the sender"} for Sydney to send?`)) return;
+      const total = recipientCount(card);
+      if(!window.confirm(`Queue this ${draft.replyAll?"reply all":"sender-only reply"} to ${draft.recipients.to[0]}${total>1?` and ${total-1} more`:""} for Sydney to send?`)) return;
       send.disabled = true;
       send.textContent = "Sending…";
       if(saveState) saveState.textContent = "Queueing…";
       const saved = await patchCard(card.id, {
+        snippet:draft.value,
+        reply_all:draft.replyAll,
+        reply_to:[...draft.recipients.to],
+        reply_cc:[...draft.recipients.cc],
+        reply_bcc:[...draft.recipients.bcc],
         send_requested_at:isoNow(),
         send_requested_by:"chris"
       }, { render:false });
@@ -1551,13 +1950,23 @@ async function persistEmailDraft(cardId){
   }
   if(!draft.dirty) return true;
   const value = draft.value;
+  const replyAll = draft.replyAll;
+  const recipients = cloneRecipients(draft.recipients);
   updateEmailDraftSaveState(cardId, "Saving…");
-  draft.savePromise = patchCard(cardId, { snippet:value }, { render:false });
+  draft.savePromise = patchCard(cardId, {
+    snippet:value,
+    reply_all:replyAll,
+    reply_to:recipients.to,
+    reply_cc:recipients.cc,
+    reply_bcc:recipients.bcc
+  }, { render:false });
   const saved = await draft.savePromise;
   draft.savePromise = null;
   if(saved){
     draft.savedValue = value;
-    draft.dirty = draft.value!==value;
+    draft.savedReplyAll = replyAll;
+    draft.savedRecipients = recipients;
+    updateEmailDraftDirty(draft);
     updateEmailDraftSaveState(cardId, draft.dirty ? "Unsaved" : "Draft saved");
     return draft.dirty ? persistEmailDraft(cardId) : true;
   }
