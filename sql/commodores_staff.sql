@@ -1,9 +1,9 @@
--- Commodores staff comments and practice plans.
+-- Commodores staff comments, practice plans, and shared play drawings.
 -- Run manually on Studio Pod (daddiljpnhfuxcdqsulg).
 -- NEW tables only. Do not read or write ops_cards / ops_alerts.
 -- commodores.html is a PIN-gated static GitHub Pages file (same client pattern
 -- as Ops). It uses the existing public URL + publishable/anon key, never a
--- service_role key. Anon must be able to select/insert/update these two tables.
+-- service_role key. Anon must be able to select/insert/update these tables.
 
 create table if not exists public.commodores_comments (
   id text primary key default gen_random_uuid()::text,
@@ -103,3 +103,52 @@ grant select, insert, update on public.commodores_comments to anon, authenticate
 grant select, insert, update on public.commodores_plans to anon, authenticated;
 grant all on public.commodores_comments to service_role;
 grant all on public.commodores_plans to service_role;
+
+-- Shared play drawings. Cards and the builder read the same payload.
+create table if not exists public.commodores_plays (
+  id text primary key,
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists commodores_plays_updated_at_idx
+  on public.commodores_plays (updated_at desc);
+
+comment on table public.commodores_plays is
+  'Shared Commodores play drawings. Offense cards render from this payload so Smash is one picture.';
+comment on column public.commodores_plays.id is
+  'Play id, same as payload.id (smash, overload-50-51, play-3, starburst-63, goal-line-5-6).';
+comment on column public.commodores_plays.payload is
+  'Full play JSON: { id, name, status, how, spots, routes, updatedAt? }. routes may include look (1|2) and label.';
+comment on column public.commodores_plays.updated_at is
+  'Set to now() on save so the next phone load prefers this drawing.';
+
+alter table public.commodores_plays enable row level security;
+
+drop policy if exists commodores_plays_read on public.commodores_plays;
+drop policy if exists commodores_plays_insert on public.commodores_plays;
+drop policy if exists commodores_plays_update on public.commodores_plays;
+
+create policy commodores_plays_read
+  on public.commodores_plays
+  for select
+  to anon, authenticated
+  using (true);
+
+create policy commodores_plays_insert
+  on public.commodores_plays
+  for insert
+  to anon, authenticated
+  with check (true);
+
+create policy commodores_plays_update
+  on public.commodores_plays
+  for update
+  to anon, authenticated
+  using (true)
+  with check (true);
+
+revoke all on public.commodores_plays from anon;
+revoke all on public.commodores_plays from authenticated;
+grant select, insert, update on public.commodores_plays to anon, authenticated;
+grant all on public.commodores_plays to service_role;

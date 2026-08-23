@@ -159,7 +159,15 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .builder-field .spot.selected{stroke:#FFFFFF;stroke-width:4}
 .builder-field text{fill:#FFFFFF;font:700 10px var(--sans);text-anchor:middle;pointer-events:none}
 .builder-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-.builder-toolbar .btn.on{outline:2px solid #FFFFFF;outline-offset:1px}
+.builder-toolbar .btn.flip{min-height:52px;flex:1 1 160px;font-size:18px}
+.starter-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+.diagram .look,.builder-field .look{fill:#1C1C1C;font:700 10px var(--sans);text-anchor:middle}
+.diagram .look-ring,.builder-field .look-ring{fill:#ECB748;stroke:#1C1C1C;stroke-width:1}
+.diagram .area-label{fill:#E0D5C0;font:700 11px var(--sans);text-anchor:middle}
+.diagram .route-label,.builder-field .route-label{fill:#E0D5C0;font:700 10px var(--sans);text-anchor:middle}
+.diagram .ghost{fill:#CFAE70;opacity:.28}
+.builder-field .route.selected{stroke:#ECB748}
+#previewLayer{pointer-events:none}
 .assignment{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;align-items:end}
 .assignment select{width:100%}
 .builder-help{margin:8px 0 0;color:var(--muted);font-size:11.5px}
@@ -194,7 +202,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
   <form class="gate-card" id="pinForm">
     <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
     <h1 id="gateTitle">Coach’s field book</h1>
-    <p>Enter the six-digit staff PIN. Plans and attendance stay in this device’s copy.</p>
+    <p>Enter the six-digit staff PIN. Notes, plays, and plans are shared. Attendance stays on this device.</p>
     <label class="small" for="pin">Staff PIN</label>
     <div class="pin-row">
       <input id="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" aria-describedby="gateMsg">
@@ -321,111 +329,22 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 
     <section class="page" id="page-offense">
       <div class="section-head"><div><div class="eyebrow">Plays only</div><h2>Offense</h2></div><p>Taught vs binder · Smash + Overload through Aug 30</p></div>
-      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. No third play in week one.</div>
-      <div class="play-grid">
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Smash route diagram">
-            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
-            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
-            <circle class="ball" cx="180" cy="88" r="5"/><path class="line" d="M180 88V42"/><text x="188" y="46">sit 6</text>
-            <circle class="ball" cx="55" cy="91" r="5"/><path class="line" d="M55 91V65"/><path class="line" d="M48 65H62"/><text x="20" y="55">3 steps + stop</text>
-            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91C112 54 82 34 48 23"/><path class="line" d="M48 23l9 0M48 23l5 8"/><text x="78" y="20">far corner</text>
-            <circle class="def" cx="58" cy="76" r="4"/><circle class="def" cx="107" cy="74" r="4"/>
-            <text x="227" y="156">Flip the same picture both ways</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Smash</h3><span class="badge taught">Taught</span></div>
-            <p>2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.</p>
-            <div class="when">“2x2” means two receivers on each side. “Shotgun” means the thrower starts a few steps behind the center.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Overload 50 and 51 diagram">
-            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
-            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
-            <circle class="ball" cx="75" cy="91" r="5"/><path class="line" d="M75 91C72 64 54 48 38 34"/>
-            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91V45"/>
-            <circle class="ball" cx="145" cy="91" r="5"/><path class="line" d="M145 91C143 65 130 57 118 48"/>
-            <circle class="ball" cx="292" cy="91" r="5"/><path class="line muted" d="M292 91V52"/>
-            <text x="37" y="20">50: extra kids here</text><text x="224" y="161">51 = flip the picture</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Overload 50/51</h3><span class="badge taught">Taught</span></div>
-            <p>Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.</p>
-            <div class="when">“Overload” just means more receivers line up on one side than the other.</div>
-          </div>
-        </article>
-      </div>
+      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Pictures come from the shared play builder. No third play in week one.</div>
+      <div class="play-grid" id="offenseTaught"></div>
       <div class="section-head"><div><div class="eyebrow">Not taught</div><h2>Binder</h2></div><p>Parked until the first two are clean</p></div>
       <div class="binder-note"><b>Parked:</b> Play 3, StarBurst, and Goal Line 5/6 stay in the binder. Do not install them in week one.</div>
-      <div class="play-grid">
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
-            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-            <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
-            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
-            <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
-            <text x="74" y="24">three levels: short · middle · deep</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Play 3 · staff choice</h3><span class="badge parked">Binder</span></div>
-            <p>Early September: choose either 38 Overload first down or the three-level / drag. Teach one, not both. Goal: three plays the kids can name.</p>
-            <div class="when">Parked aliases from the older sheet: B far left / Left Drag. “Three-level” means one short route, one middle route, and one deeper route so kids do not bunch up.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
-            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-            <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
-            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
-            <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
-            <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
-            <text x="130" y="164">deep shot · add late September</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
-            <p>The late-September deeper shot. Routes spread out as they go downfield so the thrower has clear windows.</p>
-            <div class="when">Not for week one. Install only after the first three plays are clean.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
-            <rect x="20" y="20" width="320" height="68" fill="none" stroke="#777777" stroke-width="2"/><text x="270" y="36">end zone</text>
-            <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
-            <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
-            <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
-            <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
-            <p>The short-yardage play for inside the 15-yard line. 5 goes one way; 6 flips it.</p>
-            <div class="when">Add late September with StarBurst. Do not call it outside the inside-15 situation.</div>
-          </div>
-        </article>
-      </div>
+      <div class="play-grid" id="offenseBinder"></div>
     </section>
 
     <section class="page" id="page-defense">
       <div class="section-head"><div><div class="eyebrow">Looks only</div><h2>Defense</h2></div><p>One game defense · six spots + one helper</p></div>
-      <div class="binder-note"><b>Game defense:</b> Six kids each cover a spot (an area). One kid roams and helps. No rush on the QB. One-hand touch below the neck.</div>
+      <div class="binder-note"><b>Game defense:</b> Six kids each cover a named area. One kid roams and helps. No rush on the QB. One-hand touch below the neck.</div>
       <div class="play-grid">
         <article class="play-card" style="grid-column:1/-1">
-          <svg class="diagram" viewBox="0 0 720 240" role="img" aria-label="Six kids covering six areas with one roaming helper diagram">
-            <path class="line muted" d="M20 205H700"/><text x="26" y="198">line</text>
-            <path class="line muted" opacity=".35" d="M20 25H700M20 25V205M247 25V205M473 25V205M700 25V205M20 115H700"/>
-            <circle class="def" cx="133" cy="158" r="10"/><text x="128" y="162">D</text>
-            <circle class="def" cx="360" cy="158" r="10"/><text x="355" y="162">D</text>
-            <circle class="def" cx="587" cy="158" r="10"/><text x="582" y="162">D</text>
-            <circle class="def" cx="133" cy="70" r="10"/><text x="128" y="74">D</text>
-            <circle class="def" cx="360" cy="70" r="10"/><text x="355" y="74">D</text>
-            <circle class="def" cx="587" cy="70" r="10"/><text x="582" y="74">D</text>
-            <circle class="ball" cx="360" cy="113" r="12"/><text x="340" y="117">HELPER</text>
-            <path class="line" d="M360 128C330 145 305 154 270 158M360 98C395 83 425 76 465 72"/>
-            <text x="485" y="220">No QB rush · one-hand touch below the neck</text>
-          </svg>
+          <div id="defenseDiagram"></div>
           <div class="play-copy">
             <div class="play-head"><h3>Six spots + one helper</h3><span class="badge taught">Game defense</span></div>
-            <p>Six kids each cover a spot (an area). Keep eyes on the thrower and protect your area instead of following one receiver everywhere. When a receiver leaves your area, let the next kid take them. The seventh kid roams in the middle and helps where the ball goes. No rush on the QB. Finish with a one-hand touch below the neck.</p>
+            <p>Six kids each cover a spot (an area): left short, middle short, right short, left deep, middle deep, right deep. Keep eyes on the thrower and protect your area instead of following one receiver everywhere. When a receiver leaves your area, let the next kid take them. The seventh kid roams in the middle and helps where the ball goes. No rush on the QB. Finish with a one-hand touch below the neck.</p>
             <div class="when">This is the only game defense through Aug 30. Same look in live reps.</div>
           </div>
         </article>
@@ -449,111 +368,22 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 
     <section class="page" id="page-playbook">
       <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Core 5 ladder</h2></div><p>Kid language first. Coach terms translated.</p></div>
-      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Everything else is sitting in the binder. No third play in week one.</div>
-      <div class="play-grid">
-        <article class="play-card" style="grid-column:1/-1">
-          <svg class="diagram" viewBox="0 0 720 240" role="img" aria-label="Six kids covering six areas with one roaming helper diagram">
-            <path class="line muted" d="M20 205H700"/><text x="26" y="198">line</text>
-            <path class="line muted" opacity=".35" d="M20 25H700M20 25V205M247 25V205M473 25V205M700 25V205M20 115H700"/>
-            <circle class="def" cx="133" cy="158" r="10"/><text x="128" y="162">D</text>
-            <circle class="def" cx="360" cy="158" r="10"/><text x="355" y="162">D</text>
-            <circle class="def" cx="587" cy="158" r="10"/><text x="582" y="162">D</text>
-            <circle class="def" cx="133" cy="70" r="10"/><text x="128" y="74">D</text>
-            <circle class="def" cx="360" cy="70" r="10"/><text x="355" y="74">D</text>
-            <circle class="def" cx="587" cy="70" r="10"/><text x="582" y="74">D</text>
-            <circle class="ball" cx="360" cy="113" r="12"/><text x="340" y="117">HELPER</text>
-            <path class="line" d="M360 128C330 145 305 154 270 158M360 98C395 83 425 76 465 72"/>
-            <text x="485" y="220">No QB rush · one-hand touch below the neck</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Game defense · six areas + one helper</h3><span class="badge taught">Base from week 1</span></div>
-            <p>Six kids each cover a spot (an area). Keep eyes on the thrower and protect your area instead of following one receiver everywhere. When a receiver leaves your area, let the next kid take them. The seventh kid roams in the middle and helps where the ball goes. No rush on the QB. Finish with a one-hand touch below the neck.</p>
-            <div class="when">Hip-stay / “pick a guy” / Man-Free is a drill only. It is not the game defense or another package.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Smash route diagram">
-            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
-            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
-            <circle class="ball" cx="180" cy="88" r="5"/><path class="line" d="M180 88V42"/><text x="188" y="46">sit 6</text>
-            <circle class="ball" cx="55" cy="91" r="5"/><path class="line" d="M55 91V65"/><path class="line" d="M48 65H62"/><text x="20" y="55">3 steps + stop</text>
-            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91C112 54 82 34 48 23"/><path class="line" d="M48 23l9 0M48 23l5 8"/><text x="78" y="20">far corner</text>
-            <circle class="def" cx="58" cy="76" r="4"/><circle class="def" cx="107" cy="74" r="4"/>
-            <text x="227" y="156">Flip the same picture both ways</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Smash</h3><span class="badge taught">Taught</span></div>
-            <p>2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.</p>
-            <div class="when">“2x2” means two receivers on each side. “Shotgun” means the thrower starts a few steps behind the center.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Overload 50 and 51 diagram">
-            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
-            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
-            <circle class="ball" cx="75" cy="91" r="5"/><path class="line" d="M75 91C72 64 54 48 38 34"/>
-            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91V45"/>
-            <circle class="ball" cx="145" cy="91" r="5"/><path class="line" d="M145 91C143 65 130 57 118 48"/>
-            <circle class="ball" cx="292" cy="91" r="5"/><path class="line muted" d="M292 91V52"/>
-            <text x="37" y="20">50: extra kids here</text><text x="224" y="161">51 = flip the picture</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Overload 50/51</h3><span class="badge taught">Taught</span></div>
-            <p>Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.</p>
-            <div class="when">“Overload” just means more receivers line up on one side than the other.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
-            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-            <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
-            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
-            <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
-            <text x="74" y="24">three levels: short · middle · deep</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Play 3 · staff choice</h3><span class="badge parked">Binder</span></div>
-            <p>Early September: choose either 38 Overload first down or the three-level / drag. Teach one, not both. Goal: three plays the kids can name.</p>
-            <div class="when">Parked aliases from the older sheet: B far left / Left Drag. “Three-level” means one short route, one middle route, and one deeper route so kids do not bunch up.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
-            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-            <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
-            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
-            <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
-            <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
-            <text x="130" y="164">deep shot · add late September</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
-            <p>The late-September deeper shot. Routes spread out as they go downfield so the thrower has clear windows.</p>
-            <div class="when">Not for week one. Install only after the first three plays are clean.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
-            <rect x="20" y="20" width="320" height="68" fill="none" stroke="#777777" stroke-width="2"/><text x="270" y="36">end zone</text>
-            <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
-            <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
-            <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
-            <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
-            <p>The short-yardage play for inside the 15-yard line. 5 goes one way; 6 flips it.</p>
-            <div class="when">Add late September with StarBurst. Do not call it outside the inside-15 situation.</div>
-          </div>
-        </article>
-      </div>
-      <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Play builder.</p></div>
+      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Pictures come from the shared play builder. No third play in week one.</div>
+      <article class="play-card" style="grid-column:1/-1;margin-bottom:14px">
+        <div id="playbookDefense"></div>
+        <div class="play-copy">
+          <div class="play-head"><h3>Game defense · six areas + one helper</h3><span class="badge taught">Base from week 1</span></div>
+          <p>Six kids cover named areas: left short, middle short, right short, left deep, middle deep, right deep. The seventh kid roams and helps. No rush on the QB. Hip-stay / “pick a guy” / Man-Free is a drill only.</p>
+        </div>
+      </article>
+      <div class="play-grid" id="playbookPlays"></div>
+      <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Same pictures as the Offense tab. Open any one in Play builder.</p></div>
       <div class="play-grid" id="builtPlaybook"></div>
       <div class="binder-note" style="margin-top:14px"><b>Do not add:</b> pitches, anything that blocks, offense concepts not selected on the Core 5 ladder, or extra defense packages. Game defense stays six kids covering six areas + one kid roaming to help, with no rush. Hip-stay / “pick a guy” / Man-Free is drill-only, never the game plan.</div>
     </section>
 
     <section class="page" id="page-builder">
-      <div class="section-head"><div><div class="eyebrow">Draw + assign</div><h2>Play builder</h2></div><p>Saved on this device · share with JSON</p></div>
+      <div class="section-head"><div><div class="eyebrow">Draw once · share</div><h2>Play builder</h2></div><p>Saved for Peter, Chris, and Ben · same picture on every phone</p></div>
       <div class="builder-layout">
         <aside>
           <div class="binder-note"><b>Week-one guardrail:</b> Smash and Overload are the only taught plays. Save experiments as parked.</div>
@@ -566,6 +396,11 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
             <div class="field"><label for="playStatus">Book status</label><select id="playStatus"><option value="parked">Sitting in binder</option><option value="taught">Taught</option></select></div>
             <div class="field how"><label for="playHow">Kid-language how-to</label><textarea id="playHow" placeholder="Say exactly where kids line up, where they run, and the thrower’s first look."></textarea></div>
           </div>
+          <div class="starter-row">
+            <button class="btn ghost" id="start22" type="button">Empty 2x2</button>
+            <button class="btn ghost" id="startOverload" type="button">Overload left</button>
+            <button class="btn ghost" id="startGoal" type="button">Goal line</button>
+          </div>
           <div class="field-wrap">
             <svg class="builder-field" id="builderField" viewBox="0 0 360 300" role="img" aria-label="Interactive 7-on-7 play field">
               <defs><marker id="routeArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#FFFFFF"></path></marker></defs>
@@ -575,23 +410,23 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
               <path class="los" d="M12 220H348"></path>
               <text x="37" y="213">LINE</text>
               <g id="routeLayer"></g>
+              <g id="previewLayer"></g>
               <g id="spotLayer"></g>
             </svg>
           </div>
           <div class="builder-toolbar">
-            <button class="btn ghost on" id="placeMode" type="button">Place / move spots</button>
-            <button class="btn ghost" id="routeMode" type="button">Draw route</button>
+            <button class="btn flip" id="flipPlay" type="button">Flip 50 / 51</button>
+            <button class="btn ghost" id="markLook1" type="button">First look 1</button>
+            <button class="btn ghost" id="markLook2" type="button">Look 2</button>
             <button class="btn ghost danger" id="deleteItem" type="button">Delete selected</button>
           </div>
           <div class="assignment">
-            <div class="field"><label for="spotPlayer">Selected spot’s first name</label><select id="spotPlayer"></select></div>
-            <div class="field"><label>Offense spots</label><div class="badge" id="spotCount">0 / 7</div></div>
+            <div class="field"><label for="spotPlayer">Selected kid’s first name</label><select id="spotPlayer"></select></div>
+            <div class="field"><label>Kids on the field</label><div class="badge" id="spotCount">0 / 7</div></div>
           </div>
-          <p class="builder-help" id="builderHelp">Tap the field to add an offensive spot. Drag a spot to move it. Select a spot to assign a first name.</p>
+          <p class="builder-help" id="builderHelp">Tap empty grass to add a kid. Drag a kid to move him. Tap a kid, then drag onto the grass to draw his route. Extra taps bend it.</p>
           <div class="builder-actions">
-            <button class="btn" id="savePlay" type="button">Save into playbook</button>
-            <button class="btn ghost" id="exportPlays" type="button">Export plays JSON</button>
-            <label class="btn ghost file-btn">Import plays JSON<input id="playFile" type="file" accept=".json,application/json"></label>
+            <button class="btn" id="savePlay" type="button">Save for all coaches</button>
           </div>
           <div class="status-line" id="builderStatus" aria-live="polite"></div>
         </div>
@@ -643,7 +478,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       </div>
     </section>
 
-    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · notes and plans are shared for staff</div>
+    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · notes, plays, and plans are shared for staff</div>
   </main>
 </div>
 
@@ -820,6 +655,9 @@ async function openApp(){
   renderAttendance();
   await loadComments();
   await loadCloudPlans();
+  await loadCloudPlays();
+  renderPlayCards();
+  renderBuilder();
 }
 $("#pinForm").onsubmit=async event=>{
   event.preventDefault();
@@ -872,70 +710,214 @@ document.addEventListener("visibilitychange",()=>{
 });
 $("#postComment").onclick=postStaffComment;
 
-const SMASH_HOW="2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.";
-const OVERLOAD_HOW="Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.";
+const PLAY_SEED=4;
+const SMASH_HOW="2x2 shotgun. Four receivers plus the center, who sits at 6 yards. First look is the sit (1). If the defender jumps the sit, throw the corner (2). Flip both ways. First throw must land past the line. 5-second clock.";
+const OVERLOAD_HOW="3-to-1. Three kids on one side: short, middle, and deep. Throw the first open one past the line. One kid stays backside. 50 one way, 51 the flip.";
+const PLAY3_HOW="Parked. Staff picks this third play after Smash and Overload are clean. Do not install in week one.";
+const STARBURST_HOW="Parked deep shot. Line up, then all eligible kids burst to different deep spots. Save for later.";
+const GOALLINE_HOW="Parked. Tight line inside the 15. Short throws only. Do not install in week one.";
+
+function uid(prefix){return prefix+"-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function clamp(value,min,max){return Math.max(min,Math.min(max,value))}
+function flipX(x){return 360-Number(x)}
+function playUpdatedAt(play){return Date.parse(play&&(play.updatedAt||play.updated_at)||0)||0}
+
 function seedBuiltPlays(){
   return [
     {
-      id:"smash",name:"Smash",status:"taught",how:SMASH_HOW,
+      id:"smash",name:"Smash",status:"taught",how:SMASH_HOW,seed:PLAY_SEED,
       spots:[
-        {id:"s-qb",x:180,y:255,player:"Michael",label:"QB"},
-        {id:"s-c",x:180,y:215,player:"",label:"C"},
-        {id:"s-lo",x:48,y:215,player:"",label:"O"},
-        {id:"s-li",x:110,y:215,player:"Teddy",label:"O"},
-        {id:"s-ri",x:250,y:215,player:"",label:"O"},
-        {id:"s-ro",x:312,y:215,player:"",label:"O"},
-        {id:"s-rb",x:215,y:255,player:"",label:"O"}
+        {id:"s-qb",x:180,y:248,player:"Michael",label:"QB"},
+        {id:"s-c",x:180,y:218,player:"",label:"C"},
+        {id:"s-x",x:78,y:218,player:"",label:"X"},
+        {id:"s-h",x:118,y:218,player:"Teddy",label:"H"},
+        {id:"s-y",x:242,y:218,player:"",label:"Y"},
+        {id:"s-z",x:282,y:218,player:"",label:"Z"}
       ],
       routes:[
-        {id:"s-r1",from:"s-c",points:[{x:180,y:145}]},
-        {id:"s-r2",from:"s-lo",points:[{x:48,y:180}]},
-        {id:"s-r3",from:"s-li",points:[{x:76,y:105},{x:40,y:62}]},
-        {id:"s-r4",from:"s-ri",points:[{x:284,y:105},{x:320,y:62}]},
-        {id:"s-r5",from:"s-ro",points:[{x:312,y:180}]}
+        {id:"s-sit-c",from:"s-c",points:[{x:180,y:158}],look:1,label:"sit"},
+        {id:"s-sit-h",from:"s-h",points:[{x:148,y:168}],look:1,label:"sit"},
+        {id:"s-sit-y",from:"s-y",points:[{x:212,y:168}],look:1,label:"sit"},
+        {id:"s-cn-x",from:"s-x",points:[{x:58,y:128},{x:42,y:72}],look:2,label:"corner"},
+        {id:"s-cn-z",from:"s-z",points:[{x:302,y:128},{x:318,y:72}],look:2,label:"corner"}
       ]
     },
     {
-      id:"overload-50-51",name:"Overload 50/51",status:"taught",how:OVERLOAD_HOW,
+      id:"overload-50-51",name:"Overload 50/51",status:"taught",how:OVERLOAD_HOW,seed:PLAY_SEED,
       spots:[
-        {id:"o-qb",x:180,y:255,player:"Michael",label:"QB"},
-        {id:"o-c",x:180,y:215,player:"",label:"C"},
-        {id:"o-1",x:45,y:215,player:"Teddy",label:"O"},
-        {id:"o-2",x:90,y:215,player:"",label:"O"},
-        {id:"o-3",x:132,y:215,player:"",label:"O"},
-        {id:"o-4",x:300,y:215,player:"",label:"O"},
-        {id:"o-rb",x:215,y:255,player:"",label:"O"}
+        {id:"o-qb",x:180,y:248,player:"Michael",label:"QB"},
+        {id:"o-c",x:180,y:218,player:"",label:"C"},
+        {id:"o-short",x:148,y:218,player:"",label:"short"},
+        {id:"o-mid",x:112,y:218,player:"Teddy",label:"middle"},
+        {id:"o-deep",x:72,y:218,player:"",label:"deep"},
+        {id:"o-back",x:292,y:218,player:"",label:"backside"}
       ],
       routes:[
-        {id:"o-r1",from:"o-1",points:[{x:35,y:125}]},
-        {id:"o-r2",from:"o-2",points:[{x:90,y:145}]},
-        {id:"o-r3",from:"o-3",points:[{x:118,y:165}]},
-        {id:"o-r4",from:"o-4",points:[{x:300,y:145}]},
-        {id:"o-r5",from:"o-c",points:[{x:180,y:160}]}
+        {id:"o-r-short",from:"o-short",points:[{x:162,y:188}],look:1,label:"short"},
+        {id:"o-r-mid",from:"o-mid",points:[{x:118,y:148}],look:2,label:"middle"},
+        {id:"o-r-deep",from:"o-deep",points:[{x:56,y:92}],look:0,label:"deep"},
+        {id:"o-r-back",from:"o-back",points:[{x:304,y:168}],look:0,label:"backside"}
       ]
+    },
+    {
+      id:"play-3",name:"Play 3",status:"parked",how:PLAY3_HOW,seed:PLAY_SEED,
+      spots:[
+        {id:"p3-qb",x:180,y:248,player:"",label:"QB"},
+        {id:"p3-c",x:180,y:218,player:"",label:"C"}
+      ],
+      routes:[]
+    },
+    {
+      id:"starburst-63",name:"StarBurst 63",status:"parked",how:STARBURST_HOW,seed:PLAY_SEED,
+      spots:[
+        {id:"sb-qb",x:180,y:248,player:"",label:"QB"},
+        {id:"sb-c",x:180,y:218,player:"",label:"C"}
+      ],
+      routes:[]
+    },
+    {
+      id:"goal-line-5-6",name:"Goal Line 5/6",status:"parked",how:GOALLINE_HOW,seed:PLAY_SEED,
+      spots:[
+        {id:"gl-qb",x:180,y:248,player:"",label:"QB"},
+        {id:"gl-c",x:180,y:218,player:"",label:"C"},
+        {id:"gl-lt",x:118,y:218,player:"",label:"TE"},
+        {id:"gl-li",x:148,y:218,player:"",label:"TE"},
+        {id:"gl-ri",x:212,y:218,player:"",label:"TE"},
+        {id:"gl-rt",x:242,y:218,player:"",label:"TE"},
+        {id:"gl-rb",x:164,y:236,player:"",label:"RB"}
+      ],
+      routes:[]
     }
   ];
 }
-let builtPlays=getStore("built_plays",null);
-if(!Array.isArray(builtPlays)||!builtPlays.length) builtPlays=seedBuiltPlays();
+function normalizePlay(play){
+  if(!play||typeof play!=="object"||typeof play.id!=="string") return null;
+  const spots=(play.spots||[]).slice(0,7).map(spot=>({
+    id:String(spot.id||uid("spot")),
+    x:clamp(Number(spot.x)||180,25,335),
+    y:clamp(Number(spot.y)||218,25,275),
+    player:ROSTER.includes(spot.player)?spot.player:"",
+    label:String(spot.label||"O")
+  }));
+  const routes=(play.routes||[]).map(route=>({
+    id:String(route.id||uid("route")),
+    from:String(route.from||""),
+    points:(route.points||[]).map(point=>({x:clamp(Number(point.x)||180,25,335),y:clamp(Number(point.y)||160,25,275)})),
+    look:route.look===1||route.look===2?route.look:0,
+    label:String(route.label||"")
+  })).filter(route=>route.from&&route.points.length);
+  const status=["taught","parked"].includes(play.status)?play.status:"parked";
+  return {
+    id:play.id,
+    name:String(play.name||"Untitled"),
+    status,
+    how:String(play.how||""),
+    seed:Number(play.seed)||0,
+    updatedAt:play.updatedAt||play.updated_at||"",
+    spots,
+    routes
+  };
+}
+function upgradeLocalPlays(list){
+  const seeds=seedBuiltPlays();
+  const next=Array.isArray(list)?list.map(normalizePlay).filter(Boolean):[];
+  seeds.forEach(seed=>{
+    const index=next.findIndex(play=>play.id===seed.id);
+    if(index<0) next.push(structuredClone(seed));
+    else if((next[index].seed||0)<seed.seed) next[index]=structuredClone(seed);
+  });
+  return next;
+}
+let builtPlays=upgradeLocalPlays(getStore("built_plays",null));
+setStore("built_plays",builtPlays);
 let playDraft=structuredClone(builtPlays[0]);
-let selectedSpotId=playDraft.spots[0].id;
+let selectedSpotId=playDraft.spots[0]?.id||"";
 let selectedRouteId="";
-let builderMode="place";
-let draggingSpot=null;
+let bendingRouteId="";
+let pointer=null;
 const builderField=$("#builderField");
 
 function routePath(play,route){
-  const start=play.spots.find(spot=>spot.id===route.from);
-  if(!start||!route.points.length) return "";
+  const start=(play.spots||[]).find(spot=>spot.id===route.from);
+  if(!start||!(route.points||[]).length) return "";
   return `M${start.x} ${start.y} `+route.points.map(point=>`L${point.x} ${point.y}`).join(" ");
 }
+function routeEnd(play,route){
+  const points=route.points||[];
+  return points[points.length-1]||null;
+}
+function lookMarks(play){
+  return (play.routes||[]).map(route=>{
+    const end=routeEnd(play,route);
+    if(!end||(route.look!==1&&route.look!==2)) return "";
+    const x=end.x;
+    const y=end.y-18;
+    return `<circle class="look-ring" cx="${x}" cy="${y}" r="8"></circle><text class="look" x="${x}" y="${y+3}">${route.look}</text>`;
+  }).join("");
+}
+function routeLabels(play){
+  return (play.routes||[]).map(route=>{
+    const end=routeEnd(play,route);
+    if(!end||!route.label) return "";
+    return `<text class="route-label" x="${end.x}" y="${end.y-30}">${esc(route.label)}</text>`;
+  }).join("");
+}
 function playPreview(play){
-  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} saved diagram">
-    <rect width="360" height="300" fill="#000000"></rect><path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
-    ${(play.routes||[]).map(route=>`<path d="${esc(routePath(play,route))}" fill="none" stroke="#FFFFFF" stroke-width="3"></path>`).join("")}
-    ${(play.spots||[]).map(spot=>`<circle cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="10" fill="#CFAE70" stroke="#1C1C1C" stroke-width="2"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">${esc(spot.label||"O")}</text>`).join("")}
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} from the shared play builder">
+    <rect width="360" height="300" fill="#000000"></rect>
+    <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
+    ${(play.routes||[]).map(route=>`<path d="${esc(routePath(play,route))}" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>`).join("")}
+    ${routeLabels(play)}
+    ${(play.spots||[]).map(spot=>`<circle cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="10" fill="#CFAE70" stroke="#1C1C1C" stroke-width="2"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}" fill="#1C1C1C" font-size="8" text-anchor="middle">${esc((spot.player||spot.label||"O").slice(0,8))}</text>`).join("")}
+    ${lookMarks(play)}
   </svg>`;
+}
+function playCardHTML(play){
+  return `<article class="play-card">
+    ${playPreview(play)}
+    <div class="play-copy">
+      <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge ${play.status==="taught"?"taught":"parked"}">${play.status==="taught"?"Taught":"Binder"}</span></div>
+      <p>${esc(play.how)}</p>
+      <div class="when">${play.status==="taught"?"Taught through Aug 30. Same picture as Play builder.":"Parked in the binder. Same picture as Play builder."}</div>
+    </div>
+  </article>`;
+}
+function defenseDiagramSVG(){
+  const areas=[
+    {x:70,y:168,label:"left short"},
+    {x:180,y:168,label:"middle short"},
+    {x:290,y:168,label:"right short"},
+    {x:70,y:78,label:"left deep"},
+    {x:180,y:78,label:"middle deep"},
+    {x:290,y:78,label:"right deep"}
+  ];
+  const ghosts=[
+    {x:180,y:248,label:"QB"},
+    {x:180,y:218,label:"C"},
+    {x:78,y:218,label:""},
+    {x:118,y:218,label:""},
+    {x:242,y:218,label:""},
+    {x:282,y:218,label:""}
+  ];
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="Six named areas plus one helper">
+    <rect width="360" height="300" fill="#000000"></rect>
+    <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
+    ${ghosts.map(spot=>`<circle class="ghost" cx="${spot.x}" cy="${spot.y}" r="9"></circle>${spot.label?`<text x="${spot.x}" y="${spot.y+3}" fill="#1C1C1C" font-size="8" text-anchor="middle" opacity=".45">${esc(spot.label)}</text>`:""}`).join("")}
+    ${areas.map(area=>`<circle class="def" cx="${area.x}" cy="${area.y}" r="11"></circle><text class="area-label" x="${area.x}" y="${area.y-16}">${esc(area.label)}</text>`).join("")}
+    <circle class="ball" cx="180" cy="122" r="11"></circle>
+    <text class="area-label" x="180" y="106">HELPER</text>
+  </svg>`;
+}
+function renderPlayCards(){
+  const taught=builtPlays.filter(play=>play.status==="taught");
+  const parked=builtPlays.filter(play=>play.status==="parked");
+  $("#offenseTaught").innerHTML=taught.map(playCardHTML).join("");
+  $("#offenseBinder").innerHTML=parked.map(playCardHTML).join("");
+  $("#playbookPlays").innerHTML=builtPlays.map(playCardHTML).join("");
+  const defense=defenseDiagramSVG();
+  $("#defenseDiagram").innerHTML=defense;
+  $("#playbookDefense").innerHTML=defense;
+  renderBuiltPlaybook();
 }
 function renderBuiltPlaybook(){
   $("#builtPlaybook").innerHTML=builtPlays.map(play=>`<article class="play-card">
@@ -949,60 +931,60 @@ function renderBuiltPlaybook(){
   });
 }
 function renderPlayLibrary(){
-  $("#playLibrary").innerHTML=builtPlays.map(play=>`<button class="library-play${play.id===playDraft.id?" on":""}" type="button" data-id="${esc(play.id)}"><b>${esc(play.name)}</b><span>${play.status==="taught"?"Taught":"Sitting in binder"} · ${play.spots.length}/7 spots</span></button>`).join("");
+  $("#playLibrary").innerHTML=builtPlays.map(play=>`<button class="library-play${play.id===playDraft.id?" on":""}" type="button" data-id="${esc(play.id)}"><b>${esc(play.name)}</b><span>${play.status==="taught"?"Taught":"Sitting in binder"} · ${play.spots.length}/7 kids</span></button>`).join("");
   $$(".library-play").forEach(button=>button.onclick=()=>openPlay(button.dataset.id));
 }
 function fieldPoint(event){
   const point=builderField.createSVGPoint();
   point.x=event.clientX;point.y=event.clientY;
-  return point.matrixTransform(builderField.getScreenCTM().inverse());
+  const mapped=point.matrixTransform(builderField.getScreenCTM().inverse());
+  return {x:clamp(Math.round(mapped.x),25,335),y:clamp(Math.round(mapped.y),25,275)};
 }
 function selectedSpot(){
   return playDraft.spots.find(spot=>spot.id===selectedSpotId)||null;
 }
+function selectedRoute(){
+  return playDraft.routes.find(route=>route.id===selectedRouteId)||null;
+}
+function routeForSpot(spotId){
+  return playDraft.routes.find(route=>route.from===spotId)||null;
+}
+function setBuilderStatus(message){
+  $("#builderStatus").textContent=message;
+}
 function renderBuilder(){
-  $("#playName").value=playDraft.name;
-  $("#playStatus").value=playDraft.status;
-  $("#playHow").value=playDraft.how;
+  if(!playDraft) return;
+  $("#playName").value=playDraft.name||"";
+  $("#playStatus").value=playDraft.status||"parked";
+  $("#playHow").value=playDraft.how||"";
   $("#routeLayer").innerHTML=(playDraft.routes||[]).map(route=>{
     const path=routePath(playDraft,route);
-    return `<path class="route" data-route-id="${esc(route.id)}" d="${esc(path)}" marker-end="url(#routeArrow)"></path><path class="route-hit" data-route-id="${esc(route.id)}" d="${esc(path)}" fill="none" stroke="transparent" stroke-width="18"></path>`;
+    const on=route.id===selectedRouteId||route.id===bendingRouteId?" selected":"";
+    return `<path class="route${on}" data-route-id="${esc(route.id)}" d="${esc(path)}" marker-end="url(#routeArrow)"></path><path class="route-hit" data-route-id="${esc(route.id)}" d="${esc(path)}" fill="none" stroke="transparent" stroke-width="18"></path>`;
   }).join("");
+  $("#previewLayer").innerHTML=routeLabels(playDraft)+lookMarks(playDraft);
   $("#spotLayer").innerHTML=playDraft.spots.map(spot=>`<g class="builder-spot" data-spot-id="${esc(spot.id)}"><circle class="spot${spot.id===selectedSpotId?" selected":""}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="13"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}">${esc(spot.player||spot.label||"O")}</text></g>`).join("");
   $("#spotPlayer").innerHTML=`<option value="">Unassigned</option>`+ROSTER.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
   $("#spotPlayer").value=selectedSpot()?.player||"";
   $("#spotPlayer").disabled=!selectedSpot();
   $("#spotCount").textContent=`${playDraft.spots.length} / 7`;
-  $("#placeMode").classList.toggle("on",builderMode==="place");
-  $("#routeMode").classList.toggle("on",builderMode==="route");
-  $("#builderHelp").textContent=builderMode==="route"
-    ? (selectedSpot()?"Tap the field where this route should end. Tap another spot to change the route’s start.":"Select an offensive spot, then tap the route’s endpoint.")
-    :"Tap the field to add a spot. Drag a spot to move it. Select one to assign a first name.";
-  $$(".builder-spot").forEach(group=>{
-    group.onpointerdown=event=>{
-      event.stopPropagation();
-      selectedSpotId=group.dataset.spotId;selectedRouteId="";
-      if(builderMode==="place"){
-        draggingSpot=selectedSpotId;
-        builderField.setPointerCapture(event.pointerId);
-      }
-      renderBuilder();
-    };
-  });
-  $$(".route-hit").forEach(path=>path.onpointerdown=event=>{
-    event.stopPropagation();
-    selectedRouteId=path.dataset.routeId;selectedSpotId="";
-    renderBuilder();
-  });
+  $("#builderHelp").textContent=bendingRouteId
+    ?"Tap empty grass to bend this route. Tap a kid when you are done."
+    :"Tap empty grass to add a kid. Drag a kid to move him. Tap a kid, then drag onto the grass to draw his route.";
   renderPlayLibrary();
-  renderBuiltPlaybook();
+}
+function persistPlays(){
+  setStore("built_plays",builtPlays);
+  renderPlayCards();
+  renderBuilder();
 }
 function openPlay(id){
   const play=builtPlays.find(item=>item.id===id);
   if(!play) return;
   playDraft=structuredClone(play);
   selectedSpotId=playDraft.spots[0]?.id||"";
-  selectedRouteId="";builderMode="place";
+  selectedRouteId="";
+  bendingRouteId="";
   renderBuilder();
 }
 function syncPlayFields(){
@@ -1010,111 +992,295 @@ function syncPlayFields(){
   playDraft.status=$("#playStatus").value;
   playDraft.how=$("#playHow").value.trim();
 }
+function moveSpot(spot,x,y){
+  const dx=x-spot.x;
+  const dy=y-spot.y;
+  spot.x=x;spot.y=y;
+  playDraft.routes.filter(route=>route.from===spot.id).forEach(route=>{
+    route.points.forEach(point=>{
+      point.x=clamp(point.x+dx,25,335);
+      point.y=clamp(point.y+dy,25,275);
+    });
+  });
+}
+function addKid(x,y){
+  if(playDraft.spots.length>=7){
+    setBuilderStatus("This play already has seven kids.");
+    return;
+  }
+  const id=uid("spot");
+  playDraft.spots.push({id,x,y,player:"",label:playDraft.spots.length?"O":"QB"});
+  selectedSpotId=id;
+  selectedRouteId="";
+  bendingRouteId="";
+  setBuilderStatus("Kid added. Drag to move, or tap him then drag to draw a route.");
+}
+function applyStarter(kind){
+  if(kind==="22"){
+    playDraft.spots=[
+      {id:"st-qb",x:180,y:248,player:"",label:"QB"},
+      {id:"st-c",x:180,y:218,player:"",label:"C"},
+      {id:"st-x",x:78,y:218,player:"",label:"X"},
+      {id:"st-h",x:118,y:218,player:"",label:"H"},
+      {id:"st-y",x:242,y:218,player:"",label:"Y"},
+      {id:"st-z",x:282,y:218,player:"",label:"Z"}
+    ];
+  }else if(kind==="overload"){
+    playDraft.spots=[
+      {id:"st-qb",x:180,y:248,player:"",label:"QB"},
+      {id:"st-c",x:180,y:218,player:"",label:"C"},
+      {id:"st-short",x:148,y:218,player:"",label:"short"},
+      {id:"st-mid",x:112,y:218,player:"",label:"middle"},
+      {id:"st-deep",x:72,y:218,player:"",label:"deep"},
+      {id:"st-back",x:292,y:218,player:"",label:"backside"}
+    ];
+  }else{
+    playDraft.spots=[
+      {id:"st-qb",x:180,y:248,player:"",label:"QB"},
+      {id:"st-c",x:180,y:218,player:"",label:"C"},
+      {id:"st-lt",x:118,y:218,player:"",label:"TE"},
+      {id:"st-li",x:148,y:218,player:"",label:"TE"},
+      {id:"st-ri",x:212,y:218,player:"",label:"TE"},
+      {id:"st-rt",x:242,y:218,player:"",label:"TE"},
+      {id:"st-rb",x:164,y:236,player:"",label:"RB"}
+    ];
+  }
+  playDraft.routes=[];
+  selectedSpotId=playDraft.spots[0].id;
+  selectedRouteId="";
+  bendingRouteId="";
+  setBuilderStatus("Starter lined up. Draw routes, then save for all coaches.");
+  renderBuilder();
+}
+function markLook(n){
+  const route=selectedRoute()||(selectedSpotId?routeForSpot(selectedSpotId):null);
+  if(!route){
+    setBuilderStatus("Tap a route, or a kid who already has one, then mark 1 or 2.");
+    return;
+  }
+  route.look=route.look===n?0:n;
+  selectedRouteId=route.id;
+  setBuilderStatus(route.look?"Marked look "+route.look+" on this route.":"Look number cleared.");
+  renderBuilder();
+}
 ["playName","playHow"].forEach(id=>$("#"+id).oninput=syncPlayFields);
 $("#playStatus").onchange=syncPlayFields;
 $("#spotPlayer").onchange=()=>{
   const spot=selectedSpot();
   if(spot){spot.player=$("#spotPlayer").value;renderBuilder()}
 };
-$("#placeMode").onclick=()=>{builderMode="place";renderBuilder()};
-$("#routeMode").onclick=()=>{
-  builderMode="route";
-  $("#builderStatus").textContent=selectedSpot()?"Tap a route endpoint on the field.":"Select a spot, then tap its route endpoint.";
+$("#start22").onclick=()=>applyStarter("22");
+$("#startOverload").onclick=()=>applyStarter("overload");
+$("#startGoal").onclick=()=>applyStarter("goal");
+$("#flipPlay").onclick=()=>{
+  playDraft.spots.forEach(spot=>{spot.x=flipX(spot.x)});
+  playDraft.routes.forEach(route=>route.points.forEach(point=>{point.x=flipX(point.x)}));
+  setBuilderStatus("Flipped 50 / 51. Save so the other coaches see this side.");
   renderBuilder();
+};
+$("#markLook1").onclick=()=>markLook(1);
+$("#markLook2").onclick=()=>markLook(2);
+builderField.onpointerdown=event=>{
+  event.preventDefault();
+  const point=fieldPoint(event);
+  const spotEl=event.target.closest(".builder-spot");
+  const routeEl=event.target.closest(".route-hit");
+  if(spotEl){
+    const id=spotEl.dataset.spotId;
+    const spot=playDraft.spots.find(item=>item.id===id);
+    pointer={
+      pointerId:event.pointerId,
+      kind:"spot",
+      spotId:id,
+      already:selectedSpotId===id,
+      startX:point.x,
+      startY:point.y,
+      originX:spot?spot.x:point.x,
+      originY:spot?spot.y:point.y,
+      mode:"pending"
+    };
+    selectedSpotId=id;
+    selectedRouteId="";
+    bendingRouteId="";
+    builderField.setPointerCapture(event.pointerId);
+    renderBuilder();
+    return;
+  }
+  if(routeEl){
+    selectedRouteId=routeEl.dataset.routeId;
+    selectedSpotId="";
+    bendingRouteId="";
+    pointer=null;
+    renderBuilder();
+    return;
+  }
+  pointer={pointerId:event.pointerId,kind:"field",startX:point.x,startY:point.y,mode:"pending"};
+  builderField.setPointerCapture(event.pointerId);
 };
 builderField.onpointermove=event=>{
-  if(!draggingSpot||!builderField.hasPointerCapture(event.pointerId)) return;
+  if(!pointer||pointer.pointerId!==event.pointerId||pointer.kind!=="spot") return;
   const point=fieldPoint(event);
-  const spot=playDraft.spots.find(item=>item.id===draggingSpot);
-  if(!spot) return;
-  spot.x=Math.max(25,Math.min(335,Math.round(point.x)));
-  spot.y=Math.max(25,Math.min(275,Math.round(point.y)));
-  renderBuilder();
+  const dist=Math.hypot(point.x-pointer.startX,point.y-pointer.startY);
+  if(pointer.mode==="pending"&&dist>9){
+    pointer.mode=pointer.already?"draw":"move";
+    if(pointer.mode==="draw"){
+      let route=routeForSpot(pointer.spotId);
+      if(!route){
+        route={id:uid("route"),from:pointer.spotId,points:[],look:0,label:""};
+        playDraft.routes.push(route);
+      }
+      route.points=[{x:point.x,y:point.y}];
+      pointer.routeId=route.id;
+      selectedRouteId=route.id;
+      bendingRouteId=route.id;
+    }
+  }
+  if(pointer.mode==="move"){
+    const spot=playDraft.spots.find(item=>item.id===pointer.spotId);
+    if(spot) moveSpot(spot,clamp(pointer.originX+(point.x-pointer.startX),25,335),clamp(pointer.originY+(point.y-pointer.startY),25,275));
+    renderBuilder();
+  }else if(pointer.mode==="draw"){
+    const route=playDraft.routes.find(item=>item.id===pointer.routeId);
+    if(route){
+      if(!route.points.length) route.points.push({x:point.x,y:point.y});
+      else route.points[route.points.length-1]={x:point.x,y:point.y};
+    }
+    renderBuilder();
+  }
 };
 builderField.onpointerup=event=>{
-  if(builderField.hasPointerCapture(event.pointerId)) builderField.releasePointerCapture(event.pointerId);
-  draggingSpot=null;
-};
-builderField.onclick=event=>{
-  if(event.target.closest(".builder-spot")||event.target.closest(".route-hit")) return;
+  if(!pointer||pointer.pointerId!==event.pointerId) return;
   const point=fieldPoint(event);
-  const x=Math.max(25,Math.min(335,Math.round(point.x)));
-  const y=Math.max(25,Math.min(275,Math.round(point.y)));
-  if(builderMode==="route"){
-    const spot=selectedSpot();
-    if(!spot){$("#builderStatus").textContent="Select a spot first.";return}
-    playDraft.routes.push({id:"route-"+Date.now().toString(36),from:spot.id,points:[{x,y}]});
-    $("#builderStatus").textContent="Route added. Draw another or return to place / move.";
+  if(builderField.hasPointerCapture(event.pointerId)) builderField.releasePointerCapture(event.pointerId);
+  if(pointer.kind==="spot"){
+    if(pointer.mode==="draw"){
+      bendingRouteId=pointer.routeId;
+      selectedRouteId=pointer.routeId;
+      setBuilderStatus("Route started. Tap empty grass to bend it.");
+    }
+    pointer=null;
+    renderBuilder();
+    return;
+  }
+  const tapped=Math.hypot(point.x-pointer.startX,point.y-pointer.startY)<8;
+  pointer=null;
+  if(!tapped) return;
+  if(bendingRouteId){
+    const route=playDraft.routes.find(item=>item.id===bendingRouteId);
+    if(route){
+      route.points.push({x:point.x,y:point.y});
+      setBuilderStatus("Bend added. Tap again to keep bending, or tap a kid when done.");
+    }
   }else{
-    if(playDraft.spots.length>=7){$("#builderStatus").textContent="This 7-on-7 play already has seven offensive spots.";return}
-    const id="spot-"+Date.now().toString(36);
-    playDraft.spots.push({id,x,y,player:"",label:playDraft.spots.length===0?"QB":"O"});
-    selectedSpotId=id;selectedRouteId="";
+    addKid(point.x,point.y);
   }
   renderBuilder();
 };
+builderField.onpointercancel=()=>{pointer=null};
 $("#deleteItem").onclick=()=>{
-  if(selectedRouteId){
-    playDraft.routes=playDraft.routes.filter(route=>route.id!==selectedRouteId);
+  if(selectedRouteId||bendingRouteId){
+    const id=selectedRouteId||bendingRouteId;
+    playDraft.routes=playDraft.routes.filter(route=>route.id!==id);
     selectedRouteId="";
+    bendingRouteId="";
   }else if(selectedSpotId){
     playDraft.spots=playDraft.spots.filter(spot=>spot.id!==selectedSpotId);
     playDraft.routes=playDraft.routes.filter(route=>route.from!==selectedSpotId);
     selectedSpotId=playDraft.spots[0]?.id||"";
   }else{
-    $("#builderStatus").textContent="Select a spot or route first.";
+    setBuilderStatus("Select a kid or a route first.");
   }
   renderBuilder();
 };
 $("#newPlay").onclick=()=>{
-  playDraft={id:"play-"+Date.now().toString(36),name:"New play",status:"parked",how:"",spots:[],routes:[]};
-  selectedSpotId="";selectedRouteId="";builderMode="place";
+  playDraft={id:uid("play"),name:"New play",status:"parked",how:"",seed:PLAY_SEED,spots:[],routes:[]};
+  selectedSpotId="";selectedRouteId="";bendingRouteId="";
   renderBuilder();$("#playName").select();
 };
-$("#savePlay").onclick=()=>{
-  syncPlayFields();
-  if(!playDraft.name||!playDraft.how){$("#builderStatus").textContent="Add a play name and kid-language how-to first.";return}
-  if(!playDraft.spots.length){$("#builderStatus").textContent="Place at least one offensive spot first.";return}
-  const index=builtPlays.findIndex(play=>play.id===playDraft.id);
-  if(index>=0) builtPlays[index]=structuredClone(playDraft); else builtPlays.push(structuredClone(playDraft));
-  setStore("built_plays",builtPlays);
-  $("#builderStatus").textContent=`Saved ${playDraft.name} into this device’s playbook.`;
-  renderBuilder();
-};
-function downloadJson(value,filename){
-  const blob=new Blob([JSON.stringify(value,null,2)],{type:"application/json"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);link.download=filename;link.click();
-  setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+async function upsertCloudPlay(play){
+  if(!sb||!play||!play.id) return {ok:false,error:"Shared plays unavailable"};
+  const updatedAt=new Date().toISOString();
+  play.updatedAt=updatedAt;
+  play.seed=PLAY_SEED;
+  const {error}=await sb.from("commodores_plays").upsert({
+    id:play.id,payload:play,updated_at:updatedAt
+  },{onConflict:"id"});
+  return {ok:!error,error:error&&error.message};
 }
-$("#exportPlays").onclick=()=>{
-  downloadJson(builtPlays,"commodores-playbook.json");
-  $("#builderStatus").textContent="Downloaded the saved playbook.";
-};
-function validBuiltPlay(play){
-  return play&&typeof play.id==="string"&&typeof play.name==="string"&&typeof play.how==="string"
-    &&["taught","parked"].includes(play.status)&&Array.isArray(play.spots)&&play.spots.length<=7&&Array.isArray(play.routes);
+function cloudPlayFromRow(row){
+  const payload=row&&row.payload&&typeof row.payload==="object"?{...row.payload}:{};
+  payload.id=payload.id||row.id;
+  payload.updatedAt=row.updated_at;
+  return normalizePlay(payload);
 }
-$("#playFile").onchange=async event=>{
-  const file=event.target.files&&event.target.files[0];
-  if(!file) return;
-  try{
-    const parsed=JSON.parse(await file.text());
-    const incoming=Array.isArray(parsed)?parsed:[parsed];
-    if(!incoming.length||!incoming.every(validBuiltPlay)) throw new Error("Play file does not match the builder shape.");
-    incoming.forEach(play=>{
-      play.spots=play.spots.map(spot=>({...spot,player:ROSTER.includes(spot.player)?spot.player:""}));
-      const index=builtPlays.findIndex(existing=>existing.id===play.id);
-      if(index>=0) builtPlays[index]=play; else builtPlays.push(play);
-    });
-    setStore("built_plays",builtPlays);
-    openPlay(incoming[0].id);
-    $("#builderStatus").textContent=`Imported ${incoming.length} play${incoming.length===1?"":"s"}.`;
-  }catch(error){
-    $("#builderStatus").textContent="Could not import plays: "+error.message;
+async function loadCloudPlays(){
+  if(!sb){
+    setBuilderStatus("Shared plays unavailable · this device only");
+    return;
   }
-  event.target.value="";
+  const {data,error}=await sb.from("commodores_plays")
+    .select("id,payload,updated_at")
+    .order("updated_at",{ascending:false});
+  if(error){
+    setBuilderStatus("Could not load shared plays: "+error.message);
+    return;
+  }
+  const cloudRows=data||[];
+  let changed=false;
+  cloudRows.forEach(row=>{
+    const cloud=cloudPlayFromRow(row);
+    if(!cloud) return;
+    const cloudSeed=Number(cloud.seed)||0;
+    if(cloudSeed<PLAY_SEED) return;
+    const index=builtPlays.findIndex(play=>play.id===cloud.id);
+    const local=index>=0?builtPlays[index]:null;
+    if(!local||(Date.parse(row.updated_at)||0)>playUpdatedAt(local)){
+      if(index>=0) builtPlays[index]=cloud; else builtPlays.push(cloud);
+      changed=true;
+    }
+  });
+  const seeds=seedBuiltPlays();
+  for(const seed of seeds){
+    const local=builtPlays.find(play=>play.id===seed.id);
+    const cloud=cloudRows.find(row=>row.id===seed.id);
+    const cloudPlay=cloud?cloudPlayFromRow(cloud):null;
+    if(!local||(local.seed||0)<PLAY_SEED){
+      builtPlays=builtPlays.filter(play=>play.id!==seed.id);
+      builtPlays.push(structuredClone(seed));
+      changed=true;
+    }
+    if(!cloudPlay||(cloudPlay.seed||0)<PLAY_SEED){
+      await upsertCloudPlay(structuredClone(builtPlays.find(play=>play.id===seed.id)));
+    }
+  }
+  if(changed){
+    setStore("built_plays",builtPlays);
+    if(!builtPlays.find(play=>play.id===playDraft.id)) playDraft=structuredClone(builtPlays[0]);
+    else playDraft=structuredClone(builtPlays.find(play=>play.id===playDraft.id));
+    selectedSpotId=playDraft.spots[0]?.id||"";
+    setBuilderStatus("Loaded shared play drawings.");
+  }
+  renderPlayCards();
+  renderBuilder();
+}
+$("#savePlay").onclick=async ()=>{
+  syncPlayFields();
+  if(!playDraft.name||!playDraft.how){setBuilderStatus("Add a play name and kid-language how-to first.");return}
+  if(!playDraft.spots.length){setBuilderStatus("Add at least one kid first.");return}
+  playDraft.seed=PLAY_SEED;
+  const copy=structuredClone(playDraft);
+  const index=builtPlays.findIndex(play=>play.id===copy.id);
+  if(index>=0) builtPlays[index]=copy; else builtPlays.push(copy);
+  setStore("built_plays",builtPlays);
+  const result=await upsertCloudPlay(copy);
+  playDraft.updatedAt=copy.updatedAt;
+  if(index>=0) builtPlays[index].updatedAt=copy.updatedAt;
+  persistPlays();
+  setBuilderStatus(result.ok
+    ?`Saved ${playDraft.name} for Peter, Chris, and Ben.`
+    :"Saved on this device only · "+(result.error||"cloud sync failed"));
 };
+renderPlayCards();
 renderBuilder();
 
 function localDateISO(date){
