@@ -58,8 +58,8 @@ the card's `created_at` when it is absent. Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
 
 For email reply cards, `snippet` is the editable reply draft. Apply the
-idempotent `sql/ops_email_replies.sql` and `sql/ops_email_recipients.sql`
-manually before using the queue flow.
+idempotent `sql/ops_email_replies.sql`, `sql/ops_email_recipients.sql`, and
+`sql/ops_send_now.sql` manually before using the queue flow.
 The inbox watch should populate `inbound_from`, `inbound_subject`,
 `inbound_to`, `inbound_cc`, `inbound_body` (plain text),
 `inbound_message_id`, and `inbound_account` (the Chris-owned receiving
@@ -74,6 +74,12 @@ leaving the draft and recipient choices ready to edit. The current dashboard
 treats `project` as the inbox label. `source_ref` is available to the watch
 alongside `inbound_message_id`, but this repository does not establish which
 Gmail identifier existing producers store there.
+
+The Emails top bar counts all open cards with `send_requested_at` and offers
+**Send now**. Confirming inserts one pending `ops_send_now` row; Sydney should
+poll for `processed_at is null`, flush every queued reply, then set
+`processed_at`. The dashboard does not send Gmail. A unique partial index keeps
+only one flush request pending at a time.
 
 If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the
