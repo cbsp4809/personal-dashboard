@@ -281,7 +281,8 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
         </div>
         <div class="panel callout">
           <span class="dot"></span>
-          <div><strong>Passer plan</strong><span>Michael is first-look QB. Teddy throws too, but split his reps so he still runs routes as a top receiver.</span></div>
+          <!-- Staff huddle word is Mike. Roster and diagrams still say Michael — same kid. -->
+          <div><strong>Passer plan</strong><span>Mike is QB1. Teddy is QB2. Brett is QB3. Teddy still runs routes — split his throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
         </div>
       </div>
 
@@ -309,7 +310,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
           <div class="concurrent">
             <div class="station">
               <div class="station-time">1:05 · 20m</div>
-              <div><h4>Throw / catch group</h4><p>Michael gets first-look QB reps. Teddy splits throwing and routes. Rep clean catches past the line.</p></div>
+              <div><h4>Throw / catch group</h4><p>Mike is QB1. Teddy is QB2. Brett is QB3. Teddy still splits throwing and routes. Rep clean catches past the line.</p></div>
               <div class="coach">Chris</div>
             </div>
             <div class="station">
@@ -461,7 +462,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 
     <section class="page" id="page-offense">
       <div class="section-head"><div><div class="eyebrow">This week’s book</div><h2>Smash + Overload</h2></div><p>Play · two looks · Flip</p></div>
-      <div class="binder-note"><b>Taught now:</b> Smash and Overload 50/51 only. Watch the play. Two looks, then Flip the same picture. Do not add a third look.</div>
+      <div class="binder-note"><b>Taught now:</b> Smash and Overload 50/51 only. Slam is Smash: two-level outs — if the defender goes back, throw short; if he comes up, throw over the top. Overload is go / slant / out with extra kids on one side so one leftover kid comes free. Watch the play. Two looks, then Flip the same picture. Do not add a third look.</div>
       <div id="offenseBook"></div>
 
       <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Chris’s 16</h2></div><p>Binder list · rank + concept</p></div>
@@ -640,7 +641,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const STORE_PREFIX="commodores_v1_";
-const ROSTER=["Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+const ROSTER=["Brett","Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
 const STAFF_FIRST=["Peter","Chris","Ben"];
 const NOTE_AFTER="after-practice";
 const NOTE_NEXT="next-install";
@@ -1122,8 +1123,8 @@ document.addEventListener("visibilitychange",()=>{
 });
 $("#postComment").onclick=postStaffComment;
 
-const SMASH_HOW="2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.";
-const OVERLOAD_HOW="Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.";
+const SMASH_HOW="Slam = Smash. Two-level outs. If the defender goes back, throw short. If he comes up, throw over the top. Flip both ways. First throw must land past the line. 5-second clock.";
+const OVERLOAD_HOW="Go, slant, or out. Extra kids on one side so one leftover kid comes free. 50 one way, 51 the flip.";
 function seedBuiltPlays(){
   return [
     {
@@ -1172,8 +1173,8 @@ const TAUGHT_OFFENSE_IDS=["smash","overload-50-51"];
 const OFFENSE_LOOKS={
   smash:{
     looks:[
-      {id:"sit",label:"1 · Sit",pick:"Thrower looks at the kid who stopped.",play:"Play: throw the sit. That’s look 1."},
-      {id:"corner",label:"2 · Corner",pick:"If a defender jumps the sit, throw the corner.",play:"Play: defender jumped the sit. Throw the corner."}
+      {id:"sit",label:"1 · Short",pick:"If the defender goes back, throw short.",play:"Play: defender went back. Throw short."},
+      {id:"corner",label:"2 · Over the top",pick:"If he comes up, throw over the top.",play:"Play: defender came up. Throw over the top."}
     ],
     targets:{sit:["s-c","s-lo","s-ro"],corner:["s-li","s-ri"]}
   },
@@ -1237,7 +1238,7 @@ function offenseCue(play,mode){
   if(mode==="play"&&look) return look.play;
   const side=play.id==="overload-50-51"
     ?(view.flipped?"51 — extra kids this side. ":"50 — extra kids this side. ")
-    :(view.flipped?"Flipped. Same 2x2 the other way. ":"");
+    :(view.flipped?"Flipped. Same picture the other way. ":"");
   if(look) return (side+look.pick).trim();
   return (side||"Watch the throw. Two looks only. Flip the same picture.").trim();
 }
@@ -1314,8 +1315,8 @@ function renderOffenseBook(){
       <div data-offense-picture>${offenseCardSVG(play)}</div>
       <div class="play-copy">
         <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge taught">Taught</span></div>
-        <p>${esc(play.how)}</p>
-        <div class="when">${play.id==="smash"?"High-low: look 1 is the sit, look 2 is the corner. Same 2x2 both ways.":"Trips overload. 50 one way, 51 the flip. Throw the first open kid past the line."}</div>
+        <p>${esc(play.id==="smash"?SMASH_HOW:play.id==="overload-50-51"?OVERLOAD_HOW:play.how)}</p>
+        <div class="when">${play.id==="smash"?"Two looks: short if the defender goes back, over the top if he comes up. Same picture both ways.":"Go / slant / out. Extra kids one side so one leftover kid comes free. Two looks. 50 one way, 51 the flip."}</div>
         <div class="play-react">
           <div class="react-toggle" role="group" aria-label="${esc(play.name)} looks">${looks}</div>
           <button class="btn play-now" data-off-play="${esc(play.id)}" type="button">Play</button>
