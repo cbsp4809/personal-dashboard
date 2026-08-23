@@ -216,6 +216,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     </div>
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
+      <button data-page="offense" type="button">Offense</button>
       <button data-page="playbook" type="button">Playbook</button>
       <button data-page="builder" type="button">Play builder</button>
       <button data-page="milestones" type="button">Milestones</button>
@@ -314,6 +315,92 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
           <textarea id="staffComment" placeholder="Short note for the other coaches. First names only."></textarea>
           <button class="btn ghost" id="postComment" type="button">Post comment</button>
         </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-offense">
+      <div class="section-head"><div><div class="eyebrow">Plays only</div><h2>Offense</h2></div><p>Taught vs binder · Smash + Overload through Aug 30</p></div>
+      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. No third play in week one.</div>
+      <div class="play-grid">
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Smash route diagram">
+            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
+            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
+            <circle class="ball" cx="180" cy="88" r="5"/><path class="line" d="M180 88V42"/><text x="188" y="46">sit 6</text>
+            <circle class="ball" cx="55" cy="91" r="5"/><path class="line" d="M55 91V65"/><path class="line" d="M48 65H62"/><text x="20" y="55">3 steps + stop</text>
+            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91C112 54 82 34 48 23"/><path class="line" d="M48 23l9 0M48 23l5 8"/><text x="78" y="20">far corner</text>
+            <circle class="def" cx="58" cy="76" r="4"/><circle class="def" cx="107" cy="74" r="4"/>
+            <text x="227" y="156">Flip the same picture both ways</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Smash</h3><span class="badge taught">Taught</span></div>
+            <p>2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.</p>
+            <div class="when">“2x2” means two receivers on each side. “Shotgun” means the thrower starts a few steps behind the center.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Overload 50 and 51 diagram">
+            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
+            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
+            <circle class="ball" cx="75" cy="91" r="5"/><path class="line" d="M75 91C72 64 54 48 38 34"/>
+            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91V45"/>
+            <circle class="ball" cx="145" cy="91" r="5"/><path class="line" d="M145 91C143 65 130 57 118 48"/>
+            <circle class="ball" cx="292" cy="91" r="5"/><path class="line muted" d="M292 91V52"/>
+            <text x="37" y="20">50: extra kids here</text><text x="224" y="161">51 = flip the picture</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Overload 50/51</h3><span class="badge taught">Taught</span></div>
+            <p>Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.</p>
+            <div class="when">“Overload” just means more receivers line up on one side than the other.</div>
+          </div>
+        </article>
+      </div>
+      <div class="section-head"><div><div class="eyebrow">Not taught</div><h2>Binder</h2></div><p>Parked until the first two are clean</p></div>
+      <div class="binder-note"><b>Parked:</b> Play 3, StarBurst, and Goal Line 5/6 stay in the binder. Do not install them in week one.</div>
+      <div class="play-grid">
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
+            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
+            <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
+            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
+            <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
+            <text x="74" y="24">three levels: short · middle · deep</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Play 3 · staff choice</h3><span class="badge parked">Binder</span></div>
+            <p>Early September: choose either 38 Overload first down or the three-level / drag. Teach one, not both. Goal: three plays the kids can name.</p>
+            <div class="when">Parked aliases from the older sheet: B far left / Left Drag. “Three-level” means one short route, one middle route, and one deeper route so kids do not bunch up.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
+            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
+            <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
+            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
+            <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
+            <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
+            <text x="130" y="164">deep shot · add late September</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
+            <p>The late-September deeper shot. Routes spread out as they go downfield so the thrower has clear windows.</p>
+            <div class="when">Not for week one. Install only after the first three plays are clean.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
+            <rect x="20" y="20" width="320" height="68" fill="none" stroke="#777777" stroke-width="2"/><text x="270" y="36">end zone</text>
+            <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
+            <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
+            <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
+            <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
+            <p>The short-yardage play for inside the 15-yard line. 5 goes one way; 6 flips it.</p>
+            <div class="when">Add late September with StarBurst. Do not call it outside the inside-15 situation.</div>
+          </div>
+        </article>
       </div>
     </section>
 
