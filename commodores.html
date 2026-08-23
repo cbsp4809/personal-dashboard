@@ -710,9 +710,9 @@ document.addEventListener("visibilitychange",()=>{
 });
 $("#postComment").onclick=postStaffComment;
 
-const PLAY_SEED=4;
-const SMASH_HOW="2x2 shotgun. Four receivers plus the center, who sits at 6 yards. First look is the sit (1). If the defender jumps the sit, throw the corner (2). Flip both ways. First throw must land past the line. 5-second clock.";
-const OVERLOAD_HOW="3-to-1. Three kids on one side: short, middle, and deep. Throw the first open one past the line. One kid stays backside. 50 one way, 51 the flip.";
+const PLAY_SEED=5;
+const SMASH_HOW="2x2 shotgun. All five eligible kids line up, plus the QB. Center sits at 6 yards. Outside kid: three steps and stop — that throw is 1. Inside kid on that side runs the far corner — that throw is 2. The other two kids still line up. Flip both ways. First throw must land past the line. 5-second clock.";
+const OVERLOAD_HOW="Extra kids to one side. First throw is the first open one past the line — that throw is 1. One kid stays backside. Flip makes 51.";
 const PLAY3_HOW="Parked. Staff picks this third play after Smash and Overload are clean. Do not install in week one.";
 const STARBURST_HOW="Parked deep shot. Line up, then all eligible kids burst to different deep spots. Save for later.";
 const GOALLINE_HOW="Parked. Tight line inside the 15. Short throws only. Do not install in week one.";
@@ -729,17 +729,15 @@ function seedBuiltPlays(){
       spots:[
         {id:"s-qb",x:180,y:248,player:"Michael",label:"QB"},
         {id:"s-c",x:180,y:218,player:"",label:"C"},
-        {id:"s-x",x:78,y:218,player:"",label:"X"},
-        {id:"s-h",x:118,y:218,player:"Teddy",label:"H"},
-        {id:"s-y",x:242,y:218,player:"",label:"Y"},
-        {id:"s-z",x:282,y:218,player:"",label:"Z"}
+        {id:"s-out",x:72,y:218,player:"",label:"out"},
+        {id:"s-in",x:118,y:218,player:"Teddy",label:"in"},
+        {id:"s-y",x:242,y:218,player:"",label:"O"},
+        {id:"s-z",x:292,y:218,player:"",label:"O"}
       ],
       routes:[
-        {id:"s-sit-c",from:"s-c",points:[{x:180,y:158}],look:1,label:"sit"},
-        {id:"s-sit-h",from:"s-h",points:[{x:148,y:168}],look:1,label:"sit"},
-        {id:"s-sit-y",from:"s-y",points:[{x:212,y:168}],look:1,label:"sit"},
-        {id:"s-cn-x",from:"s-x",points:[{x:58,y:128},{x:42,y:72}],look:2,label:"corner"},
-        {id:"s-cn-z",from:"s-z",points:[{x:302,y:128},{x:318,y:72}],look:2,label:"corner"}
+        {id:"s-hitch",from:"s-out",points:[{x:72,y:188}],look:1,label:"stop"},
+        {id:"s-corner",from:"s-in",points:[{x:118,y:128},{x:42,y:64}],look:2,label:"corner"},
+        {id:"s-sit-c",from:"s-c",points:[{x:180,y:176}],look:0,label:"sit"}
       ]
     },
     {
@@ -747,16 +745,16 @@ function seedBuiltPlays(){
       spots:[
         {id:"o-qb",x:180,y:248,player:"Michael",label:"QB"},
         {id:"o-c",x:180,y:218,player:"",label:"C"},
-        {id:"o-short",x:148,y:218,player:"",label:"short"},
-        {id:"o-mid",x:112,y:218,player:"Teddy",label:"middle"},
-        {id:"o-deep",x:72,y:218,player:"",label:"deep"},
-        {id:"o-back",x:292,y:218,player:"",label:"backside"}
+        {id:"o-short",x:148,y:218,player:"",label:"O"},
+        {id:"o-mid",x:108,y:218,player:"Teddy",label:"O"},
+        {id:"o-deep",x:64,y:218,player:"",label:"O"},
+        {id:"o-back",x:292,y:218,player:"",label:"O"}
       ],
       routes:[
-        {id:"o-r-short",from:"o-short",points:[{x:162,y:188}],look:1,label:"short"},
-        {id:"o-r-mid",from:"o-mid",points:[{x:118,y:148}],look:2,label:"middle"},
-        {id:"o-r-deep",from:"o-deep",points:[{x:56,y:92}],look:0,label:"deep"},
-        {id:"o-r-back",from:"o-back",points:[{x:304,y:168}],look:0,label:"backside"}
+        {id:"o-first",from:"o-short",points:[{x:158,y:176}],look:1,label:"first throw"},
+        {id:"o-mid",from:"o-mid",points:[{x:108,y:128}],look:0,label:""},
+        {id:"o-deep",from:"o-deep",points:[{x:48,y:72}],look:0,label:""},
+        {id:"o-back",from:"o-back",points:[{x:292,y:176}],look:0,label:""}
       ]
     },
     {
