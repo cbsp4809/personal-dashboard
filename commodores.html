@@ -719,7 +719,7 @@ document.addEventListener("visibilitychange",()=>{
 });
 $("#postComment").onclick=postStaffComment;
 
-const PLAY_SEED=6;
+const PLAY_SEED=7;
 const SMASH_HOW="All five eligible kids plus the thrower. 2x2 shotgun. Outside sit is throw 1. Inside kid on that side runs the far corner. The other two kids still line up. Center sits at about 6 yards. Flip both ways. First throw must land past the line. 5-second clock.";
 const OVERLOAD_HOW="Pile extra kids on one side. First throw past the line is 1. Flip is one button — that makes 51. One kid stays backside.";
 const DEFENSE_HOW="Six kids cover named areas: L short, M short, R short, L deep, M deep, R deep. Helper has no spot — drag him toward extra bodies. Watch the thrower. Do not run at him. Do not follow one kid all over. Flip swaps left and right.";
@@ -773,16 +773,15 @@ function seedBuiltPlays(){
       spots:[
         {id:"o-qb",x:180,y:248,player:"Michael",label:"QB"},
         {id:"o-c",x:180,y:218,player:"",label:"C"},
-        {id:"o-short",x:148,y:218,player:"",label:"O"},
-        {id:"o-mid",x:108,y:218,player:"Teddy",label:"O"},
-        {id:"o-deep",x:64,y:218,player:"",label:"O"},
-        {id:"o-back",x:292,y:218,player:"",label:"O"}
+        {id:"o-short",x:136,y:218,player:"",label:"O"},
+        {id:"o-mid",x:96,y:218,player:"Teddy",label:"O"},
+        {id:"o-deep",x:56,y:218,player:"",label:"O"},
+        {id:"o-back",x:300,y:218,player:"",label:"O"}
       ],
       routes:[
-        {id:"o-first",from:"o-short",points:[{x:158,y:176}],look:1,label:"first throw"},
-        {id:"o-mid",from:"o-mid",points:[{x:108,y:128}],look:0,label:""},
-        {id:"o-deep",from:"o-deep",points:[{x:48,y:72}],look:0,label:""},
-        {id:"o-back",from:"o-back",points:[{x:292,y:176}],look:0,label:""}
+        {id:"o-first",from:"o-short",points:[{x:124,y:168}],look:1,label:"first throw"},
+        {id:"o-mid",from:"o-mid",points:[{x:88,y:118}],look:0,label:""},
+        {id:"o-deep",from:"o-deep",points:[{x:40,y:68}],look:0,label:""}
       ]
     },
     {
