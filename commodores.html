@@ -162,6 +162,22 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .plain-list{margin:8px 0 0;padding-left:18px;color:var(--soft)}
 .plain-list li+li{margin-top:6px}
 .diagram .area{fill:none;stroke:#777777;stroke-width:1;opacity:.55}
+.diagram .grass{fill:rgba(207,174,112,.16);stroke:#CFAE70;stroke-width:1.6}
+.diagram .kid{fill:#CFAE70;stroke:#1C1C1C;stroke-width:2}
+.diagram .helper{fill:#ECB748;stroke:#1C1C1C;stroke-width:2}
+.diagram .thrower{fill:#FFFFFF;stroke:#CFAE70;stroke-width:2}
+.diagram .no-rush{fill:#ECB748;font:700 8px var(--sans);text-anchor:middle}
+.diagram .spot-name{fill:#FFFFFF;font:700 8px var(--sans);text-anchor:middle}
+.builder-field .grass{fill:rgba(207,174,112,.16);stroke:#CFAE70;stroke-width:1.6}
+.builder-field .kid{fill:#CFAE70;stroke:#1C1C1C;stroke-width:2;cursor:pointer}
+.builder-field .helper{fill:#ECB748;stroke:#1C1C1C;stroke-width:2;cursor:pointer}
+.builder-field .thrower{fill:#FFFFFF;stroke:#CFAE70;stroke-width:2}
+.builder-field .no-rush{fill:#ECB748;font:700 8px var(--sans)}
+.builder-field .spot-name{fill:#FFFFFF;font:700 8px var(--sans);text-anchor:middle;pointer-events:none}
+.builder-field .def-path{fill:none;stroke:#ECB748;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.btn.flip{min-height:56px;width:100%;font-size:20px;letter-spacing:.08em;text-transform:uppercase}
+.library-label{margin:14px 0 7px;color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.defense-tools{display:grid;gap:8px;margin:12px 0}
 @media(max-width:760px){
   .mast-inner{padding:14px max(16px,env(safe-area-inset-right,0px)) 11px max(16px,env(safe-area-inset-left,0px))}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
   .tabs{padding:0 max(16px,env(safe-area-inset-right,0px)) 9px max(16px,env(safe-area-inset-left,0px))}main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
@@ -296,22 +312,10 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Everything else is sitting in the binder. No third play in week one.</div>
       <div class="play-grid">
         <article class="play-card" id="game-defense" style="grid-column:1/-1">
-          <svg class="diagram" viewBox="0 0 720 240" role="img" aria-label="Six kids covering six areas with one roaming helper diagram">
-            <path class="line muted" d="M20 205H700"/><text x="26" y="198">line</text>
-            <path class="line muted" opacity=".35" d="M20 25H700M20 25V205M247 25V205M473 25V205M700 25V205M20 115H700"/>
-            <circle class="def" cx="133" cy="158" r="10"/><text x="128" y="162">D</text>
-            <circle class="def" cx="360" cy="158" r="10"/><text x="355" y="162">D</text>
-            <circle class="def" cx="587" cy="158" r="10"/><text x="582" y="162">D</text>
-            <circle class="def" cx="133" cy="70" r="10"/><text x="128" y="74">D</text>
-            <circle class="def" cx="360" cy="70" r="10"/><text x="355" y="74">D</text>
-            <circle class="def" cx="587" cy="70" r="10"/><text x="582" y="74">D</text>
-            <circle class="ball" cx="360" cy="113" r="12"/><text x="340" y="117">HELPER</text>
-            <path class="line" d="M360 128C330 145 305 154 270 158M360 98C395 83 425 76 465 72"/>
-            <text x="485" y="220">No QB rush · one-hand touch below the neck</text>
-          </svg>
+          <div id="playbookDefensePicture"></div>
           <div class="play-copy">
-            <div class="play-head"><h3>Game defense · six areas + one helper</h3><span class="badge taught">Base from week 1</span></div>
-            <p>Six kids each cover a spot (an area). Keep eyes on the thrower and protect your area instead of following one receiver everywhere. When a receiver leaves your area, let the next kid take them. The seventh kid roams in the middle and helps where the ball goes. No rush on the QB. Finish with a one-hand touch below the neck.</p>
+            <div class="play-head"><h3 id="playbookDefenseName">Game defense · six spots + one helper</h3><span class="badge taught">Base from week 1</span></div>
+            <p id="playbookDefenseHow">Six named spots and one helper. The full look is drawn from the staff builder.</p>
             <div class="when">Hip-stay / “pick a guy” / Man-Free is a drill only. It is not the game defense or another package.</div>
             <div class="when">Full look lives on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
           </div>
@@ -398,30 +402,9 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     </section>
 
     <section class="page" id="page-defense">
-      <div class="section-head"><div><div class="eyebrow">Locked game look</div><h2>Six areas + one helper</h2></div><p>Kid language first. One game defense.</p></div>
-      <div class="binder-note"><b>This is the game defense.</b> Six kids each cover a spot (an area). One kid roams and helps. No rush. Hip-stay / pick-a-guy / Man-Free is a drill only — never the plan and never a second package.</div>
-
-      <article class="play-card" id="defense-base" style="margin-bottom:14px">
-        <svg class="diagram" viewBox="0 0 720 250" role="img" aria-label="Six kids covering six areas of grass with one roaming helper">
-          <path class="area" d="M20 25H247V115H20Z"/><path class="area" d="M247 25H473V115H247Z"/><path class="area" d="M473 25H700V115H473Z"/>
-          <path class="area" d="M20 115H247V205H20Z"/><path class="area" d="M247 115H473V205H247Z"/><path class="area" d="M473 115H700V205H473Z"/>
-          <path class="line muted" d="M20 205H700"/><text x="26" y="198">line</text>
-          <circle class="def" cx="133" cy="70" r="10"/><text x="112" y="48">deep L</text>
-          <circle class="def" cx="360" cy="70" r="10"/><text x="336" y="48">deep M</text>
-          <circle class="def" cx="587" cy="70" r="10"/><text x="564" y="48">deep R</text>
-          <circle class="def" cx="133" cy="158" r="10"/><text x="112" y="180">near L</text>
-          <circle class="def" cx="360" cy="158" r="10"/><text x="336" y="180">near M</text>
-          <circle class="def" cx="587" cy="158" r="10"/><text x="564" y="180">near R</text>
-          <circle class="ball" cx="360" cy="113" r="12"/><text x="340" y="117">HELPER</text>
-          <path class="line" d="M360 128C330 145 305 154 270 158M360 98C395 83 425 76 465 72"/>
-          <text x="26" y="232">Stand in your grass · don’t chase · no rush · one-hand touch below the neck</text>
-        </svg>
-        <div class="play-copy">
-          <div class="play-head"><h3>Base look · your grass</h3><span class="badge taught">Game defense</span></div>
-          <p>Stand in your grass. That patch is yours. Don’t chase a kid who leaves it — the next area takes them. If the ball comes to you, catch it. Tag with a one-hand touch below the neck. The helper goes where they put extra people (Overload). No rush on the thrower. League forbids rushing the QB.</p>
-          <div class="when">“Area” just means your spot of grass. The area look is the zone — do not add zone later as a new package.</div>
-        </div>
-      </article>
+      <div class="section-head"><div><div class="eyebrow">Locked game look</div><h2>Six spots + one helper</h2></div><p>Same picture as Play builder · staff book</p></div>
+      <div class="binder-note"><b>This is the game defense.</b> Six named spots. One helper with no spot. Do not rush the thrower. Hip-stay / pick-a-guy / Man-Free is a drill only — never drawn as the game look.</div>
+      <div id="defenseBook"></div>
 
       <div class="play-grid">
         <article class="play-card">
@@ -445,7 +428,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
         <ul class="plain-list">
           <li>No rush. The league does not allow rushing the thrower.</li>
           <li>No second package. One game look all year unless staff later writes a new one here.</li>
-          <li>If they look lost, do not sneak hip-stay / man back in. Make the areas simpler instead.</li>
+          <li>If they look lost, make the spots bigger. Do not sneak hip-stay / man back in.</li>
           <li>Do not add “zone” as a new package. The six areas already are that look.</li>
         </ul>
       </div>
@@ -461,12 +444,15 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     </section>
 
     <section class="page" id="page-builder">
-      <div class="section-head"><div><div class="eyebrow">Draw + assign</div><h2>Play builder</h2></div><p>Saved on this device · share with JSON</p></div>
+      <div class="section-head"><div><div class="eyebrow">Draw + assign</div><h2>Play builder</h2></div><p>Defense is the staff book · Smash / Overload stay as they are</p></div>
       <div class="builder-layout">
         <aside>
-          <div class="binder-note"><b>Week-one guardrail:</b> Smash and Overload are the only taught plays. Save experiments as parked.</div>
+          <div class="binder-note"><b>Week-one guardrail:</b> Smash and Overload are the only taught offense plays. Defense is six named spots + helper.</div>
+          <div class="library-label">Offense</div>
           <div class="play-library" id="playLibrary"></div>
           <button class="btn ghost" id="newPlay" type="button" style="width:100%;margin-top:9px">+ New parked play</button>
+          <div class="library-label">Defense</div>
+          <div class="play-library" id="defenseLibrary"></div>
         </aside>
         <div class="builder">
           <div class="builder-form">
@@ -482,24 +468,32 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
               <path class="yard" d="M12 55H348M12 105H348M12 155H348M12 205H348M12 255H348"></path>
               <path class="los" d="M12 220H348"></path>
               <text x="37" y="213">LINE</text>
+              <g id="defenseLayer"></g>
               <g id="routeLayer"></g>
               <g id="spotLayer"></g>
             </svg>
           </div>
-          <div class="builder-toolbar">
+          <div class="defense-tools defense-only hidden">
+            <button class="btn flip" id="flipLook" type="button">Flip</button>
+            <button class="btn ghost" id="biggerSpots" type="button">Kids look lost · make spots bigger</button>
+          </div>
+          <div class="builder-toolbar offense-only">
             <button class="btn ghost on" id="placeMode" type="button">Place / move spots</button>
             <button class="btn ghost" id="routeMode" type="button">Draw route</button>
             <button class="btn ghost danger" id="deleteItem" type="button">Delete selected</button>
           </div>
-          <div class="assignment">
+          <div class="builder-toolbar defense-only hidden">
+            <button class="btn ghost danger" id="deleteDefenseItem" type="button">Delete selected kid</button>
+          </div>
+          <div class="assignment offense-only">
             <div class="field"><label for="spotPlayer">Selected spot’s first name</label><select id="spotPlayer"></select></div>
             <div class="field"><label>Offense spots</label><div class="badge" id="spotCount">0 / 7</div></div>
           </div>
           <p class="builder-help" id="builderHelp">Tap the field to add an offensive spot. Drag a spot to move it. Select a spot to assign a first name.</p>
           <div class="builder-actions">
             <button class="btn" id="savePlay" type="button">Save into playbook</button>
-            <button class="btn ghost" id="exportPlays" type="button">Export plays JSON</button>
-            <label class="btn ghost file-btn">Import plays JSON<input id="playFile" type="file" accept=".json,application/json"></label>
+            <button class="btn ghost offense-only" id="exportPlays" type="button">Export plays JSON</button>
+            <label class="btn ghost file-btn offense-only">Import plays JSON<input id="playFile" type="file" accept=".json,application/json"></label>
           </div>
           <div class="status-line" id="builderStatus" aria-live="polite"></div>
         </div>
@@ -551,7 +545,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       </div>
     </section>
 
-    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · local edits remain on this device</div>
+    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · defense drawing is the shared staff book</div>
   </main>
 </div>
 
@@ -571,6 +565,149 @@ function setStore(key,value){
 }
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}
+const AREA_NAMES=["left short","middle short","right short","left deep","middle deep","right deep"];
+const STAFF_SYNC_URL="https://dashboard-assistant.chrisbailey.workers.dev/sync";
+const STAFF_SYNC_KEY="commodores-defense-"+PIN_HASH;
+const DEFENSE_HOW="Stand in your named grass. Don’t chase a kid who leaves it. If the ball comes to you, catch it. Tag with a one-hand touch below the neck. The helper has no spot — he roams to extra people (Overload). Do not rush the thrower.";
+function seedDefenseLooks(){
+  return [{
+    id:"game-defense",kind:"defense",name:"Six spots + one helper",status:"taught",how:DEFENSE_HOW,spotSize:"normal",updatedAt:0,
+    thrower:{x:180,y:258,label:"thrower"},
+    spots:[
+      {id:"ds-ls",name:"left short",kind:"area",x:70,y:168},
+      {id:"ds-ms",name:"middle short",kind:"area",x:180,y:168},
+      {id:"ds-rs",name:"right short",kind:"area",x:290,y:168},
+      {id:"ds-ld",name:"left deep",kind:"area",x:70,y:72},
+      {id:"ds-md",name:"middle deep",kind:"area",x:180,y:72},
+      {id:"ds-rd",name:"right deep",kind:"area",x:290,y:72},
+      {id:"ds-help",name:"helper",kind:"helper",x:180,y:118}
+    ],
+    paths:[{id:"help-path",from:"ds-help",points:[{x:232,y:132},{x:286,y:162}]}]
+  }];
+}
+function validDefenseLook(look){
+  return look&&look.kind==="defense"&&typeof look.id==="string"&&typeof look.name==="string"&&Array.isArray(look.spots)&&Array.isArray(look.paths)&&look.thrower;
+}
+function grassSize(look){
+  return look.spotSize==="big"?{w:128,h:80,r:11}:{w:90,h:54,r:9};
+}
+function helperPoints(x,y){
+  return `${x},${y-12} ${x+11},${y} ${x},${y+12} ${x-11},${y}`;
+}
+function defensePathD(look,path){
+  const start=look.spots.find(spot=>spot.id===path.from);
+  if(!start||!path.points.length) return "";
+  return `M${start.x} ${start.y} `+path.points.map(point=>`L${point.x} ${point.y}`).join(" ");
+}
+function defensePictureInner(look){
+  const box=grassSize(look);
+  const kids=look.spots.map(spot=>{
+    if(spot.kind==="helper"){
+      return `<g class="builder-spot" data-spot-id="${esc(spot.id)}"><polygon class="helper" points="${helperPoints(spot.x,spot.y)}"></polygon><text class="spot-name" x="${spot.x}" y="${spot.y+24}">helper · no spot</text></g>`;
+    }
+    return `<g class="builder-spot" data-spot-id="${esc(spot.id)}"><rect class="grass" x="${spot.x-box.w/2}" y="${spot.y-box.h/2}" width="${box.w}" height="${box.h}" rx="10"></rect><circle class="kid" cx="${spot.x}" cy="${spot.y}" r="${look.spotSize==="big"?12:9}"></circle><text class="spot-name" x="${spot.x}" y="${spot.y+box.h/2-8}">${esc(spot.name)}</text></g>`;
+  }).join("");
+  const paths=(look.paths||[]).map(path=>`<path class="def-path" data-route-id="${esc(path.id)}" d="${esc(defensePathD(look,path))}"></path>`).join("");
+  const thrower=`<g><circle class="thrower" cx="${look.thrower.x}" cy="${look.thrower.y}" r="11"></circle><text class="no-rush" x="${look.thrower.x}" y="${look.thrower.y+26}" text-anchor="middle">thrower · do not rush</text></g>`;
+  return `${paths}${kids}${thrower}`;
+}
+function defenseCardSVG(look){
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(look.name)}: left short, middle short, right short, left deep, middle deep, right deep, plus a helper. Thrower shown. No rush.">
+    <rect width="360" height="300" fill="#000000"></rect>
+    <rect x="12" y="10" width="336" height="280" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"></rect>
+    <path d="M12 220H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
+    <text x="22" y="213" fill="#E0D5C0" font-size="9">line</text>
+    ${defensePictureInner(look)}
+  </svg>`;
+}
+function nextAreaName(look){
+  const used=new Set(look.spots.filter(spot=>spot.kind==="area").map(spot=>spot.name));
+  return AREA_NAMES.find(name=>!used.has(name))||"";
+}
+function flipName(name){
+  if(name.startsWith("left ")) return "right "+name.slice(5);
+  if(name.startsWith("right ")) return "left "+name.slice(6);
+  return name;
+}
+function flipDefenseLook(look){
+  look.spots.forEach(spot=>{spot.x=360-spot.x;spot.name=flipName(spot.name)});
+  (look.paths||[]).forEach(path=>(path.points||[]).forEach(point=>{point.x=360-point.x}));
+}
+function isDefenseDraft(){return playDraft&&playDraft.kind==="defense"}
+function setDefenseChrome(){
+  const defense=isDefenseDraft();
+  $$(".defense-only").forEach(node=>node.classList.toggle("hidden",!defense));
+  $$(".offense-only").forEach(node=>node.classList.toggle("hidden",defense));
+  $("#savePlay").textContent=defense?"Save staff drawing":"Save into playbook";
+  $("#biggerSpots").textContent=playDraft&&playDraft.spotSize==="big"?"Spots are big · tap to shrink":"Kids look lost · make spots bigger";
+}
+function renderDefenseBook(){
+  const looks=defenseLooks.filter(look=>look.status==="taught");
+  const list=looks.length?looks:defenseLooks.slice(0,1);
+  $("#defenseBook").innerHTML=list.map(look=>`<article class="play-card" id="defense-base" style="margin-bottom:14px">
+    ${defenseCardSVG(look)}
+    <div class="play-copy">
+      <div class="play-head"><h3>${esc(look.name)}</h3><span class="badge taught">Game defense</span></div>
+      <p>${esc(look.how)}</p>
+      <div class="when">Drawn from Play builder. Helper has no grass. Hip-stay is never drawn here.</div>
+      <div class="when" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
+        <button class="btn" data-bigger="${esc(look.id)}" type="button">${look.spotSize==="big"?"Spots are big · tap to shrink":"Kids look lost · make spots bigger"}</button>
+        <button class="btn ghost edit-defense" data-id="${esc(look.id)}" type="button">Open in builder</button>
+      </div>
+    </div>
+  </article>`).join("");
+  const book=defenseLooks.find(look=>look.id==="game-defense")||defenseLooks[0];
+  if(book){
+    $("#playbookDefensePicture").innerHTML=defenseCardSVG(book);
+    $("#playbookDefenseName").textContent=book.name;
+    $("#playbookDefenseHow").textContent=book.how;
+  }
+  $$("#defenseBook [data-bigger]").forEach(button=>button.onclick=()=>{
+    const look=defenseLooks.find(item=>item.id===button.dataset.bigger);
+    if(!look) return;
+    look.spotSize=look.spotSize==="big"?"normal":"big";
+    look.updatedAt=Date.now();
+    if(isDefenseDraft()&&playDraft.id===look.id) playDraft.spotSize=look.spotSize;
+    persistDefenseLooks("Spots changed on the staff book.");
+  });
+  $$("#defenseBook .edit-defense").forEach(button=>button.onclick=()=>{
+    openDefense(button.dataset.id);
+    showPage("builder");
+  });
+}
+function persistDefenseLooks(message){
+  setStore("defense_looks",defenseLooks);
+  renderDefenseBook();
+  if(isDefenseDraft()) renderBuilder();
+  pushDefenseLooks();
+  if(message&&$("#builderStatus")) $("#builderStatus").textContent=message;
+}
+async function pushDefenseLooks(){
+  try{
+    await fetch(STAFF_SYNC_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({k:STAFF_SYNC_KEY,data:{looks:defenseLooks,updatedAt:Date.now()}})});
+  }catch(_){}
+}
+async function pullDefenseLooks(){
+  try{
+    const response=await fetch(STAFF_SYNC_URL+"?k="+encodeURIComponent(STAFF_SYNC_KEY));
+    const payload=await response.json();
+    const looks=payload&&payload.data&&payload.data.looks;
+    if(Array.isArray(looks)&&looks.every(validDefenseLook)&&looks.length){
+      defenseLooks=looks;
+      setStore("defense_looks",defenseLooks);
+      return true;
+    }
+  }catch(_){}
+  applyCachedDefense();
+  return false;
+}
+let defenseLooks=seedDefenseLooks();
+function applyCachedDefense(){
+  const saved=getStore("defense_looks",null);
+  if(Array.isArray(saved)&&saved.every(validDefenseLook)&&saved.length&&saved.some(look=>Number(look.updatedAt)>0)){
+    defenseLooks=saved;
+  }
 }
 async function sha256(value){
   const bytes=new TextEncoder().encode(value);
@@ -602,6 +739,17 @@ function openApp(){
   $("#app").style.display="block";
   renderSeason();
   renderAttendance();
+  renderDefenseBook();
+  pullDefenseLooks().then(ok=>{
+    if(ok){
+      if(isDefenseDraft()){
+        const fresh=defenseLooks.find(look=>look.id===playDraft.id);
+        if(fresh) playDraft=structuredClone(fresh);
+      }
+      renderDefenseBook();
+      renderBuilder();
+    }
+  });
   openFromHash();
 }
 $("#pinForm").onsubmit=async event=>{
@@ -696,6 +844,9 @@ let selectedSpotId=playDraft.spots[0].id;
 let selectedRouteId="";
 let builderMode="place";
 let draggingSpot=null;
+let drawingPath=null;
+let pointerStart=null;
+let ignoreFieldClick=false;
 const builderField=$("#builderField");
 
 function routePath(play,route){
@@ -723,7 +874,11 @@ function renderBuiltPlaybook(){
 }
 function renderPlayLibrary(){
   $("#playLibrary").innerHTML=builtPlays.map(play=>`<button class="library-play${play.id===playDraft.id?" on":""}" type="button" data-id="${esc(play.id)}"><b>${esc(play.name)}</b><span>${play.status==="taught"?"Taught":"Sitting in binder"} · ${play.spots.length}/7 spots</span></button>`).join("");
-  $$(".library-play").forEach(button=>button.onclick=()=>openPlay(button.dataset.id));
+  $$("#playLibrary .library-play").forEach(button=>button.onclick=()=>openPlay(button.dataset.id));
+}
+function renderDefenseLibrary(){
+  $("#defenseLibrary").innerHTML=defenseLooks.map(look=>`<button class="library-play${isDefenseDraft()&&look.id===playDraft.id?" on":""}" type="button" data-id="${esc(look.id)}"><b>${esc(look.name)}</b><span>Staff book · ${look.spots.filter(spot=>spot.kind==="area").length} named spots + helper</span></button>`).join("");
+  $$("#defenseLibrary .library-play").forEach(button=>button.onclick=()=>openDefense(button.dataset.id));
 }
 function fieldPoint(event){
   const point=builderField.createSVGPoint();
@@ -737,37 +892,56 @@ function renderBuilder(){
   $("#playName").value=playDraft.name;
   $("#playStatus").value=playDraft.status;
   $("#playHow").value=playDraft.how;
-  $("#routeLayer").innerHTML=(playDraft.routes||[]).map(route=>{
-    const path=routePath(playDraft,route);
-    return `<path class="route" data-route-id="${esc(route.id)}" d="${esc(path)}" marker-end="url(#routeArrow)"></path><path class="route-hit" data-route-id="${esc(route.id)}" d="${esc(path)}" fill="none" stroke="transparent" stroke-width="18"></path>`;
-  }).join("");
-  $("#spotLayer").innerHTML=playDraft.spots.map(spot=>`<g class="builder-spot" data-spot-id="${esc(spot.id)}"><circle class="spot${spot.id===selectedSpotId?" selected":""}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="13"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}">${esc(spot.player||spot.label||"O")}</text></g>`).join("");
-  $("#spotPlayer").innerHTML=`<option value="">Unassigned</option>`+ROSTER.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
-  $("#spotPlayer").value=selectedSpot()?.player||"";
-  $("#spotPlayer").disabled=!selectedSpot();
-  $("#spotCount").textContent=`${playDraft.spots.length} / 7`;
-  $("#placeMode").classList.toggle("on",builderMode==="place");
-  $("#routeMode").classList.toggle("on",builderMode==="route");
-  $("#builderHelp").textContent=builderMode==="route"
-    ? (selectedSpot()?"Tap the field where this route should end. Tap another spot to change the route’s start.":"Select an offensive spot, then tap the route’s endpoint.")
-    :"Tap the field to add a spot. Drag a spot to move it. Select one to assign a first name.";
-  $$(".builder-spot").forEach(group=>{
-    group.onpointerdown=event=>{
-      event.stopPropagation();
-      selectedSpotId=group.dataset.spotId;selectedRouteId="";
-      if(builderMode==="place"){
-        draggingSpot=selectedSpotId;
+  setDefenseChrome();
+  if(isDefenseDraft()){
+    $("#defenseLayer").innerHTML=defensePictureInner(playDraft);
+    $("#routeLayer").innerHTML="";
+    $("#spotLayer").innerHTML="";
+    $("#builderHelp").textContent="One tap adds a kid. Drag a kid to draw their path. Flip swaps left and right. If kids look lost, make the spots bigger — do not add a man look.";
+    $$("#defenseLayer .builder-spot").forEach(group=>{
+      group.onpointerdown=event=>{
+        event.stopPropagation();
+        selectedSpotId=group.dataset.spotId;selectedRouteId="";
+        drawingPath={from:selectedSpotId,points:[],id:"path-"+Date.now().toString(36)};
+        pointerStart=fieldPoint(event);
         builderField.setPointerCapture(event.pointerId);
-      }
+      };
+    });
+  }else{
+    $("#defenseLayer").innerHTML="";
+    $("#routeLayer").innerHTML=(playDraft.routes||[]).map(route=>{
+      const path=routePath(playDraft,route);
+      return `<path class="route" data-route-id="${esc(route.id)}" d="${esc(path)}" marker-end="url(#routeArrow)"></path><path class="route-hit" data-route-id="${esc(route.id)}" d="${esc(path)}" fill="none" stroke="transparent" stroke-width="18"></path>`;
+    }).join("");
+    $("#spotLayer").innerHTML=playDraft.spots.map(spot=>`<g class="builder-spot" data-spot-id="${esc(spot.id)}"><circle class="spot${spot.id===selectedSpotId?" selected":""}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="13"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}">${esc(spot.player||spot.label||"O")}</text></g>`).join("");
+    $("#spotPlayer").innerHTML=`<option value="">Unassigned</option>`+ROSTER.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
+    $("#spotPlayer").value=selectedSpot()?.player||"";
+    $("#spotPlayer").disabled=!selectedSpot();
+    $("#spotCount").textContent=`${playDraft.spots.length} / 7`;
+    $("#placeMode").classList.toggle("on",builderMode==="place");
+    $("#routeMode").classList.toggle("on",builderMode==="route");
+    $("#builderHelp").textContent=builderMode==="route"
+      ? (selectedSpot()?"Tap the field where this route should end. Tap another spot to change the route’s start.":"Select an offensive spot, then tap the route’s endpoint.")
+      :"Tap the field to add a spot. Drag a spot to move it. Select one to assign a first name.";
+    $$("#spotLayer .builder-spot").forEach(group=>{
+      group.onpointerdown=event=>{
+        event.stopPropagation();
+        selectedSpotId=group.dataset.spotId;selectedRouteId="";
+        if(builderMode==="place"){
+          draggingSpot=selectedSpotId;
+          builderField.setPointerCapture(event.pointerId);
+        }
+        renderBuilder();
+      };
+    });
+    $$(".route-hit").forEach(path=>path.onpointerdown=event=>{
+      event.stopPropagation();
+      selectedRouteId=path.dataset.routeId;selectedSpotId="";
       renderBuilder();
-    };
-  });
-  $$(".route-hit").forEach(path=>path.onpointerdown=event=>{
-    event.stopPropagation();
-    selectedRouteId=path.dataset.routeId;selectedSpotId="";
-    renderBuilder();
-  });
+    });
+  }
   renderPlayLibrary();
+  renderDefenseLibrary();
   renderBuiltPlaybook();
 }
 function openPlay(id){
@@ -775,7 +949,15 @@ function openPlay(id){
   if(!play) return;
   playDraft=structuredClone(play);
   selectedSpotId=playDraft.spots[0]?.id||"";
-  selectedRouteId="";builderMode="place";
+  selectedRouteId="";builderMode="place";drawingPath=null;
+  renderBuilder();
+}
+function openDefense(id){
+  const look=defenseLooks.find(item=>item.id===id);
+  if(!look) return;
+  playDraft=structuredClone(look);
+  selectedSpotId=playDraft.spots[0]?.id||"";
+  selectedRouteId="";drawingPath=null;
   renderBuilder();
 }
 function syncPlayFields(){
@@ -796,8 +978,18 @@ $("#routeMode").onclick=()=>{
   renderBuilder();
 };
 builderField.onpointermove=event=>{
-  if(!draggingSpot||!builderField.hasPointerCapture(event.pointerId)) return;
   const point=fieldPoint(event);
+  if(isDefenseDraft()&&drawingPath&&builderField.hasPointerCapture(event.pointerId)){
+    const last=drawingPath.points[drawingPath.points.length-1];
+    if(!last||Math.hypot(point.x-last.x,point.y-last.y)>8){
+      drawingPath.points.push({x:Math.max(25,Math.min(335,Math.round(point.x))),y:Math.max(25,Math.min(275,Math.round(point.y)))});
+      playDraft.paths=(playDraft.paths||[]).filter(path=>path.id!==drawingPath.id);
+      if(drawingPath.points.length) playDraft.paths.push(drawingPath);
+      renderBuilder();
+    }
+    return;
+  }
+  if(!draggingSpot||!builderField.hasPointerCapture(event.pointerId)) return;
   const spot=playDraft.spots.find(item=>item.id===draggingSpot);
   if(!spot) return;
   spot.x=Math.max(25,Math.min(335,Math.round(point.x)));
@@ -806,13 +998,37 @@ builderField.onpointermove=event=>{
 };
 builderField.onpointerup=event=>{
   if(builderField.hasPointerCapture(event.pointerId)) builderField.releasePointerCapture(event.pointerId);
+  if(isDefenseDraft()&&drawingPath){
+    if(drawingPath.points.length){
+      playDraft.paths=(playDraft.paths||[]).filter(path=>path.from!==drawingPath.from||path.id===drawingPath.id);
+      $("#builderStatus").textContent="Path saved. Flip if you need the other side.";
+      ignoreFieldClick=true;
+    }
+    drawingPath=null;pointerStart=null;
+    renderBuilder();
+    return;
+  }
   draggingSpot=null;
 };
 builderField.onclick=event=>{
+  if(ignoreFieldClick){ignoreFieldClick=false;return}
   if(event.target.closest(".builder-spot")||event.target.closest(".route-hit")) return;
   const point=fieldPoint(event);
   const x=Math.max(25,Math.min(335,Math.round(point.x)));
   const y=Math.max(25,Math.min(275,Math.round(point.y)));
+  if(isDefenseDraft()){
+    const areas=playDraft.spots.filter(spot=>spot.kind==="area").length;
+    const helper=playDraft.spots.some(spot=>spot.kind==="helper");
+    if(areas>=6&&helper){$("#builderStatus").textContent="Book is full: six named spots and one helper. Drag a kid to draw a path.";return}
+    const name=nextAreaName(playDraft);
+    const id="spot-"+Date.now().toString(36);
+    if(name) playDraft.spots.push({id,name,kind:"area",x,y});
+    else playDraft.spots.push({id,name:"helper",kind:"helper",x,y});
+    selectedSpotId=id;
+    $("#builderStatus").textContent=name?`Added ${name}.`:"Added the helper. He has no grass.";
+    renderBuilder();
+    return;
+  }
   if(builderMode==="route"){
     const spot=selectedSpot();
     if(!spot){$("#builderStatus").textContent="Select a spot first.";return}
@@ -844,10 +1060,36 @@ $("#newPlay").onclick=()=>{
   selectedSpotId="";selectedRouteId="";builderMode="place";
   renderBuilder();$("#playName").select();
 };
+$("#flipLook").onclick=()=>{
+  if(!isDefenseDraft()) return;
+  flipDefenseLook(playDraft);
+  renderBuilder();
+  $("#builderStatus").textContent="Flipped left and right.";
+};
+$("#biggerSpots").onclick=()=>{
+  if(!isDefenseDraft()) return;
+  playDraft.spotSize=playDraft.spotSize==="big"?"normal":"big";
+  renderBuilder();
+  $("#builderStatus").textContent=playDraft.spotSize==="big"?"Spots are bigger. Still the same game defense.":"Spots are back to the normal size.";
+};
+$("#deleteDefenseItem").onclick=()=>{
+  if(!isDefenseDraft()||!selectedSpotId){$("#builderStatus").textContent="Tap a kid first.";return}
+  playDraft.spots=playDraft.spots.filter(spot=>spot.id!==selectedSpotId);
+  playDraft.paths=(playDraft.paths||[]).filter(path=>path.from!==selectedSpotId);
+  selectedSpotId=playDraft.spots[0]?.id||"";
+  renderBuilder();
+};
 $("#savePlay").onclick=()=>{
   syncPlayFields();
   if(!playDraft.name||!playDraft.how){$("#builderStatus").textContent="Add a play name and kid-language how-to first.";return}
-  if(!playDraft.spots.length){$("#builderStatus").textContent="Place at least one offensive spot first.";return}
+  if(!playDraft.spots.length){$("#builderStatus").textContent="Place at least one spot first.";return}
+  if(isDefenseDraft()){
+    playDraft.updatedAt=Date.now();
+    const index=defenseLooks.findIndex(look=>look.id===playDraft.id);
+    if(index>=0) defenseLooks[index]=structuredClone(playDraft); else defenseLooks.push(structuredClone(playDraft));
+    persistDefenseLooks("Saved to the staff book. Peter, Chris, and Ben get this same drawing.");
+    return;
+  }
   const index=builtPlays.findIndex(play=>play.id===playDraft.id);
   if(index>=0) builtPlays[index]=structuredClone(playDraft); else builtPlays.push(structuredClone(playDraft));
   setStore("built_plays",builtPlays);
