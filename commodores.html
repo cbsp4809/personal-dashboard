@@ -166,8 +166,14 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .diagram .area-label{fill:#E0D5C0;font:700 11px var(--sans);text-anchor:middle}
 .diagram .route-label,.builder-field .route-label{fill:#E0D5C0;font:700 10px var(--sans);text-anchor:middle}
 .diagram .ghost{fill:#CFAE70;opacity:.28}
+.diagram .thrower{fill:#CFAE70;opacity:.7}
+.diagram .no-rush,.builder-field .no-rush{fill:#ECB748;font:700 10px var(--sans);text-anchor:middle}
+.diagram .area-pad,.builder-field .area-pad{fill:none;stroke:#777777;stroke-width:1.5;stroke-dasharray:4 3}
+.diagram .def-kid{fill:#777777}
+.diagram .helper-kid,.builder-field .spot.helper{fill:#CFAE70}
+.builder-field .spot.def{fill:#777777}
 .builder-field .route.selected{stroke:#ECB748}
-#previewLayer{pointer-events:none}
+#previewLayer,#guideLayer{pointer-events:none}
 .assignment{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;align-items:end}
 .assignment select{width:100%}
 .builder-help{margin:8px 0 0;color:var(--muted);font-size:11.5px}
@@ -343,9 +349,9 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
         <article class="play-card" style="grid-column:1/-1">
           <div id="defenseDiagram"></div>
           <div class="play-copy">
-            <div class="play-head"><h3>Six spots + one helper</h3><span class="badge taught">Game defense</span></div>
-            <p>Six kids each cover a spot (an area): left short, middle short, right short, left deep, middle deep, right deep. Keep eyes on the thrower and protect your area instead of following one receiver everywhere. When a receiver leaves your area, let the next kid take them. The seventh kid roams in the middle and helps where the ball goes. No rush on the QB. Finish with a one-hand touch below the neck.</p>
-            <div class="when">This is the only game defense through Aug 30. Same look in live reps.</div>
+            <div class="play-head"><h3>Six areas + helper</h3><span class="badge taught">Game defense</span></div>
+            <p>Six kids cover named areas: L short, M short, R short, L deep, M deep, R deep. Helper has no spot — drag him toward extra bodies. Watch the thrower. Do not run at him. Do not follow one kid all over. Same picture as Play builder.</p>
+            <div class="when">This is the only game defense through Aug 30. Flip swaps left and right.</div>
           </div>
         </article>
         <article class="play-card">
@@ -373,7 +379,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
         <div id="playbookDefense"></div>
         <div class="play-copy">
           <div class="play-head"><h3>Game defense · six areas + one helper</h3><span class="badge taught">Base from week 1</span></div>
-          <p>Six kids cover named areas: left short, middle short, right short, left deep, middle deep, right deep. The seventh kid roams and helps. No rush on the QB. Hip-stay / “pick a guy” / Man-Free is a drill only.</p>
+          <p>Six kids cover named areas: L short, M short, R short, L deep, M deep, R deep. Helper has no spot. Watch the thrower — do not run at him. Hip-stay / “pick a guy” / Man-Free is a drill only. Do not draw man.</p>
         </div>
       </article>
       <div class="play-grid" id="playbookPlays"></div>
@@ -396,7 +402,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
             <div class="field"><label for="playStatus">Book status</label><select id="playStatus"><option value="parked">Sitting in binder</option><option value="taught">Taught</option></select></div>
             <div class="field how"><label for="playHow">Kid-language how-to</label><textarea id="playHow" placeholder="Say exactly where kids line up, where they run, and the thrower’s first look."></textarea></div>
           </div>
-          <div class="starter-row">
+          <div class="starter-row" id="offenseStarters">
             <button class="btn ghost" id="start22" type="button">Empty 2x2</button>
             <button class="btn ghost" id="startOverload" type="button">Overload left</button>
             <button class="btn ghost" id="startGoal" type="button">Goal line</button>
@@ -409,6 +415,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
               <path class="yard" d="M12 55H348M12 105H348M12 155H348M12 205H348M12 255H348"></path>
               <path class="los" d="M12 220H348"></path>
               <text x="37" y="213">LINE</text>
+              <g id="guideLayer"></g>
               <g id="routeLayer"></g>
               <g id="previewLayer"></g>
               <g id="spotLayer"></g>
@@ -416,8 +423,10 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
           </div>
           <div class="builder-toolbar">
             <button class="btn flip" id="flipPlay" type="button">Flip 50 / 51</button>
+            <span id="offenseLooks" style="display:contents">
             <button class="btn ghost" id="markLook1" type="button">First look 1</button>
             <button class="btn ghost" id="markLook2" type="button">Look 2</button>
+            </span>
             <button class="btn ghost danger" id="deleteItem" type="button">Delete selected</button>
           </div>
           <div class="assignment">
@@ -710,9 +719,10 @@ document.addEventListener("visibilitychange",()=>{
 });
 $("#postComment").onclick=postStaffComment;
 
-const PLAY_SEED=5;
-const SMASH_HOW="2x2 shotgun. All five eligible kids line up, plus the QB. Center sits at 6 yards. Outside kid: three steps and stop — that throw is 1. Inside kid on that side runs the far corner — that throw is 2. The other two kids still line up. Flip both ways. First throw must land past the line. 5-second clock.";
-const OVERLOAD_HOW="Extra kids to one side. First throw is the first open one past the line — that throw is 1. One kid stays backside. Flip makes 51.";
+const PLAY_SEED=6;
+const SMASH_HOW="All five eligible kids plus the thrower. 2x2 shotgun. Outside sit is throw 1. Inside kid on that side runs the far corner. The other two kids still line up. Center sits at about 6 yards. Flip both ways. First throw must land past the line. 5-second clock.";
+const OVERLOAD_HOW="Pile extra kids on one side. First throw past the line is 1. Flip is one button — that makes 51. One kid stays backside.";
+const DEFENSE_HOW="Six kids cover named areas: L short, M short, R short, L deep, M deep, R deep. Helper has no spot — drag him toward extra bodies. Watch the thrower. Do not run at him. Do not follow one kid all over. Flip swaps left and right.";
 const PLAY3_HOW="Parked. Staff picks this third play after Smash and Overload are clean. Do not install in week one.";
 const STARBURST_HOW="Parked deep shot. Line up, then all eligible kids burst to different deep spots. Save for later.";
 const GOALLINE_HOW="Parked. Tight line inside the 15. Short throws only. Do not install in week one.";
@@ -721,13 +731,31 @@ function uid(prefix){return prefix+"-"+Date.now().toString(36)+Math.random().toS
 function clamp(value,min,max){return Math.max(min,Math.min(max,value))}
 function flipX(x){return 360-Number(x)}
 function playUpdatedAt(play){return Date.parse(play&&(play.updatedAt||play.updated_at)||0)||0}
+function isDefensePlay(play){return !!(play&&(play.kind==="defense"||play.id==="areas-helper"))}
+const DEFENSE_AREAS=[
+  {id:"left-short",x:70,y:168,label:"left short",short:"L short"},
+  {id:"middle-short",x:180,y:168,label:"middle short",short:"M short"},
+  {id:"right-short",x:290,y:168,label:"right short",short:"R short"},
+  {id:"left-deep",x:70,y:78,label:"left deep",short:"L deep"},
+  {id:"middle-deep",x:180,y:78,label:"middle deep",short:"M deep"},
+  {id:"right-deep",x:290,y:78,label:"right deep",short:"R deep"}
+];
+function defenseGhosts(side){
+  const pile=side==="right"
+    ?[{x:212,y:218},{x:252,y:218},{x:296,y:218},{x:68,y:218}]
+    :[{x:64,y:218},{x:108,y:218},{x:148,y:218},{x:292,y:218}];
+  return [{x:180,y:248,label:"thrower",thrower:true},{x:180,y:218,label:"C"},...pile.map(spot=>({...spot,label:""}))];
+}
+function flipAreaId(area){
+  return ({"left-short":"right-short","right-short":"left-short","left-deep":"right-deep","right-deep":"left-deep"}[area])||area;
+}
 
 function seedBuiltPlays(){
   return [
     {
       id:"smash",name:"Smash",status:"taught",how:SMASH_HOW,seed:PLAY_SEED,
       spots:[
-        {id:"s-qb",x:180,y:248,player:"Michael",label:"QB"},
+        {id:"s-qb",x:180,y:248,player:"Michael",label:"thrower"},
         {id:"s-c",x:180,y:218,player:"",label:"C"},
         {id:"s-out",x:72,y:218,player:"",label:"out"},
         {id:"s-in",x:118,y:218,player:"Teddy",label:"in"},
@@ -735,7 +763,7 @@ function seedBuiltPlays(){
         {id:"s-z",x:292,y:218,player:"",label:"O"}
       ],
       routes:[
-        {id:"s-hitch",from:"s-out",points:[{x:72,y:188}],look:1,label:"stop"},
+        {id:"s-hitch",from:"s-out",points:[{x:72,y:188}],look:1,label:"sit"},
         {id:"s-corner",from:"s-in",points:[{x:118,y:128},{x:42,y:64}],look:2,label:"corner"},
         {id:"s-sit-c",from:"s-c",points:[{x:180,y:176}],look:0,label:"sit"}
       ]
@@ -785,19 +813,42 @@ function seedBuiltPlays(){
         {id:"gl-rb",x:164,y:236,player:"",label:"RB"}
       ],
       routes:[]
+    },
+    {
+      id:"areas-helper",name:"Six areas + helper",status:"taught",kind:"defense",how:DEFENSE_HOW,seed:PLAY_SEED,
+      spots:[
+        {id:"d-ls",x:70,y:168,player:"",label:"L short",role:"area",area:"left-short"},
+        {id:"d-ms",x:180,y:168,player:"",label:"M short",role:"area",area:"middle-short"},
+        {id:"d-rs",x:290,y:168,player:"",label:"R short",role:"area",area:"right-short"},
+        {id:"d-ld",x:70,y:78,player:"",label:"L deep",role:"area",area:"left-deep"},
+        {id:"d-md",x:180,y:78,player:"",label:"M deep",role:"area",area:"middle-deep"},
+        {id:"d-rd",x:290,y:78,player:"",label:"R deep",role:"area",area:"right-deep"},
+        {id:"d-help",x:124,y:124,player:"",label:"helper",role:"helper"}
+      ],
+      ghosts:defenseGhosts(),
+      routes:[]
     }
   ];
 }
 function normalizePlay(play){
   if(!play||typeof play!=="object"||typeof play.id!=="string") return null;
+  const kind=play.kind==="defense"||play.id==="areas-helper"?"defense":"offense";
   const spots=(play.spots||[]).slice(0,7).map(spot=>({
     id:String(spot.id||uid("spot")),
     x:clamp(Number(spot.x)||180,25,335),
     y:clamp(Number(spot.y)||218,25,275),
     player:ROSTER.includes(spot.player)?spot.player:"",
-    label:String(spot.label||"O")
+    label:String(spot.label||"O"),
+    role:spot.role==="helper"||spot.role==="area"?spot.role:"",
+    area:String(spot.area||"")
   }));
-  const routes=(play.routes||[]).map(route=>({
+  const ghosts=(play.ghosts||[]).map(ghost=>({
+    x:clamp(Number(ghost.x)||180,25,335),
+    y:clamp(Number(ghost.y)||218,25,275),
+    label:String(ghost.label||""),
+    thrower:!!ghost.thrower
+  }));
+  const routes=kind==="defense"?[]:(play.routes||[]).map(route=>({
     id:String(route.id||uid("route")),
     from:String(route.from||""),
     points:(route.points||[]).map(point=>({x:clamp(Number(point.x)||180,25,335),y:clamp(Number(point.y)||160,25,275)})),
@@ -808,11 +859,13 @@ function normalizePlay(play){
   return {
     id:play.id,
     name:String(play.name||"Untitled"),
+    kind,
     status,
     how:String(play.how||""),
     seed:Number(play.seed)||0,
     updatedAt:play.updatedAt||play.updated_at||"",
     spots,
+    ghosts,
     routes
   };
 }
@@ -860,7 +913,26 @@ function routeLabels(play){
     return `<text class="route-label" x="${end.x}" y="${end.y-30}">${esc(route.label)}</text>`;
   }).join("");
 }
+function defenseGuides(play){
+  const ghosts=(play&&play.ghosts&&play.ghosts.length)?play.ghosts:defenseGhosts();
+  return `${ghosts.map(ghost=>{
+    const thrower=ghost.thrower||ghost.label==="thrower";
+    return `<circle class="${thrower?"thrower":"ghost"}" cx="${Number(ghost.x)}" cy="${Number(ghost.y)}" r="${thrower?11:8}"></circle>${ghost.label?`<text x="${Number(ghost.x)}" y="${Number(ghost.y)+3}" fill="#1C1C1C" font-size="8" text-anchor="middle" opacity="${thrower?".85":".4"}">${esc(ghost.label)}</text>`:""}${thrower?`<text class="no-rush" x="${Number(ghost.x)}" y="${Number(ghost.y)+22}">no rush</text>`:""}`;
+  }).join("")}
+  ${DEFENSE_AREAS.map(area=>`<circle class="area-pad" cx="${area.x}" cy="${area.y}" r="16"></circle><text class="area-label" x="${area.x}" y="${area.y-22}">${esc(area.label)}</text>`).join("")}`;
+}
 function playPreview(play){
+  if(isDefensePlay(play)){
+    return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} from the shared play builder">
+      <rect width="360" height="300" fill="#000000"></rect>
+      <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
+      ${defenseGuides(play)}
+      ${(play.spots||[]).map(spot=>{
+        const helper=spot.role==="helper";
+        return `<circle class="${helper?"helper-kid":"def-kid"}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="10" stroke="#1C1C1C" stroke-width="2"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}" fill="${helper?"#1C1C1C":"#FFFFFF"}" font-size="8" text-anchor="middle">${esc((spot.player||spot.label||"O").slice(0,8))}</text>`;
+      }).join("")}
+    </svg>`;
+  }
   return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} from the shared play builder">
     <rect width="360" height="300" fill="#000000"></rect>
     <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
@@ -880,41 +952,17 @@ function playCardHTML(play){
     </div>
   </article>`;
 }
-function defenseDiagramSVG(){
-  const areas=[
-    {x:70,y:168,label:"left short"},
-    {x:180,y:168,label:"middle short"},
-    {x:290,y:168,label:"right short"},
-    {x:70,y:78,label:"left deep"},
-    {x:180,y:78,label:"middle deep"},
-    {x:290,y:78,label:"right deep"}
-  ];
-  const ghosts=[
-    {x:180,y:248,label:"QB"},
-    {x:180,y:218,label:"C"},
-    {x:78,y:218,label:""},
-    {x:118,y:218,label:""},
-    {x:242,y:218,label:""},
-    {x:282,y:218,label:""}
-  ];
-  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="Six named areas plus one helper">
-    <rect width="360" height="300" fill="#000000"></rect>
-    <path d="M12 220H348" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
-    ${ghosts.map(spot=>`<circle class="ghost" cx="${spot.x}" cy="${spot.y}" r="9"></circle>${spot.label?`<text x="${spot.x}" y="${spot.y+3}" fill="#1C1C1C" font-size="8" text-anchor="middle" opacity=".45">${esc(spot.label)}</text>`:""}`).join("")}
-    ${areas.map(area=>`<circle class="def" cx="${area.x}" cy="${area.y}" r="11"></circle><text class="area-label" x="${area.x}" y="${area.y-16}">${esc(area.label)}</text>`).join("")}
-    <circle class="ball" cx="180" cy="122" r="11"></circle>
-    <text class="area-label" x="180" y="106">HELPER</text>
-  </svg>`;
-}
 function renderPlayCards(){
-  const taught=builtPlays.filter(play=>play.status==="taught");
-  const parked=builtPlays.filter(play=>play.status==="parked");
+  const offense=builtPlays.filter(play=>!isDefensePlay(play));
+  const taught=offense.filter(play=>play.status==="taught");
+  const parked=offense.filter(play=>play.status==="parked");
   $("#offenseTaught").innerHTML=taught.map(playCardHTML).join("");
   $("#offenseBinder").innerHTML=parked.map(playCardHTML).join("");
-  $("#playbookPlays").innerHTML=builtPlays.map(playCardHTML).join("");
-  const defense=defenseDiagramSVG();
-  $("#defenseDiagram").innerHTML=defense;
-  $("#playbookDefense").innerHTML=defense;
+  $("#playbookPlays").innerHTML=offense.map(playCardHTML).join("");
+  const defense=builtPlays.find(isDefensePlay);
+  const defensePicture=defense?playPreview(defense):"";
+  $("#defenseDiagram").innerHTML=defensePicture;
+  $("#playbookDefense").innerHTML=defensePicture;
   renderBuiltPlaybook();
 }
 function renderBuiltPlaybook(){
@@ -929,7 +977,10 @@ function renderBuiltPlaybook(){
   });
 }
 function renderPlayLibrary(){
-  $("#playLibrary").innerHTML=builtPlays.map(play=>`<button class="library-play${play.id===playDraft.id?" on":""}" type="button" data-id="${esc(play.id)}"><b>${esc(play.name)}</b><span>${play.status==="taught"?"Taught":"Sitting in binder"} · ${play.spots.length}/7 kids</span></button>`).join("");
+  $("#playLibrary").innerHTML=builtPlays.map(play=>{
+    const note=isDefensePlay(play)?"Game defense · helper has no spot":`${play.status==="taught"?"Taught":"Sitting in binder"} · ${play.spots.length}/7 kids`;
+    return `<button class="library-play${play.id===playDraft.id?" on":""}" type="button" data-id="${esc(play.id)}"><b>${esc(play.name)}</b><span>${esc(note)}</span></button>`;
+  }).join("");
   $$(".library-play").forEach(button=>button.onclick=()=>openPlay(button.dataset.id));
 }
 function fieldPoint(event){
@@ -952,23 +1003,33 @@ function setBuilderStatus(message){
 }
 function renderBuilder(){
   if(!playDraft) return;
+  const defense=isDefensePlay(playDraft);
   $("#playName").value=playDraft.name||"";
   $("#playStatus").value=playDraft.status||"parked";
   $("#playHow").value=playDraft.how||"";
-  $("#routeLayer").innerHTML=(playDraft.routes||[]).map(route=>{
+  $("#offenseStarters").classList.toggle("hidden",defense);
+  $("#offenseLooks").style.display=defense?"none":"contents";
+  $("#flipPlay").textContent=defense?"Flip L / R":"Flip 50 / 51";
+  $("#guideLayer").innerHTML=defense?defenseGuides(playDraft):"";
+  $("#routeLayer").innerHTML=defense?"":(playDraft.routes||[]).map(route=>{
     const path=routePath(playDraft,route);
     const on=route.id===selectedRouteId||route.id===bendingRouteId?" selected":"";
     return `<path class="route${on}" data-route-id="${esc(route.id)}" d="${esc(path)}" marker-end="url(#routeArrow)"></path><path class="route-hit" data-route-id="${esc(route.id)}" d="${esc(path)}" fill="none" stroke="transparent" stroke-width="18"></path>`;
   }).join("");
-  $("#previewLayer").innerHTML=routeLabels(playDraft)+lookMarks(playDraft);
-  $("#spotLayer").innerHTML=playDraft.spots.map(spot=>`<g class="builder-spot" data-spot-id="${esc(spot.id)}"><circle class="spot${spot.id===selectedSpotId?" selected":""}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="13"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}">${esc(spot.player||spot.label||"O")}</text></g>`).join("");
+  $("#previewLayer").innerHTML=defense?"":routeLabels(playDraft)+lookMarks(playDraft);
+  $("#spotLayer").innerHTML=playDraft.spots.map(spot=>{
+    const kind=spot.role==="helper"?" helper":spot.role==="area"||defense?" def":"";
+    return `<g class="builder-spot" data-spot-id="${esc(spot.id)}"><circle class="spot${kind}${spot.id===selectedSpotId?" selected":""}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="13"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}">${esc(spot.player||spot.label||"O")}</text></g>`;
+  }).join("");
   $("#spotPlayer").innerHTML=`<option value="">Unassigned</option>`+ROSTER.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
   $("#spotPlayer").value=selectedSpot()?.player||"";
   $("#spotPlayer").disabled=!selectedSpot();
-  $("#spotCount").textContent=`${playDraft.spots.length} / 7`;
-  $("#builderHelp").textContent=bendingRouteId
-    ?"Tap empty grass to bend this route. Tap a kid when you are done."
-    :"Tap empty grass to add a kid. Drag a kid to move him. Tap a kid, then drag onto the grass to draw his route.";
+  $("#spotCount").textContent=defense?"6 areas + helper":`${playDraft.spots.length} / 7`;
+  $("#builderHelp").textContent=defense
+    ?"Drop six kids on L/M/R short and L/M/R deep. Helper has no spot — drag him toward extra bodies. Watch the thrower. Do not run at him. Do not draw man. Flip swaps left and right."
+    :bendingRouteId
+      ?"Tap empty grass to bend this route. Tap a kid when you are done."
+      :"Tap empty grass to add a kid. Drag a kid to move him. Tap a kid, then drag onto the grass to draw his route.";
   renderPlayLibrary();
 }
 function persistPlays(){
@@ -1001,7 +1062,41 @@ function moveSpot(spot,x,y){
     });
   });
 }
+function usedDefenseAreas(){
+  return new Set(playDraft.spots.filter(spot=>spot.role==="area"&&spot.area).map(spot=>spot.area));
+}
+function nextOpenArea(){
+  const used=usedDefenseAreas();
+  return DEFENSE_AREAS.find(area=>!used.has(area.id))||null;
+}
+function snapDefenseKid(spot){
+  if(!spot||spot.role==="helper") return;
+  const home=DEFENSE_AREAS.find(area=>area.id===spot.area)||nextOpenArea();
+  if(!home) return;
+  spot.x=home.x;spot.y=home.y;spot.area=home.id;spot.role="area";spot.label=spot.player?spot.label:home.short;
+}
 function addKid(x,y){
+  if(isDefensePlay(playDraft)){
+    playDraft.routes=[];
+    const helper=playDraft.spots.find(spot=>spot.role==="helper");
+    const open=nextOpenArea();
+    if(open){
+      const id=uid("spot");
+      playDraft.spots.push({id,x:open.x,y:open.y,player:"",label:open.short,role:"area",area:open.id});
+      selectedSpotId=id;
+      setBuilderStatus("Kid dropped on "+open.label+". Helper still has no spot.");
+      return;
+    }
+    if(!helper){
+      const id=uid("spot");
+      playDraft.spots.push({id,x,y,player:"",label:"helper",role:"helper"});
+      selectedSpotId=id;
+      setBuilderStatus("Helper added. Drag him toward extra bodies. Do not run at the thrower.");
+      return;
+    }
+    setBuilderStatus("All six areas plus helper are already on the field.");
+    return;
+  }
   if(playDraft.spots.length>=7){
     setBuilderStatus("This play already has seven kids.");
     return;
@@ -1014,6 +1109,10 @@ function addKid(x,y){
   setBuilderStatus("Kid added. Drag to move, or tap him then drag to draw a route.");
 }
 function applyStarter(kind){
+  if(isDefensePlay(playDraft)){
+    setBuilderStatus("This is the game defense. Flip swaps L/R. Do not draw man.");
+    return;
+  }
   if(kind==="22"){
     playDraft.spots=[
       {id:"st-qb",x:180,y:248,player:"",label:"QB"},
@@ -1071,13 +1170,34 @@ $("#start22").onclick=()=>applyStarter("22");
 $("#startOverload").onclick=()=>applyStarter("overload");
 $("#startGoal").onclick=()=>applyStarter("goal");
 $("#flipPlay").onclick=()=>{
-  playDraft.spots.forEach(spot=>{spot.x=flipX(spot.x)});
-  playDraft.routes.forEach(route=>route.points.forEach(point=>{point.x=flipX(point.x)}));
-  setBuilderStatus("Flipped 50 / 51. Save so the other coaches see this side.");
+  if(isDefensePlay(playDraft)){
+    playDraft.spots.forEach(spot=>{
+      if(spot.role==="helper") spot.x=flipX(spot.x);
+      else{
+        spot.area=flipAreaId(spot.area);
+        snapDefenseKid(spot);
+      }
+    });
+    const extras=(playDraft.ghosts||[]).filter(ghost=>!ghost.thrower&&ghost.label!=="C");
+    const pileLeft=extras.filter(ghost=>ghost.x<180).length>=2;
+    playDraft.ghosts=defenseGhosts(pileLeft?"right":"left");
+    playDraft.routes=[];
+    setBuilderStatus("Flipped left and right. Helper still has no spot. Save for all coaches.");
+  }else{
+    playDraft.spots.forEach(spot=>{spot.x=flipX(spot.x)});
+    playDraft.routes.forEach(route=>route.points.forEach(point=>{point.x=flipX(point.x)}));
+    setBuilderStatus("Flipped 50 / 51. Save so the other coaches see this side.");
+  }
   renderBuilder();
 };
-$("#markLook1").onclick=()=>markLook(1);
-$("#markLook2").onclick=()=>markLook(2);
+$("#markLook1").onclick=()=>{
+  if(isDefensePlay(playDraft)){setBuilderStatus("Defense has no throw numbers. Do not draw man.");return}
+  markLook(1);
+};
+$("#markLook2").onclick=()=>{
+  if(isDefensePlay(playDraft)){setBuilderStatus("Defense has no throw numbers. Do not draw man.");return}
+  markLook(2);
+};
 builderField.onpointerdown=event=>{
   event.preventDefault();
   const point=fieldPoint(event);
@@ -1120,7 +1240,7 @@ builderField.onpointermove=event=>{
   const point=fieldPoint(event);
   const dist=Math.hypot(point.x-pointer.startX,point.y-pointer.startY);
   if(pointer.mode==="pending"&&dist>9){
-    pointer.mode=pointer.already?"draw":"move";
+    pointer.mode=isDefensePlay(playDraft)||!pointer.already?"move":"draw";
     if(pointer.mode==="draw"){
       let route=routeForSpot(pointer.spotId);
       if(!route){
@@ -1151,7 +1271,12 @@ builderField.onpointerup=event=>{
   const point=fieldPoint(event);
   if(builderField.hasPointerCapture(event.pointerId)) builderField.releasePointerCapture(event.pointerId);
   if(pointer.kind==="spot"){
-    if(pointer.mode==="draw"){
+    if(isDefensePlay(playDraft)){
+      const spot=playDraft.spots.find(item=>item.id===pointer.spotId);
+      if(spot&&spot.role!=="helper") snapDefenseKid(spot);
+      else if(spot&&spot.role==="helper") setBuilderStatus("Helper has no spot. Drag him toward extra bodies. Do not run at the thrower.");
+      playDraft.routes=[];
+    }else if(pointer.mode==="draw"){
       bendingRouteId=pointer.routeId;
       selectedRouteId=pointer.routeId;
       setBuilderStatus("Route started. Tap empty grass to bend it.");
@@ -1163,6 +1288,11 @@ builderField.onpointerup=event=>{
   const tapped=Math.hypot(point.x-pointer.startX,point.y-pointer.startY)<8;
   pointer=null;
   if(!tapped) return;
+  if(isDefensePlay(playDraft)){
+    addKid(point.x,point.y);
+    renderBuilder();
+    return;
+  }
   if(bendingRouteId){
     const route=playDraft.routes.find(item=>item.id===bendingRouteId);
     if(route){
@@ -1191,7 +1321,7 @@ $("#deleteItem").onclick=()=>{
   renderBuilder();
 };
 $("#newPlay").onclick=()=>{
-  playDraft={id:uid("play"),name:"New play",status:"parked",how:"",seed:PLAY_SEED,spots:[],routes:[]};
+  playDraft={id:uid("play"),name:"New play",status:"parked",kind:"offense",how:"",seed:PLAY_SEED,spots:[],ghosts:[],routes:[]};
   selectedSpotId="";selectedRouteId="";bendingRouteId="";
   renderBuilder();$("#playName").select();
 };

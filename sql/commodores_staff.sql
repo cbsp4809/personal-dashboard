@@ -115,11 +115,11 @@ create index if not exists commodores_plays_updated_at_idx
   on public.commodores_plays (updated_at desc);
 
 comment on table public.commodores_plays is
-  'Shared Commodores play drawings. Offense cards render from this payload so Smash is one picture.';
+  'Shared Commodores play drawings. Cards and the builder render the same payload.';
 comment on column public.commodores_plays.id is
-  'Play id, same as payload.id (smash, overload-50-51, play-3, starburst-63, goal-line-5-6).';
+  'Play id, same as payload.id (smash, overload-50-51, play-3, starburst-63, goal-line-5-6, areas-helper).';
 comment on column public.commodores_plays.payload is
-  'Full play JSON: { id, name, status, how, spots, routes, updatedAt? }. routes may include look (1|2) and label.';
+  'Full play JSON: { id, name, kind, status, how, seed, spots, ghosts?, routes, updatedAt? }. Defense spots use role area|helper. Do not store man coverage lines.';
 comment on column public.commodores_plays.updated_at is
   'Set to now() on save so the next phone load prefers this drawing.';
 
