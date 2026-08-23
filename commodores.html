@@ -1986,13 +1986,18 @@ function setTeamStatus(message){
   const el=$("#teamStatus");
   if(el) el.textContent=message;
 }
+function persistTeamLocal(){
+  teamState.updatedAt=new Date().toISOString();
+  setStore("staff_lineup",teamState);
+}
 function setSkill(name,key,value){
   if(!ROSTER.includes(name)||!RATE_KEYS.includes(key)) return;
   const next=cleanScore(value);
   const row={...skillRow(name)};
   if(next) row[key]=next; else delete row[key];
   if(Object.keys(row).length) teamState.skills[name]=row; else delete teamState.skills[name];
-  renderTeamRatings();
+  persistTeamLocal();
+  renderTeam();
   saveStaffLineupDebounced();
 }
 function rateChips(name,key,compact){
@@ -2027,8 +2032,9 @@ function renderTeamRatings(){
     bindRateButtons("#teamCards");
   }
   if(table){
-    const head=`<thead><tr><th>Name</th><th>Avg</th>${RATE_KEYS.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
-    const body=order.map(name=>`<tr><td>${esc(name)}</td><td class="avg-cell">${skillAverageText(name)}</td>${RATE_KEYS.map(key=>`<td>${rateChips(name,key,true)}</td>`).join("")}</tr>`).join("");
+    const tableKeys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
+    const head=`<thead><tr><th>Name</th><th>Avg</th>${tableKeys.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
+    const body=order.map(name=>`<tr><td>${esc(name)}</td><td class="avg-cell">${skillAverageText(name)}</td>${tableKeys.map(key=>`<td>${rateChips(name,key,true)}</td>`).join("")}</tr>`).join("");
     table.innerHTML=head+`<tbody>${body}</tbody>`;
     bindRateButtons("#teamTable");
   }
@@ -2061,8 +2067,30 @@ let teamState=normalizeLineup(getStore("staff_lineup",null))||{skills:{},offense
 const TEAM_HOLD_MS=450;
 const TEAM_CANCEL_DIST=10;
 let teamDrag=null;
+let teamScrollFrame=0;
 function setTeamDrop(el,on){if(el) el.classList.toggle("drop-on",!!on)}
 function clearTeamDrops(){$$(".line-spot.drop-on,.team-clear.drop-on").forEach(el=>el.classList.remove("drop-on"))}
+function runTeamAutoScroll(){
+  teamScrollFrame=0;
+  const state=teamDrag;
+  if(!state||!state.active||!state.scrollSpeed) return;
+  window.scrollBy(0,state.scrollSpeed);
+  highlightTeamDrop(state.x,state.y);
+  teamScrollFrame=requestAnimationFrame(runTeamAutoScroll);
+}
+function updateTeamAutoScroll(){
+  const state=teamDrag;
+  if(!state||!state.active) return;
+  const edge=88;
+  const bottom=innerHeight-112;
+  state.scrollSpeed=state.y<edge? -Math.ceil((edge-state.y)/5):state.y>bottom?Math.ceil((state.y-bottom)/5):0;
+  state.scrollSpeed=Math.max(-18,Math.min(18,state.scrollSpeed));
+  if(state.scrollSpeed&&!teamScrollFrame) teamScrollFrame=requestAnimationFrame(runTeamAutoScroll);
+  if(!state.scrollSpeed&&teamScrollFrame){
+    cancelAnimationFrame(teamScrollFrame);
+    teamScrollFrame=0;
+  }
+}
 function teamDropAt(x,y){
   const hit=document.elementFromPoint(x,y);
   if(!hit) return null;
@@ -2135,6 +2163,8 @@ function cancelTeamDrag(){
   const state=teamDrag;
   if(!state) return;
   clearTimeout(state.timer);
+  if(teamScrollFrame) cancelAnimationFrame(teamScrollFrame);
+  teamScrollFrame=0;
   if(state.el) state.el.classList.remove("is-dragging");
   if(state.ghost) state.ghost.remove();
   document.body.classList.remove("team-dragging");
@@ -2158,7 +2188,8 @@ function beginTeamDrag(event){
     y:event.clientY,
     active:false,
     timer:0,
-    ghost:null
+    ghost:null,
+    scrollSpeed:0
   };
   if(event.pointerType==="touch") teamDrag.timer=setTimeout(activateTeamDrag,TEAM_HOLD_MS);
   else activateTeamDrag();
@@ -2175,6 +2206,7 @@ function onTeamPointerMove(event){
   event.preventDefault();
   moveTeamGhost();
   highlightTeamDrop(state.x,state.y);
+  updateTeamAutoScroll();
 }
 function onTeamPointerUp(event){
   const state=teamDrag;
@@ -2186,6 +2218,7 @@ function onTeamPointerUp(event){
   event.preventDefault();
   const drop=teamDropAt(state.x,state.y);
   applyTeamDrop(state.name,state.source,drop);
+  persistTeamLocal();
   cancelTeamDrag();
   renderTeamLineup();
   saveStaffLineupDebounced();
