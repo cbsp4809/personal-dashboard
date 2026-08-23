@@ -187,6 +187,16 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .diagram .extra-kid{fill:#FFFFFF;stroke:#CFAE70;stroke-width:2}
 .diagram .extra-label{fill:#ECB748;font:700 8px var(--sans);text-anchor:middle}
 .diagram .pile-hint{fill:none;stroke:#ECB748;stroke-width:2;stroke-dasharray:5 5;opacity:.7}
+.diagram .off-path{fill:none;stroke:#FFFFFF;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.diagram .off-path.look{stroke:#ECB748;stroke-width:4}
+.diagram .off-spot{fill:#CFAE70;stroke:#1C1C1C;stroke-width:2}
+.diagram .off-spot.target{fill:#ECB748;stroke:#FFFFFF;stroke-width:2}
+.diagram .off-spot-label{fill:#1C1C1C;font:700 8px var(--sans);text-anchor:middle}
+.binder-list{display:grid;gap:8px}
+.binder-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
+.binder-rank{color:var(--gold);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.binder-row b{display:block;min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.binder-row .badge{justify-self:end}
 @media(max-width:760px){
   .mast-inner{padding:14px max(16px,env(safe-area-inset-right,0px)) 11px max(16px,env(safe-area-inset-left,0px))}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
   .tabs{padding:0 max(16px,env(safe-area-inset-right,0px)) 9px max(16px,env(safe-area-inset-left,0px))}main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
@@ -204,6 +214,8 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
   .builder-form,.assignment{grid-template-columns:1fr}.builder-form .field:first-child,.builder-form .how{grid-column:auto}
   .play-library{grid-template-columns:1fr}.builder{padding:14px}.builder-field{min-height:250px}
   .practice-top,.schedule{padding-left:14px;padding-right:14px}
+  .binder-row{grid-template-columns:28px minmax(0,1fr)}
+  .binder-row .badge{grid-column:2;justify-self:start}
 }
 </style>
 </head>
@@ -235,6 +247,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
       <button data-page="playbook" type="button">Playbook</button>
+      <button data-page="offense" type="button">Offense</button>
       <button data-page="defense" type="button">Defense</button>
       <button data-page="builder" type="button">Play builder</button>
       <button data-page="milestones" type="button">Milestones</button>
@@ -260,7 +273,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 
       <div class="quick-grid">
         <div class="quick"><b>1:00–2:00 p.m.</b><span>Frostwood · 60 minutes · 13 kids ages 8–10</span></div>
-        <div class="quick"><b>Offense today</b><span>Smash + Overload only. No third play.</span></div>
+        <div class="quick"><b>Offense today</b><span>Smash + Overload only. No third play. Watch both on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</span></div>
         <div class="quick"><b>Game defense today</b><span>Six kids each cover a spot (an area). One kid roams and helps. No rush. Full look on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</span></div>
       </div>
 
@@ -343,6 +356,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
             <div class="play-head"><h3>Smash</h3><span class="badge taught">Taught</span></div>
             <p>2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.</p>
             <div class="when">“2x2” means two receivers on each side. “Shotgun” means the thrower starts a few steps behind the center.</div>
+            <div class="when">Watch Play, both looks, and Flip on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</div>
           </div>
         </article>
         <article class="play-card">
@@ -359,6 +373,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
             <div class="play-head"><h3>Overload 50/51</h3><span class="badge taught">Taught</span></div>
             <p>Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.</p>
             <div class="when">“Overload” just means more receivers line up on one side than the other.</div>
+            <div class="when">Watch Play, both looks, and Flip on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</div>
           </div>
         </article>
         <article class="play-card">
@@ -407,7 +422,34 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       </div>
       <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Play builder.</p></div>
       <div class="play-grid" id="builtPlaybook"></div>
-      <div class="binder-note" style="margin-top:14px"><b>Do not add:</b> pitches, anything that blocks, offense concepts not selected on the Core 5 ladder, or extra defense packages. Game defense stays six kids covering six areas + one kid roaming to help, with no rush. Hip-stay / “pick a guy” / Man-Free is drill-only, never the game plan. Full defense look is on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
+      <div class="binder-note" style="margin-top:14px"><b>Do not add:</b> pitches, anything that blocks, offense concepts not selected on the Core 5 ladder, or extra defense packages. Game defense stays six kids covering six areas + one kid roaming to help, with no rush. Hip-stay / “pick a guy” / Man-Free is drill-only, never the game plan. This week’s Smash + Overload Play is on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>. Full defense look is on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
+    </section>
+
+    <section class="page" id="page-offense">
+      <div class="section-head"><div><div class="eyebrow">This week’s book</div><h2>Smash + Overload</h2></div><p>Play · two looks · Flip</p></div>
+      <div class="binder-note"><b>Taught now:</b> Smash and Overload 50/51 only. Watch the play. Two looks, then Flip the same picture. Do not add a third look.</div>
+      <div id="offenseBook"></div>
+
+      <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Chris’s 16</h2></div><p>Binder list · rank + concept</p></div>
+      <div class="binder-note"><b>Binder only.</b> These are Chris’s starred favorites, parked in this order. Do not teach them this week. Do not treat them as new Core 5 plays.</div>
+      <div class="binder-list">
+        <div class="binder-row"><span class="binder-rank">01</span><b>#50 Overload left</b><span class="badge parked">OVERLOAD</span></div>
+        <div class="binder-row"><span class="binder-rank">02</span><b>#26 Post Corner Right</b><span class="badge parked">SMASH</span></div>
+        <div class="binder-row"><span class="binder-rank">03</span><b>#23 Post Corner Right flipped</b><span class="badge parked">SMASH</span></div>
+        <div class="binder-row"><span class="binder-rank">04</span><b>#38 Overload first down</b><span class="badge parked">OVERLOAD</span></div>
+        <div class="binder-row"><span class="binder-rank">05</span><b>#61 Left Drag…</b><span class="badge parked">DRAG</span></div>
+        <div class="binder-row"><span class="binder-rank">06</span><b>#35 XXX post Corner</b><span class="badge parked">SMASH</span></div>
+        <div class="binder-row"><span class="binder-rank">07</span><b>#45 A Drag Right</b><span class="badge parked">DRAG</span></div>
+        <div class="binder-row"><span class="binder-rank">08</span><b>#21 B far left</b><span class="badge parked">B-MOVER</span></div>
+        <div class="binder-row"><span class="binder-rank">09</span><b>#67 Rice play</b><span class="badge parked">DEEP/RICE</span></div>
+        <div class="binder-row"><span class="binder-rank">10</span><b>#19 B Route out flipped</b><span class="badge parked">B-MOVER</span></div>
+        <div class="binder-row"><span class="binder-rank">11</span><b>#68 Rice Touchdown play 1</b><span class="badge parked">DEEP/RICE</span></div>
+        <div class="binder-row"><span class="binder-rank">12</span><b>#66 Rice touchdown 2</b><span class="badge parked">DEEP/RICE</span></div>
+        <div class="binder-row"><span class="binder-rank">13</span><b>#41 CJ stutter and out</b><span class="badge parked">TIMING</span></div>
+        <div class="binder-row"><span class="binder-rank">14</span><b>#42 Y hitch and go…</b><span class="badge parked">TIMING</span></div>
+        <div class="binder-row"><span class="binder-rank">15</span><b>#64 Man on man CJ</b><span class="badge parked">MAN-TAG</span></div>
+        <div class="binder-row"><span class="binder-rank">16</span><b>#65 B Motion Post post wheel</b><span class="badge parked">MOTION</span></div>
+      </div>
     </section>
 
     <section class="page" id="page-defense">
@@ -833,6 +875,7 @@ function openApp(){
   renderSeason();
   renderAttendance();
   renderDefenseBook();
+  renderOffenseBook();
   pullDefenseLooks().then(ok=>{
     if(ok){
       if(isDefenseDraft()){
@@ -840,6 +883,7 @@ function openApp(){
         if(fresh) playDraft=structuredClone(fresh);
       }
       renderDefenseBook();
+      renderOffenseBook();
       renderBuilder();
     }
   });
@@ -932,6 +976,189 @@ function seedBuiltPlays(){
 }
 let builtPlays=getStore("built_plays",null);
 if(!Array.isArray(builtPlays)||!builtPlays.length) builtPlays=seedBuiltPlays();
+const TAUGHT_OFFENSE_IDS=["smash","overload-50-51"];
+const OFFENSE_LOOKS={
+  smash:{
+    looks:[
+      {id:"sit",label:"1 · Sit",pick:"Thrower looks at the kid who stopped.",play:"Play: throw the sit. That’s look 1."},
+      {id:"corner",label:"2 · Corner",pick:"If a defender jumps the sit, throw the corner.",play:"Play: defender jumped the sit. Throw the corner."}
+    ],
+    targets:{sit:["s-c","s-lo","s-ro"],corner:["s-li","s-ri"]}
+  },
+  "overload-50-51":{
+    looks:[
+      {id:"first",label:"1 · First open",pick:"Throw the first open kid past the line.",play:"Play: throw the first open kid past the line."},
+      {id:"next",label:"2 · Next open",pick:"If the first one is covered, the next open kid.",play:"Play: first one covered. Next open kid."}
+    ],
+    targets:{first:["o-3","o-c"],next:["o-1","o-2"]}
+  }
+};
+const offenseView={
+  smash:{flipped:false,look:"sit"},
+  "overload-50-51":{flipped:false,look:"first"}
+};
+function taughtOffensePlays(){
+  const seed=seedBuiltPlays();
+  return TAUGHT_OFFENSE_IDS.map(id=>builtPlays.find(play=>play.id===id)||seed.find(play=>play.id===id)).filter(Boolean);
+}
+function flipOffenseCopy(play){
+  const copy=structuredClone(play);
+  copy.spots.forEach(spot=>{spot.x=360-spot.x});
+  (copy.routes||[]).forEach(route=>(route.points||[]).forEach(point=>{point.x=360-point.x}));
+  return copy;
+}
+function offenseDrawn(play){
+  const view=offenseView[play.id]||{flipped:false,look:""};
+  return view.flipped?flipOffenseCopy(play):play;
+}
+function offenseLookSpec(play){
+  return OFFENSE_LOOKS[play.id]||{looks:[],targets:{}};
+}
+function offenseTargets(play,lookId){
+  return new Set((offenseLookSpec(play).targets||{})[lookId]||[]);
+}
+function offenseCardSVG(play){
+  const view=offenseView[play.id]||{flipped:false,look:""};
+  const drawn=offenseDrawn(play);
+  const targets=offenseTargets(play,view.look);
+  const routes=(drawn.routes||[]).map(route=>{
+    const on=targets.has(route.from);
+    return `<path class="off-path${on?" look":""}" data-from="${esc(route.from)}" d="${esc(routePath(drawn,route))}"></path>`;
+  }).join("");
+  const spots=(drawn.spots||[]).map(spot=>{
+    const on=targets.has(spot.id);
+    const label=spot.player||spot.label||"O";
+    return `<g class="off-mark" data-spot-id="${esc(spot.id)}" data-home-x="${spot.x}" data-home-y="${spot.y}"><circle class="off-spot${on?" target":""}" cx="${spot.x}" cy="${spot.y}" r="10"></circle><text class="off-spot-label" x="${spot.x}" y="${spot.y+3}">${esc(label)}</text></g>`;
+  }).join("");
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} taught picture. Play watches the throw. Flip is the same picture the other way.">
+    <rect width="360" height="300" fill="#000000"></rect>
+    <rect x="12" y="10" width="336" height="280" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"></rect>
+    <path d="M12 220H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
+    <text x="22" y="213" fill="#E0D5C0" font-size="9">line</text>
+    ${routes}${spots}
+  </svg>`;
+}
+function offenseCue(play,mode){
+  const view=offenseView[play.id]||{flipped:false,look:""};
+  const spec=offenseLookSpec(play);
+  const look=spec.looks.find(item=>item.id===view.look)||spec.looks[0];
+  if(mode==="play"&&look) return look.play;
+  const side=play.id==="overload-50-51"
+    ?(view.flipped?"51 — extra kids this side. ":"50 — extra kids this side. ")
+    :(view.flipped?"Flipped. Same 2x2 the other way. ":"");
+  if(look) return (side+look.pick).trim();
+  return (side||"Watch the throw. Two looks only. Flip the same picture.").trim();
+}
+function pointAlongRoute(start,points,t){
+  const pts=[start,...(points||[])];
+  if(pts.length<2) return start;
+  let total=0;
+  const segs=[];
+  for(let i=1;i<pts.length;i++){
+    const len=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+    segs.push({a:pts[i-1],b:pts[i],len});
+    total+=len;
+  }
+  if(!total) return start;
+  let dist=Math.max(0,Math.min(1,t))*total;
+  for(const seg of segs){
+    if(dist<=seg.len){
+      const p=seg.len?dist/seg.len:1;
+      return {x:seg.a.x+(seg.b.x-seg.a.x)*p,y:seg.a.y+(seg.b.y-seg.a.y)*p};
+    }
+    dist-=seg.len;
+  }
+  return pts[pts.length-1];
+}
+let offenseAnim=null;
+function stopOffenseAnim(){
+  if(!offenseAnim) return;
+  if(offenseAnim.frame) cancelAnimationFrame(offenseAnim.frame);
+  if(offenseAnim.timer) clearTimeout(offenseAnim.timer);
+  offenseAnim=null;
+}
+function playOffenseLook(play,card){
+  if(!play||!card) return;
+  stopOffenseAnim();
+  const drawn=offenseDrawn(play);
+  const svg=card.querySelector(".diagram");
+  const cue=card.querySelector("[data-play-cue]");
+  if(!svg) return;
+  const marks=[...svg.querySelectorAll(".off-mark")];
+  const routesByFrom=new Map((drawn.routes||[]).map(route=>[route.from,route]));
+  if(cue) cue.textContent=offenseCue(play,"play");
+  const start=performance.now();
+  const hold=1600;
+  offenseAnim={frame:0,timer:0};
+  const tick=now=>{
+    const t=Math.min(1,(now-start)/hold);
+    const p=easeInOut(t);
+    marks.forEach(mark=>{
+      const id=mark.dataset.spotId;
+      const home=drawn.spots.find(spot=>spot.id===id);
+      const route=routesByFrom.get(id);
+      if(!home||!route) return;
+      const dest=pointAlongRoute(home,route.points,p);
+      mark.setAttribute("transform",`translate(${dest.x-home.x} ${dest.y-home.y})`);
+    });
+    if(t<1){offenseAnim.frame=requestAnimationFrame(tick);return}
+    offenseAnim.timer=setTimeout(()=>{
+      marks.forEach(mark=>mark.removeAttribute("transform"));
+      if(cue) cue.textContent=offenseCue(play,"idle");
+      offenseAnim=null;
+    },1100);
+  };
+  offenseAnim.frame=requestAnimationFrame(tick);
+}
+function renderOffenseBook(){
+  const book=$("#offenseBook");
+  if(!book) return;
+  stopOffenseAnim();
+  book.innerHTML=taughtOffensePlays().map(play=>{
+    const view=offenseView[play.id]||(offenseView[play.id]={flipped:false,look:(offenseLookSpec(play).looks[0]||{}).id||""});
+    const spec=offenseLookSpec(play);
+    const looks=spec.looks.map(look=>`<button class="btn ghost${look.id===view.look?" on":""}" data-off-look="${esc(look.id)}" type="button">${esc(look.label)}</button>`).join("");
+    return `<article class="play-card" data-offense="${esc(play.id)}" style="margin-bottom:14px">
+      <div data-offense-picture>${offenseCardSVG(play)}</div>
+      <div class="play-copy">
+        <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge taught">Taught</span></div>
+        <p>${esc(play.how)}</p>
+        <div class="when">${play.id==="smash"?"High-low: look 1 is the sit, look 2 is the corner. Same 2x2 both ways.":"Trips overload. 50 one way, 51 the flip. Throw the first open kid past the line."}</div>
+        <div class="play-react">
+          <div class="react-toggle" role="group" aria-label="${esc(play.name)} looks">${looks}</div>
+          <button class="btn play-now" data-off-play="${esc(play.id)}" type="button">Play</button>
+          <button class="btn flip" data-off-flip="${esc(play.id)}" type="button">Flip</button>
+          <div class="play-cue" data-play-cue>${esc(offenseCue(play,"idle"))}</div>
+        </div>
+      </div>
+    </article>`;
+  }).join("");
+  $$("#offenseBook [data-off-look]").forEach(button=>button.onclick=()=>{
+    const card=button.closest("[data-offense]");
+    const play=taughtOffensePlays().find(item=>item.id===card.dataset.offense);
+    if(!play) return;
+    stopOffenseAnim();
+    offenseView[play.id].look=button.dataset.offLook;
+    const group=button.closest(".react-toggle");
+    [...group.querySelectorAll("[data-off-look]")].forEach(item=>item.classList.toggle("on",item===button));
+    const holder=card.querySelector("[data-offense-picture]");
+    holder.innerHTML=offenseCardSVG(play);
+    card.querySelector("[data-play-cue]").textContent=offenseCue(play,"idle");
+  });
+  $$("#offenseBook [data-off-flip]").forEach(button=>button.onclick=()=>{
+    const play=taughtOffensePlays().find(item=>item.id===button.dataset.offFlip);
+    const card=button.closest("[data-offense]");
+    if(!play||!card) return;
+    stopOffenseAnim();
+    offenseView[play.id].flipped=!offenseView[play.id].flipped;
+    card.querySelector("[data-offense-picture]").innerHTML=offenseCardSVG(play);
+    card.querySelector("[data-play-cue]").textContent=offenseCue(play,"idle");
+  });
+  $$("#offenseBook [data-off-play]").forEach(button=>button.onclick=()=>{
+    const play=taughtOffensePlays().find(item=>item.id===button.dataset.offPlay);
+    playOffenseLook(play,button.closest(".play-card"));
+  });
+}
 let playDraft=structuredClone(builtPlays[0]);
 let selectedSpotId=playDraft.spots[0].id;
 let selectedRouteId="";
@@ -1188,6 +1415,7 @@ $("#savePlay").onclick=()=>{
   setStore("built_plays",builtPlays);
   $("#builderStatus").textContent=`Saved ${playDraft.name} into this device’s playbook.`;
   renderBuilder();
+  renderOffenseBook();
 };
 function downloadJson(value,filename){
   const blob=new Blob([JSON.stringify(value,null,2)],{type:"application/json"});
@@ -1217,6 +1445,7 @@ $("#playFile").onchange=async event=>{
     });
     setStore("built_plays",builtPlays);
     openPlay(incoming[0].id);
+    renderOffenseBook();
     $("#builderStatus").textContent=`Imported ${incoming.length} play${incoming.length===1?"":"s"}.`;
   }catch(error){
     $("#builderStatus").textContent="Could not import plays: "+error.message;
