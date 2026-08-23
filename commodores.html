@@ -238,7 +238,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
   <form class="gate-card" id="pinForm">
     <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
     <h1 id="gateTitle">Coach’s field book</h1>
-    <p>Enter the six-digit staff PIN. Plans and attendance stay in this device’s copy.</p>
+    <p>Enter the six-digit staff PIN once on this phone. This device stays unlocked until you tap Lock.</p>
     <label class="small" for="pin">Staff PIN</label>
     <div class="pin-row">
       <input id="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" aria-describedby="gateMsg">
@@ -256,7 +256,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
         <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff field book</div>
         <h1>Commodores <em>Fall ’26</em></h1>
       </div>
-      <button class="btn ghost" id="lockBtn" type="button">Lock</button>
+      <button class="btn ghost" id="lockBtn" type="button" aria-label="Lock this phone" title="Lock this phone">Lock</button>
     </div>
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
@@ -654,6 +654,17 @@ function getStore(key,fallback){
 }
 function setStore(key,value){
   try{localStorage.setItem(STORE_PREFIX+key,JSON.stringify(value));return true}catch(_){return false}
+}
+const UNLOCK_KEY=STORE_PREFIX+"open";
+function isDeviceUnlocked(){
+  try{return localStorage.getItem(UNLOCK_KEY)==="1"}catch(_){return false}
+}
+function rememberDeviceUnlock(){
+  try{localStorage.setItem(UNLOCK_KEY,"1")}catch(_){}
+}
+function lockThisDevice(){
+  try{localStorage.removeItem(UNLOCK_KEY)}catch(_){}
+  try{sessionStorage.removeItem(UNLOCK_KEY)}catch(_){}
 }
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
@@ -1079,7 +1090,7 @@ $("#pinForm").onsubmit=async event=>{
   }
   try{
     if(await sha256(pin)===PIN_HASH){
-      sessionStorage.setItem(STORE_PREFIX+"open","1");
+      rememberDeviceUnlock();
       $("#pin").value="";
       $("#gateMsg").textContent="";
       openApp();
@@ -1092,7 +1103,7 @@ $("#pinForm").onsubmit=async event=>{
   }
 };
 $("#lockBtn").onclick=()=>{
-  sessionStorage.removeItem(STORE_PREFIX+"open");
+  lockThisDevice();
   location.reload();
 };
 
@@ -1822,7 +1833,7 @@ $("#exportJson").onclick=()=>{
   $("#importStatus").textContent="Downloaded this device’s practice plans.";
 };
 
-if(sessionStorage.getItem(STORE_PREFIX+"open")==="1") openApp();
+if(isDeviceUnlocked()) openApp();
 </script>
 </body>
 </html>
