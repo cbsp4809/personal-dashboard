@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   color-scheme:dark;
@@ -94,6 +95,16 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .field label{display:block;margin-bottom:5px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .field textarea{width:100%;min-height:92px;resize:vertical}
 .save-note{margin-top:7px;color:var(--highlight);font-size:11px}
+.author-row{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin-bottom:12px}
+.author-row .field{min-width:160px;flex:1}
+.author-row select{width:100%}
+.comment-list{display:grid;gap:8px;margin:10px 0 12px}
+.comment-item{padding:10px 12px;background:var(--bg-2);border:1px solid var(--line);border-radius:11px}
+.comment-item b{color:var(--gold);font-size:12px}
+.comment-item .when{margin-left:8px;color:var(--muted);font-size:11px}
+.comment-item p{margin:6px 0 0;color:var(--soft);font-size:13px;white-space:pre-wrap}
+.comment-compose{display:grid;gap:8px}
+.comment-compose textarea{min-height:72px}
 .play-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .play-card{overflow:hidden}
 .play-copy{padding:17px 18px 18px}
@@ -216,6 +227,9 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
   .practice-top,.schedule{padding-left:14px;padding-right:14px}
   .binder-row{grid-template-columns:28px minmax(0,1fr)}
   .binder-row .badge{grid-column:2;justify-self:start}
+  .author-row{display:grid;grid-template-columns:1fr}
+  .author-row .field{min-width:0}
+  .comment-compose .btn{width:100%}
 }
 </style>
 </head>
@@ -322,10 +336,30 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
         </div>
       </article>
 
-      <div class="section-head"><div><div class="eyebrow">Continuity</div><h2>Last practice → next practice</h2></div><p>Saved only on this device.</p></div>
+      <div class="section-head"><div><div class="eyebrow">Continuity</div><h2>Last practice → next practice</h2></div><p>Shared with staff · not local-only</p></div>
+      <div class="author-row">
+        <div class="field">
+          <label for="staffAuthor">Author · first name</label>
+          <select id="staffAuthor">
+            <option value="staff">staff</option>
+            <option value="Peter">Peter</option>
+            <option value="Chris">Chris</option>
+            <option value="Ben">Ben</option>
+          </select>
+        </div>
+        <div class="save-note" id="notesStatus" aria-live="polite">Loads shared notes on open</div>
+      </div>
       <div class="note-grid">
-        <div class="field"><label for="afterNotes">After-practice notes / what actually stuck</label><textarea id="afterNotes" placeholder="What worked? Who needs a different cue?"></textarea><div class="save-note">Auto-saves this device’s copy</div></div>
-        <div class="field"><label for="nextInstall">Install next Thursday</label><textarea id="nextInstall" placeholder="Write Thursday before leaving Sunday. Keep week one to Smash + Overload."></textarea><div class="save-note">Coaches share this device’s copy</div></div>
+        <div class="field"><label for="afterNotes">After-practice notes / what actually stuck</label><textarea id="afterNotes" placeholder="What worked? Who needs a different cue?"></textarea><div class="save-note">Debounced save to shared staff notes</div></div>
+        <div class="field"><label for="nextInstall">Install next Thursday</label><textarea id="nextInstall" placeholder="Write Thursday before leaving Sunday. Keep week one to Smash + Overload."></textarea><div class="save-note">Debounced save to shared staff notes</div></div>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label for="staffComment">Staff comments</label>
+        <div class="comment-list" id="commentList"></div>
+        <div class="comment-compose">
+          <textarea id="staffComment" placeholder="Short note for the other coaches. First names only."></textarea>
+          <button class="btn ghost" id="postComment" type="button">Post comment</button>
+        </div>
       </div>
     </section>
 
@@ -582,7 +616,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       <div class="section-head"><div><div class="eyebrow">Staff → field book</div><h2>Practice plan handoff</h2></div><p>Coaches own practice plans</p></div>
       <div class="panel">
         <h2 style="font-size:24px">Add next plan</h2>
-        <p>Paste JSON or import a file. Import adds or replaces a plan with the same <code>id</code>. Export downloads this device’s plans so a coaching agent can update them.</p>
+        <p>Paste JSON or import a file. Import adds or replaces a plan with the same <code>id</code> and upserts it to the shared <code>commodores_plans</code> table. A newer cloud row wins on the next page load.</p>
         <div class="import-box">
           <textarea id="jsonInput" spellcheck="false" placeholder='{"id":"2026-08-27","date":"2026-08-27","time":"5:00 p.m.","location":"Frostwood","duration":60,"goal":"Clean Smash and Overload reps.","stations":[{"minutes":15,"name":"Routes","detail":"Both directions.","coach":"Chris","concurrent":"split-a"}]}'></textarea>
           <div class="import-actions">
@@ -596,17 +630,23 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
       </div>
     </section>
 
-    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · defense drawing is the shared staff book</div>
+    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · notes and plans are shared for staff · defense drawing is the shared staff book</div>
   </main>
 </div>
 
-<noscript>This staff field book needs JavaScript for the PIN gate and local practice plans.</noscript>
+<noscript>This staff field book needs JavaScript for the PIN gate and shared practice plans.</noscript>
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const STORE_PREFIX="commodores_v1_";
 const ROSTER=["Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+const STAFF_FIRST=["Peter","Chris","Ben"];
+const NOTE_AFTER="after-practice";
+const NOTE_NEXT="next-install";
+const SB_URL="https://daddiljpnhfuxcdqsulg.supabase.co";
+const SB_KEY="sb_publishable_kklnADdWDTkXsJyjx9FMiA_gNbKjm7H";
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY):null;
 
 function getStore(key,fallback){
   try{const value=localStorage.getItem(STORE_PREFIX+key);return value===null?fallback:JSON.parse(value)}catch(_){return fallback}
@@ -869,7 +909,145 @@ function openFromHash(){
   showPage(page.id.slice(5));
   requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
 }
-function openApp(){
+function staffAuthor(){
+  const value=($("#staffAuthor")?.value||"").trim();
+  return STAFF_FIRST.includes(value)?value:"staff";
+}
+function debounce(fn,ms){
+  let timer=0;
+  return (...args)=>{
+    clearTimeout(timer);
+    timer=setTimeout(()=>fn(...args),ms);
+  };
+}
+function setNotesStatus(message){
+  const el=$("#notesStatus");
+  if(el) el.textContent=message;
+}
+function commentTime(iso){
+  const date=new Date(iso);
+  if(Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+}
+function renderComments(rows){
+  const thread=(rows||[]).filter(row=>row.id!==NOTE_AFTER&&row.id!==NOTE_NEXT);
+  $("#commentList").innerHTML=thread.length
+    ? thread.map(row=>`<article class="comment-item"><b>${esc(row.author_first||"staff")}</b><span class="when">${esc(commentTime(row.created_at))}</span><p>${esc(row.body||"")}</p></article>`).join("")
+    : `<div class="comment-item"><p>No staff comments yet.</p></div>`;
+}
+async function upsertNote(id,body){
+  setStore(id===NOTE_AFTER?"after_notes":"next_install",body);
+  if(!sb){
+    setNotesStatus("Saved on this device only · shared tables not reachable");
+    return;
+  }
+  const {error}=await sb.from("commodores_comments").upsert({
+    id,author_first:staffAuthor(),body
+  },{onConflict:"id"});
+  setNotesStatus(error?"Could not share notes: "+error.message:"Shared notes saved");
+}
+async function loadComments(){
+  if(!sb){
+    renderComments([]);
+    setNotesStatus("Shared notes unavailable · this device only");
+    return;
+  }
+  const {data,error}=await sb.from("commodores_comments")
+    .select("id,author_first,body,created_at")
+    .order("created_at",{ascending:false})
+    .limit(80);
+  if(error){
+    renderComments([]);
+    setNotesStatus("Could not load shared notes: "+error.message);
+    return;
+  }
+  const rows=data||[];
+  const after=rows.find(row=>row.id===NOTE_AFTER);
+  const next=rows.find(row=>row.id===NOTE_NEXT);
+  if(after){
+    afterNotes.value=after.body||"";
+    setStore("after_notes",afterNotes.value);
+  }else if(afterNotes.value){
+    await upsertNote(NOTE_AFTER,afterNotes.value);
+  }
+  if(next){
+    nextInstall.value=next.body||"";
+    setStore("next_install",nextInstall.value);
+  }else if(nextInstall.value){
+    await upsertNote(NOTE_NEXT,nextInstall.value);
+  }
+  renderComments(rows);
+  setNotesStatus("Shared notes loaded");
+}
+async function postStaffComment(){
+  const body=$("#staffComment").value.trim();
+  if(!body){
+    setNotesStatus("Write a comment first.");
+    return;
+  }
+  if(!sb){
+    setNotesStatus("Shared comments unavailable.");
+    return;
+  }
+  const {error}=await sb.from("commodores_comments").insert({
+    author_first:staffAuthor(),body
+  });
+  if(error){
+    setNotesStatus("Could not post comment: "+error.message);
+    return;
+  }
+  $("#staffComment").value="";
+  setNotesStatus("Comment shared");
+  await loadComments();
+}
+function planUpdatedAt(plan){
+  return Date.parse(plan&& (plan.updatedAt||plan.updated_at) ||0)||0;
+}
+function cloudPlanFromRow(row){
+  const payload=row&&row.payload&&typeof row.payload==="object"?{...row.payload}:{};
+  payload.id=payload.id||row.id;
+  payload.updatedAt=row.updated_at;
+  return payload;
+}
+async function upsertCloudPlan(plan){
+  if(!sb||!plan||!plan.id) return;
+  const updatedAt=new Date().toISOString();
+  plan.updatedAt=updatedAt;
+  const {error}=await sb.from("commodores_plans").upsert({
+    id:plan.id,payload:plan,updated_at:updatedAt
+  },{onConflict:"id"});
+  if(error) $("#importStatus").textContent="Plan saved here, but cloud sync failed: "+error.message;
+}
+async function loadCloudPlans(){
+  if(!sb) return;
+  const {data,error}=await sb.from("commodores_plans")
+    .select("id,payload,updated_at")
+    .order("updated_at",{ascending:false});
+  if(error){
+    $("#importStatus").textContent="Could not load shared plans: "+error.message;
+    return;
+  }
+  let changed=false;
+  (data||[]).forEach(row=>{
+    if(!row||!row.id) return;
+    const cloud=cloudPlanFromRow(row);
+    if(!validPlan(cloud)) return;
+    const index=plans.findIndex(plan=>plan.id===row.id);
+    const local=index>=0?plans[index]:null;
+    const cloudTime=Date.parse(row.updated_at)||0;
+    if(!local||cloudTime>planUpdatedAt(local)){
+      if(index>=0) plans[index]=cloud; else plans.push(cloud);
+      changed=true;
+    }
+  });
+  if(changed){
+    plans.sort((a,b)=>(a.date+" "+a.time).localeCompare(b.date+" "+b.time));
+    setStore("plans",plans);
+    renderSeason();
+    $("#importStatus").textContent="Loaded newer shared practice plans.";
+  }
+}
+async function openApp(){
   $("#gate").classList.add("hidden");
   $("#app").style.display="block";
   renderSeason();
@@ -887,6 +1065,8 @@ function openApp(){
       renderBuilder();
     }
   });
+  await loadComments();
+  await loadCloudPlans();
   openFromHash();
 }
 $("#pinForm").onsubmit=async event=>{
@@ -925,10 +1105,22 @@ document.addEventListener("click",event=>{
 
 const afterNotes=$("#afterNotes");
 const nextInstall=$("#nextInstall");
+const staffAuthorSelect=$("#staffAuthor");
 afterNotes.value=getStore("after_notes","");
 nextInstall.value=getStore("next_install","Keep Smash + Overload only. Write Thursday’s reps before leaving Sunday.");
-afterNotes.oninput=()=>setStore("after_notes",afterNotes.value);
-nextInstall.oninput=()=>setStore("next_install",nextInstall.value);
+staffAuthorSelect.value=STAFF_FIRST.includes(getStore("staff_author","staff"))?getStore("staff_author","staff"):"staff";
+staffAuthorSelect.onchange=()=>setStore("staff_author",staffAuthor());
+const saveAfterNote=debounce(()=>upsertNote(NOTE_AFTER,afterNotes.value),700);
+const saveNextNote=debounce(()=>upsertNote(NOTE_NEXT,nextInstall.value),700);
+afterNotes.oninput=saveAfterNote;
+nextInstall.oninput=saveNextNote;
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden"){
+    upsertNote(NOTE_AFTER,afterNotes.value);
+    upsertNote(NOTE_NEXT,nextInstall.value);
+  }
+});
+$("#postComment").onclick=postStaffComment;
 
 const SMASH_HOW="2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.";
 const OVERLOAD_HOW="Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.";
@@ -1558,6 +1750,7 @@ function renderSeason(){
       })
     };
     setStore("plans",plans);
+    upsertCloudPlan(plans[index]);
     renderSeason();
   });
 }
@@ -1602,8 +1795,12 @@ function importPayload(raw){
   });
   plans.sort((a,b)=>(a.date+" "+a.time).localeCompare(b.date+" "+b.time));
   setStore("plans",plans);
+  incoming.forEach(plan=>{
+    const saved=plans.find(existing=>existing.id===plan.id);
+    if(saved) upsertCloudPlan(saved);
+  });
   renderSeason();
-  $("#importStatus").textContent=`Imported ${incoming.length} plan${incoming.length===1?"":"s"} into this device’s copy.`;
+  $("#importStatus").textContent=`Imported ${incoming.length} plan${incoming.length===1?"":"s"} into the shared book.`;
 }
 $("#importJson").onclick=()=>{
   try{importPayload($("#jsonInput").value)}catch(error){$("#importStatus").textContent="Could not import: "+error.message}

@@ -20,7 +20,7 @@ Pages is enabled.
 index.html                 # morning dashboard — self-contained (HTML + CSS + JS inline)
 ops.html                   # Ops board (Chris & Sydney) — separate page, same GitHub Pages site
 manifest.json              # web app manifest so Ops can be added to an iPhone home screen
-commodores.html            # staff-only Commodores field book (PIN, local-only, not linked from Ops)
+commodores.html            # staff-only Commodores field book (PIN, shared notes/plans, not linked from Ops)
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
 icons/                     # original Ops mark plus Commodores gold-star icons (not Vanderbilt marks)
 README.md
@@ -28,6 +28,7 @@ README.md
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
 sql/ops_events.sql             # Ops notify table (Sydney owns pings)
 sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
+sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
@@ -154,6 +155,11 @@ On Chris’s iPhone:
 The gold-star icon is an original mark (not a Vanderbilt or Commodores logo). It
 opens the PIN gate full-screen and does not share the Ops home-screen name or
 icon. This page is intentionally not linked from the morning dashboard or Ops.
+
+Run `sql/commodores_staff.sql` on Studio Pod so after-practice notes and
+practice plans are shared. The page reuses the Ops public Supabase URL and
+publishable key. It never uses a service-role key and it does not read or write
+`ops_cards` or `ops_alerts`.
 
 ## Ops alerts
 
