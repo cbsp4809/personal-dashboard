@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Commodores · Staff</title>
+<meta name="theme-color" content="#12110f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#12110f;--bg-2:#181612;--panel:#1e1b17;--card:#25221c;--ink:#f4efe6;
+  --soft:#d4cdc0;--muted:#9a9286;--line:rgba(244,239,230,.09);--strong:rgba(244,239,230,.17);
+  --brass:#c4a574;--brass-soft:rgba(196,165,116,.15);--green:#9aaf98;--blue:#8fa3b0;
+  --red:#d4a09a;--sans:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --serif:"Newsreader",Georgia,serif;--shadow:0 14px 50px rgba(0,0,0,.34);
+}
+*{box-sizing:border-box}
+html{width:100%;overflow-x:hidden;background:var(--bg)}
+body{margin:0;min-height:100vh;min-height:100dvh;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:14.5px/1.48 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:radial-gradient(900px 420px at 50% -10%,rgba(196,165,116,.13),transparent 60%),var(--bg)}
+.gate-card{width:min(420px,100%);padding:34px 30px 28px;background:var(--panel);border:1px solid var(--strong);border-radius:18px;box-shadow:var(--shadow)}
+.kicker{margin-bottom:8px;color:var(--brass);font-size:10.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+.gate h1,.mast h1{margin:0;font:400 36px/1.05 var(--serif);letter-spacing:-.025em}
+.gate p{margin:10px 0 22px;color:var(--muted)}
+label.small{display:block;margin-bottom:6px;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.pin-row{display:flex;gap:8px}
+.pin-row input{flex:1;min-width:0;text-align:center;letter-spacing:.25em;font-size:21px;font-variant-numeric:tabular-nums}
+input,select,textarea{max-width:100%;border:1px solid var(--strong);border-radius:10px;background:var(--bg);padding:10px 11px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brass)}
+.btn{min-height:42px;border:0;border-radius:10px;padding:9px 14px;background:var(--brass);color:#1a160f;font-weight:700}
+.btn.ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.btn.danger{color:var(--red)}
+.gate-msg{min-height:20px;margin-top:10px;color:var(--red);font-size:12.5px;text-align:center}
+.gate-foot{margin-top:20px;color:var(--muted);font-size:11px;text-align:center}
+#app{display:none;min-height:100vh;padding-bottom:50px}
+.mast{position:sticky;top:0;z-index:30;background:rgba(18,17,15,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.mast-inner{max-width:1180px;margin:auto;padding:17px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.mast h1{font-size:29px}.mast h1 em{color:var(--soft);font-style:italic}
+.mast .kicker{margin-bottom:4px}
+.tabs{display:flex;gap:5px;overflow:auto;padding:0 22px 10px;max-width:1180px;margin:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;min-height:38px;border:1px solid transparent;border-radius:999px;padding:8px 13px;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
+.tabs button.on{border-color:rgba(196,165,116,.35);background:var(--brass-soft);color:var(--ink)}
+main{width:min(1180px,100%);margin:auto;padding:24px 22px}
+.page{display:none}.page.on{display:block}
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr);gap:14px;margin-bottom:18px}
+.panel,.practice-card,.play-card,.milestone{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.panel{padding:20px}
+.eyebrow{color:var(--brass);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.panel h2,.section-head h2{margin:5px 0 8px;font:400 28px/1.1 var(--serif)}
+.panel p{margin:0;color:var(--soft)}
+.callout{display:flex;align-items:flex-start;gap:10px;background:var(--brass-soft);border:1px solid rgba(196,165,116,.22)}
+.callout strong{display:block;margin-bottom:2px}.callout span{color:var(--soft);font-size:13px}
+.dot{width:9px;height:9px;margin-top:6px;flex:none;border-radius:50%;background:var(--brass)}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 24px}
+.quick{padding:15px;background:var(--bg-2);border:1px solid var(--line);border-radius:13px}
+.quick b{display:block;margin-bottom:4px}.quick span{color:var(--muted);font-size:12.5px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 12px}
+.section-head p{margin:0;color:var(--muted);font-size:12.5px}
+.practice-card{margin-bottom:14px;overflow:hidden}
+.practice-top{padding:17px 18px 14px;background:linear-gradient(100deg,rgba(196,165,116,.1),transparent);border-bottom:1px solid var(--line)}
+.practice-title{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.practice-title h3{margin:2px 0 3px;font:500 23px/1.15 var(--serif)}
+.meta{color:var(--muted);font-size:12.5px}.goal{margin-top:12px;color:var(--soft)}
+.goal b{color:var(--brass)}
+.badge{display:inline-flex;align-items:center;border:1px solid var(--strong);border-radius:999px;padding:3px 8px;color:var(--soft);font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.badge.live,.badge.taught{border-color:rgba(154,175,152,.38);background:rgba(154,175,152,.11);color:#b9cbb7}
+.badge.parked{border-color:rgba(143,163,176,.35);background:rgba(143,163,176,.1);color:#b5c5cf}
+.schedule{padding:7px 18px 13px}
+.station{display:grid;grid-template-columns:68px minmax(0,1fr) 130px;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.station:last-child{border:0}
+.station-time{color:var(--brass);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.station h4{margin:0 0 3px;font-size:14px}.station p{margin:0;color:var(--muted);font-size:12.5px}
+.coach{text-align:right;color:var(--soft);font-size:12px}
+.concurrent{margin:6px 0;padding:0 12px;border-left:2px solid var(--brass)}
+.concurrent-label{margin:10px 0 1px;color:var(--brass);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.note-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field label{display:block;margin-bottom:5px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.field textarea{width:100%;min-height:92px;resize:vertical}
+.save-note{margin-top:7px;color:var(--green);font-size:11px}
+.play-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.play-card{overflow:hidden}
+.play-copy{padding:17px 18px 18px}
+.play-head{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.play-card h3{margin:0 0 8px;font:500 23px/1.1 var(--serif)}
+.play-card p{margin:0;color:var(--soft)}
+.play-card .when{margin-top:11px;color:var(--muted);font-size:12px}
+.diagram{display:block;width:100%;height:auto;background:#17191a;border-top:1px solid var(--line)}
+.diagram text{fill:#d4cdc0;font:600 9px var(--sans)}
+.diagram .line{fill:none;stroke:#c4a574;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.diagram .muted{stroke:#8fa3b0}.diagram .ball{fill:#c4a574}.diagram .def{fill:#8fa3b0}
+.binder-note{margin-bottom:14px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;color:var(--soft)}
+.binder-note b{color:var(--brass)}
+.milestones{display:grid;gap:11px}
+.milestone{display:grid;grid-template-columns:130px minmax(0,1fr);overflow:hidden}
+.mile-date{padding:17px;background:var(--brass-soft);color:var(--brass);font-size:12px;font-weight:700}
+.mile-copy{padding:16px 18px}.mile-copy h3{margin:0 0 5px;font-size:15px}.mile-copy p{margin:0;color:var(--muted);font-size:12.5px}
+.ladder{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.shell-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.season-note{margin-bottom:14px;padding:14px 16px;border:1px solid rgba(212,160,154,.28);border-radius:12px;background:rgba(212,160,154,.07);color:var(--soft)}
+.season-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.shell{min-width:0;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
+.shell summary{cursor:pointer;list-style:none}.shell summary::-webkit-details-marker{display:none}
+.shell h3{margin:2px 0 3px;font-size:14px}.shell .goal-line{margin-top:8px;color:var(--soft);font-size:12px}
+.shell-body{padding-top:13px;margin-top:12px;border-top:1px solid var(--line)}
+.shell-body .field{margin-bottom:10px}.shell-body input,.shell-body textarea,.shell-body select{width:100%}
+.shell-body textarea{min-height:74px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.import-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:start;margin-top:12px}
+.import-box textarea{width:100%;min-height:132px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.import-actions{display:grid;gap:8px}
+.file-btn{position:relative;overflow:hidden;display:inline-grid;place-items:center;text-align:center}
+.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.schema{margin-top:8px;color:var(--muted);font-size:11px}
+.builder-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
+.play-library{display:grid;gap:8px}
+.library-play{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--soft);text-align:left}
+.library-play.on{border-color:rgba(196,165,116,.48);background:var(--brass-soft);color:var(--ink)}
+.library-play b{display:block;margin-bottom:3px}.library-play span{color:var(--muted);font-size:11px}
+.builder{min-width:0;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.builder-form{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;margin-bottom:12px}
+.builder-form .field:first-child{grid-column:1}
+.builder-form .how{grid-column:1/-1}.builder-form input,.builder-form textarea,.builder-form select{width:100%}
+.builder-form textarea{min-height:88px;resize:vertical}
+.field-wrap{position:relative;max-width:760px;margin:auto;border:1px solid var(--strong);border-radius:14px;overflow:hidden;background:#173a29;touch-action:none}
+.builder-field{display:block;width:100%;height:auto;min-height:300px}
+.builder-field .yard{stroke:rgba(255,255,255,.18);stroke-width:1}
+.builder-field .sideline{fill:none;stroke:rgba(255,255,255,.55);stroke-width:2}
+.builder-field .los{stroke:#c4a574;stroke-width:2;stroke-dasharray:7 5}
+.builder-field .route{fill:none;stroke:#f4efe6;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.builder-field .spot{fill:#c4a574;stroke:#12110f;stroke-width:2;cursor:grab}
+.builder-field .spot.selected{stroke:#fff;stroke-width:4}
+.builder-field text{fill:#fff;font:700 10px var(--sans);text-anchor:middle;pointer-events:none}
+.builder-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.builder-toolbar .btn.on{outline:2px solid #fff;outline-offset:1px}
+.assignment{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;align-items:end}
+.assignment select{width:100%}
+.builder-help{margin:8px 0 0;color:var(--muted);font-size:11.5px}
+.builder-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.attendance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.kid-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;background:var(--panel);border:1px solid var(--line);border-radius:11px}
+.kid-row span{font-weight:600}.kid-row select{width:96px;padding:7px 8px;font-size:12px}
+.status-line{min-height:20px;margin-top:10px;color:var(--green);font-size:12px}
+.staff-note{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:760px){
+  .mast-inner{padding:14px 16px 11px}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
+  .tabs{padding:0 16px 9px}main{padding:19px 16px}
+  .hero,.play-grid,.note-grid,.builder-layout{grid-template-columns:1fr}
+  .play-library{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick-grid{grid-template-columns:1fr}.quick{padding:13px}
+  .station{grid-template-columns:58px minmax(0,1fr)}.coach{grid-column:2;text-align:left}
+  .season-list{grid-template-columns:1fr}.attendance{grid-template-columns:1fr 1fr}
+  .milestone{grid-template-columns:1fr}.mile-date{padding:11px 15px}
+}
+@media(max-width:390px){
+  .gate-card{padding:28px 20px 23px}.gate h1{font-size:31px}
+  .pin-row{display:grid}.pin-row .btn{width:100%}
+  .attendance{grid-template-columns:1fr}.import-box{grid-template-columns:1fr}.import-actions{grid-template-columns:1fr 1fr}
+  .builder-form,.assignment{grid-template-columns:1fr}.builder-form .field:first-child,.builder-form .how{grid-column:auto}
+  .play-library{grid-template-columns:1fr}.builder{padding:14px}.builder-field{min-height:250px}
+  .practice-top,.schedule{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+<section class="gate" id="gate" aria-labelledby="gateTitle">
+  <form class="gate-card" id="pinForm">
+    <div class="kicker">Staff only · Commodores</div>
+    <h1 id="gateTitle">Coach’s field book</h1>
+    <p>Enter the six-digit staff PIN. Plans and attendance stay in this device’s copy.</p>
+    <label class="small" for="pin">Staff PIN</label>
+    <div class="pin-row">
+      <input id="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" aria-describedby="gateMsg">
+      <button class="btn" type="submit">Open field book</button>
+    </div>
+    <div class="gate-msg" id="gateMsg" aria-live="polite"></div>
+    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
+  </form>
+</section>
+
+<div id="app">
+  <header class="mast">
+    <div class="mast-inner">
+      <div>
+        <div class="kicker">Staff field book</div>
+        <h1>Commodores <em>Fall ’26</em></h1>
+      </div>
+      <button class="btn ghost" id="lockBtn" type="button">Lock</button>
+    </div>
+    <nav class="tabs" aria-label="Field book">
+      <button class="on" data-page="today" type="button">Today</button>
+      <button data-page="playbook" type="button">Playbook</button>
+      <button data-page="builder" type="button">Play builder</button>
+      <button data-page="milestones" type="button">Milestones</button>
+      <button data-page="season" type="button">Season board</button>
+      <button data-page="attendance" type="button">Attendance</button>
+      <button data-page="handoff" type="button">Plan handoff</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page on" id="page-today">
+      <div class="hero">
+        <div class="panel">
+          <div class="eyebrow">Locked hour · Sunday, August 23</div>
+          <h2>Two plays. One defense.</h2>
+          <p>By the last snap, kids can line up and run Smash, Overload 50/51, and Man-Free without a coach talking them through every step.</p>
+        </div>
+        <div class="panel callout">
+          <span class="dot"></span>
+          <div><strong>Passer plan</strong><span>Michael is first-look QB. Teddy throws too, but split his reps so he still runs routes as a top receiver.</span></div>
+        </div>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick"><b>1:00–2:00 p.m.</b><span>Frostwood · 60 minutes · 13 kids ages 8–10</span></div>
+        <div class="quick"><b>Offense today</b><span>Smash + Overload only. No third play.</span></div>
+        <div class="quick"><b>Defense today</b><span>Man-Free. No rush. Zone waits until week 3+.</span></div>
+      </div>
+
+      <article class="practice-card">
+        <div class="practice-top">
+          <div class="practice-title">
+            <div><div class="eyebrow">Today’s practice</div><h3>Sun Aug 23 · Frostwood</h3><div class="meta">1:00–2:00 p.m. · 60 min</div></div>
+            <span class="badge live">Locked</span>
+          </div>
+          <div class="goal"><b>Goal:</b> Kids can call, line up, and run the week-one book with less coach help each snap.</div>
+        </div>
+        <div class="schedule">
+          <div class="station">
+            <div class="station-time">1:00 · 5m</div>
+            <div><h4>Rules · all together</h4><p>First throw lands past the line. One-hand touch below the neck. Five-second clock.</p></div>
+            <div class="coach">Peter · HC / Lasso</div>
+          </div>
+          <div class="concurrent-label">Concurrent split · same 20 minutes</div>
+          <div class="concurrent">
+            <div class="station">
+              <div class="station-time">1:05 · 20m</div>
+              <div><h4>Throw / catch group</h4><p>Michael gets first-look QB reps. Teddy splits throwing and routes. Rep clean catches past the line.</p></div>
+              <div class="coach">Chris · OC</div>
+            </div>
+            <div class="station">
+              <div class="station-time">1:05 · 20m</div>
+              <div><h4>Man-Free defense group</h4><p>Pick a kid. Stay on their hip. One-hand touch below the neck. One helper in the middle. No rush on the QB.</p></div>
+              <div class="coach">Ben · defense lead</div>
+            </div>
+          </div>
+          <div class="station">
+            <div class="station-time">1:25 · 25m</div>
+            <div><h4>Live Smash + Overload</h4><p>Two groups, target seven each and adjust for 13. Run both directions. Coaches get quieter each round.</p></div>
+            <div class="coach">Peter + Chris · group A<br>Ben · group B</div>
+          </div>
+          <div class="station">
+            <div class="station-time">1:50 · 5m</div>
+            <div><h4>Reset · water · one correction</h4><p>Use the built-in buffer; do not install another play.</p></div>
+            <div class="coach">Chris</div>
+          </div>
+          <div class="station">
+            <div class="station-time">1:55 · 5m</div>
+            <div><h4>Race · finish fast</h4><p>Last five minutes. End on energy.</p></div>
+            <div class="coach">Peter</div>
+          </div>
+        </div>
+      </article>
+
+      <div class="section-head"><div><div class="eyebrow">Continuity</div><h2>Last practice → next practice</h2></div><p>Saved only on this device.</p></div>
+      <div class="note-grid">
+        <div class="field"><label for="afterNotes">After-practice notes / what actually stuck</label><textarea id="afterNotes" placeholder="What worked? Who needs a different cue?"></textarea><div class="save-note">Auto-saves this device’s copy</div></div>
+        <div class="field"><label for="nextInstall">Install next Thursday</label><textarea id="nextInstall" placeholder="Write Thursday before leaving Sunday. Keep week one to Smash + Overload."></textarea><div class="save-note">OC owns offense plan · DC owns defensive looks</div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-playbook">
+      <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Core 5 ladder</h2></div><p>Kid language first. Coach terms translated.</p></div>
+      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Everything else is sitting in the binder. No third play in week one.</div>
+      <div class="play-grid">
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Smash route diagram">
+            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
+            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
+            <circle class="ball" cx="180" cy="88" r="5"/><path class="line" d="M180 88V42"/><text x="188" y="46">sit 6</text>
+            <circle class="ball" cx="55" cy="91" r="5"/><path class="line" d="M55 91V65"/><path class="line" d="M48 65H62"/><text x="20" y="55">3 steps + stop</text>
+            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91C112 54 82 34 48 23"/><path class="line" d="M48 23l9 0M48 23l5 8"/><text x="78" y="20">far corner</text>
+            <circle class="def" cx="58" cy="76" r="4"/><circle class="def" cx="107" cy="74" r="4"/>
+            <text x="227" y="156">Flip the same picture both ways</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Smash</h3><span class="badge taught">Taught</span></div>
+            <p>2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.</p>
+            <div class="when">“2x2” means two receivers on each side. “Shotgun” means the thrower starts a few steps behind the center.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Overload 50 and 51 diagram">
+            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
+            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
+            <circle class="ball" cx="75" cy="91" r="5"/><path class="line" d="M75 91C72 64 54 48 38 34"/>
+            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91V45"/>
+            <circle class="ball" cx="145" cy="91" r="5"/><path class="line" d="M145 91C143 65 130 57 118 48"/>
+            <circle class="ball" cx="292" cy="91" r="5"/><path class="line muted" d="M292 91V52"/>
+            <text x="37" y="20">50: extra kids here</text><text x="224" y="161">51 = flip the picture</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Overload 50/51</h3><span class="badge taught">Taught</span></div>
+            <p>Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.</p>
+            <div class="when">“Overload” just means more receivers line up on one side than the other.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
+            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
+            <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
+            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
+            <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
+            <text x="74" y="24">three levels: short · middle · deep</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Play 3 · OC choice</h3><span class="badge parked">Binder</span></div>
+            <p>Early September: choose either 38 Overload first down or the three-level / drag. Teach one, not both. Goal: three plays the kids can name.</p>
+            <div class="when">Parked aliases from the older sheet: B far left / Left Drag. “Three-level” means one short route, one middle route, and one deeper route so kids do not bunch up.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
+            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
+            <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
+            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
+            <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
+            <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
+            <text x="130" y="164">deep shot · add late September</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
+            <p>The late-September deeper shot. Routes spread out as they go downfield so the thrower has clear windows.</p>
+            <div class="when">Not for week one. Install only after the first three plays are clean.</div>
+          </div>
+        </article>
+        <article class="play-card">
+          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
+            <rect x="20" y="20" width="320" height="68" fill="none" stroke="#8fa3b0" stroke-width="2"/><text x="270" y="36">end zone</text>
+            <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
+            <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
+            <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
+            <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
+          </svg>
+          <div class="play-copy">
+            <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
+            <p>The short-yardage play for inside the 15-yard line. 5 goes one way; 6 flips it.</p>
+            <div class="when">Add late September with StarBurst. Do not call it outside the inside-15 situation.</div>
+          </div>
+        </article>
+      </div>
+      <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Play builder.</p></div>
+      <div class="play-grid" id="builtPlaybook"></div>
+      <div class="binder-note" style="margin-top:14px"><b>Still parked:</b> pitches, anything that blocks, and older concepts not selected on the OC ladder. Defense adds zone as a second look in week 3+, with no rush.</div>
+    </section>
+
+    <section class="page" id="page-builder">
+      <div class="section-head"><div><div class="eyebrow">Draw + assign</div><h2>Play builder</h2></div><p>Saved on this device · share with JSON</p></div>
+      <div class="builder-layout">
+        <aside>
+          <div class="binder-note"><b>Week-one guardrail:</b> Smash and Overload are the only taught plays. Save experiments as parked.</div>
+          <div class="play-library" id="playLibrary"></div>
+          <button class="btn ghost" id="newPlay" type="button" style="width:100%;margin-top:9px">+ New parked play</button>
+        </aside>
+        <div class="builder">
+          <div class="builder-form">
+            <div class="field"><label for="playName">Play name</label><input id="playName" maxlength="80"></div>
+            <div class="field"><label for="playStatus">Book status</label><select id="playStatus"><option value="parked">Sitting in binder</option><option value="taught">Taught</option></select></div>
+            <div class="field how"><label for="playHow">Kid-language how-to</label><textarea id="playHow" placeholder="Say exactly where kids line up, where they run, and the thrower’s first look."></textarea></div>
+          </div>
+          <div class="field-wrap">
+            <svg class="builder-field" id="builderField" viewBox="0 0 360 300" role="img" aria-label="Interactive 7-on-7 play field">
+              <defs><marker id="routeArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#f4efe6"></path></marker></defs>
+              <rect width="360" height="300" fill="#173a29"></rect>
+              <rect class="sideline" x="12" y="10" width="336" height="280"></rect>
+              <path class="yard" d="M12 55H348M12 105H348M12 155H348M12 205H348M12 255H348"></path>
+              <path class="los" d="M12 220H348"></path>
+              <text x="37" y="213">LINE</text>
+              <g id="routeLayer"></g>
+              <g id="spotLayer"></g>
+            </svg>
+          </div>
+          <div class="builder-toolbar">
+            <button class="btn ghost on" id="placeMode" type="button">Place / move spots</button>
+            <button class="btn ghost" id="routeMode" type="button">Draw route</button>
+            <button class="btn ghost danger" id="deleteItem" type="button">Delete selected</button>
+          </div>
+          <div class="assignment">
+            <div class="field"><label for="spotPlayer">Selected spot’s first name</label><select id="spotPlayer"></select></div>
+            <div class="field"><label>Offense spots</label><div class="badge" id="spotCount">0 / 7</div></div>
+          </div>
+          <p class="builder-help" id="builderHelp">Tap the field to add an offensive spot. Drag a spot to move it. Select a spot to assign a first name.</p>
+          <div class="builder-actions">
+            <button class="btn" id="savePlay" type="button">Save into playbook</button>
+            <button class="btn ghost" id="exportPlays" type="button">Export plays JSON</button>
+            <label class="btn ghost file-btn">Import plays JSON<input id="playFile" type="file" accept=".json,application/json"></label>
+          </div>
+          <div class="status-line" id="builderStatus" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-milestones">
+      <div class="section-head"><div><div class="eyebrow">Season plan</div><h2>Milestone board</h2></div><p>The dash protects the ladder.</p></div>
+      <div class="milestones">
+        <article class="milestone"><div class="mile-date">Now–Aug 30</div><div class="mile-copy"><h3>Two plays + Man-Free</h3><p>Smash and Overload only. Kids run both without a coach talking them through every snap. Man-Free stays on a hip, one helper in the middle, no rush.</p><div class="ladder"><span class="badge taught">Smash</span><span class="badge taught">Overload</span><span class="badge live">Man-Free</span></div></div></article>
+        <article class="milestone"><div class="mile-date">Early September</div><div class="mile-copy"><h3>Add one third play</h3><p>OC chooses either 38 Overload first down or the three-level / drag. Goal: three plays kids can name. Same defense; teach first-down spacing.</p><div class="ladder"><span class="badge parked">One OC choice</span><span class="badge live">Same defense</span></div></div></article>
+        <article class="milestone"><div class="mile-date">Late September</div><div class="mile-copy"><h3>Complete the Core 5</h3><p>Add deep shot StarBurst 63 and Goal Line 5/6 for inside the 15. Defense may add zone as its second look in week 3+. Still no rush.</p><div class="ladder"><span class="badge parked">StarBurst</span><span class="badge parked">Goal Line</span><span class="badge parked">Zone · week 3+</span></div></div></article>
+        <article class="milestone"><div class="mile-date">October</div><div class="mile-copy"><h3>Same five, cleaner</h3><p>No sixth play. Practice goes live and adds one situation: third down, inside 15, or the last play / last 10 seconds.</p><div class="ladder"><span class="badge">Core 5 only</span><span class="badge">One situation</span></div></div></article>
+        <article class="milestone"><div class="mile-date">Nov–Dec 6</div><div class="mile-copy"><h3>Point the same book at opponents</h3><p>Build game-week plans once opponents exist. Until then, keep the same five and improve execution.</p><div class="ladder"><span class="badge">Game-week plan</span><span class="badge">No new plays</span></div></div></article>
+      </div>
+    </section>
+
+    <section class="page" id="page-season">
+      <div class="section-head"><div><div class="eyebrow">Practice shells</div><h2>Season board</h2></div><p>Official book: GameChanger · games not set</p></div>
+      <div class="season-note"><b>Time check for staff:</b> Lasso’s official shells below are Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6. OC’s usual post-today working slots are Thursday 7:00–8:00 p.m. reps and Sunday 3:00–4:00 p.m. install. Correct the shells when staff confirms. Today’s 1:00 p.m. locked hour is not overwritten.</div>
+      <div class="shell-tools">
+        <button class="btn ghost" id="expandShells" type="button">Open next four</button>
+        <span class="badge">Thursday written before leaving Sunday</span>
+      </div>
+      <div class="season-list" id="seasonList"></div>
+    </section>
+
+    <section class="page" id="page-attendance">
+      <div class="section-head"><div><div class="eyebrow">This device’s copy</div><h2>Attendance</h2></div><p>First names only · Sun Aug 23</p></div>
+      <div class="attendance" id="attendanceList"></div>
+      <div class="status-line" id="attendanceStatus" aria-live="polite"></div>
+    </section>
+
+    <section class="page" id="page-handoff">
+      <div class="section-head"><div><div class="eyebrow">OC → field book</div><h2>Practice plan handoff</h2></div><p>OC owns offense plans · DC owns defensive looks</p></div>
+      <div class="panel">
+        <h2 style="font-size:24px">Add next plan</h2>
+        <p>Paste JSON or import a file. Import adds or replaces a plan with the same <code>id</code>. Export downloads this device’s plans so a coaching agent can update them.</p>
+        <div class="import-box">
+          <textarea id="jsonInput" spellcheck="false" placeholder='{"id":"2026-08-27","date":"2026-08-27","time":"5:00 p.m.","location":"Frostwood","duration":60,"goal":"Clean Smash and Overload reps.","stations":[{"minutes":15,"name":"Routes","detail":"Both directions.","coach":"Chris","concurrent":"split-a"}]}'></textarea>
+          <div class="import-actions">
+            <button class="btn" id="importJson" type="button">Import JSON</button>
+            <label class="btn ghost file-btn">Import file<input id="jsonFile" type="file" accept=".json,application/json"></label>
+            <button class="btn ghost" id="exportJson" type="button">Export plans</button>
+          </div>
+        </div>
+        <div class="schema">Shape: <code>{ id, date, time, location, duration, goal, stations: [{ minutes, name, detail, coach, concurrent? }] }</code>. The optional <code>concurrent</code> value groups stations running at the same time.</div>
+        <div class="status-line" id="importStatus" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · local edits remain on this device</div>
+  </main>
+</div>
+
+<noscript>This staff field book needs JavaScript for the PIN gate and local practice plans.</noscript>
+<script>
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
+const STORE_PREFIX="commodores_v1_";
+const ROSTER=["Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+
+function getStore(key,fallback){
+  try{const value=localStorage.getItem(STORE_PREFIX+key);return value===null?fallback:JSON.parse(value)}catch(_){return fallback}
+}
+function setStore(key,value){
+  try{localStorage.setItem(STORE_PREFIX+key,JSON.stringify(value));return true}catch(_){return false}
+}
+function esc(value){
+  return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+}
+async function sha256(value){
+  const bytes=new TextEncoder().encode(value);
+  const hash=await crypto.subtle.digest("SHA-256",bytes);
+  return [...new Uint8Array(hash)].map(byte=>byte.toString(16).padStart(2,"0")).join("");
+}
+function openApp(){
+  $("#gate").classList.add("hidden");
+  $("#app").style.display="block";
+  renderSeason();
+  renderAttendance();
+}
+$("#pinForm").onsubmit=async event=>{
+  event.preventDefault();
+  const pin=$("#pin").value.trim();
+  if(!/^\d{6}$/.test(pin)){
+    $("#gateMsg").textContent="Enter all six digits.";
+    return;
+  }
+  try{
+    if(await sha256(pin)===PIN_HASH){
+      sessionStorage.setItem(STORE_PREFIX+"open","1");
+      $("#pin").value="";
+      $("#gateMsg").textContent="";
+      openApp();
+    }else{
+      $("#gateMsg").textContent="That PIN did not match.";
+      $("#pin").select();
+    }
+  }catch(_){
+    $("#gateMsg").textContent="This browser cannot verify the PIN.";
+  }
+};
+$("#lockBtn").onclick=()=>{
+  sessionStorage.removeItem(STORE_PREFIX+"open");
+  location.reload();
+};
+
+$$(".tabs button").forEach(button=>button.onclick=()=>{
+  $$(".tabs button").forEach(item=>item.classList.toggle("on",item===button));
+  $$(".page").forEach(page=>page.classList.toggle("on",page.id==="page-"+button.dataset.page));
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+const afterNotes=$("#afterNotes");
+const nextInstall=$("#nextInstall");
+afterNotes.value=getStore("after_notes","");
+nextInstall.value=getStore("next_install","Keep Smash + Overload only. Write Thursday’s reps before leaving Sunday.");
+afterNotes.oninput=()=>setStore("after_notes",afterNotes.value);
+nextInstall.oninput=()=>setStore("next_install",nextInstall.value);
+
+const SMASH_HOW="2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.";
+const OVERLOAD_HOW="Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.";
+function seedBuiltPlays(){
+  return [
+    {
+      id:"smash",name:"Smash",status:"taught",how:SMASH_HOW,
+      spots:[
+        {id:"s-qb",x:180,y:255,player:"Michael",label:"QB"},
+        {id:"s-c",x:180,y:215,player:"",label:"C"},
+        {id:"s-lo",x:48,y:215,player:"",label:"O"},
+        {id:"s-li",x:110,y:215,player:"Teddy",label:"O"},
+        {id:"s-ri",x:250,y:215,player:"",label:"O"},
+        {id:"s-ro",x:312,y:215,player:"",label:"O"},
+        {id:"s-rb",x:215,y:255,player:"",label:"O"}
+      ],
+      routes:[
+        {id:"s-r1",from:"s-c",points:[{x:180,y:145}]},
+        {id:"s-r2",from:"s-lo",points:[{x:48,y:180}]},
+        {id:"s-r3",from:"s-li",points:[{x:76,y:105},{x:40,y:62}]},
+        {id:"s-r4",from:"s-ri",points:[{x:284,y:105},{x:320,y:62}]},
+        {id:"s-r5",from:"s-ro",points:[{x:312,y:180}]}
+      ]
+    },
+    {
+      id:"overload-50-51",name:"Overload 50/51",status:"taught",how:OVERLOAD_HOW,
+      spots:[
+        {id:"o-qb",x:180,y:255,player:"Michael",label:"QB"},
+        {id:"o-c",x:180,y:215,player:"",label:"C"},
+        {id:"o-1",x:45,y:215,player:"Teddy",label:"O"},
+        {id:"o-2",x:90,y:215,player:"",label:"O"},
+        {id:"o-3",x:132,y:215,player:"",label:"O"},
+        {id:"o-4",x:300,y:215,player:"",label:"O"},
+        {id:"o-rb",x:215,y:255,player:"",label:"O"}
+      ],
+      routes:[
+        {id:"o-r1",from:"o-1",points:[{x:35,y:125}]},
+        {id:"o-r2",from:"o-2",points:[{x:90,y:145}]},
+        {id:"o-r3",from:"o-3",points:[{x:118,y:165}]},
+        {id:"o-r4",from:"o-4",points:[{x:300,y:145}]},
+        {id:"o-r5",from:"o-c",points:[{x:180,y:160}]}
+      ]
+    }
+  ];
+}
+let builtPlays=getStore("built_plays",null);
+if(!Array.isArray(builtPlays)||!builtPlays.length) builtPlays=seedBuiltPlays();
+let playDraft=structuredClone(builtPlays[0]);
+let selectedSpotId=playDraft.spots[0].id;
+let selectedRouteId="";
+let builderMode="place";
+let draggingSpot=null;
+const builderField=$("#builderField");
+
+function routePath(play,route){
+  const start=play.spots.find(spot=>spot.id===route.from);
+  if(!start||!route.points.length) return "";
+  return `M${start.x} ${start.y} `+route.points.map(point=>`L${point.x} ${point.y}`).join(" ");
+}
+function playPreview(play){
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(play.name)} saved diagram">
+    <rect width="360" height="300" fill="#173a29"></rect><path d="M12 220H348" stroke="#c4a574" stroke-width="2" stroke-dasharray="7 5"></path>
+    ${(play.routes||[]).map(route=>`<path d="${esc(routePath(play,route))}" fill="none" stroke="#f4efe6" stroke-width="3"></path>`).join("")}
+    ${(play.spots||[]).map(spot=>`<circle cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="10" fill="#c4a574" stroke="#12110f" stroke-width="2"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}" fill="#12110f" font-size="8" text-anchor="middle">${esc(spot.label||"O")}</text>`).join("")}
+  </svg>`;
+}
+function renderBuiltPlaybook(){
+  $("#builtPlaybook").innerHTML=builtPlays.map(play=>`<article class="play-card">
+    ${playPreview(play)}
+    <div class="play-copy"><div class="play-head"><h3>${esc(play.name)}</h3><span class="badge ${play.status==="taught"?"taught":"parked"}">${play.status==="taught"?"Taught":"Binder"}</span></div>
+    <p>${esc(play.how)}</p><button class="btn ghost edit-built" type="button" data-id="${esc(play.id)}" style="margin-top:12px">Open in builder</button></div>
+  </article>`).join("");
+  $$(".edit-built").forEach(button=>button.onclick=()=>{
+    openPlay(button.dataset.id);
+    $(`[data-page="builder"]`).click();
+  });
+}
+function renderPlayLibrary(){
+  $("#playLibrary").innerHTML=builtPlays.map(play=>`<button class="library-play${play.id===playDraft.id?" on":""}" type="button" data-id="${esc(play.id)}"><b>${esc(play.name)}</b><span>${play.status==="taught"?"Taught":"Sitting in binder"} · ${play.spots.length}/7 spots</span></button>`).join("");
+  $$(".library-play").forEach(button=>button.onclick=()=>openPlay(button.dataset.id));
+}
+function fieldPoint(event){
+  const point=builderField.createSVGPoint();
+  point.x=event.clientX;point.y=event.clientY;
+  return point.matrixTransform(builderField.getScreenCTM().inverse());
+}
+function selectedSpot(){
+  return playDraft.spots.find(spot=>spot.id===selectedSpotId)||null;
+}
+function renderBuilder(){
+  $("#playName").value=playDraft.name;
+  $("#playStatus").value=playDraft.status;
+  $("#playHow").value=playDraft.how;
+  $("#routeLayer").innerHTML=(playDraft.routes||[]).map(route=>{
+    const path=routePath(playDraft,route);
+    return `<path class="route" data-route-id="${esc(route.id)}" d="${esc(path)}" marker-end="url(#routeArrow)"></path><path class="route-hit" data-route-id="${esc(route.id)}" d="${esc(path)}" fill="none" stroke="transparent" stroke-width="18"></path>`;
+  }).join("");
+  $("#spotLayer").innerHTML=playDraft.spots.map(spot=>`<g class="builder-spot" data-spot-id="${esc(spot.id)}"><circle class="spot${spot.id===selectedSpotId?" selected":""}" cx="${Number(spot.x)}" cy="${Number(spot.y)}" r="13"></circle><text x="${Number(spot.x)}" y="${Number(spot.y)+3}">${esc(spot.player||spot.label||"O")}</text></g>`).join("");
+  $("#spotPlayer").innerHTML=`<option value="">Unassigned</option>`+ROSTER.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("");
+  $("#spotPlayer").value=selectedSpot()?.player||"";
+  $("#spotPlayer").disabled=!selectedSpot();
+  $("#spotCount").textContent=`${playDraft.spots.length} / 7`;
+  $("#placeMode").classList.toggle("on",builderMode==="place");
+  $("#routeMode").classList.toggle("on",builderMode==="route");
+  $("#builderHelp").textContent=builderMode==="route"
+    ? (selectedSpot()?"Tap the field where this route should end. Tap another spot to change the route’s start.":"Select an offensive spot, then tap the route’s endpoint.")
+    :"Tap the field to add a spot. Drag a spot to move it. Select one to assign a first name.";
+  $$(".builder-spot").forEach(group=>{
+    group.onpointerdown=event=>{
+      event.stopPropagation();
+      selectedSpotId=group.dataset.spotId;selectedRouteId="";
+      if(builderMode==="place"){
+        draggingSpot=selectedSpotId;
+        builderField.setPointerCapture(event.pointerId);
+      }
+      renderBuilder();
+    };
+  });
+  $$(".route-hit").forEach(path=>path.onpointerdown=event=>{
+    event.stopPropagation();
+    selectedRouteId=path.dataset.routeId;selectedSpotId="";
+    renderBuilder();
+  });
+  renderPlayLibrary();
+  renderBuiltPlaybook();
+}
+function openPlay(id){
+  const play=builtPlays.find(item=>item.id===id);
+  if(!play) return;
+  playDraft=structuredClone(play);
+  selectedSpotId=playDraft.spots[0]?.id||"";
+  selectedRouteId="";builderMode="place";
+  renderBuilder();
+}
+function syncPlayFields(){
+  playDraft.name=$("#playName").value.trim();
+  playDraft.status=$("#playStatus").value;
+  playDraft.how=$("#playHow").value.trim();
+}
+["playName","playHow"].forEach(id=>$("#"+id).oninput=syncPlayFields);
+$("#playStatus").onchange=syncPlayFields;
+$("#spotPlayer").onchange=()=>{
+  const spot=selectedSpot();
+  if(spot){spot.player=$("#spotPlayer").value;renderBuilder()}
+};
+$("#placeMode").onclick=()=>{builderMode="place";renderBuilder()};
+$("#routeMode").onclick=()=>{
+  builderMode="route";
+  $("#builderStatus").textContent=selectedSpot()?"Tap a route endpoint on the field.":"Select a spot, then tap its route endpoint.";
+  renderBuilder();
+};
+builderField.onpointermove=event=>{
+  if(!draggingSpot||!builderField.hasPointerCapture(event.pointerId)) return;
+  const point=fieldPoint(event);
+  const spot=playDraft.spots.find(item=>item.id===draggingSpot);
+  if(!spot) return;
+  spot.x=Math.max(25,Math.min(335,Math.round(point.x)));
+  spot.y=Math.max(25,Math.min(275,Math.round(point.y)));
+  renderBuilder();
+};
+builderField.onpointerup=event=>{
+  if(builderField.hasPointerCapture(event.pointerId)) builderField.releasePointerCapture(event.pointerId);
+  draggingSpot=null;
+};
+builderField.onclick=event=>{
+  if(event.target.closest(".builder-spot")||event.target.closest(".route-hit")) return;
+  const point=fieldPoint(event);
+  const x=Math.max(25,Math.min(335,Math.round(point.x)));
+  const y=Math.max(25,Math.min(275,Math.round(point.y)));
+  if(builderMode==="route"){
+    const spot=selectedSpot();
+    if(!spot){$("#builderStatus").textContent="Select a spot first.";return}
+    playDraft.routes.push({id:"route-"+Date.now().toString(36),from:spot.id,points:[{x,y}]});
+    $("#builderStatus").textContent="Route added. Draw another or return to place / move.";
+  }else{
+    if(playDraft.spots.length>=7){$("#builderStatus").textContent="This 7-on-7 play already has seven offensive spots.";return}
+    const id="spot-"+Date.now().toString(36);
+    playDraft.spots.push({id,x,y,player:"",label:playDraft.spots.length===0?"QB":"O"});
+    selectedSpotId=id;selectedRouteId="";
+  }
+  renderBuilder();
+};
+$("#deleteItem").onclick=()=>{
+  if(selectedRouteId){
+    playDraft.routes=playDraft.routes.filter(route=>route.id!==selectedRouteId);
+    selectedRouteId="";
+  }else if(selectedSpotId){
+    playDraft.spots=playDraft.spots.filter(spot=>spot.id!==selectedSpotId);
+    playDraft.routes=playDraft.routes.filter(route=>route.from!==selectedSpotId);
+    selectedSpotId=playDraft.spots[0]?.id||"";
+  }else{
+    $("#builderStatus").textContent="Select a spot or route first.";
+  }
+  renderBuilder();
+};
+$("#newPlay").onclick=()=>{
+  playDraft={id:"play-"+Date.now().toString(36),name:"New play",status:"parked",how:"",spots:[],routes:[]};
+  selectedSpotId="";selectedRouteId="";builderMode="place";
+  renderBuilder();$("#playName").select();
+};
+$("#savePlay").onclick=()=>{
+  syncPlayFields();
+  if(!playDraft.name||!playDraft.how){$("#builderStatus").textContent="Add a play name and kid-language how-to first.";return}
+  if(!playDraft.spots.length){$("#builderStatus").textContent="Place at least one offensive spot first.";return}
+  const index=builtPlays.findIndex(play=>play.id===playDraft.id);
+  if(index>=0) builtPlays[index]=structuredClone(playDraft); else builtPlays.push(structuredClone(playDraft));
+  setStore("built_plays",builtPlays);
+  $("#builderStatus").textContent=`Saved ${playDraft.name} into this device’s playbook.`;
+  renderBuilder();
+};
+function downloadJson(value,filename){
+  const blob=new Blob([JSON.stringify(value,null,2)],{type:"application/json"});
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);link.download=filename;link.click();
+  setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+}
+$("#exportPlays").onclick=()=>{
+  downloadJson(builtPlays,"commodores-playbook.json");
+  $("#builderStatus").textContent="Downloaded the saved playbook.";
+};
+function validBuiltPlay(play){
+  return play&&typeof play.id==="string"&&typeof play.name==="string"&&typeof play.how==="string"
+    &&["taught","parked"].includes(play.status)&&Array.isArray(play.spots)&&play.spots.length<=7&&Array.isArray(play.routes);
+}
+$("#playFile").onchange=async event=>{
+  const file=event.target.files&&event.target.files[0];
+  if(!file) return;
+  try{
+    const parsed=JSON.parse(await file.text());
+    const incoming=Array.isArray(parsed)?parsed:[parsed];
+    if(!incoming.length||!incoming.every(validBuiltPlay)) throw new Error("Play file does not match the builder shape.");
+    incoming.forEach(play=>{
+      play.spots=play.spots.map(spot=>({...spot,player:ROSTER.includes(spot.player)?spot.player:""}));
+      const index=builtPlays.findIndex(existing=>existing.id===play.id);
+      if(index>=0) builtPlays[index]=play; else builtPlays.push(play);
+    });
+    setStore("built_plays",builtPlays);
+    openPlay(incoming[0].id);
+    $("#builderStatus").textContent=`Imported ${incoming.length} play${incoming.length===1?"":"s"}.`;
+  }catch(error){
+    $("#builderStatus").textContent="Could not import plays: "+error.message;
+  }
+  event.target.value="";
+};
+renderBuilder();
+
+function localDateISO(date){
+  return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+}
+function labelDate(iso){
+  return new Date(iso+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+}
+function milestoneGoal(iso){
+  if(iso<="2026-08-30") return "Run Smash, Overload, and Man-Free without coach narration; no third play.";
+  if(iso<="2026-09-17") return "Clean the first two, then install the one OC-selected third play.";
+  if(iso<="2026-09-30") return "Build toward the Core 5: add StarBurst and inside-15 Goal Line only when ready.";
+  if(iso<="2026-10-31") return "Same five plays, cleaner; go live and add one game situation.";
+  return "Keep the same book and shape the plan to the next opponent when known.";
+}
+function seedShells(){
+  const plans=[];
+  const start=new Date(2026,7,24,12);
+  const end=new Date(2026,11,6,12);
+  for(let day=new Date(start);day<=end;day.setDate(day.getDate()+1)){
+    if(day.getDay()!==4&&day.getDay()!==0) continue;
+    const date=localDateISO(day);
+    plans.push({
+      id:date,date,
+      time:day.getDay()===4?"5:00 p.m.":"1:00 p.m.",
+      location:"Frostwood",duration:60,goal:milestoneGoal(date),stations:[]
+    });
+    if(date==="2026-08-30"){
+      plans.push({
+        id:"2026-08-30-scrimmage",date,time:"3:00 p.m.",location:"Frostwood",
+        duration:60,goal:"Scrimmage vs TBD: run the two-play book and Man-Free without sideline narration.",
+        stations:[{minutes:60,name:"Scrimmage vs TBD",detail:"Smash + Overload only. Man-Free, no rush.",coach:"All coaches"}],
+        special:"Scrimmage"
+      });
+    }
+  }
+  return plans.sort((a,b)=>(a.date+" "+a.time).localeCompare(b.date+" "+b.time));
+}
+let plans=getStore("plans",null);
+if(!Array.isArray(plans)) plans=seedShells();
+
+function stationSummary(plan){
+  if(!plan.stations||!plan.stations.length) return "Empty shell · goal is set · add the hour before practice.";
+  return plan.stations.map(station=>`${station.name} — ${station.coach||"Unassigned"}`).join(" · ");
+}
+function shellHTML(plan,index){
+  return `<details class="shell" data-index="${index}">
+    <summary>
+      <div class="eyebrow">${esc(plan.special||"Practice shell")}</div>
+      <h3>${esc(labelDate(plan.date))} · ${esc(plan.time)}</h3>
+      <div class="meta">${esc(plan.location)} · ${esc(plan.duration)} min</div>
+      <div class="goal-line"><b>Goal:</b> ${esc(plan.goal)}</div>
+      <div class="meta" style="margin-top:6px">${esc(stationSummary(plan))}</div>
+    </summary>
+    <div class="shell-body">
+      <div class="row">
+        <div class="field"><label>Date</label><input class="shell-date" type="date" value="${esc(plan.date)}"></div>
+        <div class="field"><label>Time</label><input class="shell-time" value="${esc(plan.time)}"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Location</label><input class="shell-location" value="${esc(plan.location)}"></div>
+        <div class="field"><label>Minutes</label><input class="shell-duration" type="number" min="1" max="240" value="${esc(plan.duration)}"></div>
+      </div>
+      <div class="field"><label>Goal · one sentence first</label><textarea class="shell-goal">${esc(plan.goal)}</textarea></div>
+      <div class="field"><label>Hour + stations · coach on each</label><textarea class="shell-stations" placeholder="One per line: 15 | Routes both ways | Chris | optional concurrent group">${esc((plan.stations||[]).map(station=>[station.minutes,station.name,station.coach,station.concurrent||""].join(" | ")).join("\n"))}</textarea></div>
+      <button class="btn save-shell" type="button">Save this plan</button>
+    </div>
+  </details>`;
+}
+function renderSeason(){
+  $("#seasonList").innerHTML=plans.map(shellHTML).join("");
+  $$(".save-shell").forEach(button=>button.onclick=()=>{
+    const shell=button.closest(".shell");
+    const index=Number(shell.dataset.index);
+    const lines=shell.querySelector(".shell-stations").value.split("\n").map(line=>line.trim()).filter(Boolean);
+    plans[index]={
+      ...plans[index],
+      date:shell.querySelector(".shell-date").value,
+      time:shell.querySelector(".shell-time").value.trim(),
+      location:shell.querySelector(".shell-location").value.trim(),
+      duration:Number(shell.querySelector(".shell-duration").value)||60,
+      goal:shell.querySelector(".shell-goal").value.trim(),
+      stations:lines.map(line=>{
+        const [minutes,name,coach,concurrent]=line.split("|").map(part=>part.trim());
+        return {minutes:Number(minutes)||0,name:name||"Station",detail:"",coach:coach||"Unassigned",...(concurrent?{concurrent}:{})};
+      })
+    };
+    setStore("plans",plans);
+    renderSeason();
+  });
+}
+$("#expandShells").onclick=()=>{
+  $$(".shell").slice(0,4).forEach(shell=>{shell.open=true});
+  $("#seasonList").scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+function renderAttendance(){
+  const attendance=getStore("attendance_2026-08-23",{});
+  $("#attendanceList").innerHTML=ROSTER.map(name=>`<label class="kid-row"><span>${esc(name)}</span><select data-name="${esc(name)}" aria-label="${esc(name)} attendance">
+    <option value=""${!attendance[name]?" selected":""}>—</option>
+    <option value="present"${attendance[name]==="present"?" selected":""}>Present</option>
+    <option value="late"${attendance[name]==="late"?" selected":""}>Late</option>
+    <option value="out"${attendance[name]==="out"?" selected":""}>Out</option>
+  </select></label>`).join("");
+  $$("#attendanceList select").forEach(select=>select.onchange=()=>{
+    const latest=getStore("attendance_2026-08-23",{});
+    if(select.value) latest[select.dataset.name]=select.value; else delete latest[select.dataset.name];
+    setStore("attendance_2026-08-23",latest);
+    $("#attendanceStatus").textContent="Attendance saved on this device.";
+  });
+}
+
+function validPlan(plan){
+  return plan&&typeof plan==="object"&&typeof plan.id==="string"&&typeof plan.date==="string"
+    &&typeof plan.time==="string"&&typeof plan.location==="string"&&Number.isFinite(Number(plan.duration))
+    &&typeof plan.goal==="string"&&Array.isArray(plan.stations)
+    &&plan.stations.every(station=>station&&typeof station.name==="string"&&typeof station.coach==="string");
+}
+function importPayload(raw){
+  const parsed=JSON.parse(raw);
+  const incoming=Array.isArray(parsed)?parsed:[parsed];
+  if(!incoming.length||!incoming.every(validPlan)) throw new Error("Plan does not match the documented shape.");
+  incoming.forEach(plan=>{
+    const clean={...plan,duration:Number(plan.duration),stations:plan.stations.map(station=>({
+      minutes:Number(station.minutes)||0,name:station.name,detail:station.detail||"",coach:station.coach,
+      ...(station.concurrent?{concurrent:station.concurrent}:{})
+    }))};
+    const index=plans.findIndex(existing=>existing.id===clean.id);
+    if(index>=0) plans[index]=clean; else plans.push(clean);
+  });
+  plans.sort((a,b)=>(a.date+" "+a.time).localeCompare(b.date+" "+b.time));
+  setStore("plans",plans);
+  renderSeason();
+  $("#importStatus").textContent=`Imported ${incoming.length} plan${incoming.length===1?"":"s"} into this device’s copy.`;
+}
+$("#importJson").onclick=()=>{
+  try{importPayload($("#jsonInput").value)}catch(error){$("#importStatus").textContent="Could not import: "+error.message}
+};
+$("#jsonFile").onchange=async event=>{
+  const file=event.target.files&&event.target.files[0];
+  if(!file) return;
+  try{importPayload(await file.text())}catch(error){$("#importStatus").textContent="Could not import file: "+error.message}
+  event.target.value="";
+};
+$("#exportJson").onclick=()=>{
+  const blob=new Blob([JSON.stringify(plans,null,2)],{type:"application/json"});
+  const link=document.createElement("a");
+  link.href=URL.createObjectURL(blob);
+  link.download="commodores-practice-plans.json";
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+  $("#importStatus").textContent="Downloaded this device’s practice plans.";
+};
+
+if(sessionStorage.getItem(STORE_PREFIX+"open")==="1") openApp();
+</script>
+</body>
+</html>
