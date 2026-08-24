@@ -28,6 +28,7 @@ README.md
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
 sql/ops_events.sql             # Ops notify table (Sydney owns pings)
 sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
+sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments bucket
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 ```
 
@@ -61,8 +62,9 @@ the card's `created_at` when it is absent. Completing a card sets `done_at` /
 `done_by` and moves it into the Done drawer.
 
 For email reply cards, `snippet` is the editable reply draft. Apply the
-idempotent `sql/ops_email_replies.sql`, `sql/ops_email_recipients.sql`, and
-`sql/ops_send_now.sql` manually before using the queue flow.
+idempotent `sql/ops_email_replies.sql`, `sql/ops_email_recipients.sql`,
+`sql/ops_send_now.sql`, and `sql/ops_email_attachments.sql` manually before
+using the queue and file flow.
 The inbox watch should populate `inbound_from`, `inbound_subject`,
 `inbound_to`, `inbound_cc`, `inbound_body` (plain text),
 `inbound_message_id`, and `inbound_account` (the Chris-owned receiving
@@ -73,10 +75,17 @@ those exact recipients with the draft, asks for confirmation, and sets
 `send_requested_at` / `send_requested_by`; it does not send Gmail or mark the
 card done. Sydney's inbox watch owns the actual send and completion. Queued
 cards collapse to a compact row; **Cancel** clears only the two queue fields,
-leaving the draft and recipient choices ready to edit. The current dashboard
-treats `project` as the inbox label. `source_ref` is available to the watch
-alongside `inbound_message_id`, but this repository does not establish which
-Gmail identifier existing producers store there.
+leaving the draft and recipient choices ready to edit. Apply
+`sql/ops_email_attachments.sql` for file support. Incoming files belong in
+`inbound_attachments` and the private `ops-email-attachments` bucket when
+Sydney creates or updates the card — the Incoming panel lists them so Chris
+can open or download them without leaving Ops. On Reply, Chris can attach
+PDF, images, and typical office docs; the page uploads them immediately and
+saves `reply_attachments`. Send and Send now still only queue the card.
+Sydney reads those stored files and attaches them to the Gmail reply. The
+current dashboard treats `project` as the inbox label. `source_ref` is
+available to the watch alongside `inbound_message_id`, but this repository
+does not establish which Gmail identifier existing producers store there.
 
 The Emails top bar counts all open cards with `send_requested_at` and offers
 **Send now**. One tap inserts a pending `ops_send_now` row — there is no second
@@ -91,7 +100,8 @@ request pending at a time.
 
 If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the
-queue columns exist.
+queue columns exist. Attach and inbound-file open stay disabled until the
+attachment columns and storage bucket exist.
 
 The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
 Needs you, Today, This week, and Later before a quiet Sydney owns column.

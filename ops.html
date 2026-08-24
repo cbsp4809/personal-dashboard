@@ -175,8 +175,22 @@ a{color:var(--brass)}
 .email-wait{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;color:#e4cfaa;background:rgba(196,165,116,.14);border:1px solid rgba(196,165,116,.28);font-variant-numeric:tabular-nums;}
 .email-queued-row{display:flex;min-width:0;align-items:center;gap:10px;padding:12px 14px;}
 .email-queued-copy{flex:1;min-width:0;}
-.email-queued-recipients{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;color:var(--muted);font-size:11px;}
+.email-queued-recipients,.email-queued-files{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;color:var(--muted);font-size:11px;}
 .email-queued-chip{flex-shrink:0;border:1px solid rgba(154,175,152,.32);border-radius:999px;padding:3px 8px;color:var(--sydney);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.email-files{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;color:var(--soft);background:rgba(244,239,230,.06);border:1px solid var(--line-strong);}
+.email-attachments{min-width:0;max-width:100%;margin:14px 0 0;}
+.email-attachments-title{margin-bottom:8px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.email-attach-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:8px;}
+.email-attach-item{display:flex;min-width:0;max-width:100%;align-items:flex-start;flex-wrap:wrap;gap:8px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);}
+.email-attach-copy{flex:1 1 140px;min-width:0;}
+.email-attach-name{display:block;min-width:0;overflow-wrap:anywhere;color:var(--ink);font-size:13px;font-weight:600;}
+.email-attach-meta{display:block;min-width:0;margin-top:3px;color:var(--muted);font-size:11px;overflow-wrap:anywhere;}
+.email-attach-actions{display:flex;flex-wrap:wrap;gap:6px;}
+.email-attach-actions .btn{min-height:40px;}
+.email-attach-empty{color:var(--muted);font-size:12.5px;font-family:var(--serif);font-style:italic;}
+.email-attach-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;margin-top:10px;}
+.email-attach-btn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;}
+.email-attach-hint{min-width:0;margin-top:6px;color:var(--muted);font-size:10.5px;overflow-wrap:anywhere;}
 .cancel-queue{flex-shrink:0;}
 .email-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);}
 .email-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 10px;}
@@ -185,6 +199,7 @@ a{color:var(--brass)}
 .email-segment button.on{background:var(--brass-soft);color:var(--ink);}
 .email-detail-scroll{min-width:0;max-height:min(420px,50dvh);overflow-y:auto;padding:2px 16px 16px;overscroll-behavior:contain;}
 .email-incoming-head{padding:8px 0 12px;border-bottom:1px solid var(--line);}
+.email-incoming-head .email-attachments{margin-top:12px;}
 .email-incoming-from{font-weight:700;overflow-wrap:anywhere;}
 .email-incoming-subject{margin-top:4px;color:var(--soft);font-size:16px;overflow-wrap:anywhere;}
 .email-participants{min-width:0;margin:0 0 14px;padding:10px 0;border-bottom:1px solid var(--line);}
@@ -216,6 +231,9 @@ a{color:var(--brass)}
 .email-reply-label{display:block;margin:5px 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
 .email-reply{display:block;width:100%;min-width:0;min-height:190px;resize:vertical;padding:12px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;}
 .email-reply:focus{outline:none;border-color:var(--brass);}
+.email-attach-dock{min-width:0;max-width:100%;padding:10px 16px 8px;border-top:1px solid var(--line);background:var(--panel);}
+.email-attach-dock .email-attachments{margin:0;}
+.email-attach-dock .email-attach-btn{margin-top:8px;}
 .email-actions{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:8px;padding:10px 16px max(12px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);}
 .email-save-state{flex:1;min-width:0;color:var(--muted);font-size:11px;}
 .copy-draft{min-width:92px;}
@@ -277,6 +295,11 @@ a{color:var(--brass)}
   .email-recipient-row{grid-template-columns:28px minmax(0,1fr);gap:6px;}
   .email-recipient-hint{margin-left:34px;}
   .email-reply{min-height:180px;}
+  .email-attach-item{flex-direction:column;}
+  .email-attach-actions{width:100%;}
+  .email-attach-actions .btn{flex:1;min-height:44px;}
+  .email-attach-btn{width:100%;min-height:44px;margin-top:12px;}
+  .email-attach-dock{padding:10px 12px 8px;}
   .email-actions{padding:10px 12px max(12px,env(safe-area-inset-bottom,0px));}
   .email-actions .btn{min-height:44px;}
   .email-actions .copy-draft{min-width:44px;}
@@ -539,6 +562,8 @@ let openEmailCardId = null;
 let openEmailPanel = "reply";
 let emailQueueColumnsAvailable = true;
 let emailRecipientColumnsAvailable = true;
+let emailAttachmentColumnsAvailable = true;
+const emailAttachBusy = new Map();
 let sendNowAvailable = null;
 let pendingSendNowRequest = null;
 let sendNowPhase = "idle";
@@ -572,6 +597,11 @@ const TOUCH_HOLD_MS = 450;
 const TOUCH_CANCEL_DISTANCE = 10;
 const TOUCH_CONTROL_SELECTOR = "button,input,select,textarea,a,label";
 const EMAIL_DRAFT_SAVE_DELAY_MS = 800;
+const EMAIL_ATTACH_BUCKET = "ops-email-attachments";
+const EMAIL_ATTACH_MAX_BYTES = 25 * 1024 * 1024;
+const EMAIL_ATTACH_MAX_FILES = 10;
+const EMAIL_ATTACH_ACCEPT = ".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf";
+const EMAIL_ATTACH_EXT = /\.(pdf|png|jpe?g|gif|webp|heic|heif|docx?|xlsx?|pptx?|txt|csv|rtf)$/i;
 
 function setStatus(msg, err){
   const el = $("#status");
@@ -978,6 +1008,7 @@ async function loadCards(){
   const requiredFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at";
   const emailFields = "inbound_from,inbound_subject,inbound_body,inbound_message_id,send_requested_at,send_requested_by";
   const recipientFields = "inbound_to,inbound_cc,inbound_account,reply_all,reply_to,reply_cc,reply_bcc";
+  const attachmentFields = "inbound_attachments,reply_attachments";
   const emptyEmailFields = {
     inbound_from:null,
     inbound_subject:null,
@@ -991,20 +1022,24 @@ async function loadCards(){
     reply_all:null,
     reply_to:null,
     reply_cc:null,
-    reply_bcc:null
+    reply_bcc:null,
+    inbound_attachments:null,
+    reply_attachments:null
   };
   let includeDetails = true;
   let includeRecipients = true;
+  let includeAttachments = true;
   let includeEmail = true;
   let includeReceivedAt = true;
   let result;
-  for(let attempt=0; attempt<6; attempt++){
+  for(let attempt=0; attempt<7; attempt++){
     const fields = [
       requiredFields,
       includeDetails ? "notes,sydney_notes" : "",
       includeReceivedAt ? "received_at" : "",
       includeEmail ? emailFields : "",
-      includeEmail && includeRecipients ? recipientFields : ""
+      includeEmail && includeRecipients ? recipientFields : "",
+      includeEmail && includeAttachments ? attachmentFields : ""
     ].filter(Boolean).join(",");
     result = await sb.from("ops_cards")
       .select(fields)
@@ -1014,11 +1049,14 @@ async function loadCards(){
     const message = result.error.message || "";
     if(includeDetails && /notes|sydney_notes/i.test(message)){
       includeDetails = false;
-    }else if(includeRecipients && /inbound_to|inbound_cc|inbound_account|reply_/i.test(message)){
+    }else if(includeRecipients && /inbound_to|inbound_cc|inbound_account|reply_to|reply_cc|reply_bcc|reply_all/i.test(message)){
       includeRecipients = false;
+    }else if(includeAttachments && /inbound_attachments|reply_attachments/i.test(message)){
+      includeAttachments = false;
     }else if(includeEmail && /inbound_|send_requested/i.test(message)){
       includeEmail = false;
       includeRecipients = false;
+      includeAttachments = false;
     }else if(includeReceivedAt && /received_at/i.test(message)){
       includeReceivedAt = false;
     }else{
@@ -1028,6 +1066,7 @@ async function loadCards(){
   detailColumnsAvailable = includeDetails && !result.error;
   emailQueueColumnsAvailable = includeEmail && !result.error;
   emailRecipientColumnsAvailable = includeEmail && includeRecipients && !result.error;
+  emailAttachmentColumnsAvailable = includeEmail && includeAttachments && !result.error;
   if(!result.error){
     result.data = (result.data||[]).map(card => ({
       ...emptyEmailFields,
@@ -1651,6 +1690,286 @@ function recipientControlsHTML(card, draft){
     <div class="email-recipient-hint">Type an address and press Enter, or add someone from the original email above.</div>`;
 }
 
+function parseAttachments(value){
+  if(!value) return [];
+  let list = value;
+  if(typeof value==="string"){
+    try{ list = JSON.parse(value); }catch(_){ return []; }
+  }
+  if(!Array.isArray(list)) return [];
+  return list.map(item => {
+    if(!item || typeof item!=="object") return null;
+    const name = String(item.name || item.filename || "").trim();
+    const path = String(item.path || item.storage_path || "").trim();
+    const url = String(item.url || item.signed_url || "").trim();
+    if(!name && !path && !url) return null;
+    return {
+      id:String(item.id || path || name),
+      name:name || path.split("/").pop() || "Attachment",
+      mime:String(item.mime || item.content_type || item.type || ""),
+      size:Number(item.size || item.bytes || 0) || 0,
+      path,
+      url,
+      gmail_id:item.gmail_id || item.gmail_attachment_id || null
+    };
+  }).filter(Boolean);
+}
+
+function attachmentRecords(list){
+  return parseAttachments(list).map(item => {
+    const record = {
+      id:item.id,
+      name:item.name,
+      mime:item.mime || null,
+      size:item.size || 0,
+      path:item.path || null
+    };
+    if(!item.path && item.url) record.url = item.url;
+    if(item.gmail_id) record.gmail_id = item.gmail_id;
+    return record;
+  });
+}
+
+function formatFileSize(bytes){
+  const n = Number(bytes) || 0;
+  if(n < 1024) return n+" B";
+  if(n < 1024*1024) return Math.round(n/102.4)/10+" KB";
+  return Math.round(n/104857.6)/10+" MB";
+}
+
+function attachmentCountLabel(count, word){
+  if(!count) return "";
+  return count===1 ? "1 "+word : count+" "+word;
+}
+
+function emailFileChipLabel(card){
+  const total = parseAttachments(card.inbound_attachments).length + parseAttachments(card.reply_attachments).length;
+  return attachmentCountLabel(total, total===1 ? "file" : "files");
+}
+
+function sanitizeAttachName(name){
+  const base = String(name||"file").split(/[/\\]/).pop() || "file";
+  const cleaned = base.replace(/[^\w.\-() +@]+/g, "_").replace(/^\.+/, "") || "file";
+  return cleaned.slice(0, 120);
+}
+
+function newAttachmentId(){
+  if(crypto && typeof crypto.randomUUID==="function") return crypto.randomUUID();
+  return "att-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2, 10);
+}
+
+function emailAttachmentAllowed(file){
+  const name = file && file.name || "";
+  const mime = file && file.type || "";
+  if(EMAIL_ATTACH_EXT.test(name)) return true;
+  if(/^image\//i.test(mime)) return true;
+  if(/^(application\/pdf|application\/msword|application\/vnd\.(ms-excel|ms-powerpoint|openxmlformats)|text\/(plain|csv)|application\/rtf)/i.test(mime)) return true;
+  return false;
+}
+
+function emailAttachInFlight(cardId){
+  return (emailAttachBusy.get(cardId) || 0) > 0;
+}
+
+function beginEmailAttach(cardId){
+  emailAttachBusy.set(cardId, (emailAttachBusy.get(cardId) || 0) + 1);
+}
+
+function endEmailAttach(cardId){
+  const next = (emailAttachBusy.get(cardId) || 1) - 1;
+  if(next<=0) emailAttachBusy.delete(cardId);
+  else emailAttachBusy.set(cardId, next);
+}
+
+async function waitForEmailAttaches(cardId){
+  const started = Date.now();
+  while(emailAttachInFlight(cardId)){
+    if(Date.now()-started > 60000) return false;
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  return true;
+}
+
+function findCardAttachment(card, kind, id){
+  const list = parseAttachments(kind==="inbound" ? card.inbound_attachments : card.reply_attachments);
+  return list.find(item => item.id===id) || null;
+}
+
+async function emailAttachmentSignedUrl(file, download){
+  if(file && file.path && sb){
+    const options = download ? { download:file.name || true } : undefined;
+    const { data, error } = await sb.storage.from(EMAIL_ATTACH_BUCKET).createSignedUrl(file.path, 3600, options);
+    if(!error && data && data.signedUrl) return data.signedUrl;
+  }
+  return file && file.url || "";
+}
+
+async function openEmailAttachment(file, download){
+  const url = await emailAttachmentSignedUrl(file, !!download);
+  if(!url){
+    setStatus("Could not open "+(file && file.name || "that file")+".", true);
+    return false;
+  }
+  const opened = window.open(url, "_blank", "noopener");
+  if(!opened){
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    if(download) link.download = file.name || "attachment";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+  return true;
+}
+
+function emailAttachmentsHTML(card, kind){
+  const inbound = kind==="inbound";
+  const files = parseAttachments(inbound ? card.inbound_attachments : card.reply_attachments);
+  const title = inbound ? "Incoming files" : "Files to send";
+  const empty = inbound
+    ? (emailAttachmentColumnsAvailable ? "No files on this message." : "Apply sql/ops_email_attachments.sql to show sender files.")
+    : (emailAttachmentColumnsAvailable ? "No files attached yet." : "Apply sql/ops_email_attachments.sql before attaching files.");
+  const items = files.length
+    ? files.map(file => {
+        const canOpen = !!(file.path || file.url);
+        const meta = [file.mime, file.size ? formatFileSize(file.size) : ""].filter(Boolean).join(" · ");
+        return `<div class="email-attach-item" data-attach-id="${esc(file.id)}">
+          <div class="email-attach-copy">
+            <span class="email-attach-name">${esc(file.name)}</span>
+            ${meta ? `<span class="email-attach-meta">${esc(meta)}</span>` : ""}
+          </div>
+          <div class="email-attach-actions">
+            <button type="button" class="btn tiny ghost email-attach-open"${canOpen?"":" disabled"} data-attach-kind="${kind}" data-attach-id="${esc(file.id)}">Open</button>
+            <button type="button" class="btn tiny ghost email-attach-download"${canOpen?"":" disabled"} data-attach-kind="${kind}" data-attach-id="${esc(file.id)}">Download</button>
+            ${inbound ? "" : `<button type="button" class="btn tiny ghost email-attach-remove" data-attach-id="${esc(file.id)}">Remove</button>`}
+          </div>
+        </div>`;
+      }).join("")
+    : `<div class="email-attach-empty">${esc(empty)}</div>`;
+  const attachBtn = !inbound && emailAttachmentColumnsAvailable ? `
+    <label class="btn tiny ghost email-attach-btn">
+      Attach files
+      <input class="email-attach-input" type="file" multiple accept="${EMAIL_ATTACH_ACCEPT}">
+    </label>
+    <div class="email-attach-hint">PDF, photos, and typical office docs. Up to ${EMAIL_ATTACH_MAX_FILES} files, 25 MB each.</div>
+  ` : "";
+  return `<div class="email-attachments email-${kind}-attachments">
+    <div class="email-attachments-title">${title}</div>
+    <div class="email-attach-list">${items}</div>
+    ${attachBtn}
+  </div>`;
+}
+
+function refreshReplyAttachments(el, card){
+  const box = el.querySelector(".email-reply-attachments");
+  if(!box) return;
+  box.outerHTML = emailAttachmentsHTML(card, "reply");
+  bindAttachmentControls(el, card);
+}
+
+function bindAttachmentControls(el, card){
+  el.querySelectorAll(".email-attach-open, .email-attach-download").forEach(button => {
+    button.onclick = async () => {
+      const file = findCardAttachment(card, button.dataset.attachKind, button.dataset.attachId);
+      if(!file) return;
+      button.disabled = true;
+      await openEmailAttachment(file, button.classList.contains("email-attach-download"));
+      if(button.isConnected) button.disabled = false;
+    };
+  });
+  el.querySelectorAll(".email-attach-remove").forEach(button => {
+    button.onclick = () => removeReplyAttachment(card, button.dataset.attachId, el);
+  });
+  const input = el.querySelector(".email-attach-input");
+  if(input){
+    input.onchange = async () => {
+      const files = [...input.files];
+      input.value = "";
+      await addReplyAttachments(card, files, el);
+    };
+  }
+}
+
+async function addReplyAttachments(card, files, el){
+  if(!emailAttachmentColumnsAvailable || !sb){
+    setStatus("Apply sql/ops_email_attachments.sql before attaching files.", true);
+    return;
+  }
+  const current = attachmentRecords(card.reply_attachments);
+  if(!files.length) return;
+  if(current.length + files.length > EMAIL_ATTACH_MAX_FILES){
+    setStatus("You can attach up to "+EMAIL_ATTACH_MAX_FILES+" files.", true);
+    return;
+  }
+  const saveState = el && el.querySelector(".email-save-state");
+  for(const file of files){
+    if(!emailAttachmentAllowed(file)){
+      setStatus(file.name+" is not a PDF, image, or typical office doc.", true);
+      continue;
+    }
+    if(file.size > EMAIL_ATTACH_MAX_BYTES){
+      setStatus(file.name+" is larger than 25 MB.", true);
+      continue;
+    }
+    const id = newAttachmentId();
+    const path = card.id+"/reply/"+id+"/"+sanitizeAttachName(file.name);
+    beginEmailAttach(card.id);
+    if(saveState) saveState.textContent = "Uploading "+file.name+"…";
+    const { error } = await sb.storage.from(EMAIL_ATTACH_BUCKET).upload(path, file, {
+      cacheControl:"3600",
+      contentType:file.type || "application/octet-stream",
+      upsert:false
+    });
+    if(error){
+      endEmailAttach(card.id);
+      setStatus("Could not attach "+file.name+": "+error.message, true);
+      if(saveState) saveState.textContent = "File not attached";
+      continue;
+    }
+    const next = attachmentRecords(card.reply_attachments).concat([{
+      id,
+      name:file.name,
+      mime:file.type || null,
+      size:file.size || 0,
+      path
+    }]);
+    const saved = await patchCard(card.id, { reply_attachments:next }, { render:false });
+    endEmailAttach(card.id);
+    if(!saved){
+      await sb.storage.from(EMAIL_ATTACH_BUCKET).remove([path]);
+      if(saveState) saveState.textContent = "File not attached";
+      continue;
+    }
+    card.reply_attachments = next;
+    if(saveState) saveState.textContent = "Attached "+file.name;
+    setStatus("Attached "+file.name+".");
+    if(el) refreshReplyAttachments(el, card);
+  }
+}
+
+async function removeReplyAttachment(card, attachId, el){
+  const current = attachmentRecords(card.reply_attachments);
+  const target = current.find(item => item.id===attachId);
+  if(!target) return;
+  const next = current.filter(item => item.id!==attachId);
+  const saveState = el && el.querySelector(".email-save-state");
+  if(saveState) saveState.textContent = "Removing…";
+  if(target.path && sb){
+    const { error } = await sb.storage.from(EMAIL_ATTACH_BUCKET).remove([target.path]);
+    if(error) setStatus("Removed from the card. Storage cleanup failed: "+error.message, true);
+  }
+  const saved = await patchCard(card.id, { reply_attachments:next }, { render:false });
+  if(!saved){
+    if(saveState) saveState.textContent = "File not removed";
+    return;
+  }
+  card.reply_attachments = next;
+  if(saveState) saveState.textContent = "File removed";
+  if(el) refreshReplyAttachments(el, card);
+}
+
 function queuedRecipientsLabel(card){
   const saved = {
     to:recipientArray(card.reply_to),
@@ -1723,6 +2042,7 @@ function emailCardHTML(c){
           <span class="email-from">${esc(from)}</span>
           <span class="email-subject">${esc(subject)}</span>
           <span class="email-queued-recipients">${esc(queuedRecipientsLabel(c))}</span>
+          ${parseAttachments(c.reply_attachments).length ? `<span class="email-queued-files">${esc(attachmentCountLabel(parseAttachments(c.reply_attachments).length, "files attached"))}</span>` : ""}
         </div>
         <span class="email-queued-chip">Queued</span>
         <button type="button" class="btn tiny ghost cancel-queue">Cancel</button>
@@ -1746,6 +2066,7 @@ function emailCardHTML(c){
             <div class="email-incoming-head">
               ${participantsHTML(c, false)}
               <div class="email-incoming-subject">${esc(subject)}</div>
+              ${emailAttachmentsHTML(c, "inbound")}
             </div>
             <div class="email-incoming-body">${esc(c.inbound_body||"Received message body unavailable.")}</div>
           </div>
@@ -1758,6 +2079,7 @@ function emailCardHTML(c){
           <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
         `}
       </div>
+      ${openEmailPanel==="reply" ? `<div class="email-attach-dock">${emailAttachmentsHTML(c, "reply")}</div>` : ""}
       <div class="email-actions">
         <span class="email-save-state" aria-live="polite"></span>
         ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
@@ -1776,6 +2098,7 @@ function emailCardHTML(c){
         <span class="email-meta">
           <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
           <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
+          ${emailFileChipLabel(c) ? `<span class="email-files">${esc(emailFileChipLabel(c))}</span>` : ""}
           <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
         </span>
       </button>
@@ -2421,6 +2744,7 @@ function bindEmailCards(){
     });
     const reply = el.querySelector(".email-reply");
     const saveState = el.querySelector(".email-save-state");
+    bindAttachmentControls(el, card);
     if(reply && !reply.readOnly){
       const draft = emailDraftFor(card);
       bindRecipientControls(el, card, draft);
@@ -2457,6 +2781,13 @@ function bindEmailCards(){
         const toInput = el.querySelector('.email-recipient-input[data-recipient-kind="to"]');
         if(toInput) toInput.focus();
         return;
+      }
+      if(emailAttachInFlight(card.id)){
+        if(saveState) saveState.textContent = "Waiting for files…";
+        if(!(await waitForEmailAttaches(card.id))){
+          setStatus("Still uploading a file. Try Send again when it finishes.", true);
+          return;
+        }
       }
       if(!(await persistEmailDraft(card.id))) return;
       const total = recipientCount(card);
