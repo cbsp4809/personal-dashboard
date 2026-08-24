@@ -289,9 +289,8 @@ a{color:var(--brass)}
   .btn.tiny{padding:10px 14px;min-height:44px;}
   .linkish{min-height:44px;padding:12px 8px;}
   .board .col{min-height:0;}
-  .board .snippet,.board .meta,.board .ctrls,.board .noteta{margin-left:0;max-width:100%;}
+  .board .snippet,.board .meta,.board .ctrls{margin-left:0;max-width:100%;}
   .ctrls > *{flex:1 1 calc(50% - 3px);width:auto;min-width:0;max-width:100%;}
-  .board .noteta{width:100%;max-width:100%;}
   .col.deemphasized{opacity:.46;}
   .composer-confirm{font-size:11px;}
 }
@@ -321,7 +320,7 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
 .card-top{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:8px;}
 .chk{width:16px;height:16px;margin-top:3px;accent-color:var(--brass);flex-shrink:0;}
 .title{flex:1;min-width:0;max-width:100%;overflow-wrap:anywhere;font-weight:600;font-size:14.5px;line-height:1.35;}
-.snippet{min-width:0;max-width:calc(100% - 24px);overflow-wrap:anywhere;margin:6px 0 0 24px;color:var(--soft);font-size:13px;white-space:pre-wrap;}
+.snippet{min-width:0;max-width:calc(100% - 24px);overflow:hidden;overflow-wrap:anywhere;margin:6px 0 0 24px;color:var(--soft);font-size:13px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;white-space:normal;}
 .meta{display:flex;min-width:0;max-width:calc(100% - 24px);flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;align-items:center;}
 .tag{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;border:1px solid var(--line-strong);color:var(--soft);}
 .tag.studio-pod{color:#d8c4a0;border-color:rgba(196,165,116,.35);}
@@ -334,10 +333,34 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
 .src{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
 .ctrls{display:flex;min-width:0;max-width:calc(100% - 24px);flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;}
 .ctrls select,.ctrls input[type="date"]{min-width:0;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:11.5px;color:var(--soft);}
-.note-toggle{background:none;border:none;color:var(--muted);font-size:12px;padding:0;margin-left:auto;}
-.note-toggle:hover{color:var(--ink);}
-.noteta{display:block;width:calc(100% - 24px);max-width:calc(100% - 24px);margin:8px 0 0 24px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px;resize:vertical;min-height:56px;}
-.noteta:focus{outline:none;border-color:var(--brass);}
+.card-detail{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;max-width:100vw;padding:20px;background:rgba(0,0,0,.62);}
+.card-detail-sheet{display:flex;flex-direction:column;width:min(680px,100%);min-width:0;max-width:100%;max-height:min(820px,calc(100dvh - 40px));overflow:hidden;background:var(--panel);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);}
+.card-detail-head{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);}
+.card-detail-head h2{min-width:0;margin:0;font-family:var(--serif);font-size:25px;font-weight:400;}
+.card-detail-close{width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--line-strong);border-radius:12px;background:transparent;color:var(--soft);font-size:24px;line-height:1;}
+.card-detail-body{min-width:0;max-width:100%;overflow-x:hidden;overflow-y:auto;padding:18px;}
+.card-detail-label{display:block;margin:0 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.card-detail-title,.card-detail-notes{display:block;width:100%;min-width:0;max-width:100%;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;}
+.card-detail-title{min-height:46px;margin-bottom:18px;padding:10px 12px;font-weight:600;}
+.card-detail-notes{min-height:180px;padding:12px;resize:vertical;line-height:1.5;}
+.card-detail-title:focus,.card-detail-notes:focus{outline:none;border-color:var(--brass);}
+.sydney-notes{min-width:0;max-width:100%;margin-top:22px;padding:16px;border:1px solid rgba(154,175,152,.3);border-radius:12px;background:rgba(154,175,152,.07);}
+.sydney-notes .card-detail-label{color:var(--sydney);}
+.sydney-notes-body{min-width:0;overflow-wrap:anywhere;color:var(--soft);font-size:15px;line-height:1.6;white-space:pre-wrap;user-select:text;-webkit-user-select:text;}
+.sydney-notes-empty{color:var(--muted);font-style:italic;}
+.sydney-notes-body a{overflow-wrap:anywhere;}
+.card-detail-actions{display:flex;min-width:0;align-items:center;gap:10px;padding:12px 18px max(12px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);}
+.card-detail-state{flex:1;min-width:0;color:var(--muted);font-size:12px;}
+.card-detail-actions .btn{min-height:44px;}
+body.card-detail-open{overflow:hidden;}
+@media(max-width:700px){
+  .card-detail{align-items:flex-end;padding:0;}
+  .card-detail-sheet{width:100%;height:100dvh;max-height:100dvh;border-width:0;border-radius:0;}
+  .card-detail-head{padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));}
+  .card-detail-body{padding:18px max(16px,env(safe-area-inset-right,0px)) 22px max(16px,env(safe-area-inset-left,0px));}
+  .card-detail-notes{min-height:28dvh;}
+  .card-detail-actions{padding:10px max(16px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));}
+}
 
 .drawer-back{position:fixed;inset:0;background:rgba(0,0,0,.46);z-index:40;}
 .drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,94vw);background:var(--panel);border-left:1px solid var(--line-strong);z-index:41;padding:max(22px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) max(22px, env(safe-area-inset-bottom, 0px)) 20px;overflow:auto;box-shadow:var(--shadow);}
@@ -508,6 +531,8 @@ let cards = [];
 let morningDigests = [];
 let digestsAvailable = true;
 let openDigestDate = null;
+let openCardDetailId = null;
+let detailColumnsAvailable = true;
 let openEmailCardId = null;
 let openEmailPanel = "reply";
 let emailQueueColumnsAvailable = true;
@@ -937,10 +962,9 @@ async function onSignedIn(session){
 async function loadCards(){
   if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
-  const baseFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,received_at,created_at,updated_at";
+  const requiredFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at";
   const emailFields = "inbound_from,inbound_subject,inbound_body,inbound_message_id,send_requested_at,send_requested_by";
   const recipientFields = "inbound_to,inbound_cc,inbound_account,reply_all,reply_to,reply_cc,reply_bcc";
-  const legacyFields = baseFields.replace("received_at,", "");
   const emptyEmailFields = {
     inbound_from:null,
     inbound_subject:null,
@@ -956,39 +980,48 @@ async function loadCards(){
     reply_cc:null,
     reply_bcc:null
   };
-  let result = await sb.from("ops_cards")
-    .select(baseFields+","+emailFields+","+recipientFields)
-    .order("sort", { ascending:true })
-    .order("created_at", { ascending:true });
-  emailQueueColumnsAvailable = !result.error;
-  emailRecipientColumnsAvailable = !result.error;
-  if(result.error && (result.error.code==="42703" || /inbound_to|inbound_cc|inbound_account|reply_/i.test(result.error.message||""))){
+  let includeDetails = true;
+  let includeRecipients = true;
+  let includeEmail = true;
+  let includeReceivedAt = true;
+  let result;
+  for(let attempt=0; attempt<6; attempt++){
+    const fields = [
+      requiredFields,
+      includeDetails ? "notes,sydney_notes" : "",
+      includeReceivedAt ? "received_at" : "",
+      includeEmail ? emailFields : "",
+      includeEmail && includeRecipients ? recipientFields : ""
+    ].filter(Boolean).join(",");
     result = await sb.from("ops_cards")
-      .select(baseFields+","+emailFields)
+      .select(fields)
       .order("sort", { ascending:true })
       .order("created_at", { ascending:true });
-    emailQueueColumnsAvailable = !result.error;
-    if(!result.error) result.data = (result.data||[]).map(card => ({ ...card, ...{
-      inbound_to:null, inbound_cc:null, inbound_account:null, reply_all:null,
-      reply_to:null, reply_cc:null, reply_bcc:null
-    } }));
+    if(!result.error) break;
+    const message = result.error.message || "";
+    if(includeDetails && /notes|sydney_notes/i.test(message)){
+      includeDetails = false;
+    }else if(includeRecipients && /inbound_to|inbound_cc|inbound_account|reply_/i.test(message)){
+      includeRecipients = false;
+    }else if(includeEmail && /inbound_|send_requested/i.test(message)){
+      includeEmail = false;
+      includeRecipients = false;
+    }else if(includeReceivedAt && /received_at/i.test(message)){
+      includeReceivedAt = false;
+    }else{
+      break;
+    }
   }
-  if(result.error && (result.error.code==="42703" || /inbound_|send_requested/i.test(result.error.message||""))){
-    result = await sb.from("ops_cards")
-      .select(baseFields)
-      .order("sort", { ascending:true })
-      .order("created_at", { ascending:true });
-    if(!result.error) result.data = (result.data||[]).map(card => ({ ...card, ...emptyEmailFields }));
-  }
-  if(result.error && (result.error.code==="42703" || /received_at/i.test(result.error.message||""))){
-    result = await sb.from("ops_cards")
-      .select(legacyFields)
-      .order("sort", { ascending:true })
-      .order("created_at", { ascending:true });
-    if(!result.error) result.data = (result.data||[]).map(card => ({
-      ...card,
+  detailColumnsAvailable = includeDetails && !result.error;
+  emailQueueColumnsAvailable = includeEmail && !result.error;
+  emailRecipientColumnsAvailable = includeEmail && includeRecipients && !result.error;
+  if(!result.error){
+    result.data = (result.data||[]).map(card => ({
+      ...emptyEmailFields,
+      notes:null,
+      sydney_notes:null,
       received_at:null,
-      ...emptyEmailFields
+      ...card
     }));
   }
   const { data, error } = result;
@@ -1702,7 +1735,7 @@ function cardHTML(c){
   const due = c.due_on || "";
   const src = SOURCES[c.source] || c.source || "chat";
   const starred = c.column_key==="needs-you";
-  return `<article class="card" draggable="true" data-id="${esc(c.id)}">
+  return `<article class="card" draggable="true" tabindex="0" data-id="${esc(c.id)}" aria-label="Open ${esc(c.title)} details">
     <div class="card-top">
       <input type="checkbox" class="chk" title="Mark done">
       <div class="title">${esc(c.title)}</div>
@@ -1714,7 +1747,6 @@ function cardHTML(c){
       <span class="tag">${esc(OWNERS[c.owner]||c.owner)}</span>
       ${due?`<span class="duechip ${dueClass(due)}">${esc(fmtDue(due))}</span>`:""}
       <span class="src">${esc(src)}</span>
-      <button type="button" class="note-toggle">${c.snippet?"Edit note":"+ Note"}</button>
     </div>
     <div class="ctrls">
       <select class="proj" title="Project">${Object.entries(PROJECTS).map(([k,v])=>`<option value="${k}" ${c.project===k?"selected":""}>${v}</option>`).join("")}</select>
@@ -1722,8 +1754,107 @@ function cardHTML(c){
       <select class="colsel" title="Move">${COLUMNS.map(col=>`<option value="${col.key}" ${c.column_key===col.key?"selected":""}>${col.label}</option>`).join("")}</select>
       <input type="date" class="due" value="${esc(due)}" title="Due">
     </div>
-    <textarea class="noteta hidden" placeholder="Snippet — context from chat or email…">${esc(c.snippet||"")}</textarea>
   </article>`;
+}
+
+function readableNotesHTML(value){
+  const text = String(value||"");
+  if(!text.trim()) return `<span class="sydney-notes-empty">No notes from Sydney yet.</span>`;
+  const urlPattern = /https?:\/\/[^\s<>"']+/gi;
+  let html = "", lastIndex = 0;
+  for(const match of text.matchAll(urlPattern)){
+    html += esc(text.slice(lastIndex, match.index));
+    html += `<a href="${esc(match[0])}" target="_blank" rel="noopener noreferrer">${esc(match[0])}</a>`;
+    lastIndex = match.index + match[0].length;
+  }
+  return html + esc(text.slice(lastIndex));
+}
+
+function cardDetailDirty(){
+  const detail = document.querySelector(".card-detail");
+  if(!detail) return false;
+  return detail.querySelector(".card-detail-title").value.trim()!==detail.dataset.savedTitle
+    || detail.querySelector(".card-detail-notes").value.trim()!==detail.dataset.savedNotes;
+}
+
+function closeCardDetail(force){
+  const detail = document.querySelector(".card-detail");
+  if(!detail) return true;
+  if(!force && cardDetailDirty() && !window.confirm("Discard your unsaved changes?")) return false;
+  detail.remove();
+  openCardDetailId = null;
+  document.body.classList.remove("card-detail-open");
+  renderBoard();
+  return true;
+}
+
+async function saveCardDetail(){
+  const detail = document.querySelector(".card-detail");
+  if(!detail || !openCardDetailId) return;
+  const titleInput = detail.querySelector(".card-detail-title");
+  const notesInput = detail.querySelector(".card-detail-notes");
+  const saveButton = detail.querySelector(".card-detail-save");
+  const state = detail.querySelector(".card-detail-state");
+  const title = titleInput.value.trim();
+  const notes = notesInput.value.trim();
+  if(!title){
+    titleInput.setCustomValidity("Title is required.");
+    titleInput.reportValidity();
+    return;
+  }
+  titleInput.setCustomValidity("");
+  saveButton.disabled = true;
+  state.textContent = "Saving…";
+  const saved = await patchCard(openCardDetailId, { title, notes:notes || null }, { render:false });
+  saveButton.disabled = false;
+  if(!saved){
+    state.textContent = "Not saved";
+    return;
+  }
+  detail.dataset.savedTitle = title;
+  detail.dataset.savedNotes = notes;
+  state.textContent = "Saved";
+}
+
+function openCardDetail(card){
+  if(!card || isEmailCard(card)) return;
+  closeCardDetail(true);
+  openCardDetailId = card.id;
+  const notes = card.notes == null ? (card.snippet || "") : card.notes;
+  const wrap = document.createElement("div");
+  wrap.className = "card-detail";
+  wrap.dataset.savedTitle = card.title || "";
+  wrap.dataset.savedNotes = notes;
+  wrap.innerHTML = `<section class="card-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="card-detail-heading">
+    <header class="card-detail-head">
+      <h2 id="card-detail-heading">Card details</h2>
+      <button type="button" class="card-detail-close" aria-label="Close card details">×</button>
+    </header>
+    <div class="card-detail-body">
+      <label class="card-detail-label" for="card-detail-title">Title</label>
+      <input class="card-detail-title" id="card-detail-title" type="text" value="${esc(card.title||"")}" autocomplete="off">
+      <label class="card-detail-label" for="card-detail-notes">Chris note</label>
+      <textarea class="card-detail-notes" id="card-detail-notes" placeholder="Add your notes…">${esc(notes)}</textarea>
+      <section class="sydney-notes" aria-labelledby="sydney-notes-label">
+        <div class="card-detail-label" id="sydney-notes-label">Sydney</div>
+        <div class="sydney-notes-body">${readableNotesHTML(card.sydney_notes)}</div>
+      </section>
+    </div>
+    <footer class="card-detail-actions">
+      <span class="card-detail-state" aria-live="polite">${detailColumnsAvailable?"":"Database setup required"}</span>
+      <button type="button" class="btn tiny ghost card-detail-cancel">Close</button>
+      <button type="button" class="btn tiny card-detail-save"${detailColumnsAvailable?"":" disabled"}>Save</button>
+    </footer>
+  </section>`;
+  document.body.appendChild(wrap);
+  document.body.classList.add("card-detail-open");
+  wrap.querySelector(".card-detail-close").onclick = () => closeCardDetail(false);
+  wrap.querySelector(".card-detail-cancel").onclick = () => closeCardDetail(false);
+  wrap.querySelector(".card-detail-save").onclick = saveCardDetail;
+  wrap.onclick = event => {
+    if(event.target===wrap) closeCardDetail(false);
+  };
+  wrap.querySelector(".card-detail-title").focus();
 }
 
 function touchPoint(list, identifier){
@@ -1956,14 +2087,14 @@ function bindBoard(){
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
     el.querySelector(".due").onchange = e => patchCard(id, { due_on: e.target.value || null });
-    const note = el.querySelector(".noteta");
-    el.querySelector(".note-toggle").onclick = () => {
-      note.classList.toggle("hidden");
-      if(!note.classList.contains("hidden")) note.focus();
+    el.onclick = e => {
+      if(!e.target.closest(TOUCH_CONTROL_SELECTOR)) openCardDetail(card);
     };
-    note.onblur = () => {
-      const v = note.value.trim();
-      if(v !== (card.snippet||"")) patchCard(id, { snippet:v });
+    el.onkeydown = e => {
+      if((e.key==="Enter" || e.key===" ") && e.target===el){
+        e.preventDefault();
+        openCardDetail(card);
+      }
     };
   });
 }
@@ -2492,6 +2623,7 @@ $("#alertBtn").onclick = () => {
 $("#alertBack").onclick = closeAlertPanel;
 $("#alertMarkAll").onclick = markAllAlertsRead;
 document.addEventListener("keydown", e => {
+  if(e.key==="Escape" && openCardDetailId) closeCardDetail(false);
   if(e.key==="Escape" && alertPanelOpen) closeAlertPanel();
   if(e.key==="Escape" && drawerOpen) closeDrawer();
 });
