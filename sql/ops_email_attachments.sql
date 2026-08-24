@@ -16,8 +16,10 @@
 --     "path": "<card_id>/inbound/<id>/Estimate.pdf"
 --   }
 -- Optional inbound-only key: "gmail_id" (Gmail attachment id, for Sydney).
--- Prefer "path" over a temporary signed URL. The dashboard signs paths with
--- the signed-in Studio Pod session.
+-- Reply items also get signed_url and signed_url_expires_at (~1 hour) so
+-- Sydney can GET the private file without a dashboard session. The dashboard
+-- mints those with the signed-in Studio Pod session on upload and again on
+-- Send / Send now. Keep the bucket private. Do not use Google Drive.
 --
 -- Paths:
 --   inbound: <card_id>/inbound/<id>/<safe-filename>
@@ -31,7 +33,8 @@
 --
 -- Sydney — outbound (when send_requested_at is set, or after ops_send_now):
 --   1. Read ops_cards.reply_attachments.
---   2. Download each path from ops-email-attachments.
+--   2. GET each item.signed_url (no dashboard login). If that 404s, fall
+--      back to the private path with service_role — not the anon key.
 --   3. Attach those bytes to the Gmail reply.
 --   4. Then send and complete the card as today.
 --
@@ -58,7 +61,7 @@ comment on column public.ops_cards.inbound_attachments is
   'jsonb array of sender files stored in the ops-email-attachments bucket. Each item has id, name, mime, size, path, and optional gmail_id.';
 
 comment on column public.ops_cards.reply_attachments is
-  'jsonb array of files Chris attached for Sydney to send with the Gmail reply. Same item shape as inbound_attachments.';
+  'jsonb array of files Chris attached for Sydney to send with the Gmail reply. Same item shape as inbound_attachments, plus signed_url and signed_url_expires_at for a ~1 hour GET.';
 
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('ops-email-attachments', 'ops-email-attachments', false, 26214400)

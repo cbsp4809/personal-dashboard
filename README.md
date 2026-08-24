@@ -29,6 +29,7 @@ README.md
 sql/ops_events.sql             # Ops notify table (Sydney owns pings)
 sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
 sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments bucket
+sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 ```
 
@@ -81,22 +82,28 @@ leaving the draft and recipient choices ready to edit. Apply
 Sydney creates or updates the card — the Incoming panel lists them so Chris
 can open or download them without leaving Ops. On Reply, Chris can attach
 PDF, images, and typical office docs; the page uploads them immediately and
-saves `reply_attachments`. Send and Send now still only queue the card.
-Sydney reads those stored files and attaches them to the Gmail reply. The
+saves `reply_attachments` with a ~1 hour `signed_url` so Sydney can GET the
+private file without a dashboard login. Send and Send now remint those URLs
+and still only queue the card. The bucket stays private. Do not add Google
+Drive. Sydney GETs `signed_url` and attaches those bytes to the Gmail reply. The
 current dashboard treats `project` as the inbox label. `source_ref` is
 available to the watch alongside `inbound_message_id`, but this repository
 does not establish which Gmail identifier existing producers store there.
 
 The Emails top bar counts all open cards with `send_requested_at` and offers
-**Send now**. One tap inserts a pending `ops_send_now` row — there is no second
-confirm. The big control shows **Send N** when cards are already queued,
-**Sending N…** while the flush is out, then **Sent N** after Sydney sets
-`processed_at` and those cards have `done_at`, and returns to **Send now** after
-a few seconds. If nothing was queued it flashes **Nothing queued**. The Emails
-tab polls `ops_send_now` and queued cards about every 20 seconds, the same
-cadence as the live alert badge, so the status clears without a reload. The
-dashboard does not send Gmail. A unique partial index keeps only one flush
-request pending at a time.
+**Send now**. A short status line shows the last inbox pass from
+`public.ops_mail_status` (`id='default'`, `inbox_checked_at`) and, when
+anything is queued, how long those live `ops_cards` have been waiting
+(`send_requested_at` set, `done_at` null). Apply `sql/ops_mail_status.sql`
+only if that table is not there yet. One tap inserts a pending `ops_send_now`
+row — there is no second confirm. The big control shows **Send N** when cards
+are already queued, **Sending N…** while the flush is out, then **Sent N**
+after Sydney sets `processed_at` and those cards have `done_at`, and returns
+to **Send now** after a few seconds. If nothing was queued it flashes
+**Nothing queued**. The Emails tab polls `ops_send_now`, `ops_mail_status`,
+and queued cards about every 20 seconds, the same cadence as the live alert
+badge, so the status clears without a reload. The dashboard does not send
+Gmail. A unique partial index keeps only one flush request pending at a time.
 
 If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the
