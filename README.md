@@ -22,7 +22,7 @@ ops.html                   # Ops board (Chris & Sydney) — separate page, same 
 manifest.json              # web app manifest so Ops can be added to an iPhone home screen
 commodores.html            # staff-only Commodores field book (PIN, shared notes/plans, not linked from Ops)
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
-icons/                     # original Ops mark plus Commodores gold-star icons (not Vanderbilt marks)
+icons/                     # CB Ops wordmark plus Commodores gold-star icons (not Vanderbilt marks)
 README.md
 .gitignore
 .github/workflows/deploy.yml   # GitHub Pages auto-deploy
@@ -132,7 +132,7 @@ On Chris’s iPhone:
 
 1. Open that link in **Safari** (Chrome and other browsers cannot add it the same way).
 2. Tap the **Share** button (the square with the arrow).
-3. Tap **Add to Home Screen**, name it Ops if asked, then **Add**.
+3. Tap **Add to Home Screen**, name it **CB Ops** if asked, then **Add**.
 
 The home-screen icon opens the board full-screen, like an app. Sign-in uses the
 same Studio Pod account and stays on the phone (the session is already saved in

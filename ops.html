@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ops · Chris &amp; Sydney</title>
+<title>CB Ops · Chris &amp; Sydney</title>
 <meta name="theme-color" content="#12110f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Ops">
+<meta name="apple-mobile-web-app-title" content="CB Ops">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json?v=cb-ops">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=cb-ops">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=cb-ops">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=cb-ops">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=cb-ops">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
@@ -688,8 +688,8 @@ async function showSystemNotification(alert){
   const target = safeAlertUrl(alert.href) || new URL("ops.html", location.href).href;
   const options = {
     body: alert.body || "",
-    icon: "icons/icon-192.png",
-    badge: "icons/favicon-32.png",
+    icon: "icons/icon-192.png?v=cb-ops",
+    badge: "icons/favicon-32.png?v=cb-ops",
     tag: "ops-alert-"+alert.id,
     data: { url:target }
   };
