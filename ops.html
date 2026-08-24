@@ -156,9 +156,10 @@ a{color:var(--brass)}
 .digest-archive-empty{color:var(--muted);font-family:var(--serif);font-style:italic;padding:8px 2px;}
 .email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
 .email-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
-.email-command-copy{min-width:0;}
-.email-command-title{display:block;color:var(--ink);font-size:13px;font-weight:700;}
-.email-command-sub{display:block;min-width:0;margin-top:2px;color:var(--muted);font-size:11px;overflow-wrap:anywhere;}
+.email-command-copy{min-width:0;max-width:100%;}
+.email-command-title{display:block;min-width:0;max-width:100%;color:var(--ink);font-size:13px;font-weight:700;overflow-wrap:anywhere;}
+.email-command-sub{display:flex;min-width:0;max-width:100%;flex-direction:column;gap:2px;margin-top:2px;color:var(--muted);font-size:11px;}
+.email-mail-line{display:block;min-width:0;max-width:100%;overflow-wrap:anywhere;}
 .send-now{flex-shrink:0;min-width:126px;max-width:100%;overflow-wrap:anywhere;text-align:center;}
 .send-now-status{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:40px;padding:8px 12px;border:1px solid rgba(196,165,116,.35);border-radius:8px;background:var(--brass-soft);color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.02em;}
 .email-card{padding:0;overflow:hidden;}
@@ -276,6 +277,7 @@ a{color:var(--brass)}
   .email-filterbar .viewbar-label{display:block;margin-bottom:8px;}
   .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
   .email-commandbar{align-items:stretch;flex-direction:column;}
+  .email-command-copy,.email-command-sub,.email-mail-line{width:100%;max-width:100%;}
   .send-now{width:100%;min-height:44px;}
   .send-now-status{min-height:44px;font-size:13px;}
   .email-check{margin-left:0;}
@@ -565,6 +567,9 @@ let emailRecipientColumnsAvailable = true;
 let emailAttachmentColumnsAvailable = true;
 const emailAttachBusy = new Map();
 let sendNowAvailable = null;
+let mailStatusAvailable = null;
+let mailStatus = null;
+let replySignRepairPromise = null;
 let pendingSendNowRequest = null;
 let sendNowPhase = "idle";
 let sendNowCount = 0;
@@ -598,6 +603,7 @@ const TOUCH_CANCEL_DISTANCE = 10;
 const TOUCH_CONTROL_SELECTOR = "button,input,select,textarea,a,label";
 const EMAIL_DRAFT_SAVE_DELAY_MS = 800;
 const EMAIL_ATTACH_BUCKET = "ops-email-attachments";
+const EMAIL_ATTACH_SIGNED_TTL = 3600;
 const EMAIL_ATTACH_MAX_BYTES = 25 * 1024 * 1024;
 const EMAIL_ATTACH_MAX_FILES = 10;
 const EMAIL_ATTACH_ACCEPT = ".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf";
@@ -954,6 +960,10 @@ $$(".actor button").forEach(b => b.onclick = async () => {
   localStorage.setItem("ops_actor", actor);
   syncActorUI();
   renderBoard();
+  if(actor==="emails"){
+    loadMailStatus();
+    repairQueuedReplySignedUrls();
+  }
   if(actor==="digest") loadMorningDigests();
 });
 
@@ -995,7 +1005,9 @@ async function onSignedIn(session){
   currentUser = { email: session.user.email, id: session.user.id };
   showApp();
   await loadCards();
+  await loadMailStatus();
   await loadSendNowStatus();
+  await repairQueuedReplySignedUrls();
   await loadMorningDigests();
   await loadAlerts();
   subscribeToAlerts();
@@ -1145,13 +1157,56 @@ function sendNowButtonLabel(available, phase, queuedCount, flushCount){
   return "Send now";
 }
 
-function sendNowCommandSubtitle(available, phase, queuedCount){
-  if(available===false) return "Apply sql/ops_send_now.sql before using Send now.";
-  if(phase==="sending") return "Queued — sending now. No extra tap needed.";
-  if(phase==="sent") return "Sydney finished this send.";
-  if(phase==="empty") return "Nothing was queued.";
-  if(queuedCount) return "One tap sends every queued reply.";
-  return "Queue a reply on a card first.";
+function formatMailClock(value){
+  const date = value instanceof Date ? value : new Date(value);
+  if(Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone:OPS_TIME_ZONE,
+    hour:"numeric",
+    minute:"2-digit",
+    hour12:true
+  }).formatToParts(date);
+  const hour = (parts.find(part => part.type==="hour") || {}).value;
+  const minute = (parts.find(part => part.type==="minute") || {}).value;
+  const periodRaw = String((parts.find(part => part.type==="dayPeriod") || {}).value || "").toLowerCase();
+  if(!hour || !minute) return "";
+  const period = periodRaw.indexOf("p")>=0 ? "p.m." : "a.m.";
+  return hour+":"+minute+" "+period;
+}
+
+function oldestQueuedSendAt(list){
+  return (list||[]).reduce((oldest, card) => {
+    const time = Date.parse(card && card.send_requested_at);
+    if(Number.isNaN(time)) return oldest;
+    return oldest===null || time<oldest ? time : oldest;
+  }, null);
+}
+
+function emailMailStatusLines(){
+  const lines = [];
+  if(mailStatusAvailable===false){
+    lines.push("Inbox check unavailable");
+  }else if(mailStatusAvailable===null){
+    lines.push("Checking inbox status…");
+  }else{
+    const clock = mailStatus && mailStatus.inbox_checked_at ? formatMailClock(mailStatus.inbox_checked_at) : "";
+    lines.push(clock ? "Inbox checked "+clock : "Inbox not checked yet");
+  }
+  const queued = queuedEmailCards();
+  if(queued.length){
+    const since = formatMailClock(oldestQueuedSendAt(queued));
+    const waiting = queued.length===1 ? "1 waiting to send" : queued.length+" waiting to send";
+    lines.push(since ? waiting+" since "+since : waiting);
+  }
+  if(sendNowAvailable===false) lines.push("Apply sql/ops_send_now.sql before using Send now.");
+  else if(sendNowPhase==="sending") lines.push("Sending now.");
+  else if(sendNowPhase==="sent") lines.push("Sydney finished this send.");
+  else if(sendNowPhase==="empty") lines.push("Nothing was queued.");
+  return lines;
+}
+
+function emailMailStatusHTML(){
+  return emailMailStatusLines().map(line => `<span class="email-mail-line">${esc(line)}</span>`).join("");
 }
 
 function sendNowControlHTML(queuedCount){
@@ -1174,7 +1229,7 @@ function syncEmailCommandBar(){
   const title = bar.querySelector(".email-command-title");
   const sub = bar.querySelector(".email-command-sub");
   if(title) title.textContent = `${queuedCount} queued ${queuedCount===1?"reply":"replies"}`;
-  if(sub) sub.textContent = sendNowCommandSubtitle(sendNowAvailable, sendNowPhase, queuedCount);
+  if(sub) sub.innerHTML = emailMailStatusHTML();
   const existing = bar.querySelector(".send-now");
   const wrap = document.createElement("div");
   wrap.innerHTML = sendNowControlHTML(queuedCount);
@@ -1209,8 +1264,26 @@ async function refreshSendNowLive(){
   if(!currentUser) return;
   if(actor==="emails" || sendNowPhase==="sending" || sendNowWatchId){
     await loadCards();
+    await repairQueuedReplySignedUrls();
   }
+  await loadMailStatus();
   await loadSendNowStatus();
+}
+
+async function loadMailStatus(){
+  if(!sb || !currentUser) return;
+  const { data, error } = await sb.from("ops_mail_status")
+    .select("id,inbox_checked_at,send_flushed_at,updated_at")
+    .eq("id", "default")
+    .maybeSingle();
+  if(error){
+    mailStatusAvailable = false;
+    mailStatus = null;
+  }else{
+    mailStatusAvailable = true;
+    mailStatus = data || null;
+  }
+  refreshEmailSendNowView();
 }
 
 async function applySendNowProgress(){
@@ -1710,6 +1783,7 @@ function parseAttachments(value){
       size:Number(item.size || item.bytes || 0) || 0,
       path,
       url,
+      signed_url_expires_at:item.signed_url_expires_at || item.expires_at || null,
       gmail_id:item.gmail_id || item.gmail_attachment_id || null
     };
   }).filter(Boolean);
@@ -1724,10 +1798,107 @@ function attachmentRecords(list){
       size:item.size || 0,
       path:item.path || null
     };
-    if(!item.path && item.url) record.url = item.url;
+    if(item.url) record.signed_url = item.url;
+    if(item.signed_url_expires_at) record.signed_url_expires_at = item.signed_url_expires_at;
+    if(!item.path && item.url && !record.signed_url) record.url = item.url;
     if(item.gmail_id) record.gmail_id = item.gmail_id;
     return record;
   });
+}
+
+function replySignedUrlExpiryIso(from=new Date()){
+  return new Date(from.getTime() + EMAIL_ATTACH_SIGNED_TTL * 1000).toISOString();
+}
+
+function replyAttachmentNeedsSignedUrl(file){
+  if(!file || !file.path) return false;
+  if(!file.url) return true;
+  if(!file.signed_url_expires_at) return false;
+  const expires = Date.parse(file.signed_url_expires_at);
+  return !Number.isNaN(expires) && expires - Date.now() < 5 * 60 * 1000;
+}
+
+async function mintReplySignedUrl(path){
+  if(!path || !sb) return null;
+  const { data, error } = await sb.storage.from(EMAIL_ATTACH_BUCKET).createSignedUrl(path, EMAIL_ATTACH_SIGNED_TTL);
+  if(error || !data || !data.signedUrl) return null;
+  return { url:data.signedUrl, expiresAt:replySignedUrlExpiryIso() };
+}
+
+async function mintReplySignedUrlMap(files){
+  const withPath = (files||[]).filter(file => file && file.path);
+  const map = new Map();
+  if(!withPath.length || !sb) return map;
+  if(withPath.length===1){
+    const minted = await mintReplySignedUrl(withPath[0].path);
+    if(minted) map.set(withPath[0].path, minted);
+    return map;
+  }
+  const { data, error } = await sb.storage.from(EMAIL_ATTACH_BUCKET).createSignedUrls(
+    withPath.map(file => file.path),
+    EMAIL_ATTACH_SIGNED_TTL
+  );
+  if(error || !Array.isArray(data)){
+    for(const file of withPath){
+      const minted = await mintReplySignedUrl(file.path);
+      if(minted) map.set(file.path, minted);
+    }
+    return map;
+  }
+  const expiresAt = replySignedUrlExpiryIso();
+  data.forEach((row, index) => {
+    const path = row && (row.path || withPath[index].path);
+    const url = row && (row.signedUrl || row.signedURL);
+    if(path && url && !row.error) map.set(path, { url, expiresAt });
+  });
+  return map;
+}
+
+function applySignedUrlsToRecords(records, signedMap){
+  return records.map(item => {
+    const minted = item.path && signedMap.get(item.path);
+    if(!minted) return item;
+    return Object.assign({}, item, {
+      signed_url:minted.url,
+      signed_url_expires_at:minted.expiresAt
+    });
+  });
+}
+
+async function persistReplyAttachmentSignedUrls(card, options){
+  const force = !!(options && options.force);
+  const current = attachmentRecords(card && card.reply_attachments);
+  if(!current.length) return current;
+  const needed = current.filter(file => force ? !!file.path : replyAttachmentNeedsSignedUrl(file));
+  if(!needed.length) return current;
+  const signedMap = await mintReplySignedUrlMap(needed);
+  const next = applySignedUrlsToRecords(current, signedMap);
+  const missing = next.filter(file => file.path && !file.signed_url);
+  if(missing.length) return null;
+  if(JSON.stringify(next)===JSON.stringify(current)) return next;
+  const saved = await patchCard(card.id, { reply_attachments:next }, { render:false });
+  if(!saved) return null;
+  card.reply_attachments = next;
+  return next;
+}
+
+async function repairQueuedReplySignedUrls(){
+  if(!emailAttachmentColumnsAvailable || !sb || !currentUser) return;
+  if(replySignRepairPromise) return replySignRepairPromise;
+  const targets = queuedEmailCards().filter(card =>
+    parseAttachments(card.reply_attachments).some(replyAttachmentNeedsSignedUrl)
+  );
+  if(!targets.length) return;
+  replySignRepairPromise = (async () => {
+    for(const card of targets){
+      await persistReplyAttachmentSignedUrls(card, { force:true });
+    }
+  })();
+  try{
+    await replySignRepairPromise;
+  }finally{
+    replySignRepairPromise = null;
+  }
 }
 
 function formatFileSize(bytes){
@@ -1928,12 +2099,15 @@ async function addReplyAttachments(card, files, el){
       if(saveState) saveState.textContent = "File not attached";
       continue;
     }
+    const minted = await mintReplySignedUrl(path);
     const next = attachmentRecords(card.reply_attachments).concat([{
       id,
       name:file.name,
       mime:file.type || null,
       size:file.size || 0,
-      path
+      path,
+      signed_url:minted ? minted.url : null,
+      signed_url_expires_at:minted ? minted.expiresAt : null
     }]);
     const saved = await patchCard(card.id, { reply_attachments:next }, { render:false });
     endEmailAttach(card.id);
@@ -1943,8 +2117,8 @@ async function addReplyAttachments(card, files, el){
       continue;
     }
     card.reply_attachments = next;
-    if(saveState) saveState.textContent = "Attached "+file.name;
-    setStatus("Attached "+file.name+".");
+    if(saveState) saveState.textContent = minted ? "Attached "+file.name : "Attached "+file.name+". File link not ready.";
+    setStatus(minted ? "Attached "+file.name+"." : "Attached "+file.name+". Sydney still needs a signed link — tap Send to retry.");
     if(el) refreshReplyAttachments(el, card);
   }
 }
@@ -1994,6 +2168,17 @@ async function requestSendNow(){
   if(!queued.length){
     holdSendNowPhase("empty", 0);
     setStatus("Nothing queued.");
+    refreshEmailSendNowView();
+    return;
+  }
+  const unsigned = [];
+  for(const card of queued){
+    if(!parseAttachments(card.reply_attachments).length) continue;
+    const signed = await persistReplyAttachmentSignedUrls(card, { force:true });
+    if(!signed) unsigned.push(card);
+  }
+  if(unsigned.length){
+    setStatus("Could not make "+unsigned.length+" attached "+(unsigned.length===1?"file":"files")+" fetchable. Try Send now again.", true);
     refreshEmailSendNowView();
     return;
   }
@@ -2117,7 +2302,7 @@ function renderEmails(root){
   root.innerHTML = `<div class="email-commandbar" aria-label="Queued email controls">
       <div class="email-command-copy">
         <span class="email-command-title">${queuedCount} queued ${queuedCount===1?"reply":"replies"}</span>
-        <span class="email-command-sub" aria-live="polite">${esc(sendNowCommandSubtitle(sendNowAvailable, sendNowPhase, queuedCount))}</span>
+        <span class="email-command-sub" aria-live="polite">${emailMailStatusHTML()}</span>
       </div>
       ${sendNowControlHTML(queuedCount)}
     </div>` + (list.length
@@ -2790,6 +2975,15 @@ function bindEmailCards(){
         }
       }
       if(!(await persistEmailDraft(card.id))) return;
+      if(parseAttachments(card.reply_attachments).length){
+        if(saveState) saveState.textContent = "Preparing files…";
+        const signed = await persistReplyAttachmentSignedUrls(card, { force:true });
+        if(!signed){
+          setStatus("Could not make the attached files fetchable. Try Send again.", true);
+          if(saveState) saveState.textContent = "File link not ready";
+          return;
+        }
+      }
       const total = recipientCount(card);
       if(!window.confirm(`Queue this ${draft.replyAll?"reply all":"sender-only reply"} to ${draft.recipients.to[0]}${total>1?` and ${total-1} more`:""} for Sydney to send?`)) return;
       send.disabled = true;
@@ -3337,12 +3531,14 @@ async function boot(){
 document.addEventListener("visibilitychange", () => {
   if(!document.hidden && currentUser){
     loadCards();
+    loadMailStatus();
     loadMorningDigests();
     loadSendNowStatus();
     loadAlerts({ notifyNew:true });
+    if(actor==="emails") repairQueuedReplySignedUrls();
   }
 });
-setInterval(() => { if(currentUser){ loadCards(); loadMorningDigests(); } }, 45000);
+setInterval(() => { if(currentUser){ loadCards(); loadMailStatus(); loadMorningDigests(); } }, 45000);
 boot();
 </script>
 </body>
