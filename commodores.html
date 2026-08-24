@@ -360,12 +360,12 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="panel callout">
           <span class="dot"></span>
           <!-- Staff huddle word is Mike. Roster and diagrams still say Michael — same kid. -->
-          <div><strong>Passer plan</strong><span>Mike is QB1. Teddy is QB2. Brett is QB3. Teddy still runs routes — split his throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
+          <div><strong>Passer plan</strong><span>Mike is QB1. Teddy is QB2. Webb is QB3. Teddy still runs routes — split his throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
         </div>
       </div>
 
       <div class="quick-grid">
-        <div class="quick"><b>1:00–2:00 p.m.</b><span>Frostwood · 60 minutes · 13 kids ages 8–10</span></div>
+        <div class="quick"><b>1:00–2:00 p.m.</b><span>Frostwood · 60 minutes · 12 kids ages 8–10</span></div>
         <div class="quick"><b>Offense today</b><span>Smash + Overload only. No third play. Watch both on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</span></div>
         <div class="quick"><b>Game defense today</b><span>Six kids each cover a spot (an area). One kid roams and helps. No rush. Full look on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</span></div>
       </div>
@@ -388,7 +388,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <div class="concurrent">
             <div class="station">
               <div class="station-time">1:05 · 20m</div>
-              <div><h4>Throw / catch group</h4><p>Mike is QB1. Teddy is QB2. Brett is QB3. Teddy still splits throwing and routes. Rep clean catches past the line.</p></div>
+              <div><h4>Throw / catch group</h4><p>Mike is QB1. Teddy is QB2. Webb is QB3. Teddy still splits throwing and routes. Rep clean catches past the line.</p></div>
               <div class="coach">Chris</div>
             </div>
             <div class="station">
@@ -399,7 +399,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           </div>
           <div class="station">
             <div class="station-time">1:25 · 25m</div>
-            <div><h4>Live Smash + Overload vs areas + helper</h4><p>Two groups, target seven each and adjust for 13. Offense runs both directions against six kids covering six areas and one kid roaming to help. Coaches get quieter each round.</p></div>
+            <div><h4>Live Smash + Overload vs areas + helper</h4><p>Two groups, target seven each and adjust for 12. Offense runs both directions against six kids covering six areas and one kid roaming to help. Coaches get quieter each round.</p></div>
             <div class="coach">Peter + Chris<br>Ben</div>
           </div>
           <div class="station">
@@ -457,7 +457,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
 
       <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup boards</h2></div><p>7 offense · 7 defense · same kid can be on both</p></div>
-      <div class="binder-note"><b>QB lock:</b> Mike QB1 · Teddy QB2 · Brett QB3. Teddy still runs routes. Michael on this roster is Mike. Five receivers + center; 3 and 2 by play. Drag a name onto a spot. Drag it off, or onto Clear, to empty. Dropping on a filled spot replaces it. The same kid may be on offense and defense at once.</div>
+      <div class="binder-note"><b>QB lock:</b> Mike QB1 · Teddy QB2 · Webb QB3. Teddy still runs routes. Michael on this roster is Mike. Five receivers + center; 3 and 2 by play. Drag a name onto a spot. Drag it off, or onto Clear, to empty. Dropping on a filled spot replaces it. The same kid may be on offense and defense at once.</div>
       <div class="roster-pool" id="teamPool"></div>
       <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · drop a name here</div>
       <div class="team-boards">
@@ -614,7 +614,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <div class="play-copy">
             <div class="play-head"><h3>Two defense groups</h3><span class="badge live">Set before the quarter</span></div>
             <p>We use two defense groups. No free swapping in the middle of a quarter. Set who is in each group before the quarter starts, then keep that group on the field.</p>
-            <div class="when">About 13 kids: two groups of about seven. Adjust the last spot so both groups have a helper.</div>
+            <div class="when">About 12 kids: two groups of about seven. Adjust the last spot so both groups have a helper.</div>
           </div>
         </article>
       </div>
@@ -753,7 +753,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const STORE_PREFIX="commodores_v1_";
-const ROSTER=["Brett","Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+const ROSTER=["Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
 const LINEUP_ID="staff-lineup";
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
 const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
@@ -767,7 +767,7 @@ const DRILL_LIBRARY=[
     name:"Catch",
     minutes:5,
     group:"skills",
-    how:"Partner catch at 5–7 yards. Hands out. Thumbs together if the ball is at the face, pinkies together if it’s low. Eyes on the ball until it hits the hands. Tuck to the chest, then look up. If it hits the body, that rep doesn’t count. Mike / Teddy / Brett throw. Swap every 5 catches.",
+    how:"Partner catch at 5–7 yards. Hands out. Thumbs together if the ball is at the face, pinkies together if it’s low. Eyes on the ball until it hits the hands. Tuck to the chest, then look up. If it hits the body, that rep doesn’t count. Mike / Teddy / Webb throw. Swap every 5 catches.",
     noLines:true
   },
   {
@@ -1329,8 +1329,18 @@ function seedBuiltPlays(){
     }
   ];
 }
+function rosterPlayer(name){
+  return ROSTER.includes(name)?name:"";
+}
+function sanitizeBuiltPlays(plays){
+  return (plays||[]).map(play=>{
+    if(!play||!Array.isArray(play.spots)) return play;
+    return {...play,spots:play.spots.map(spot=>({...spot,player:rosterPlayer(spot.player)}))};
+  });
+}
 let builtPlays=getStore("built_plays",null);
 if(!Array.isArray(builtPlays)||!builtPlays.length) builtPlays=seedBuiltPlays();
+else builtPlays=sanitizeBuiltPlays(builtPlays);
 const TAUGHT_OFFENSE_IDS=["smash","overload-50-51"];
 const OFFENSE_LOOKS={
   smash:{
@@ -1794,7 +1804,7 @@ $("#playFile").onchange=async event=>{
     const incoming=Array.isArray(parsed)?parsed:[parsed];
     if(!incoming.length||!incoming.every(validBuiltPlay)) throw new Error("Play file does not match the builder shape.");
     incoming.forEach(play=>{
-      play.spots=play.spots.map(spot=>({...spot,player:ROSTER.includes(spot.player)?spot.player:""}));
+      play.spots=play.spots.map(spot=>({...spot,player:rosterPlayer(spot.player)}));
       const index=builtPlays.findIndex(existing=>existing.id===play.id);
       if(index>=0) builtPlays[index]=play; else builtPlays.push(play);
     });
@@ -2165,11 +2175,16 @@ $("#expandShells").onclick=()=>{
 
 function renderAttendance(){
   const attendance=getStore("attendance_2026-08-23",{});
+  const clean={};
+  Object.keys(attendance||{}).forEach(name=>{
+    if(ROSTER.includes(name)&&attendance[name]) clean[name]=attendance[name];
+  });
+  if(Object.keys(attendance||{}).some(name=>!ROSTER.includes(name))) setStore("attendance_2026-08-23",clean);
   $("#attendanceList").innerHTML=ROSTER.map(name=>`<label class="kid-row"><span>${esc(name)}</span><select data-name="${esc(name)}" aria-label="${esc(name)} attendance">
-    <option value=""${!attendance[name]?" selected":""}>—</option>
-    <option value="present"${attendance[name]==="present"?" selected":""}>Present</option>
-    <option value="late"${attendance[name]==="late"?" selected":""}>Late</option>
-    <option value="out"${attendance[name]==="out"?" selected":""}>Out</option>
+    <option value=""${!clean[name]?" selected":""}>—</option>
+    <option value="present"${clean[name]==="present"?" selected":""}>Present</option>
+    <option value="late"${clean[name]==="late"?" selected":""}>Late</option>
+    <option value="out"${clean[name]==="out"?" selected":""}>Out</option>
   </select></label>`).join("");
   $$("#attendanceList select").forEach(select=>select.onchange=()=>{
     const latest=getStore("attendance_2026-08-23",{});
@@ -2463,7 +2478,7 @@ function renderTeamLineup(){
   if(offense){
     offense.innerHTML=OFFENSE_SPOTS.map((label,index)=>{
       const name=teamState.offense[index];
-      const hint=index===0?"Mike 1 · Teddy 2 · Brett 3":"";
+      const hint=index===0?"Mike 1 · Teddy 2 · Webb 3":"";
       return `<div class="line-spot" data-drop-side="offense" data-drop-index="${index}"><div class="spot-label">${esc(label)}${hint?`<div>${esc(hint)}</div>`:""}</div><div class="spot-slot">${name?nameChip(name,"offense",index):`<div class="spot-empty">Drop first name</div>`}</div></div>`;
     }).join("");
   }
