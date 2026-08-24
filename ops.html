@@ -118,7 +118,8 @@ a{color:var(--brass)}
 
 .viewbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 12px;}
 .viewbar-label{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
-.viewbar .actor button{min-width:92px;padding:9px 18px;font-size:13px;}
+.viewbar .actor{flex-wrap:wrap;max-width:100%;}
+.viewbar .actor button{min-width:72px;padding:9px 12px;font-size:13px;}
 .email-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:0 0 16px;}
 .email-filterbar .filters{justify-content:flex-end;padding:0;}
 .below-board{width:100%;min-width:0;max-width:1720px;margin:0 auto;padding:0 28px 40px;}
@@ -134,6 +135,25 @@ a{color:var(--brass)}
 
 .board{display:grid;width:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1720px;margin:0 auto;}
 .board.email-board{display:block;max-width:900px;}
+.board.digest-board{display:block;max-width:640px;}
+.digest{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:18px;}
+.digest-today{min-width:0;max-width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:22px 20px 20px;}
+.digest-kicker{color:var(--brass);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
+.digest-date{margin:8px 0 0;font-family:var(--serif);font-size:30px;font-weight:400;letter-spacing:-.02em;overflow-wrap:anywhere;}
+.digest-back{margin-top:12px;min-height:44px;}
+.digest-sections{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:16px;margin-top:18px;}
+.digest-section{min-width:0;max-width:100%;}
+.digest-section h3{margin:0 0 6px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.digest-section p{margin:0;color:var(--soft);font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;}
+.digest-empty{margin-top:18px;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:18px;}
+.digest-empty-sub{margin-top:6px;color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
+.digest-archive{min-width:0;max-width:100%;}
+.digest-archive h3{margin:0 0 10px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.digest-archive-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:8px;}
+.digest-archive-item{display:block;width:100%;min-width:0;min-height:48px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--soft);text-align:left;overflow-wrap:anywhere;}
+.digest-archive-item:hover,.digest-archive-item:focus-visible{background:var(--card-hover);outline:none;}
+.digest-archive-item.on{border-color:rgba(196,165,116,.45);background:var(--brass-soft);color:var(--ink);}
+.digest-archive-empty{color:var(--muted);font-family:var(--serif);font-style:italic;padding:8px 2px;}
 .email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
 .email-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
 .email-command-copy{min-width:0;}
@@ -229,9 +249,10 @@ a{color:var(--brass)}
   .brand .navlinks{display:none;}
   .viewbar{padding:12px 0 10px;}
   .viewbar-label{display:none;}
-  .viewbar .actor{width:100%;}
-  .viewbar .actor{display:flex;}
-  .viewbar .actor button{flex:1;min-height:44px;font-size:14px;}
+  .viewbar .actor{width:100%;display:flex;}
+  .viewbar .actor button{flex:1 1 0;min-width:0;min-height:44px;padding:8px 4px;font-size:13px;}
+  .digest-today{padding:18px 16px 16px;}
+  .digest-date{font-size:26px;}
   .email-filterbar{display:block;padding-bottom:14px;}
   .email-filterbar .viewbar-label{display:block;margin-bottom:8px;}
   .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
@@ -405,6 +426,7 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
         <button type="button" data-actor="chris" class="on">Chris</button>
         <button type="button" data-actor="sydney">Sydney</button>
         <button type="button" data-actor="emails">Emails</button>
+        <button type="button" data-actor="digest">Digest</button>
       </div>
     </div>
     <div class="email-filterbar hidden" id="emailFilters">
@@ -481,8 +503,11 @@ const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
 
 let currentUser = null;
 let actor = localStorage.getItem("ops_actor") || "chris";
-if(!["chris","sydney","emails"].includes(actor)) actor = "chris";
+if(!["chris","sydney","emails","digest"].includes(actor)) actor = "chris";
 let cards = [];
+let morningDigests = [];
+let digestsAvailable = true;
+let openDigestDate = null;
 let openEmailCardId = null;
 let openEmailPanel = "reply";
 let emailQueueColumnsAvailable = true;
@@ -845,10 +870,12 @@ async function registerServiceWorker(){
 function syncActorUI(){
   $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
   const showingEmails = actor==="emails";
+  const showingDigest = actor==="digest";
+  const showingBoardTools = !showingEmails && !showingDigest;
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
-  $("#projectFilters").classList.toggle("hidden", showingEmails);
-  $("#msImport").classList.toggle("hidden", showingEmails);
-  $(".viewbar-label").textContent = showingEmails ? "View" : "Whose board?";
+  $("#projectFilters").classList.toggle("hidden", !showingBoardTools);
+  $("#msImport").classList.toggle("hidden", !showingBoardTools);
+  $(".viewbar-label").textContent = showingEmails || showingDigest ? "View" : "Whose board?";
   const input = $("#composerInput");
   if(input) input.placeholder = actor==="sydney"
     ? "Tell Ops what Sydney should pick up…"
@@ -858,9 +885,11 @@ function syncActorUI(){
 $$(".actor button").forEach(b => b.onclick = async () => {
   if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
   actor = b.dataset.actor;
+  if(actor==="digest") openDigestDate = null;
   localStorage.setItem("ops_actor", actor);
   syncActorUI();
   renderBoard();
+  if(actor==="digest") loadMorningDigests();
 });
 
 function redirectTo(){
@@ -900,6 +929,7 @@ async function onSignedIn(session){
   showApp();
   await loadCards();
   await loadSendNowStatus();
+  await loadMorningDigests();
   await loadAlerts();
   subscribeToAlerts();
 }
@@ -1006,6 +1036,40 @@ async function loadSendNowStatus(){
   if(actor==="emails") renderBoard();
 }
 
+async function loadMorningDigests(){
+  if(!sb || !currentUser) return;
+  const { data, error } = await sb.from("ops_morning_digests")
+    .select("id,digest_date,summary,lunch,needs_you,sections,body,archived_at,created_at,updated_at")
+    .order("digest_date", { ascending:false })
+    .limit(60);
+  if(error){
+    digestsAvailable = false;
+    morningDigests = [];
+    if(actor==="digest") renderBoard();
+    return;
+  }
+  digestsAvailable = true;
+  morningDigests = data || [];
+  if(actor==="digest") renderBoard();
+}
+
+function todayDigestRow(){
+  const today = chicagoDateISO();
+  return morningDigests.find(row => digestDateKey(row.digest_date)===today) || null;
+}
+
+function archiveDigestRows(){
+  const today = chicagoDateISO();
+  return morningDigests.filter(row => {
+    const key = digestDateKey(row.digest_date);
+    return key && key < today && isWeekdayDateKey(key);
+  });
+}
+
+function digestRowForDate(key){
+  return morningDigests.find(row => digestDateKey(row.digest_date)===key) || null;
+}
+
 function visible(card){
   return !projectFilter || card.project===projectFilter;
 }
@@ -1035,6 +1099,88 @@ function chicagoDayNumber(value){
   if(Number.isNaN(date.getTime())) return null;
   const parts = Object.fromEntries(OPS_DATE_PARTS.formatToParts(date).map(part => [part.type, part.value]));
   return Date.UTC(Number(parts.year), Number(parts.month)-1, Number(parts.day)) / 86400000;
+}
+
+function chicagoDateISO(value=new Date()){
+  const date = value instanceof Date ? value : new Date(value);
+  if(Number.isNaN(date.getTime())) return "";
+  const parts = Object.fromEntries(OPS_DATE_PARTS.formatToParts(date).map(part => [part.type, part.value]));
+  const year = Number(parts.year);
+  const month = Number(parts.month);
+  const day = Number(parts.day);
+  if(!year || !month || !day) return "";
+  return year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+}
+
+function digestDateKey(value){
+  if(!value) return "";
+  if(typeof value==="string"){
+    const match = value.match(/^(\d{4}-\d{2}-\d{2})/);
+    if(match) return match[1];
+  }
+  return chicagoDateISO(value);
+}
+
+function isWeekdayDateKey(key){
+  const parts = String(key||"").split("-").map(Number);
+  if(parts.length!==3 || parts.some(n => !n)) return false;
+  const dow = new Date(Date.UTC(parts[0], parts[1]-1, parts[2])).getUTCDay();
+  return dow!==0 && dow!==6;
+}
+
+function formatDigestDate(key){
+  const parts = String(key||"").split("-").map(Number);
+  if(parts.length!==3 || parts.some(n => !n)) return key || "";
+  return new Date(Date.UTC(parts[0], parts[1]-1, parts[2]))
+    .toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", timeZone:"UTC" });
+}
+
+function digestSectionText(value){
+  if(value==null) return "";
+  if(typeof value==="string" || typeof value==="number") return String(value).trim();
+  if(Array.isArray(value)) return value.map(digestSectionText).filter(Boolean).join("\n");
+  if(typeof value==="object") return String(value.body || value.text || value.value || "").trim();
+  return "";
+}
+
+function digestTitleCase(key){
+  return String(key||"Note").replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase()).trim() || "Note";
+}
+
+function digestSectionList(row){
+  const sections = [];
+  const seen = new Set();
+  function add(title, body){
+    const text = digestSectionText(body);
+    if(!text) return;
+    const key = String(title||"Note").trim().toLowerCase();
+    if(seen.has(key)) return;
+    seen.add(key);
+    sections.push({ title: String(title||"Note").trim() || "Note", body: text });
+  }
+  if(!row) return sections;
+  add("Summary", row.summary || row.body);
+  add("Kids lunch", row.lunch);
+  add("Needs you", row.needs_you);
+  const extra = row.sections;
+  if(typeof extra==="string"){
+    add("Notes", extra);
+  }else if(Array.isArray(extra)){
+    extra.forEach(item => {
+      if(item==null) return;
+      if(typeof item==="string") add("Note", item);
+      else add(item.title || item.heading || item.label || "Note", item);
+    });
+  }else if(extra && typeof extra==="object"){
+    ["meetings","shoots","family"].forEach(key => {
+      if(extra[key]!=null) add(digestTitleCase(key), extra[key]);
+    });
+    Object.entries(extra).forEach(([key, value]) => {
+      if(/^(meetings|shoots|family|summary|lunch|kids[_ ]?lunch|needs[_ ]?you|body)$/i.test(key)) return;
+      add(digestTitleCase(key), value);
+    });
+  }
+  return sections;
 }
 
 function emailWaitDays(card, now=new Date()){
@@ -1475,15 +1621,61 @@ function cardsInColumn(columnKey, exceptId){
     .sort(compareCards);
 }
 
+function renderDigest(root){
+  const todayKey = chicagoDateISO();
+  const viewingKey = openDigestDate && openDigestDate!==todayKey ? openDigestDate : todayKey;
+  const viewingToday = viewingKey===todayKey;
+  const row = viewingToday ? todayDigestRow() : digestRowForDate(viewingKey);
+  const archive = archiveDigestRows();
+  const sections = digestSectionList(row);
+  const emptyCopy = viewingToday ? "Digest not up yet" : "No digest for this day.";
+  const emptySub = viewingToday ? "Sydney posts this around 7am on weekdays." : "";
+  root.classList.remove("email-board");
+  root.classList.add("digest-board");
+  root.innerHTML = `<div class="digest">
+    <article class="digest-today">
+      <div class="digest-kicker">${viewingToday?"Today":"Archive"}</div>
+      <h2 class="digest-date">${esc(formatDigestDate(viewingKey) || "Today")}</h2>
+      ${sections.length
+        ? `<div class="digest-sections">${sections.map(section => `<section class="digest-section"><h3>${esc(section.title)}</h3><p>${esc(section.body)}</p></section>`).join("")}</div>`
+        : `<div class="digest-empty">${esc(emptyCopy)}</div>${emptySub?`<div class="digest-empty-sub">${esc(emptySub)}</div>`:""}`}
+      ${viewingToday?"":`<button type="button" class="btn tiny ghost digest-back">Back to today</button>`}
+    </article>
+    <section class="digest-archive" aria-label="Previous weekdays">
+      <h3>Archive</h3>
+      ${archive.length
+        ? `<div class="digest-archive-list">${archive.map(item => {
+            const key = digestDateKey(item.digest_date);
+            return `<button type="button" class="digest-archive-item${key===viewingKey?" on":""}" data-digest-date="${esc(key)}">${esc(formatDigestDate(key))}</button>`;
+          }).join("")}</div>`
+        : `<div class="digest-archive-empty">No previous weekdays yet.</div>`}
+    </section>
+  </div>`;
+  const back = root.querySelector(".digest-back");
+  if(back) back.onclick = () => { openDigestDate = null; renderBoard(); };
+  root.querySelectorAll("[data-digest-date]").forEach(button => {
+    button.onclick = () => {
+      openDigestDate = button.dataset.digestDate || null;
+      renderBoard();
+    };
+  });
+}
+
 function renderBoard(){
   tick();
   const root = $("#board");
   $("#doneCount").textContent = String(doneCards().length);
   if(actor==="emails"){
+    root.classList.remove("digest-board");
     renderEmails(root);
     return;
   }
+  if(actor==="digest"){
+    renderDigest(root);
+    return;
+  }
   root.classList.remove("email-board");
+  root.classList.remove("digest-board");
   const open = openCards().filter(c => !isEmailCard(c)).filter(visible);
   const ordered = actor==="chris"
     ? COLUMNS
@@ -2358,7 +2550,7 @@ function renderDrawer(){
     document.body.appendChild(d);
     panel = d;
   }
-  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":"Back to board"}</button></div>
+  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="digest"?"Back to Digest":"Back to board"}</button></div>
     <div class="sub">Finished cards leave the board. Restore one if it came back.</div>` +
     (items.length ? items.map(c => `<div class="done-item">
       <div class="t">${esc(c.title)}</div>
@@ -2526,10 +2718,11 @@ async function boot(){
 document.addEventListener("visibilitychange", () => {
   if(!document.hidden && currentUser){
     loadCards();
+    loadMorningDigests();
     loadAlerts({ notifyNew:true });
   }
 });
-setInterval(() => { if(currentUser) loadCards(); }, 45000);
+setInterval(() => { if(currentUser){ loadCards(); loadMorningDigests(); } }, 45000);
 boot();
 </script>
 </body>
