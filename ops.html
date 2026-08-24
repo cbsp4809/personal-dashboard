@@ -199,6 +199,7 @@ a{color:var(--brass)}
 .email-segment button.on{background:var(--brass-soft);color:var(--ink);}
 .email-detail-scroll{min-width:0;max-height:min(420px,50dvh);overflow-y:auto;padding:2px 16px 16px;overscroll-behavior:contain;}
 .email-incoming-head{padding:8px 0 12px;border-bottom:1px solid var(--line);}
+.email-incoming-head .email-attachments{margin-top:12px;}
 .email-incoming-from{font-weight:700;overflow-wrap:anywhere;}
 .email-incoming-subject{margin-top:4px;color:var(--soft);font-size:16px;overflow-wrap:anywhere;}
 .email-participants{min-width:0;margin:0 0 14px;padding:10px 0;border-bottom:1px solid var(--line);}
@@ -230,6 +231,9 @@ a{color:var(--brass)}
 .email-reply-label{display:block;margin:5px 0 7px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
 .email-reply{display:block;width:100%;min-width:0;min-height:190px;resize:vertical;padding:12px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;}
 .email-reply:focus{outline:none;border-color:var(--brass);}
+.email-attach-dock{min-width:0;max-width:100%;padding:10px 16px 8px;border-top:1px solid var(--line);background:var(--panel);}
+.email-attach-dock .email-attachments{margin:0;}
+.email-attach-dock .email-attach-btn{margin-top:8px;}
 .email-actions{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:8px;padding:10px 16px max(12px,env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);}
 .email-save-state{flex:1;min-width:0;color:var(--muted);font-size:11px;}
 .copy-draft{min-width:92px;}
@@ -295,6 +299,7 @@ a{color:var(--brass)}
   .email-attach-actions{width:100%;}
   .email-attach-actions .btn{flex:1;min-height:44px;}
   .email-attach-btn{width:100%;min-height:44px;margin-top:12px;}
+  .email-attach-dock{padding:10px 12px 8px;}
   .email-actions{padding:10px 12px max(12px,env(safe-area-inset-bottom,0px));}
   .email-actions .btn{min-height:44px;}
   .email-actions .copy-draft{min-width:44px;}
@@ -2061,9 +2066,9 @@ function emailCardHTML(c){
             <div class="email-incoming-head">
               ${participantsHTML(c, false)}
               <div class="email-incoming-subject">${esc(subject)}</div>
+              ${emailAttachmentsHTML(c, "inbound")}
             </div>
             <div class="email-incoming-body">${esc(c.inbound_body||"Received message body unavailable.")}</div>
-            ${emailAttachmentsHTML(c, "inbound")}
           </div>
         ` : `
           ${participantsHTML(c, true)}
@@ -2072,9 +2077,9 @@ function emailCardHTML(c){
           </div>
           <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
           <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
-          ${emailAttachmentsHTML(c, "reply")}
         `}
       </div>
+      ${openEmailPanel==="reply" ? `<div class="email-attach-dock">${emailAttachmentsHTML(c, "reply")}</div>` : ""}
       <div class="email-actions">
         <span class="email-save-state" aria-live="polite"></span>
         ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
