@@ -2875,12 +2875,10 @@ function onTeamChipClick(event){
 function onTeamSpotClick(event){
   if(event.target.closest(".name-chip")) return;
   event.preventDefault();
-  if(Date.now()<suppressTeamClickUntil) return;
   handleTeamSpotTap(event.currentTarget);
 }
 function onTeamClearClick(event){
   event.preventDefault();
-  if(Date.now()<suppressTeamClickUntil) return;
   handleTeamClearTap();
 }
 function bindTeamLineup(){
