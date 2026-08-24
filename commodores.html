@@ -246,22 +246,20 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .scoring-as-chips button.on{border-color:rgba(207,174,112,.55);background:var(--gold);color:#1C1C1C}
 .coach-breakdown{margin:-2px 0 10px;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.02em}
 .team-table .coach-breakdown{margin:3px 0 0;font-size:10px;font-weight:600}
-.rate-row{display:grid;gap:6px;margin-top:8px;min-width:0}
+.rate-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;gap:8px;margin-top:8px;min-width:0}
 .rate-row.overall{margin-top:0;padding:8px;border-radius:10px;background:var(--gold-soft)}
 .rate-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-.rate-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.rate-chips button{min-width:0;min-height:56px;border:1px solid var(--strong);border-radius:10px;padding:0;background:var(--bg-2);color:var(--soft);font-weight:700}
-.rate-chips button.on{border-color:rgba(207,174,112,.55);background:var(--gold);color:#1C1C1C}
-.team-table-wrap{overflow:hidden;max-width:100%}
+.rate-input{width:100%;min-width:0;min-height:56px;margin:0;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);padding:8px 0;color:var(--ink);text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;-webkit-appearance:none;appearance:none;touch-action:manipulation}
+.rate-input:focus{outline:none;border-color:var(--gold)}
+.rate-input.filled{border-color:rgba(207,174,112,.55);background:var(--gold-soft)}
+.team-table-wrap{overflow:hidden;max-width:100%;overscroll-behavior-x:none}
 .team-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 8px}
-.team-table th{padding:0 4px 6px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left}
-.team-table td{padding:6px 4px;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle}
+.team-table th{padding:0 3px 6px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left}
+.team-table td{padding:6px 3px;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle}
 .team-table td:first-child{padding-left:10px;border-left:1px solid var(--line);border-radius:11px 0 0 11px;font-weight:700;overflow-wrap:anywhere}
 .team-table td:last-child{padding-right:10px;border-right:1px solid var(--line);border-radius:0 11px 11px 0}
 .team-table .avg-cell{color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700}
-.rate-mini{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
-.rate-mini button{min-width:0;min-height:36px;border:1px solid var(--strong);border-radius:6px;padding:0;background:var(--bg-2);color:var(--soft);font-size:11px;font-weight:700}
-.rate-mini button.on{border-color:rgba(207,174,112,.55);background:var(--gold);color:#1C1C1C}
+.rate-input-mini{min-height:44px;max-width:52px;margin:0 auto;padding:6px 0;font-size:16px;border-radius:8px;display:block}
 .roster-pool{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 .name-chip{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:56px;min-height:56px;padding:8px 12px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-weight:700;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .name-chip .chip-avg{color:var(--gold);font-variant-numeric:tabular-nums;font-size:12px}
@@ -444,7 +442,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
 
     <section class="page" id="page-team">
       <div class="section-head"><div><div class="eyebrow">Staff ranks + lineups</div><h2>Team</h2></div><p>First names only · shared with staff</p></div>
-      <div class="binder-note"><b>Ranks:</b> pick who you are scoring as, then tap 1–5 on your sheet. 5 is strongest. Overall is set by that coach and is never auto-filled. Coach Average is the mean of that coach’s filled scores among the eight skills. Staff Average (the number that sorts the roster) is the mean of every filled skill-cell across Peter, Chris, and Ben. Empty coach scores are skipped.</div>
+      <div class="binder-note"><b>Ranks:</b> pick who you are scoring as, then type 1–5 in each skill box. Numbers only. 5 is strongest. Empty is fine. Overall is set by that coach and is never auto-filled. Coach Average is the mean of that coach’s filled scores among the eight skills. Staff Average (the number that sorts the roster) is the mean of every filled skill-cell across Peter, Chris, and Ben. Empty coach scores are skipped. Averages update after you leave the box.</div>
       <div class="scoring-as">
         <div class="scoring-as-label" id="scoringAsLabel">Scoring as</div>
         <div class="scoring-as-chips" id="scoringAsChips" role="radiogroup" aria-labelledby="scoringAsLabel">
@@ -2413,8 +2411,24 @@ function persistTeamLocal(){
   teamState.updatedAt=new Date().toISOString();
   setStore("staff_lineup",lineupPayload());
 }
-function setSkill(name,key,value){
-  if(!ROSTER.includes(name)||!RATE_KEYS.includes(key)) return;
+function scoringInputFocused(){
+  const el=document.activeElement;
+  return !!(el&&el.matches&&el.matches("input[data-rate-name]"));
+}
+function scoreDisplay(value){
+  return Number.isInteger(value)&&value>=1&&value<=5?String(value):"";
+}
+function parseScoreInput(raw){
+  const digits=String(raw==null?"":raw).replace(/[^\d]/g,"");
+  if(!digits) return {display:"",value:null};
+  for(let i=digits.length-1;i>=0;i--){
+    const n=Number(digits[i]);
+    if(n>=1&&n<=5) return {display:String(n),value:n};
+  }
+  return {display:"",value:null};
+}
+function writeSkill(name,key,value){
+  if(!ROSTER.includes(name)||!RATE_KEYS.includes(key)) return false;
   const coach=scoringAs;
   const next=cleanScore(value);
   const row={...skillRow(name,coach)};
@@ -2423,22 +2437,83 @@ function setSkill(name,key,value){
   if(!teamState.skillsByCoach[coach]) teamState.skillsByCoach[coach]={};
   if(Object.keys(row).length) teamState.skillsByCoach[coach][name]=row;
   else delete teamState.skillsByCoach[coach][name];
+  return true;
+}
+function paintPlayerAverages(name){
+  if(!ROSTER.includes(name)) return;
+  const avg=staffAverageText(name);
+  const breakdown=coachBreakdown(name);
+  $$(`[data-player="${name}"]`).forEach(block=>{
+    const cardAvg=block.querySelector(".team-avg");
+    if(cardAvg) cardAvg.innerHTML=`<span>Staff avg</span>${avg}`;
+    const tableAvg=block.querySelector(".staff-avg-num");
+    if(tableAvg) tableAvg.textContent=avg;
+    let line=block.querySelector(".coach-breakdown");
+    if(breakdown){
+      if(!line){
+        line=document.createElement("div");
+        line.className="coach-breakdown";
+        if(tableAvg) tableAvg.after(line);
+        else if(cardAvg&&cardAvg.parentNode) cardAvg.parentNode.after(line);
+      }
+      line.textContent=breakdown;
+    }else if(line) line.remove();
+  });
+  $$('.name-chip[data-name="'+name+'"]').forEach(chip=>{
+    let span=chip.querySelector(".chip-avg");
+    if(avg==="—"){
+      if(span) span.remove();
+      chip.setAttribute("aria-label",name);
+    }else{
+      if(!span){
+        span=document.createElement("span");
+        span.className="chip-avg";
+        chip.appendChild(span);
+      }
+      span.textContent=avg;
+      chip.setAttribute("aria-label",name+" staff average "+avg);
+    }
+  });
+}
+function refreshTeamAverages(){
+  ROSTER.forEach(paintPlayerAverages);
+}
+function commitSkill(name,key,value){
+  if(!writeSkill(name,key,value)) return;
   persistTeamLocal();
-  renderTeam();
+  refreshTeamAverages();
   saveStaffLineupDebounced();
 }
-function rateChips(name,key,compact){
+function rateField(name,key,compact){
   const current=skillRow(name,scoringAs)[key];
-  const klass=compact?"rate-mini":"rate-chips";
-  const buttons=[1,2,3,4,5].map(n=>`<button type="button" class="${current===n?"on":""}" data-rate-name="${esc(name)}" data-rate-key="${key}" data-rate-value="${n}" aria-label="${esc(scoringAs)} ${esc(name)} ${esc(RATE_LABELS[key])} ${n}" aria-pressed="${current===n?"true":"false"}">${n}</button>`).join("");
-  return `<div class="${klass}">${buttons}</div>`;
+  const shown=scoreDisplay(current);
+  const klass=compact?"rate-input rate-input-mini":"rate-input";
+  return `<input class="${klass}${shown?" filled":""}" type="text" inputmode="numeric" pattern="[1-5]" maxlength="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-rate-name="${esc(name)}" data-rate-key="${key}" value="${esc(shown)}" aria-label="${esc(scoringAs)} ${esc(name)} ${esc(RATE_LABELS[key])} 1 to 5">`;
 }
-function bindRateButtons(root){
-  $$(root+" [data-rate-name]").forEach(button=>button.onclick=()=>{
-    const name=button.dataset.rateName;
-    const key=button.dataset.rateKey;
-    const value=Number(button.dataset.rateValue);
-    setSkill(name,key,skillRow(name,scoringAs)[key]===value?null:value);
+function bindRateInputs(root){
+  $$(root+" input[data-rate-name]").forEach(input=>{
+    input.onbeforeinput=event=>{
+      if(event.inputType&&event.inputType.startsWith("delete")) return;
+      if(event.data!=null&&!/[1-5]/.test(event.data)) event.preventDefault();
+    };
+    input.oninput=()=>{
+      const parsed=parseScoreInput(input.value);
+      if(input.value!==parsed.display) input.value=parsed.display;
+      input.classList.toggle("filled",!!parsed.display);
+      writeSkill(input.dataset.rateName,input.dataset.rateKey,parsed.value);
+    };
+    input.onblur=()=>{
+      const parsed=parseScoreInput(input.value);
+      input.value=parsed.display;
+      input.classList.toggle("filled",!!parsed.display);
+      commitSkill(input.dataset.rateName,input.dataset.rateKey,parsed.value);
+    };
+    input.onkeydown=event=>{
+      if(event.key==="Enter"){
+        event.preventDefault();
+        input.blur();
+      }
+    };
   });
 }
 function nameChip(name,side,index){
@@ -2447,27 +2522,28 @@ function nameChip(name,side,index){
   return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(name)} ${avg==="—"?"":"staff average "+avg}">${esc(name)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
 }
 function renderTeamRatings(){
+  if(scoringInputFocused()) return;
   const order=rosterByAverage();
   const cards=$("#teamCards");
   const table=$("#teamTable");
   if(cards){
     cards.innerHTML=order.map(name=>{
       const keys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
-      const rows=keys.map(key=>`<div class="rate-row${key==="overall"?" overall":""}"><label>${esc(RATE_LABELS[key])}</label>${rateChips(name,key,false)}</div>`).join("");
+      const rows=keys.map(key=>`<div class="rate-row${key==="overall"?" overall":""}"><label>${esc(RATE_LABELS[key])}</label>${rateField(name,key,false)}</div>`).join("");
       const breakdown=coachBreakdown(name);
-      return `<article class="team-card"><div class="team-card-top"><b>${esc(name)}</b><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</article>`;
+      return `<article class="team-card" data-player="${esc(name)}"><div class="team-card-top"><b>${esc(name)}</b><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</article>`;
     }).join("");
-    bindRateButtons("#teamCards");
+    bindRateInputs("#teamCards");
   }
   if(table){
     const tableKeys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
     const head=`<thead><tr><th>Name</th><th>Staff avg</th>${tableKeys.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
     const body=order.map(name=>{
       const breakdown=coachBreakdown(name);
-      return `<tr><td>${esc(name)}</td><td class="avg-cell">${staffAverageText(name)}${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}</td>${tableKeys.map(key=>`<td>${rateChips(name,key,true)}</td>`).join("")}</tr>`;
+      return `<tr data-player="${esc(name)}"><td>${esc(name)}</td><td class="avg-cell"><span class="staff-avg-num">${staffAverageText(name)}</span>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}</td>${tableKeys.map(key=>`<td>${rateField(name,key,true)}</td>`).join("")}</tr>`;
     }).join("");
     table.innerHTML=head+`<tbody>${body}</tbody>`;
-    bindRateButtons("#teamTable");
+    bindRateInputs("#teamTable");
   }
 }
 function renderTeamLineup(){
@@ -2492,6 +2568,10 @@ function renderTeamLineup(){
 }
 function renderTeam(){
   renderScoringCoach();
+  if(scoringInputFocused()){
+    refreshTeamAverages();
+    return;
+  }
   renderTeamRatings();
   renderTeamLineup();
 }
@@ -2686,7 +2766,8 @@ async function loadStaffLineup(){
   const localRaw=getStore("staff_lineup",null);
   const local=normalizeLineup(localRaw);
   if(local) teamState=local;
-  renderTeam();
+  if(scoringInputFocused()) refreshTeamAverages();
+  else renderTeam();
   const localMigrated=rawNeedsSkillMigration(localRaw);
   if(!sb){
     if(localMigrated&&hasTeamContent(teamState)) await saveStaffLineup();
@@ -2709,6 +2790,10 @@ async function loadStaffLineup(){
   const cloudTime=Date.parse(data.updated_at)||0;
   const localTime=Date.parse(teamState.updatedAt)||0;
   if(cloud&&cloudTime>=localTime){
+    if(scoringInputFocused()){
+      setTeamStatus("Shared lineup waiting · finish this score first");
+      return;
+    }
     teamState=cloud;
     setStore("staff_lineup",lineupPayload());
     renderTeam();
