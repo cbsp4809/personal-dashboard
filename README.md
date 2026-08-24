@@ -79,10 +79,15 @@ alongside `inbound_message_id`, but this repository does not establish which
 Gmail identifier existing producers store there.
 
 The Emails top bar counts all open cards with `send_requested_at` and offers
-**Send now**. Confirming inserts one pending `ops_send_now` row; Sydney should
-poll for `processed_at is null`, flush every queued reply, then set
-`processed_at`. The dashboard does not send Gmail. A unique partial index keeps
-only one flush request pending at a time.
+**Send now**. One tap inserts a pending `ops_send_now` row — there is no second
+confirm. The big control shows **Send N** when cards are already queued,
+**Sending N…** while the flush is out, then **Sent N** after Sydney sets
+`processed_at` and those cards have `done_at`, and returns to **Send now** after
+a few seconds. If nothing was queued it flashes **Nothing queued**. The Emails
+tab polls `ops_send_now` and queued cards about every 20 seconds, the same
+cadence as the live alert badge, so the status clears without a reload. The
+dashboard does not send Gmail. A unique partial index keeps only one flush
+request pending at a time.
 
 If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the

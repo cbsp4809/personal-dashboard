@@ -159,7 +159,8 @@ a{color:var(--brass)}
 .email-command-copy{min-width:0;}
 .email-command-title{display:block;color:var(--ink);font-size:13px;font-weight:700;}
 .email-command-sub{display:block;min-width:0;margin-top:2px;color:var(--muted);font-size:11px;overflow-wrap:anywhere;}
-.send-now{flex-shrink:0;min-width:126px;}
+.send-now{flex-shrink:0;min-width:126px;max-width:100%;overflow-wrap:anywhere;text-align:center;}
+.send-now-status{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:40px;padding:8px 12px;border:1px solid rgba(196,165,116,.35);border-radius:8px;background:var(--brass-soft);color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.02em;}
 .email-card{padding:0;overflow:hidden;}
 .email-card-row{display:flex;min-width:0;align-items:stretch;}
 .email-check{width:44px;height:44px;min-width:44px;margin:4px 0 0 4px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -258,6 +259,7 @@ a{color:var(--brass)}
   .email-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
   .email-commandbar{align-items:stretch;flex-direction:column;}
   .send-now{width:100%;min-height:44px;}
+  .send-now-status{min-height:44px;font-size:13px;}
   .email-check{margin-left:0;}
   .email-card-toggle{min-height:78px;padding-right:12px;}
   .email-queued-row{gap:8px;padding:10px 12px;}
@@ -514,6 +516,14 @@ let emailQueueColumnsAvailable = true;
 let emailRecipientColumnsAvailable = true;
 let sendNowAvailable = null;
 let pendingSendNowRequest = null;
+let sendNowPhase = "idle";
+let sendNowCount = 0;
+let sendNowWatchId = null;
+let sendNowCardIds = [];
+let sendNowResetTimer = 0;
+let sendNowPollTimer = 0;
+const SEND_NOW_HOLD_MS = 3500;
+const SEND_NOW_POLL_MS = 20000;
 const emailDrafts = new Map();
 let projectFilter = "";
 let emailProjectFilter = "";
@@ -918,6 +928,8 @@ async function signInPassword(){
 async function signOut(){
   if(alertChannel && sb) await sb.removeChannel(alertChannel);
   stopAlertPolling();
+  stopSendNowPolling();
+  clearSendNowReset();
   syncAppBadge(0);
   if(sb) await sb.auth.signOut();
   currentUser = null;
@@ -932,6 +944,7 @@ async function onSignedIn(session){
   await loadMorningDigests();
   await loadAlerts();
   subscribeToAlerts();
+  startSendNowPolling();
 }
 
 async function loadCards(){
@@ -1012,11 +1025,150 @@ async function loadCards(){
   if(shouldPreserveOpenEmailReply()){
     $("#doneCount").textContent = String(doneCards().length);
     refreshEmailWaitChips();
+    syncEmailCommandBar();
     if(drawerOpen) renderDrawer();
     return;
   }
   renderBoard();
   if(drawerOpen) renderDrawer();
+}
+
+function clearSendNowReset(){
+  if(sendNowResetTimer){
+    clearTimeout(sendNowResetTimer);
+    sendNowResetTimer = 0;
+  }
+}
+
+function resetSendNowIdle(){
+  sendNowResetTimer = 0;
+  sendNowPhase = "idle";
+  sendNowWatchId = null;
+  sendNowCardIds = [];
+  sendNowCount = 0;
+  refreshEmailSendNowView();
+}
+
+function holdSendNowPhase(phase, count){
+  sendNowPhase = phase;
+  sendNowCount = count;
+  clearSendNowReset();
+  sendNowResetTimer = setTimeout(resetSendNowIdle, SEND_NOW_HOLD_MS);
+}
+
+function sendNowRemainingCardIds(cardIds, cardList){
+  return (cardIds||[]).filter(id => {
+    const card = (cardList||[]).find(item => item.id===id);
+    return !!(card && !card.done_at && card.send_requested_at);
+  });
+}
+
+function sendNowButtonLabel(available, phase, queuedCount, flushCount){
+  if(available===null) return "Checking…";
+  if(available===false) return "Setup required";
+  if(phase==="empty") return "Nothing queued";
+  if(phase==="sending") return `Sending ${flushCount}…`;
+  if(phase==="sent") return `Sent ${flushCount}`;
+  if(queuedCount) return `Send ${queuedCount}`;
+  return "Send now";
+}
+
+function sendNowCommandSubtitle(available, phase, queuedCount){
+  if(available===false) return "Apply sql/ops_send_now.sql before using Send now.";
+  if(phase==="sending") return "Queued — sending now. No extra tap needed.";
+  if(phase==="sent") return "Sydney finished this send.";
+  if(phase==="empty") return "Nothing was queued.";
+  if(queuedCount) return "One tap sends every queued reply.";
+  return "Queue a reply on a card first.";
+}
+
+function sendNowControlHTML(queuedCount){
+  const label = sendNowButtonLabel(sendNowAvailable, sendNowPhase, queuedCount, sendNowCount || queuedCount);
+  const canSend = sendNowAvailable===true && sendNowPhase==="idle";
+  if(canSend) return `<button type="button" class="btn tiny send-now">${esc(label)}</button>`;
+  return `<div class="send-now send-now-status" role="status" aria-live="polite">${esc(label)}</div>`;
+}
+
+function bindSendNowControl(root){
+  const sendNow = (root||document).querySelector("button.send-now");
+  if(sendNow) sendNow.onclick = () => requestSendNow();
+}
+
+function syncEmailCommandBar(){
+  if(actor!=="emails") return;
+  const bar = document.querySelector(".email-commandbar");
+  if(!bar) return;
+  const queuedCount = queuedEmailCards().length;
+  const title = bar.querySelector(".email-command-title");
+  const sub = bar.querySelector(".email-command-sub");
+  if(title) title.textContent = `${queuedCount} queued ${queuedCount===1?"reply":"replies"}`;
+  if(sub) sub.textContent = sendNowCommandSubtitle(sendNowAvailable, sendNowPhase, queuedCount);
+  const existing = bar.querySelector(".send-now");
+  const wrap = document.createElement("div");
+  wrap.innerHTML = sendNowControlHTML(queuedCount);
+  const next = wrap.firstElementChild;
+  if(existing) existing.replaceWith(next);
+  else bar.appendChild(next);
+  bindSendNowControl(bar);
+}
+
+function refreshEmailSendNowView(){
+  if(actor!=="emails") return;
+  if(document.querySelector(".email-commandbar")){
+    syncEmailCommandBar();
+    return;
+  }
+  renderBoard();
+}
+
+function startSendNowPolling(){
+  if(sendNowPollTimer) return;
+  sendNowPollTimer = setInterval(() => {
+    if(currentUser && !document.hidden) refreshSendNowLive();
+  }, SEND_NOW_POLL_MS);
+}
+
+function stopSendNowPolling(){
+  if(sendNowPollTimer) clearInterval(sendNowPollTimer);
+  sendNowPollTimer = 0;
+}
+
+async function refreshSendNowLive(){
+  if(!currentUser) return;
+  if(actor==="emails" || sendNowPhase==="sending" || sendNowWatchId){
+    await loadCards();
+  }
+  await loadSendNowStatus();
+}
+
+async function applySendNowProgress(){
+  if(sendNowPhase==="empty" || sendNowPhase==="sent") return;
+  if(pendingSendNowRequest){
+    clearSendNowReset();
+    sendNowPhase = "sending";
+    sendNowCount = pendingSendNowRequest.queued_count || queuedEmailCards().length;
+    sendNowWatchId = pendingSendNowRequest.id;
+    if(!sendNowCardIds.length) sendNowCardIds = queuedEmailCards().map(card => card.id);
+    return;
+  }
+  if(sendNowPhase!=="sending" || !sendNowWatchId) return;
+  const { data } = await sb.from("ops_send_now")
+    .select("id,queued_count,processed_at")
+    .eq("id", sendNowWatchId)
+    .maybeSingle();
+  if(!data){
+    sendNowPhase = "idle";
+    sendNowWatchId = null;
+    sendNowCardIds = [];
+    sendNowCount = 0;
+    return;
+  }
+  if(!data.processed_at) return;
+  if(sendNowRemainingCardIds(sendNowCardIds, cards).length){
+    sendNowCount = data.queued_count || sendNowCount;
+    return;
+  }
+  holdSendNowPhase("sent", data.queued_count || sendNowCount);
 }
 
 async function loadSendNowStatus(){
@@ -1033,7 +1185,8 @@ async function loadSendNowStatus(){
     sendNowAvailable = true;
     pendingSendNowRequest = data && data[0] ? data[0] : null;
   }
-  if(actor==="emails") renderBoard();
+  await applySendNowProgress();
+  refreshEmailSendNowView();
 }
 
 async function loadMorningDigests(){
@@ -1483,22 +1636,20 @@ function queuedEmailCards(){
   return openCards().filter(card => isEmailCard(card) && card.send_requested_at);
 }
 
-function sendNowLabel(count){
-  if(sendNowAvailable===null) return "Checking…";
-  if(sendNowAvailable===false) return "Setup required";
-  if(pendingSendNowRequest) return "Queued for Sydney";
-  return `Send now${count ? ` (${count})` : ""}`;
-}
-
-async function requestSendNow(button){
+async function requestSendNow(){
+  if(sendNowAvailable!==true || sendNowPhase!=="idle") return;
   const queued = queuedEmailCards();
   if(!queued.length){
-    setStatus("There are no queued replies to send.");
+    holdSendNowPhase("empty", 0);
+    setStatus("Nothing queued.");
+    refreshEmailSendNowView();
     return;
   }
-  if(!window.confirm(`Send all ${queued.length} queued ${queued.length===1?"reply":"replies"} now?`)) return;
-  button.disabled = true;
-  button.textContent = "Sending…";
+  sendNowPhase = "sending";
+  sendNowCount = queued.length;
+  sendNowCardIds = queued.map(card => card.id);
+  setStatus(`Sending ${sendNowCount} now.`);
+  refreshEmailSendNowView();
   const { data, error } = await sb.from("ops_send_now").insert({
     requested_by:"chris",
     queued_count:queued.length
@@ -1506,17 +1657,23 @@ async function requestSendNow(button){
   if(error){
     if(error.code==="23505"){
       await loadSendNowStatus();
-      setStatus("A Send now request is already queued for Sydney.");
+      setStatus("Already sending.");
       return;
     }
     if(error.code==="42P01") sendNowAvailable = false;
-    setStatus("Could not queue Send now: "+error.message, true);
-    renderBoard();
+    sendNowPhase = "idle";
+    sendNowWatchId = null;
+    sendNowCardIds = [];
+    sendNowCount = 0;
+    setStatus("Could not start Send now: "+error.message, true);
+    refreshEmailSendNowView();
     return;
   }
   pendingSendNowRequest = data;
-  setStatus("Queued for Sydney. The dashboard did not send Gmail directly.");
-  renderBoard();
+  sendNowWatchId = data.id;
+  sendNowCount = data.queued_count || queued.length;
+  sendNowPhase = "sending";
+  refreshEmailSendNowView();
 }
 
 function emailCardHTML(c){
@@ -1604,14 +1761,13 @@ function renderEmails(root){
   root.innerHTML = `<div class="email-commandbar" aria-label="Queued email controls">
       <div class="email-command-copy">
         <span class="email-command-title">${queuedCount} queued ${queuedCount===1?"reply":"replies"}</span>
-        <span class="email-command-sub" aria-live="polite">${pendingSendNowRequest ? "Sydney has a send-now request." : "Flushes every queued reply; Gmail is sent by Sydney."}</span>
+        <span class="email-command-sub" aria-live="polite">${esc(sendNowCommandSubtitle(sendNowAvailable, sendNowPhase, queuedCount))}</span>
       </div>
-      <button type="button" class="btn tiny send-now"${sendNowAvailable!==true || !queuedCount || !!pendingSendNowRequest ? " disabled" : ""}>${esc(sendNowLabel(queuedCount))}</button>
+      ${sendNowControlHTML(queuedCount)}
     </div>` + (list.length
     ? `<div class="email-list">${list.map(emailCardHTML).join("")}</div>`
     : `<div class="empty email-empty">No email replies waiting${emailProjectFilter ? " in this inbox" : ""}.</div>`);
-  const sendNow = root.querySelector(".send-now");
-  if(sendNow && !sendNow.disabled) sendNow.onclick = () => requestSendNow(sendNow);
+  bindSendNowControl(root);
   bindEmailCards();
 }
 
@@ -2719,6 +2875,7 @@ document.addEventListener("visibilitychange", () => {
   if(!document.hidden && currentUser){
     loadCards();
     loadMorningDigests();
+    loadSendNowStatus();
     loadAlerts({ notifyNew:true });
   }
 });
