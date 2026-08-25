@@ -312,19 +312,21 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .author-row .field{min-width:0}
   .comment-compose .btn{width:100%}
 }
+.gate-card input{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-size:16px;margin:4px 0 12px}
+.gate-card input:focus{outline:2px solid rgba(207,174,112,.55);outline-offset:1px}
 </style>
 </head>
 <body>
 <section class="gate" id="gate" aria-labelledby="gateTitle">
-  <form class="gate-card" id="pinForm">
+  <form class="gate-card" id="loginForm">
     <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
     <h1 id="gateTitle">Coach’s field book</h1>
-    <p>Enter the six-digit staff PIN once on this phone. This device stays unlocked until you tap Lock.</p>
-    <label class="small" for="pin">Staff PIN</label>
-    <div class="pin-row">
-      <input id="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" aria-describedby="gateMsg">
-      <button class="btn" type="submit">Open field book</button>
-    </div>
+    <p>Sign in with your coach email. This device stays signed in until you tap Lock.</p>
+    <label class="small" for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="gateMsg">
+    <label class="small" for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" aria-describedby="gateMsg">
+    <button class="btn" type="submit" style="width:100%;margin-top:4px">Sign in</button>
     <div class="gate-msg" id="gateMsg" aria-live="polite"></div>
     <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
   </form>
@@ -363,7 +365,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         </div>
         <div class="panel callout">
           <span class="dot"></span>
-          <!-- Staff huddle word is Mike. Roster and diagrams still say Michael — same kid. -->
+          <!-- Staff huddle word is Mike; the roster record for the same kid is Michael. Play diagrams no longer carry names — assignments load from the shared lineup after sign-in. -->
           <div><strong>Passer plan</strong><span>Mike is QB1. Teddy is QB2. Webb is QB3. Teddy still runs routes — split his throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
         </div>
       </div>
@@ -759,9 +761,11 @@ body.team-dragging{overflow:hidden;touch-action:none}
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
-const PIN_HASH="695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const STORE_PREFIX="commodores_v1_";
-const ROSTER=["Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+// Roster is loaded from Supabase after sign-in (RLS-gated to allowlisted
+// coaches) and cached locally. It is intentionally NOT baked into this file,
+// which is served publicly by GitHub Pages.
+let ROSTER=[];
 const LINEUP_ID="staff-lineup";
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
 const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
@@ -799,7 +803,10 @@ const NOTE_AFTER="after-practice";
 const NOTE_NEXT="next-install";
 const SB_URL="https://daddiljpnhfuxcdqsulg.supabase.co";
 const SB_KEY="sb_publishable_kklnADdWDTkXsJyjx9FMiA_gNbKjm7H";
-const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY):null;
+// Own storageKey so the Commodores sign-in never collides with the Ops /
+// morning-dashboard session on this same origin.
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
+let currentCoach=null;
 
 function getStore(key,fallback){
   try{const value=localStorage.getItem(STORE_PREFIX+key);return value===null?fallback:JSON.parse(value)}catch(_){return fallback}
@@ -807,23 +814,15 @@ function getStore(key,fallback){
 function setStore(key,value){
   try{localStorage.setItem(STORE_PREFIX+key,JSON.stringify(value));return true}catch(_){return false}
 }
-const UNLOCK_KEY=STORE_PREFIX+"open";
-function isDeviceUnlocked(){
-  try{return localStorage.getItem(UNLOCK_KEY)==="1"}catch(_){return false}
-}
-function rememberDeviceUnlock(){
-  try{localStorage.setItem(UNLOCK_KEY,"1")}catch(_){}
-}
-function lockThisDevice(){
-  try{localStorage.removeItem(UNLOCK_KEY)}catch(_){}
-  try{sessionStorage.removeItem(UNLOCK_KEY)}catch(_){}
-}
+// Seed roster from the last signed-in load so re-opens paint instantly; the
+// authenticated DB fetch in openApp() refreshes it.
+ROSTER=getStore("roster",[]);
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 }
 const AREA_NAMES=["left short","middle short","right short","left deep","middle deep","right deep"];
 const STAFF_SYNC_URL="https://dashboard-assistant.chrisbailey.workers.dev/sync";
-const STAFF_SYNC_KEY="commodores-defense-"+PIN_HASH;
+const STAFF_SYNC_KEY="commodores-defense-695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const DEFENSE_HOW="Stand in your named grass. Don’t chase a kid who leaves it. If the ball comes to you, catch it. Tag with a one-hand touch below the neck. The helper has no spot — he roams to extra people (Overload). Do not rush the thrower.";
 function seedDefenseLooks(){
   return [{
@@ -1048,11 +1047,6 @@ function applyCachedDefense(){
     defenseLooks=saved;
   }
 }
-async function sha256(value){
-  const bytes=new TextEncoder().encode(value);
-  const hash=await crypto.subtle.digest("SHA-256",bytes);
-  return [...new Uint8Array(hash)].map(byte=>byte.toString(16).padStart(2,"0")).join("");
-}
 function showPage(name,options){
   const button=$(`.tabs button[data-page="${name}"]`);
   if(!button) return;
@@ -1218,9 +1212,29 @@ async function loadCloudPlans(){
     $("#importStatus").textContent="Loaded newer shared practice plans.";
   }
 }
+async function loadRoster(){
+  if(!sb) return;
+  try{
+    const {data,error}=await sb.from("commodores_roster").select("first_name,sort").order("sort",{ascending:true});
+    if(!error&&Array.isArray(data)&&data.length){
+      ROSTER=data.map(row=>row.first_name);
+      setStore("roster",ROSTER);
+    }
+  }catch(_){}
+}
+async function coachForSession(session){
+  if(!sb||!session||!session.user) return null;
+  const email=(session.user.email||"").toLowerCase();
+  try{
+    const {data,error}=await sb.from("commodores_coaches").select("first_name").eq("email",email).maybeSingle();
+    if(error||!data) return null;
+    return {email,first_name:data.first_name};
+  }catch(_){return null}
+}
 async function openApp(){
   $("#gate").classList.add("hidden");
   $("#app").style.display="block";
+  await loadRoster();
   renderSeason();
   renderDrillPicker();
   renderAttendance();
@@ -1243,29 +1257,42 @@ async function openApp(){
   await loadStaffLineup();
   openFromHash();
 }
-$("#pinForm").onsubmit=async event=>{
+$("#loginForm").onsubmit=async event=>{
   event.preventDefault();
-  const pin=$("#pin").value.trim();
-  if(!/^\d{6}$/.test(pin)){
-    $("#gateMsg").textContent="Enter all six digits.";
+  const email=$("#email").value.trim().toLowerCase();
+  const password=$("#password").value;
+  if(!email||!password){
+    $("#gateMsg").textContent="Enter your email and password.";
     return;
   }
+  if(!sb){
+    $("#gateMsg").textContent="Cannot reach sign-in right now. Check your connection.";
+    return;
+  }
+  $("#gateMsg").textContent="Signing in…";
   try{
-    if(await sha256(pin)===PIN_HASH){
-      rememberDeviceUnlock();
-      $("#pin").value="";
-      $("#gateMsg").textContent="";
-      openApp();
-    }else{
-      $("#gateMsg").textContent="That PIN did not match.";
-      $("#pin").select();
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error){
+      $("#gateMsg").textContent=(error.message||"").toLowerCase().includes("invalid")?"Email or password is wrong.":(error.message||"Sign-in failed.");
+      return;
     }
+    const coach=await coachForSession(data.session);
+    if(!coach){
+      await sb.auth.signOut();
+      $("#gateMsg").textContent="This account is not on the Commodores staff list.";
+      return;
+    }
+    currentCoach=coach;
+    $("#password").value="";
+    $("#gateMsg").textContent="";
+    await openApp();
   }catch(_){
-    $("#gateMsg").textContent="This browser cannot verify the PIN.";
+    $("#gateMsg").textContent="Sign-in failed. Check your connection.";
   }
 };
-$("#lockBtn").onclick=()=>{
-  lockThisDevice();
+$("#lockBtn").onclick=async()=>{
+  try{if(sb) await sb.auth.signOut();}catch(_){}
+  currentCoach=null;
   location.reload();
 };
 
@@ -1294,7 +1321,7 @@ document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="hidden"){
     upsertNote(NOTE_AFTER,afterNotes.value);
     upsertNote(NOTE_NEXT,nextInstall.value);
-    if(typeof teamState!=="undefined"&&isDeviceUnlocked()) saveStaffLineup();
+    if(typeof teamState!=="undefined"&&currentCoach) saveStaffLineup();
   }
 });
 $("#postComment").onclick=postStaffComment;
@@ -1306,10 +1333,10 @@ function seedBuiltPlays(){
     {
       id:"smash",name:"Smash",status:"taught",how:SMASH_HOW,
       spots:[
-        {id:"s-qb",x:180,y:255,player:"Michael",label:"QB"},
+        {id:"s-qb",x:180,y:255,player:"",label:"QB"},
         {id:"s-c",x:180,y:215,player:"",label:"C"},
         {id:"s-lo",x:48,y:215,player:"",label:"O"},
-        {id:"s-li",x:110,y:215,player:"Teddy",label:"O"},
+        {id:"s-li",x:110,y:215,player:"",label:"O"},
         {id:"s-ri",x:250,y:215,player:"",label:"O"},
         {id:"s-ro",x:312,y:215,player:"",label:"O"},
         {id:"s-rb",x:215,y:255,player:"",label:"O"}
@@ -1325,9 +1352,9 @@ function seedBuiltPlays(){
     {
       id:"overload-50-51",name:"Overload 50/51",status:"taught",how:OVERLOAD_HOW,
       spots:[
-        {id:"o-qb",x:180,y:255,player:"Michael",label:"QB"},
+        {id:"o-qb",x:180,y:255,player:"",label:"QB"},
         {id:"o-c",x:180,y:215,player:"",label:"C"},
-        {id:"o-1",x:45,y:215,player:"Teddy",label:"O"},
+        {id:"o-1",x:45,y:215,player:"",label:"O"},
         {id:"o-2",x:90,y:215,player:"",label:"O"},
         {id:"o-3",x:132,y:215,player:"",label:"O"},
         {id:"o-4",x:300,y:215,player:"",label:"O"},
@@ -2963,7 +2990,17 @@ async function loadStaffLineup(){
   if((localTime>cloudTime||localMigrated)&&hasTeamContent(teamState)) await saveStaffLineup();
 }
 
-if(isDeviceUnlocked()) openApp();
+// On load, resume an existing coach session (persisted per this page's own
+// storageKey). Anyone else — signed out, or signed in but not on the staff
+// allowlist — stays on the sign-in screen.
+(async()=>{
+  if(!sb) return;
+  try{
+    const {data}=await sb.auth.getSession();
+    const coach=await coachForSession(data&&data.session);
+    if(coach){ currentCoach=coach; await openApp(); }
+  }catch(_){}
+})();
 </script>
 </body>
 </html>
