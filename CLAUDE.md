@@ -22,7 +22,9 @@ They are independent. **Do not merge them, and do not let a change to one leak i
 ## Stack
 
 - **Zero build step.** Plain HTML + CSS + JS, all inline in one file per app. No `package.json`, no bundler, no tests, no framework.
-- **Supabase** (`daddiljpnhfuxcdqsulg`, "Studio Pod") via CDN `@supabase/supabase-js@2`. Publishable/anon key only — never `service_role` in a page.
+- **Supabase** via CDN `@supabase/supabase-js@2`. Publishable/anon key only — never `service_role` in a page.
+  - `index.html` + `ops.html` → project `daddiljpnhfuxcdqsulg` ("studio-pod sales manufacturing dashboard").
+  - `commodores.html` → its **own dedicated project** `adjnmtpjoyxvmlogjjpz` ("commodores"), created 2026-08-25 so the public page's key can't reach any other business data. Uses Supabase Auth (email+password) with an allowlist table `commodores_coaches`; roster/ratings/notes/plans are RLS-gated to allowlisted coaches. It uses its own `storageKey` so its session never collides with Ops on the shared origin.
 - **GitHub Pages**, auto-deploy on push to `main` via `.github/workflows/deploy.yml`. There is no staging. **Pushing to `main` is publishing.**
 - **PWA**: `manifest.json` (Ops), `commodores.webmanifest` (Commodores), `sw.js`, `icons/`.
 - `proxy/worker.js` — Cloudflare Worker.
@@ -38,16 +40,20 @@ Everything in this repo is served publicly at that origin. There is no private h
 
 ---
 
-## ⚠️ Known critical issues (as of 2026-08-25, unfixed)
+## Commodores access control — status (2026-08-25)
 
-1. **The Commodores PIN gate does not protect anything.** It is client-side only: the full page body — roster, practice plans, coaching notes — ships to every visitor and is merely hidden with CSS/JS. A plain `curl` of the URL returns the entire field book without the PIN. Verified.
-2. **The PIN hash is in the file.** `PIN_HASH` at ~line 762 is an unsalted SHA-256 of a 6-digit PIN. That is a 1,000,000-entry keyspace, brute-forceable offline in seconds.
-3. **Minors' data is on a public URL.** Twelve first names (kids ages 8–10), per-kid 1–5 coach ratings from three named adults, and attendance. This is the highest-severity item in the repo, and it is a judgment/liability problem, not just a technical one.
-4. **Supabase RLS is nominal.** `commodores_comments` and `commodores_plans` have RLS enabled but every policy is `using (true)` for `anon`. Anyone holding the publishable key (which is in the public HTML) can read and overwrite all staff notes and practice plans.
-5. `public.calendar_invites`, `public.invite_tokens`, and `public.qbo_tokens` have RLS on with **zero policies**. Confirm those are genuinely unreachable.
-6. Several `SECURITY DEFINER` functions (`is_admin`, `is_staff`, `sp_role`, `reserve_invoice_number`, `bump_invoice_number`) are executable by `anon` over the REST API.
+RESOLVED on branch `claude/commodores-auth` (pending Chris's merge + coach invites):
 
-**Do not add more player data to `commodores.html` until 1–4 are resolved.**
+1. ~~PIN gate is cosmetic~~ → replaced with Supabase Auth email+password login.
+2. ~~PIN hash in file~~ → removed.
+3. ~~Minors' data on a public URL~~ → roster moved to the DB behind auth; no kid names ship in the HTML except three QB nicknames in coaching prose (Mike/Teddy/Webb). Attendance was always device-local, never public.
+4. ~~Nominal RLS (`using(true)`)~~ → RLS gates every Commodores table to allowlisted coaches via `commodores_is_coach()`. Verified anon=denied, non-coach=0 rows, coach=full.
+   Plus: Commodores moved to its own project (see Stack) so its public key can't touch other data.
+
+Still open on the SHARED sales project (not Commodores, lower priority):
+
+5. `public.calendar_invites`, `public.invite_tokens`, `public.qbo_tokens` have RLS on with **zero policies**. Confirm genuinely unreachable.
+6. `SECURITY DEFINER` functions (`is_admin`, `is_staff`, `sp_role`, `reserve_invoice_number`, `bump_invoice_number`) executable by `anon` over REST.
 
 ## Recommended fix path for access control
 

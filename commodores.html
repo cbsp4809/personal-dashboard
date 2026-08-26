@@ -801,8 +801,10 @@ const DRILL_LIBRARY=[
 ];
 const NOTE_AFTER="after-practice";
 const NOTE_NEXT="next-install";
-const SB_URL="https://daddiljpnhfuxcdqsulg.supabase.co";
-const SB_KEY="sb_publishable_kklnADdWDTkXsJyjx9FMiA_gNbKjm7H";
+// Dedicated Commodores project (holds only practice data — no photography or
+// sales/manufacturing tables). Publishable key only.
+const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
+const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
 // Own storageKey so the Commodores sign-in never collides with the Ops /
 // morning-dashboard session on this same origin.
 const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
