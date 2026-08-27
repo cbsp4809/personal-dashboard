@@ -102,4 +102,4 @@ Rules:
 
 ## Current backlog source
 
-Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is four primary pages plus Season board as reference. **Tonight (Thu Aug 27): ship the Now-5 play animator** (`plays.html`) so coaches can tap 23/26 and 38 on an iPad. Remaining after that: finish nav polish if needed, fix lineup drag-and-drop, modular practice builder, play generator.
+Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is four primary pages plus Season board as reference. **Tonight (Thu Aug 27): ship the Now-5 play animator** (`plays.html`) so coaches can tap 23/26 and 38 on an iPad. Remaining after that: finish nav polish if needed, modular practice builder, play generator. Lineup now has Unit A/B boards and a play-time rule check.

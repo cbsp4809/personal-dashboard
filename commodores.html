@@ -288,7 +288,28 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .team-boards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .team-board{min-width:0;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
 .team-board h3{margin:0 0 10px;font:500 20px/1.15 var(--serif)}
-.line-spot{display:grid;grid-template-columns:minmax(88px,104px) minmax(0,1fr);gap:8px;align-items:center;min-height:56px;margin-bottom:8px;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+.unit-block{margin:0 0 16px}
+.unit-block > h3{margin:0 0 4px;font:500 22px/1.15 var(--serif)}
+.unit-note{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+.play-time{margin:18px 0 0}
+.play-time-banner{margin:0 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.play-time-banner b{display:block;margin-bottom:4px}
+.play-time-banner.ok{border-color:rgba(111,191,115,.45);background:rgba(111,191,115,.1)}
+.play-time-banner.short{border-color:rgba(224,122,106,.5);background:rgba(224,122,106,.1)}
+.play-time-banner .play-time-sub{color:var(--muted);font-size:12.5px}
+.play-time-list{display:grid;gap:8px}
+.play-row{min-width:0;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.play-row.ok{border-color:rgba(111,191,115,.4)}
+.play-row.one-way{border-color:rgba(207,174,112,.45)}
+.play-row.short{border-color:rgba(224,122,106,.5)}
+.play-row-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.play-row-top b{min-width:0;overflow-wrap:anywhere;font-size:16px}
+.play-tag{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.play-row.ok .play-tag{color:#6fbf73}
+.play-row.one-way .play-tag{color:var(--gold)}
+.play-row.short .play-tag{color:#e07a6a}
+.play-meta{margin:4px 0 0;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.line-spot{display:grid;grid-template-columns:minmax(108px,132px) minmax(0,1fr);gap:8px;align-items:center;min-height:56px;margin-bottom:8px;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
 .line-spot:last-child{margin-bottom:0}
 .line-spot.drop-on,.line-spot.await-place{border-color:var(--highlight);background:rgba(236,183,72,.12)}
 .line-spot.await-place .spot-empty{border-color:var(--highlight);color:var(--highlight)}
@@ -314,6 +335,10 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .team-table-wrap{display:none}
   .team-boards{grid-template-columns:1fr}
   .line-spot{grid-template-columns:minmax(0,1fr);gap:4px}
+  .play-time-list{grid-template-columns:1fr}
+}
+@media(min-width:761px){
+  .play-time-list{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:390px){
   .gate-card{padding:28px 20px 23px}.gate h1{font-size:31px}
@@ -653,27 +678,52 @@ body.team-dragging{overflow:hidden;touch-action:none}
     </section>
 
     <section class="page" id="page-lineup">
-      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup</h2></div><p>7 offense · 7 defense · same kid can be on both</p></div>
+      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup</h2></div><p>Unit A = Q1 and Q3 · Unit B = Q2 and Q4 · 7 O + 7 D each</p></div>
       <div class="binder-note">
-        <b>How to set it</b>
+        <b>SBMSA Fall 7on7 · how the card has to work</b>
         <ul class="plain-list">
-          <li>QB order: QB1 · QB2 · QB3. QB2 still runs routes.</li>
-          <li>Five receivers + center; 3 and 2 by play.</li>
-          <li>On a phone: tap a name, then tap a spot. On a computer you can also drag.</li>
-          <li>Tap or drop onto Clear to empty a filled spot. A filled spot replaces.</li>
+          <li>No free substitution. Injury only. Two units of 7 are set before each quarter — no one-for-one mid-quarter swap.</li>
+          <li>Unit A plays Q1 and Q3. Unit B plays Q2 and Q4.</li>
+          <li>Every kid starts two full quarters on O and two on D, or plays all four quarters on one side only.</li>
+          <li>14 spots a quarter, so some kids go both ways and some sit a quarter. Sitting two quarters is legal only if 2+2 or one-way still holds.</li>
+          <li>O letters: Q · C · X · A · B · Y · Z. D: 1 left short · 2 middle short · 3 right short · 4 right deep · 5 middle deep · 6 left deep · 7 rover.</li>
+          <li>On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot.</li>
         </ul>
       </div>
       <div class="roster-pool" id="teamPool"></div>
       <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · tap a placed name, then here</div>
-      <div class="team-boards">
-        <div class="team-board">
-          <h3>Offense · 7</h3>
-          <div id="offenseBoard"></div>
+      <div class="unit-block">
+        <h3>Unit A · Q1 and Q3</h3>
+        <p class="unit-note">Lock this 7+7 before Q1 and again before Q3. Same seven stay in unless someone is hurt.</p>
+        <div class="team-boards">
+          <div class="team-board">
+            <h3>Offense · 7</h3>
+            <div id="offenseBoardA"></div>
+          </div>
+          <div class="team-board">
+            <h3>Defense · 7</h3>
+            <div id="defenseBoardA"></div>
+          </div>
         </div>
-        <div class="team-board">
-          <h3>Defense · 7</h3>
-          <div id="defenseBoard"></div>
+      </div>
+      <div class="unit-block">
+        <h3>Unit B · Q2 and Q4</h3>
+        <p class="unit-note">Lock this 7+7 before Q2 and again before Q4. No mid-quarter swaps.</p>
+        <div class="team-boards">
+          <div class="team-board">
+            <h3>Offense · 7</h3>
+            <div id="offenseBoardB"></div>
+          </div>
+          <div class="team-board">
+            <h3>Defense · 7</h3>
+            <div id="defenseBoardB"></div>
+          </div>
         </div>
+      </div>
+      <div class="play-time" id="playTime">
+        <div class="section-head"><div><div class="eyebrow">Play time</div><h2>Rule check</h2></div><p>Updates as you place names · 2+2 or one-way</p></div>
+        <div class="play-time-banner short" id="playTimeBanner" aria-live="polite"></div>
+        <div class="play-time-list" id="playTimeList"></div>
       </div>
       <div class="status-line" id="teamStatus" aria-live="polite"></div>
     </section>
@@ -761,8 +811,34 @@ const LINEUP_ID="staff-lineup";
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
 const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
 const RATE_SHORT={speed:"Speed",catching:"Catch",passing:"Pass",agility:"Agility",listening:"Listen",routes:"Routes",coverage:"Cover",overall:"Overall"};
-const OFFENSE_SPOTS=["QB","Center","Receiver 1","Receiver 2","Receiver 3","Receiver 4","Receiver 5"];
-const DEFENSE_SPOTS=["left short","middle short","right short","left deep","middle deep","right deep","helper"];
+const UNIT_IDS=["A","B"];
+const UNIT_QUARTERS={A:[1,3],B:[2,4]};
+const ALL_QUARTERS=[1,2,3,4];
+const OFFENSE_SPOTS=[
+  {id:"Q",label:"Q",hint:"QB1 · QB2 · QB3"},
+  {id:"C",label:"C"},
+  {id:"X",label:"X"},
+  {id:"A",label:"A"},
+  {id:"B",label:"B"},
+  {id:"Y",label:"Y"},
+  {id:"Z",label:"Z"}
+];
+const DEFENSE_SPOTS=[
+  {id:"1",label:"1 left short"},
+  {id:"2",label:"2 middle short"},
+  {id:"3",label:"3 right short"},
+  {id:"4",label:"4 right deep"},
+  {id:"5",label:"5 middle deep"},
+  {id:"6",label:"6 left deep"},
+  {id:"7",label:"7 rover"}
+];
+// Old single-board defense was left/middle/right short, left/middle/right deep, helper.
+// New order puts right deep before middle/left deep. Remap once on the old 7.
+const LEGACY_DEFENSE_TO_NEW=[0,1,2,5,4,3,6];
+function displayName(name){
+  // Data may say Michael. Chips and the rule table say Mike. First names only.
+  return name==="Michael"?"Mike":name;
+}
 const STAFF_FIRST=["Peter","Chris","Ben"];
 const DRILL_LIBRARY=[
   {
@@ -809,7 +885,7 @@ function setStore(key,value){
 }
 // Seed roster from the last signed-in load so re-opens paint instantly; the
 // authenticated DB fetch in openApp() refreshes it.
-ROSTER=getStore("roster",[]);
+ROSTER=(getStore("roster",[])||[]).filter(name=>name&&name!=="Brett");
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 }
@@ -1233,7 +1309,7 @@ async function loadRoster(){
   try{
     const {data,error}=await sb.from("commodores_roster").select("first_name,sort").order("sort",{ascending:true});
     if(!error&&Array.isArray(data)&&data.length){
-      ROSTER=data.map(row=>row.first_name);
+      ROSTER=data.map(row=>row.first_name).filter(name=>name&&name!=="Brett");
       setStore("roster",ROSTER);
     }
   }catch(_){}
@@ -2285,7 +2361,11 @@ if(exportJsonBtn) exportJsonBtn.onclick=()=>{
 };
 
 function emptyLine(){return [null,null,null,null,null,null,null]}
+function emptyUnit(){return {offense:emptyLine(),defense:emptyLine()}}
+function emptyUnits(){return {A:emptyUnit(),B:emptyUnit()}}
 function emptyCoachSkills(){return {Peter:{},Chris:{},Ben:{}}}
+function lineFilled(line){return (line||[]).filter(Boolean).length}
+function hasFilledLine(line){return lineFilled(line)>0}
 function cleanScore(value){
   const n=Number(value);
   return Number.isInteger(n)&&n>=1&&n<=5?n:null;
@@ -2330,12 +2410,40 @@ function cleanLine(arr){
   const seen=new Set();
   for(let i=0;i<7;i++){
     const name=arr[i];
-    if(ROSTER.includes(name)&&!seen.has(name)){
+    if(ROSTER.includes(name)&&name!=="Brett"&&!seen.has(name)){
       line[i]=name;
       seen.add(name);
     }
   }
   return line;
+}
+function cleanUnit(raw){
+  return {offense:cleanLine(raw&&raw.offense),defense:cleanLine(raw&&raw.defense)};
+}
+function hasUnitContent(unit){
+  return hasFilledLine(unit&&unit.offense)||hasFilledLine(unit&&unit.defense);
+}
+function remapLegacyDefense(line){
+  const src=cleanLine(line);
+  const next=emptyLine();
+  LEGACY_DEFENSE_TO_NEW.forEach((newIndex,oldIndex)=>{next[newIndex]=src[oldIndex]||null});
+  return next;
+}
+function rawHasUnits(raw){
+  if(!raw||typeof raw!=="object"||!raw.units) return false;
+  if(raw.lineupShape==="units-ab") return true;
+  return hasUnitContent(raw.units.A)||hasUnitContent(raw.units.B);
+}
+function rawNeedsUnitMigration(raw){
+  if(!raw||typeof raw!=="object") return false;
+  if(rawHasUnits(raw)) return false;
+  return hasFilledLine(raw.offense)||hasFilledLine(raw.defense);
+}
+function syncLegacyLines(state){
+  const units=(state&&state.units)||emptyUnits();
+  state.offense=(units.A.offense||emptyLine()).slice();
+  state.defense=(units.A.defense||emptyLine()).slice();
+  return state;
 }
 function normalizeLineup(raw){
   if(!raw||typeof raw!=="object") return null;
@@ -2345,32 +2453,46 @@ function normalizeLineup(raw){
     const legacy=cleanSkills(raw.skills);
     if(Object.keys(legacy).length) skillsByCoach={Peter:{},Chris:legacy,Ben:{}};
   }
-  return {
+  let units;
+  if(rawHasUnits(raw)){
+    units={A:cleanUnit(raw.units.A),B:cleanUnit(raw.units.B)};
+  }else{
+    units={
+      A:{offense:cleanLine(raw.offense),defense:remapLegacyDefense(raw.defense)},
+      B:emptyUnit()
+    };
+  }
+  return syncLegacyLines({
     skillsByCoach,
-    offense:cleanLine(raw.offense),
-    defense:cleanLine(raw.defense),
+    units,
     updatedAt:raw.updatedAt||raw.updated_at||""
-  };
+  });
 }
 function emptyTeamState(){
-  return {skillsByCoach:emptyCoachSkills(),offense:emptyLine(),defense:emptyLine(),updatedAt:""};
+  return syncLegacyLines({skillsByCoach:emptyCoachSkills(),units:emptyUnits(),updatedAt:""});
 }
 function hasTeamContent(state){
   if(!state) return false;
   if(!isSkillsByCoachEmpty(state.skillsByCoach)) return true;
-  return (state.offense||[]).some(Boolean)||(state.defense||[]).some(Boolean);
+  return UNIT_IDS.some(unit=>hasUnitContent(state.units&&state.units[unit]));
 }
 function lineupPayload(state){
   const source=state||teamState;
+  const units={
+    A:cleanUnit(source.units&&source.units.A),
+    B:cleanUnit(source.units&&source.units.B)
+  };
   return {
     id:LINEUP_ID,
+    lineupShape:"units-ab",
     skillsByCoach:{
       Peter:source.skillsByCoach&&source.skillsByCoach.Peter||{},
       Chris:source.skillsByCoach&&source.skillsByCoach.Chris||{},
       Ben:source.skillsByCoach&&source.skillsByCoach.Ben||{}
     },
-    offense:source.offense,
-    defense:source.defense,
+    units,
+    offense:units.A.offense,
+    defense:units.A.defense,
     updatedAt:source.updatedAt
   };
 }
@@ -2477,6 +2599,7 @@ function setTeamStatus(message){
   if(el) el.textContent=message;
 }
 function persistTeamLocal(){
+  syncLegacyLines(teamState);
   teamState.updatedAt=new Date().toISOString();
   setStore("staff_lineup",lineupPayload());
 }
@@ -2532,7 +2655,7 @@ function paintPlayerAverages(name){
     let span=chip.querySelector(".chip-avg");
     if(avg==="—"){
       if(span) span.remove();
-      chip.setAttribute("aria-label",name);
+      chip.setAttribute("aria-label",displayName(name));
     }else{
       if(!span){
         span=document.createElement("span");
@@ -2540,7 +2663,7 @@ function paintPlayerAverages(name){
         chip.appendChild(span);
       }
       span.textContent=avg;
-      chip.setAttribute("aria-label",name+" staff average "+avg);
+      chip.setAttribute("aria-label",displayName(name)+" staff average "+avg);
     }
   });
 }
@@ -2557,7 +2680,7 @@ function rateField(name,key,compact){
   const current=skillRow(name,scoringAs)[key];
   const shown=scoreDisplay(current);
   const klass=compact?"rate-input rate-input-mini":"rate-input";
-  return `<input class="${klass}${shown?" filled":""}" type="text" inputmode="numeric" pattern="[1-5]" maxlength="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-rate-name="${esc(name)}" data-rate-key="${key}" value="${esc(shown)}" aria-label="${esc(scoringAs)} ${esc(name)} ${esc(RATE_LABELS[key])} 1 to 5">`;
+  return `<input class="${klass}${shown?" filled":""}" type="text" inputmode="numeric" pattern="[1-5]" maxlength="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-rate-name="${esc(name)}" data-rate-key="${key}" value="${esc(shown)}" aria-label="${esc(scoringAs)} ${esc(displayName(name))} ${esc(RATE_LABELS[key])} 1 to 5">`;
 }
 function bindRateInputs(root){
   $$(root+" input[data-rate-name]").forEach(input=>{
@@ -2585,15 +2708,20 @@ function bindRateInputs(root){
     };
   });
 }
-function nameChip(name,side,index){
+function nameChip(name,unit,side,index){
   const avg=staffAverageText(name);
-  const source=side?` data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
-  return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(name)} ${avg==="—"?"":"staff average "+avg}">${esc(name)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
+  const shown=displayName(name);
+  const source=side?` data-unit="${esc(unit)}" data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
+  return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(shown)} ${avg==="—"?"":"staff average "+avg}">${esc(shown)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
 }
 function playerSpotLabels(name){
   const labels=[];
-  OFFENSE_SPOTS.forEach((label,index)=>{if(teamState.offense&&teamState.offense[index]===name) labels.push(label)});
-  DEFENSE_SPOTS.forEach((label,index)=>{if(teamState.defense&&teamState.defense[index]===name) labels.push(label)});
+  UNIT_IDS.forEach(unit=>{
+    const unitState=teamState.units&&teamState.units[unit];
+    if(!unitState) return;
+    OFFENSE_SPOTS.forEach((spot,index)=>{if(unitState.offense&&unitState.offense[index]===name) labels.push(unit+" "+spot.label)});
+    DEFENSE_SPOTS.forEach((spot,index)=>{if(unitState.defense&&unitState.defense[index]===name) labels.push(unit+" "+spot.label)});
+  });
   return labels;
 }
 function renderTeamRatings(){
@@ -2609,7 +2737,7 @@ function renderTeamRatings(){
       const breakdown=coachBreakdown(name);
       const spots=playerSpotLabels(name);
       const isOpen=open.has(name)?" open":"";
-      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(name)}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
+      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(displayName(name))}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
     }).join("");
     bindRateInputs("#teamCards");
   }
@@ -2617,24 +2745,108 @@ function renderTeamRatings(){
     table.innerHTML="";
   }
 }
+function unitLine(unit,side){
+  if(!teamState.units) teamState.units=emptyUnits();
+  if(!teamState.units[unit]) teamState.units[unit]=emptyUnit();
+  if(!Array.isArray(teamState.units[unit][side])) teamState.units[unit][side]=emptyLine();
+  return teamState.units[unit][side];
+}
+function renderUnitBoard(unit,side,spots){
+  const board=$(`#${side}Board${unit}`);
+  if(!board) return;
+  const line=unitLine(unit,side);
+  board.innerHTML=spots.map((spot,index)=>{
+    const name=line[index];
+    const hint=spot.hint?`<div>${esc(spot.hint)}</div>`:"";
+    return `<div class="line-spot" data-drop-unit="${unit}" data-drop-side="${side}" data-drop-index="${index}"><div class="spot-label">${esc(spot.label)}${hint}</div><div class="spot-slot">${name?nameChip(name,unit,side,index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
+  }).join("");
+}
+function playTimeRow(name){
+  const oSet=new Set();
+  const dSet=new Set();
+  const bothSet=new Set();
+  UNIT_IDS.forEach(unit=>{
+    const onO=unitLine(unit,"offense").includes(name);
+    const onD=unitLine(unit,"defense").includes(name);
+    UNIT_QUARTERS[unit].forEach(q=>{
+      if(onO) oSet.add(q);
+      if(onD) dSet.add(q);
+      if(onO&&onD) bothSet.add(q);
+    });
+  });
+  const sit=ALL_QUARTERS.filter(q=>!oSet.has(q)&&!dSet.has(q)).length;
+  const o=oSet.size;
+  const d=dSet.size;
+  const oneWay=(o===4&&d===0)||(d===4&&o===0);
+  const twoAndTwo=o>=2&&d>=2;
+  const legal=oneWay||twoAndTwo;
+  let tag="short";
+  let label="Short";
+  let why="Needs 2+2 or one-way.";
+  if(oneWay){
+    tag="one-way";
+    label=o===4?"One-way O":"One-way D";
+    why="All four quarters on one side.";
+  }else if(twoAndTwo){
+    tag="ok";
+    label="Legal 2+2";
+    why="Two quarters O and two quarters D.";
+  }else if(o===0&&d===0){
+    why="Not on the card yet.";
+  }else if(o===2&&d===0){
+    why="Only two O · needs two D, or stay on O all four.";
+  }else if(d===2&&o===0){
+    why="Only two D · needs two O, or stay on D all four.";
+  }
+  return {name,o,d,both:bothSet.size,sit,legal,tag,label,why};
+}
+function unitFillNote(){
+  return UNIT_IDS.map(unit=>{
+    const o=lineFilled(unitLine(unit,"offense"));
+    const d=lineFilled(unitLine(unit,"defense"));
+    return `Unit ${unit} ${o}/7 O · ${d}/7 D`;
+  }).join(" · ");
+}
+function renderPlayTime(){
+  const banner=$("#playTimeBanner");
+  const list=$("#playTimeList");
+  if(!banner||!list) return;
+  const rows=ROSTER.map(playTimeRow);
+  const short=rows.filter(row=>!row.legal);
+  const unitsFull=UNIT_IDS.every(unit=>lineFilled(unitLine(unit,"offense"))===7&&lineFilled(unitLine(unit,"defense"))===7);
+  const cardLegal=!!ROSTER.length&&!short.length&&unitsFull;
+  banner.className="play-time-banner "+(cardLegal?"ok":"short");
+  if(!ROSTER.length){
+    banner.innerHTML=`<b>Sign in to load the roster</b><div class="play-time-sub">Rule check waits for first names.</div>`;
+  }else if(cardLegal){
+    banner.innerHTML=`<b>Full-game card is legal</b><div class="play-time-sub">${esc(unitFillNote())} · every kid is 2+2 or one-way.</div>`;
+  }else{
+    const bits=[];
+    if(short.length) bits.push(short.length===1?displayName(short[0].name)+" is short":short.length+" kids short");
+    if(!unitsFull) bits.push("fill every 7+7 first");
+    banner.innerHTML=`<b>Not legal yet · ${esc(bits.join(" · "))}</b><div class="play-time-sub">${esc(unitFillNote())}. No free subs. Injury only.</div>`;
+  }
+  list.innerHTML=rows.map(row=>{
+    const shown=displayName(row.name);
+    return `<article class="play-row ${row.tag}" data-player="${esc(row.name)}"><div class="play-row-top"><b>${esc(shown)}</b><span class="play-tag">${esc(row.label)}</span></div><div class="play-meta">O ${row.o} · D ${row.d} · both-way ${row.both} · sit ${row.sit}</div><div class="play-meta">${esc(row.why)}</div></article>`;
+  }).join("");
+}
+function refreshPlayerSpots(){
+  ROSTER.forEach(name=>{
+    const spots=playerSpotLabels(name);
+    const text=spots.length?spots.join(" · "):"No lineup spots yet";
+    $$(`[data-player="${name}"] .player-spots`).forEach(el=>{el.textContent=text});
+  });
+}
 function renderTeamLineup(){
   const pool=$("#teamPool");
-  const offense=$("#offenseBoard");
-  const defense=$("#defenseBoard");
   if(pool) pool.innerHTML=ROSTER.map(name=>nameChip(name)).join("");
-  if(offense){
-    offense.innerHTML=OFFENSE_SPOTS.map((label,index)=>{
-      const name=teamState.offense[index];
-        const hint=index===0?"QB1 · QB2 · QB3":"";
-      return `<div class="line-spot" data-drop-side="offense" data-drop-index="${index}"><div class="spot-label">${esc(label)}${hint?`<div>${esc(hint)}</div>`:""}</div><div class="spot-slot">${name?nameChip(name,"offense",index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
-    }).join("");
-  }
-  if(defense){
-    defense.innerHTML=DEFENSE_SPOTS.map((label,index)=>{
-      const name=teamState.defense[index];
-      return `<div class="line-spot" data-drop-side="defense" data-drop-index="${index}"><div class="spot-label">${esc(label)}</div><div class="spot-slot">${name?nameChip(name,"defense",index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
-    }).join("");
-  }
+  UNIT_IDS.forEach(unit=>{
+    renderUnitBoard(unit,"offense",OFFENSE_SPOTS);
+    renderUnitBoard(unit,"defense",DEFENSE_SPOTS);
+  });
+  renderPlayTime();
+  refreshPlayerSpots();
   bindTeamLineup();
 }
 function renderTeam(){
@@ -2686,15 +2898,22 @@ function teamDropAt(x,y){
   if(clear) return {kind:"clear",el:clear};
   const spot=hit.closest("[data-drop-side]");
   if(!spot) return null;
-  return {kind:"spot",side:spot.dataset.dropSide,index:Number(spot.dataset.dropIndex),el:spot};
+  return {kind:"spot",unit:spot.dataset.dropUnit,side:spot.dataset.dropSide,index:Number(spot.dataset.dropIndex),el:spot};
 }
 function highlightTeamDrop(x,y){
   clearTeamDrops();
   const drop=teamDropAt(x,y);
   if(drop&&drop.el) setTeamDrop(drop.el,true);
 }
-function placeOnSide(side,index,name){
-  const line=teamState[side];
+function clearSpot(source){
+  if(!source||source.kind!=="spot") return;
+  const line=unitLine(source.unit,source.side);
+  if(line[source.index]===undefined) return;
+  line[source.index]=null;
+  syncLegacyLines(teamState);
+}
+function placeOnSide(unit,side,index,name){
+  const line=unitLine(unit,side);
   if(!line) return;
   const existing=line.indexOf(name);
   const displaced=line[index]||null;
@@ -2702,35 +2921,36 @@ function placeOnSide(side,index,name){
   if(existing>=0){
     line[existing]=displaced;
     line[index]=name;
-    return;
+  }else{
+    line[index]=name;
   }
-  line[index]=name;
+  syncLegacyLines(teamState);
 }
 function applyTeamDrop(name,source,drop){
-  if(!ROSTER.includes(name)) return;
+  if(!ROSTER.includes(name)||name==="Brett") return;
   if(!drop){
-    if(source.kind==="spot") teamState[source.side][source.index]=null;
+    clearSpot(source);
     return;
   }
   if(drop.kind==="clear"){
-    if(source.kind==="spot") teamState[source.side][source.index]=null;
+    clearSpot(source);
     return;
   }
-  if(source.kind==="spot"&&source.side===drop.side){
-    placeOnSide(drop.side,drop.index,name);
+  if(source.kind==="spot"&&source.unit===drop.unit&&source.side===drop.side){
+    placeOnSide(drop.unit,drop.side,drop.index,name);
     return;
   }
-  placeOnSide(drop.side,drop.index,name);
+  placeOnSide(drop.unit,drop.side,drop.index,name);
 }
 function chipSource(el){
   if(!el) return {kind:"pool"};
-  return el.dataset.side?{kind:"spot",side:el.dataset.side,index:Number(el.dataset.index)}:{kind:"pool"};
+  return el.dataset.side?{kind:"spot",unit:el.dataset.unit,side:el.dataset.side,index:Number(el.dataset.index)}:{kind:"pool"};
 }
 function sameTeamPick(pick,name,source){
   if(!pick||pick.name!==name) return false;
   if(pick.source.kind!==source.kind) return false;
   if(source.kind==="pool") return true;
-  return pick.source.side===source.side&&pick.source.index===source.index;
+  return pick.source.unit===source.unit&&pick.source.side===source.side&&pick.source.index===source.index;
 }
 function teamClearHint(){
   if(!teamPick) return "Clear spot · tap a placed name, then here";
@@ -2766,7 +2986,7 @@ function handleTeamChipTap(chip){
       return;
     }
     if(source.kind==="spot"){
-      applyTeamDrop(teamPick.name,teamPick.source,{kind:"spot",side:source.side,index:source.index});
+      applyTeamDrop(teamPick.name,teamPick.source,{kind:"spot",unit:source.unit,side:source.side,index:source.index});
       finishTeamPlace();
       return;
     }
@@ -2776,7 +2996,7 @@ function handleTeamChipTap(chip){
 }
 function handleTeamSpotTap(spot){
   if(!teamPick||!spot) return;
-  applyTeamDrop(teamPick.name,teamPick.source,{kind:"spot",side:spot.dataset.dropSide,index:Number(spot.dataset.dropIndex)});
+  applyTeamDrop(teamPick.name,teamPick.source,{kind:"spot",unit:spot.dataset.dropUnit,side:spot.dataset.dropSide,index:Number(spot.dataset.dropIndex)});
   finishTeamPlace();
 }
 function handleTeamClearTap(){
@@ -2936,6 +3156,7 @@ document.addEventListener("touchmove",event=>{
 },{passive:false});
 
 async function saveStaffLineup(){
+  syncLegacyLines(teamState);
   teamState.updatedAt=new Date().toISOString();
   const payload=lineupPayload();
   setStore("staff_lineup",payload);
@@ -2955,7 +3176,7 @@ async function loadStaffLineup(){
   if(local) teamState=local;
   if(scoringInputFocused()) refreshTeamAverages();
   else renderTeam();
-  const localMigrated=rawNeedsSkillMigration(localRaw);
+  const localMigrated=rawNeedsSkillMigration(localRaw)||rawNeedsUnitMigration(localRaw);
   if(!sb){
     if(localMigrated&&hasTeamContent(teamState)) await saveStaffLineup();
     else setTeamStatus("Shared lineup unavailable · this device only");
@@ -2984,7 +3205,7 @@ async function loadStaffLineup(){
     teamState=cloud;
     setStore("staff_lineup",lineupPayload());
     renderTeam();
-    if(rawNeedsSkillMigration(cloudRaw)&&hasTeamContent(teamState)){
+    if((rawNeedsSkillMigration(cloudRaw)||rawNeedsUnitMigration(cloudRaw))&&hasTeamContent(teamState)){
       await saveStaffLineup();
       return;
     }
