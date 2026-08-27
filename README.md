@@ -198,7 +198,10 @@ compact division table; Season board repeats the slate. Data lives on
 `sql/commodores_league_schedule.sql` on the Commodores project to seed or
 revise. Later scores edit that JSON (`standings` w/l/t/gp and `games[].result`)
 and bump `updated_at` — no page deploy. The HTML keeps a matching fallback seed
-if the row is missing. League coach on the book is Selber.
+if the row is missing. League coach on the book is Selber. Field labels keep the
+SBMSA names (MMS North West, SFMS South, …); addresses come from `venues`:
+MMS → Memorial Middle School, 12550 Vindon Dr, Houston, TX 77024; SFMS → Spring
+Forest Middle School, 14240 Memorial Dr, Houston, TX 77079 (not St. Francis).
 
 On Chris’s iPhone:
 

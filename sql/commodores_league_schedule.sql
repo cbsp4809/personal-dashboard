@@ -11,6 +11,11 @@
 -- the current slate; a newer revisedAt replaces the book. The page reads this
 -- row after coach sign-in, so a score change does not need a deploy.
 -- Commodores games only. Do not invent games or scores.
+--
+-- Venues (SBMSA locations):
+-- MMS*  = Memorial Middle School, 12550 Vindon Dr, Houston, TX 77024
+-- SFMS* = Spring Forest Middle School, 14240 Memorial Dr, Houston, TX 77079
+-- Do not label SFMS as St. Francis.
 
 insert into public.commodores_plans (id, payload, updated_at)
 values (
@@ -24,7 +29,11 @@ values (
     "timezone": "America/Chicago",
     "team": "Commodores",
     "coach": "Selber",
-    "updatedAt": "2026-08-25T17:17:00-05:00",
+    "updatedAt": "2026-08-27T14:45:00-05:00",
+    "venues": {
+      "MMS": {"name": "Memorial Middle School", "address": "12550 Vindon Dr, Houston, TX 77024"},
+      "SFMS": {"name": "Spring Forest Middle School", "address": "14240 Memorial Dr, Houston, TX 77079"}
+    },
     "standings": [
       {"team": "Sooners", "coach": "Laxalt", "w": 0, "l": 0, "t": 0, "gp": 0},
       {"team": "Rebels", "coach": "Matlack", "w": 0, "l": 0, "t": 0, "gp": 0},
@@ -47,7 +56,7 @@ values (
       {"id": "2026-10-27-lsu", "week": 9, "date": "2026-10-27", "time": "19:30", "home": "Commodores", "away": "LSU Tigers", "location": "MMS North East", "result": null}
     ]
   }$league$::jsonb,
-  timestamptz '2026-08-25 17:17:00-05'
+  timestamptz '2026-08-27 14:45:00-05'
 )
 on conflict (id) do update
 set

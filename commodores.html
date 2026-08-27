@@ -194,13 +194,17 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .status-line{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12px}
 .staff-note{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
 .league-block{min-width:0;max-width:100%}
+.league-block .section-head{flex-direction:column;align-items:flex-start;gap:4px}
+.league-block .section-head p{text-align:left}
 .game-list,.standings{display:grid;gap:8px}
 .game-row,.stand-row{min-width:0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
 .game-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:start}
 .game-row.is-next{border-color:rgba(207,174,112,.48);background:var(--gold-soft)}
-.game-when,.game-field{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.game-when,.game-field,.game-address{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
 .game-row h3{margin:2px 0 3px;font:500 16px/1.2 var(--serif);overflow-wrap:anywhere}
+.game-address{margin-top:2px}
 .game-score{margin-top:4px;color:var(--soft);font-size:12.5px;font-weight:700}
+#nextGameCopy{overflow-wrap:anywhere}
 .stand-row{display:grid;grid-template-columns:minmax(0,1fr) 4.6em;gap:8px;align-items:center}
 .stand-row.is-us{border-color:rgba(207,174,112,.48);background:var(--gold-soft)}
 .stand-row b{min-width:0;overflow-wrap:anywhere}
@@ -1373,7 +1377,11 @@ function seedLeague(){
     timezone:LEAGUE_TZ,
     team:"Commodores",
     coach:"Selber",
-    updatedAt:"2026-08-25T17:17:00-05:00",
+    updatedAt:"2026-08-27T14:45:00-05:00",
+    venues:{
+      MMS:{name:"Memorial Middle School",address:"12550 Vindon Dr, Houston, TX 77024"},
+      SFMS:{name:"Spring Forest Middle School",address:"14240 Memorial Dr, Houston, TX 77079"}
+    },
     standings:[
       {team:"Sooners",coach:"Laxalt",w:0,l:0,t:0,gp:0},
       {team:"Rebels",coach:"Matlack",w:0,l:0,t:0,gp:0},
@@ -1434,6 +1442,18 @@ function normalizeLeague(raw){
     };
   }).filter(Boolean):[];
   if(!standings.length||!games.length) return null;
+  const seedVenues=seedLeague().venues;
+  const venuesRaw=raw.venues&&typeof raw.venues==="object"?raw.venues:{};
+  const venues={
+    MMS:{
+      name:String((venuesRaw.MMS&&venuesRaw.MMS.name)||seedVenues.MMS.name),
+      address:String((venuesRaw.MMS&&venuesRaw.MMS.address)||seedVenues.MMS.address)
+    },
+    SFMS:{
+      name:String((venuesRaw.SFMS&&venuesRaw.SFMS.name)||seedVenues.SFMS.name),
+      address:String((venuesRaw.SFMS&&venuesRaw.SFMS.address)||seedVenues.SFMS.address)
+    }
+  };
   return {
     id:LEAGUE_ID,
     kind:"league-schedule",
@@ -1444,9 +1464,22 @@ function normalizeLeague(raw){
     team:String(raw.team||"Commodores"),
     coach:String(raw.coach||"Selber"),
     updatedAt:String(raw.updatedAt||raw.updated_at||raw.revisedAt||""),
+    venues,
     standings,
     games
   };
+}
+function venueForLocation(location,book){
+  const loc=String(location||"");
+  const venues=(book&&book.venues)||seedLeague().venues;
+  if(loc.startsWith("MMS")) return venues.MMS;
+  if(loc.startsWith("SFMS")) return venues.SFMS;
+  return null;
+}
+function formatVenueLine(location,book){
+  const venue=venueForLocation(location,book);
+  if(!venue) return "";
+  return `${venue.name}, ${venue.address}`;
 }
 function leagueRank(book){
   return [Date.parse(book&&book.revisedAt||0)||0, Date.parse(book&&book.updatedAt||0)||0];
@@ -1521,11 +1554,13 @@ function leagueHTML(book){
   const games=(book.games||[]).map(game=>{
     const home=isHomeGame(game,book);
     const score=ourScoreline(game,book);
+    const venueLine=formatVenueLine(game.location,book);
     return `<article class="game-row${next&&game.id===next.id?" is-next":""}">
       <div>
         <div class="game-when">${esc(formatKickoff(game))}</div>
         <h3>${home?"vs":"at"} ${esc(gameOpponent(game,book))}</h3>
         <div class="game-field">${esc(game.location)}</div>
+        ${venueLine?`<div class="game-address">${esc(venueLine)}</div>`:""}
         ${score?`<div class="game-score">${esc(score)}</div>`:""}
       </div>
       <span class="badge ${home?"live":""}">${home?"Home":"Away"}</span>
@@ -1556,8 +1591,9 @@ function renderNextGame(book){
     return;
   }
   const home=isHomeGame(next,book);
+  const venueLine=formatVenueLine(next.location,book);
   title.textContent=formatKickoff(next);
-  copy.textContent=`${home?"HOME vs":"AWAY at"} ${gameOpponent(next,book)} — ${next.location}`;
+  copy.textContent=`${home?"HOME vs":"AWAY at"} ${gameOpponent(next,book)} — ${next.location}${venueLine?" · "+venueLine:""}`;
 }
 function renderLeagueSchedule(){
   const html=leagueHTML(league);
