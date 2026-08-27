@@ -17,7 +17,7 @@
     <path d="M180 318 L180 298 L228 298" fill="none" stroke="#3D3D3D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M118 318 L118 278 L128 268 L48 178" fill="none" stroke="#1B6CA8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M214 318 L214 258 L286 198" fill="none" stroke="#F08C00" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M250 318 L250 278 L292 258 L258 248" fill="none" stroke="#9AA0A6" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M250 318 L250 278 L292 258 L258 248" fill="none" stroke="#6C757D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M286 318 L286 298 L318 278 L348 278" fill="none" stroke="#6F42C1" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M328 318 L248 268 L258 218 L330 158" fill="none" stroke="#12B886" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
     <polygon points="180.0,343.0 183.20930747751692,351.5827672107128 192.363734711837,351.9827790731257 185.19276857897154,357.68723278928724 187.64120827980216,366.5172209268743 180.0,361.46 172.35879172019784,366.5172209268743 174.80723142102846,357.68723278928724 167.636265288163,351.9827790731257 176.79069252248308,351.5827672107128" fill="#D7263D" stroke="#1C1C1C" stroke-width="1.6"/>
@@ -28,7 +28,7 @@
     <text x="118" y="322" fill="#fff" text-anchor="middle" font-size="11">A</text>
     <circle cx="214" cy="318" r="12" fill="#F08C00" stroke="#1C1C1C" stroke-width="1.6"/>
     <text x="214" y="322" fill="#fff" text-anchor="middle" font-size="11">X</text>
-    <circle cx="250" cy="318" r="12" fill="#9AA0A6" stroke="#1C1C1C" stroke-width="1.6"/>
+    <circle cx="250" cy="318" r="12" fill="#6C757D" stroke="#1C1C1C" stroke-width="1.6"/>
     <text x="250" y="322" fill="#fff" text-anchor="middle" font-size="11">B</text>
     <circle cx="286" cy="318" r="12" fill="#6F42C1" stroke="#1C1C1C" stroke-width="1.6"/>
     <text x="286" y="322" fill="#fff" text-anchor="middle" font-size="11">Y</text>
