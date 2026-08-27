@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Virginia's Hub">
+  <defs>
+    <linearGradient id="g" x1="80" y1="40" x2="440" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ec4899"/>
+      <stop offset=".55" stop-color="#c026d3"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#g)"/>
+  <path fill="#fff" d="M256 402c-92-66-176-136-176-214 0-52 40-90 88-90 32 0 60 18 88 54 28-36 56-54 88-54 48 0 88 38 88 90 0 78-84 148-176 214z"/>
+  <path fill="#fff1a8" d="M402 96l14 42 44 2-36 26 14 42-36-26-36 26 14-42-36-26 44-2z"/>
+</svg>

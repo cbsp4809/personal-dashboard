@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="theme-color" content="#c026d3">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Virginia's Hub">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Virginia's Hub — a private pink planner.">
+  <title>Virginia's Hub</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="app" class="app">
+
+    <section id="gate-screen" class="screen gate-screen" hidden>
+      <div class="auth-card">
+        <div class="mark" aria-hidden="true">✦</div>
+        <h1>Virginia's Hub</h1>
+        <p class="lede">A private planner. Enter the visitor password to continue.</p>
+        <form id="gate-form" autocomplete="off">
+          <label class="field">
+            <span>Password</span>
+            <input id="gate-password" type="password" inputmode="text" enterkeyhint="go" autocapitalize="off" spellcheck="false" required>
+          </label>
+          <p id="gate-error" class="error" hidden></p>
+          <button type="submit" class="btn primary">Open the Hub</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="auth-screen" class="screen auth-screen" hidden>
+      <div class="auth-card">
+        <div class="mark" aria-hidden="true">♡</div>
+        <h1>Welcome in</h1>
+        <p class="lede">Use the same email on every device so your Hub stays in sync.</p>
+        <form id="auth-form">
+          <label class="field">
+            <span>Email</span>
+            <input id="auth-email" type="email" autocomplete="username" required>
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="auth-password" type="password" autocomplete="current-password" minlength="6" required>
+          </label>
+          <p id="auth-error" class="error" hidden></p>
+          <div class="btn-row">
+            <button type="submit" class="btn primary" data-mode="signin">Sign in</button>
+            <button type="button" class="btn ghost" id="auth-create">Create account</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="hub-screen" class="screen hub-screen" hidden>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="greeting">Hello</p>
+          <h1>Virginia's Hub</h1>
+        </div>
+        <div class="topbar-actions">
+          <span id="sync-pill" class="pill" title="Sync status">Saved</span>
+          <button type="button" id="settings-btn" class="icon-btn" aria-label="Settings">⚙</button>
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Hub sections">
+        <button type="button" class="tab on" data-tab="today">Today</button>
+        <button type="button" class="tab" data-tab="todos">To-Do</button>
+        <button type="button" class="tab" data-tab="homework">Homework</button>
+        <button type="button" class="tab" data-tab="schedule">Week</button>
+        <button type="button" class="tab" data-tab="notes">Notes</button>
+        <button type="button" class="tab" data-tab="calendar">Calendar</button>
+        <button type="button" class="tab" data-tab="reminders">Reminders</button>
+      </nav>
+
+      <main class="pages">
+        <section id="page-today" class="page on"></section>
+        <section id="page-todos" class="page"></section>
+        <section id="page-homework" class="page"></section>
+        <section id="page-schedule" class="page"></section>
+        <section id="page-notes" class="page"></section>
+        <section id="page-calendar" class="page"></section>
+        <section id="page-reminders" class="page"></section>
+      </main>
+
+      <p id="install-hint" class="install-hint" hidden>
+        On iPad: tap <strong>Share</strong> → <strong>Add to Home Screen</strong> so this opens like an app.
+      </p>
+    </section>
+  </div>
+
+  <dialog id="settings-dialog" class="sheet">
+    <form method="dialog" class="sheet-inner">
+      <h2>Settings</h2>
+      <p id="settings-email" class="muted"></p>
+      <label class="toggle">
+        <input id="setting-notify" type="checkbox">
+        <span>Reminders can ping while this app is open</span>
+      </label>
+      <label class="field">
+        <span>Default homework reminder</span>
+        <select id="setting-default-reminder">
+          <option value="night-before">Night before</option>
+          <option value="morning-of">Morning of</option>
+          <option value="none">Don't add one</option>
+        </select>
+      </label>
+      <div class="btn-row">
+        <button type="button" id="sign-out" class="btn ghost">Sign out</button>
+        <button type="submit" class="btn primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
