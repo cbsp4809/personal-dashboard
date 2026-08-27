@@ -55,7 +55,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .looks button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
 .cue{min-height:42px;margin:0 0 10px;color:var(--soft);font-size:14px}
 .field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#fff}
-.field{display:block;width:100%;height:auto}
+.field{display:block;width:100%;height:auto;aspect-ratio:360/500;min-height:280px}
 .field text{font:700 11px var(--sans)}
 .letters{margin:10px 0 0;color:var(--muted);font-size:12px;text-align:center}
 .check{display:flex;align-items:center;gap:8px;margin:10px 0 0;color:var(--muted);font-size:13px;font-weight:600}
@@ -401,18 +401,19 @@ function fieldSVG(play,pos,ball,opts){
     const kid=nameFor(s.letter);
     const main=names&&kid?kid:s.letter;
     const hint=names&&kid?s.letter:"";
+    const r=names&&kid?(s.letter==="Q"?15:14):(s.letter==="Q"?13:12);
     const shape=s.star
-      ?`<polygon points="${starPath(p.x,p.y,13)}" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`
+      ?`<polygon points="${starPath(p.x,p.y,r)}" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`
       :s.letter==="C"
         ?`<rect x="${p.x-11}" y="${p.y-11}" width="22" height="22" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`
-        :`<circle cx="${p.x}" cy="${p.y}" r="${s.letter==="Q"?13:12}" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`;
-    const tag=hint?`<text x="${p.x}" y="${p.y-18}" fill="${on?"#8A6A20":"#555"}" text-anchor="middle" font-size="8">${esc(hint)}</text>`:"";
+        :`<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`;
+    const tag=hint?`<text x="${p.x}" y="${p.y-r-6}" fill="${on?"#8A6A20":"#555"}" text-anchor="middle" font-size="8">${esc(hint)}</text>`:"";
     const size=main.length>6?8:main.length>4?9:11;
     return `<g data-letter="${s.letter}">${shape}${tag}<text x="${p.x}" y="${p.y+4}" fill="#fff" text-anchor="middle" font-size="${size}">${esc(main)}</text></g>`;
   }).join("");
   const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:LOS};
   const endzone=play.endzone?`<rect x="16" y="16" width="328" height="56" fill="none" stroke="#B0B0B0" stroke-width="2"/><text x="300" y="34" fill="#777" font-size="9">end zone</text>`:"";
-  return `<svg class="field" viewBox="0 0 ${FW} ${FH}" role="img" aria-label="${esc(play.num+" "+play.title)}">
+  return `<svg class="field" viewBox="0 0 ${FW} ${FH}" width="${FW}" height="${FH}" role="img" aria-label="${esc(play.num+" "+play.title)}">
     <rect width="${FW}" height="${FH}" fill="#FFFFFF"/>
     <rect x="8" y="8" width="344" height="484" fill="none" stroke="#C8C8C8" stroke-width="1.5"/>
     ${yardLines()}${endzone}${areasSVG()}${defSVG(play)}${routes}${kids}
