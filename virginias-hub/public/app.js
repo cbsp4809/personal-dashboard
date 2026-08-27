@@ -468,8 +468,8 @@
             <input id="sked-title" placeholder="Class or activity" required>
           </div>
           <div class="composer-row">
-            <input id="sked-start" type="time" required>
-            <input id="sked-end" type="time">
+            <input id="sked-start" type="time" value="08:00" required>
+            <input id="sked-end" type="time" value="08:20">
           </div>
           <input id="sked-place" placeholder="Room or place (optional)">
           <button class="btn primary" type="submit">Add to schedule</button>
