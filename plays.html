@@ -423,14 +423,17 @@ document.addEventListener("keydown",event=>{
   if(event.key==="f"||event.key==="F"){$("#flipBtn").click()}
 });
 
-const hash=(location.hash||"").replace("#","").toLowerCase();
-if(hash==="38") {STATE.id="38";STATE.side="left"}
-else if(hash==="68"||hash==="rice") STATE.id="68";
-else if(hash==="2"||hash==="19"||hash==="219") STATE.id="219";
-else if(hash==="6"||hash==="gl") STATE.id="6";
-else if(hash==="23"||hash==="26"||hash==="2326"||hash==="23-26") {STATE.id="2326";STATE.side=hash==="23"?"left":"right"}
-else {STATE.id="2326";STATE.side="right"}
-if(!LETTERS.every(Boolean)) throw new Error("letters locked");
+function applyHash(){
+  const hash=(location.hash||"").replace("#","").toLowerCase();
+  if(hash==="38") {STATE.id="38";STATE.side="left";STATE.look=0;return}
+  if(hash==="68"||hash==="rice") {STATE.id="68";STATE.side="right";STATE.look=0;return}
+  if(hash==="2"||hash==="19"||hash==="219") {STATE.id="219";STATE.side=hash==="2"?"left":"right";STATE.look=0;return}
+  if(hash==="6"||hash==="gl") {STATE.id="6";STATE.side="right";STATE.look=0;return}
+  if(hash==="23"||hash==="26"||hash==="2326"||hash==="23-26") {STATE.id="2326";STATE.side=hash==="23"?"left":"right";STATE.look=0;return}
+  STATE.id="2326";STATE.side="right";STATE.look=0;
+}
+applyHash();
+window.addEventListener("hashchange",()=>{applyHash();stopAnim();render();});
 render();
 </script>
 </body>
