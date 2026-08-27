@@ -179,8 +179,18 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .builder-help{margin:8px 0 0;color:var(--muted);font-size:11.5px}
 .builder-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .attendance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.kid-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;background:var(--panel);border:1px solid var(--line);border-radius:11px}
-.kid-row span{font-weight:600}.kid-row select{width:96px;padding:7px 8px;font-size:12px}
+.kid-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;background:var(--panel);border:1px solid var(--line);border-radius:11px;min-width:0}
+.kid-row span{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.kid-row select{width:96px;padding:7px 8px;font-size:12px}
+.lineup-attendance{margin:0 0 14px}
+.attendance-session{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:10px;margin:0 0 10px}
+.attendance-session .field{margin:0}
+.att-toggle{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:none}
+.att-toggle button{min-width:0;min-height:40px;padding:6px 8px;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);color:var(--muted);font-size:11px;font-weight:700}
+.att-toggle button.on[data-present="1"]{border-color:rgba(111,191,115,.55);background:rgba(111,191,115,.14);color:#6fbf73}
+.att-toggle button.on[data-present="0"]{border-color:rgba(224,122,106,.55);background:rgba(224,122,106,.12);color:#e07a6a}
+.name-chip.is-out{opacity:.48;border-style:dashed;text-decoration:line-through;text-decoration-color:rgba(224,122,106,.8)}
+.name-chip .chip-out{color:#e07a6a;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
 .status-line{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12px}
 .staff-note{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
 .go-tab{border:0;padding:0;background:none;color:var(--gold);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
@@ -302,12 +312,14 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .play-row.ok{border-color:rgba(111,191,115,.4)}
 .play-row.one-way{border-color:rgba(207,174,112,.45)}
 .play-row.short{border-color:rgba(224,122,106,.5)}
+.play-row.out{border-color:rgba(119,119,119,.45);opacity:.78}
 .play-row-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .play-row-top b{min-width:0;overflow-wrap:anywhere;font-size:16px}
 .play-tag{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .play-row.ok .play-tag{color:#6fbf73}
 .play-row.one-way .play-tag{color:var(--gold)}
 .play-row.short .play-tag{color:#e07a6a}
+.play-row.out .play-tag{color:var(--muted)}
 .play-meta{margin:4px 0 0;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
 .line-spot{display:grid;grid-template-columns:minmax(108px,132px) minmax(0,1fr);gap:8px;align-items:center;min-height:56px;margin-bottom:8px;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
 .line-spot:last-child{margin-bottom:0}
@@ -329,6 +341,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .quick-grid{grid-template-columns:1fr}.quick{padding:13px}
   .station{grid-template-columns:58px minmax(0,1fr)}.coach{grid-column:2;text-align:left}
   .season-list{grid-template-columns:1fr}.attendance{grid-template-columns:1fr 1fr}
+  .attendance-session{grid-template-columns:1fr}
   .board-same{grid-template-columns:1fr}
   .drill-add{margin-left:0}
   .milestone{grid-template-columns:1fr}.mile-date{padding:11px 15px}
@@ -344,6 +357,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .gate-card{padding:28px 20px 23px}.gate h1{font-size:31px}
   .pin-row{display:grid}.pin-row .btn{width:100%}
   .attendance{grid-template-columns:1fr}.import-box{grid-template-columns:1fr}.import-actions{grid-template-columns:1fr 1fr}
+  .att-toggle button{min-height:44px}
   .builder-form,.assignment{grid-template-columns:1fr}.builder-form .field:first-child,.builder-form .how{grid-column:auto}
   .play-library{grid-template-columns:1fr}.builder{padding:14px}.builder-field{min-height:250px}
   .practice-top,.schedule{padding-left:14px;padding-right:14px}
@@ -682,13 +696,32 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="binder-note">
         <b>SBMSA Fall 7on7 · how the card has to work</b>
         <ul class="plain-list">
+          <li>Mark who is Present / Out for this practice or game first. Unit A/B only use the kids who showed.</li>
           <li>No free substitution. Injury only. Two units of 7 are set before each quarter — no one-for-one mid-quarter swap.</li>
           <li>Unit A plays Q1 and Q3. Unit B plays Q2 and Q4.</li>
-          <li>Every kid starts two full quarters on O and two on D, or plays all four quarters on one side only.</li>
-          <li>14 spots a quarter, so some kids go both ways and some sit a quarter. Sitting two quarters is legal only if 2+2 or one-way still holds.</li>
+          <li>Every present kid starts two full quarters on O and two on D, or plays all four quarters on one side only.</li>
+          <li>14 spots a quarter. With fewer than 12 present you need more both-ways (11→3, 10→4, … 7→all both-ways). Need at least 7 to play.</li>
           <li>O letters: Q · C · X · A · B · Y · Z. D: 1 left short · 2 middle short · 3 right short · 4 right deep · 5 middle deep · 6 left deep · 7 rover.</li>
           <li>On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot.</li>
         </ul>
+      </div>
+      <div class="lineup-attendance">
+        <div class="section-head"><div><div class="eyebrow">Who’s here</div><h2>Attendance</h2></div><p>Default Present · Out kids leave the card</p></div>
+        <div class="attendance-session">
+          <div class="field">
+            <label for="sessionLabel">Session</label>
+            <select id="sessionLabel">
+              <option value="Practice Thu">Practice Thu</option>
+              <option value="Practice Sun">Practice Sun</option>
+              <option value="Game">Game</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="attendanceDate">Date</label>
+            <input id="attendanceDate" type="date">
+          </div>
+        </div>
+        <div class="attendance" id="attendanceGrid"></div>
       </div>
       <div class="roster-pool" id="teamPool"></div>
       <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · tap a placed name, then here</div>
@@ -721,7 +754,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         </div>
       </div>
       <div class="play-time" id="playTime">
-        <div class="section-head"><div><div class="eyebrow">Play time</div><h2>Rule check</h2></div><p>Updates as you place names · 2+2 or one-way</p></div>
+        <div class="section-head"><div><div class="eyebrow">Play time</div><h2>Rule check</h2></div><p>Present kids only · short-roster both-ways · 2+2 or one-way</p></div>
         <div class="play-time-banner short" id="playTimeBanner" aria-live="polite"></div>
         <div class="play-time-list" id="playTimeList"></div>
       </div>
@@ -2364,8 +2397,74 @@ function emptyLine(){return [null,null,null,null,null,null,null]}
 function emptyUnit(){return {offense:emptyLine(),defense:emptyLine()}}
 function emptyUnits(){return {A:emptyUnit(),B:emptyUnit()}}
 function emptyCoachSkills(){return {Peter:{},Chris:{},Ben:{}}}
+function emptyAttendance(){
+  const out={};
+  ROSTER.forEach(name=>{if(name&&name!=="Brett") out[name]=true});
+  return out;
+}
+function cleanAttendance(raw){
+  const out=emptyAttendance();
+  if(!raw||typeof raw!=="object") return out;
+  ROSTER.forEach(name=>{
+    if(!name||name==="Brett") return;
+    if(raw[name]===false) out[name]=false;
+    else if(raw[name]===true) out[name]=true;
+  });
+  return out;
+}
+function cleanSessionLabel(value){
+  const allowed=["Practice Thu","Practice Sun","Game"];
+  const text=String(value==null?"":value).trim();
+  return allowed.includes(text)?text:"Practice Thu";
+}
+function cleanAttendanceDate(value){
+  const text=String(value==null?"":value).trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(text)?text:"";
+}
 function lineFilled(line){return (line||[]).filter(Boolean).length}
 function hasFilledLine(line){return lineFilled(line)>0}
+function isPresent(name,attendance){
+  if(!name||name==="Brett"||!ROSTER.includes(name)) return false;
+  const map=attendance||(teamState&&teamState.attendance)||{};
+  return map[name]!==false;
+}
+function presentKids(){
+  return ROSTER.filter(name=>isPresent(name));
+}
+function bothWaysNeeded(n){
+  if(n<7) return null;
+  return Math.max(0,14-n);
+}
+function bothWaysOnUnit(unit){
+  return presentKids().filter(name=>unitLine(unit,"offense").includes(name)&&unitLine(unit,"defense").includes(name)).length;
+}
+function stripAbsentFromUnits(units,attendance){
+  const next={A:emptyUnit(),B:emptyUnit()};
+  UNIT_IDS.forEach(unit=>{
+    ["offense","defense"].forEach(side=>{
+      const line=(units&&units[unit]&&units[unit][side])||emptyLine();
+      next[unit][side]=line.map(name=>name&&isPresent(name,attendance)?name:null);
+    });
+  });
+  return next;
+}
+function clearNameFromUnits(name){
+  const cleared=[];
+  UNIT_IDS.forEach(unit=>{
+    ["offense","defense"].forEach(side=>{
+      const line=unitLine(unit,side);
+      line.forEach((who,index)=>{
+        if(who===name){
+          line[index]=null;
+          const spot=side==="offense"?(OFFENSE_SPOTS[index]&&OFFENSE_SPOTS[index].label)||side:(DEFENSE_SPOTS[index]&&DEFENSE_SPOTS[index].label)||side;
+          cleared.push(unit+" "+spot);
+        }
+      });
+    });
+  });
+  syncLegacyLines(teamState);
+  return cleared;
+}
 function cleanScore(value){
   const n=Number(value);
   return Number.isInteger(n)&&n>=1&&n<=5?n:null;
@@ -2453,6 +2552,7 @@ function normalizeLineup(raw){
     const legacy=cleanSkills(raw.skills);
     if(Object.keys(legacy).length) skillsByCoach={Peter:{},Chris:legacy,Ben:{}};
   }
+  const attendance=cleanAttendance(raw.attendance);
   let units;
   if(rawHasUnits(raw)){
     units={A:cleanUnit(raw.units.A),B:cleanUnit(raw.units.B)};
@@ -2462,26 +2562,46 @@ function normalizeLineup(raw){
       B:emptyUnit()
     };
   }
+  units=stripAbsentFromUnits(units,attendance);
   return syncLegacyLines({
     skillsByCoach,
     units,
+    attendance,
+    sessionLabel:cleanSessionLabel(raw.sessionLabel),
+    attendanceDate:cleanAttendanceDate(raw.attendanceDate),
     updatedAt:raw.updatedAt||raw.updated_at||""
   });
 }
 function emptyTeamState(){
-  return syncLegacyLines({skillsByCoach:emptyCoachSkills(),units:emptyUnits(),updatedAt:""});
+  return syncLegacyLines({
+    skillsByCoach:emptyCoachSkills(),
+    units:emptyUnits(),
+    attendance:emptyAttendance(),
+    sessionLabel:"Practice Thu",
+    attendanceDate:"",
+    updatedAt:""
+  });
+}
+function hasAttendanceContent(state){
+  if(!state) return false;
+  if(cleanSessionLabel(state.sessionLabel)!=="Practice Thu") return true;
+  if(cleanAttendanceDate(state.attendanceDate)) return true;
+  const att=state.attendance||{};
+  return ROSTER.some(name=>att[name]===false);
 }
 function hasTeamContent(state){
   if(!state) return false;
   if(!isSkillsByCoachEmpty(state.skillsByCoach)) return true;
+  if(hasAttendanceContent(state)) return true;
   return UNIT_IDS.some(unit=>hasUnitContent(state.units&&state.units[unit]));
 }
 function lineupPayload(state){
   const source=state||teamState;
-  const units={
+  const attendance=cleanAttendance(source.attendance);
+  const units=stripAbsentFromUnits({
     A:cleanUnit(source.units&&source.units.A),
     B:cleanUnit(source.units&&source.units.B)
-  };
+  },attendance);
   return {
     id:LINEUP_ID,
     lineupShape:"units-ab",
@@ -2490,6 +2610,9 @@ function lineupPayload(state){
       Chris:source.skillsByCoach&&source.skillsByCoach.Chris||{},
       Ben:source.skillsByCoach&&source.skillsByCoach.Ben||{}
     },
+    attendance,
+    sessionLabel:cleanSessionLabel(source.sessionLabel),
+    attendanceDate:cleanAttendanceDate(source.attendanceDate),
     units,
     offense:units.A.offense,
     defense:units.A.defense,
@@ -2711,8 +2834,11 @@ function bindRateInputs(root){
 function nameChip(name,unit,side,index){
   const avg=staffAverageText(name);
   const shown=displayName(name);
+  const out=!side&&!isPresent(name);
   const source=side?` data-unit="${esc(unit)}" data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
-  return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(shown)} ${avg==="—"?"":"staff average "+avg}">${esc(shown)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
+  const extra=out?`<span class="chip-out">Out</span>`:(avg==="—"?"":`<span class="chip-avg">${avg}</span>`);
+  const label=out?`${shown} Out`:(`${shown}${avg==="—"?"":" staff average "+avg}`);
+  return `<button type="button" class="name-chip${out?" is-out":""}" data-name="${esc(name)}"${source} aria-label="${esc(label)}">${esc(shown)}${extra}</button>`;
 }
 function playerSpotLabels(name){
   const labels=[];
@@ -2762,6 +2888,9 @@ function renderUnitBoard(unit,side,spots){
   }).join("");
 }
 function playTimeRow(name){
+  if(!isPresent(name)){
+    return {name,o:0,d:0,both:0,sit:0,legal:true,tag:"out",label:"Out",why:"Not here this session.",out:true};
+  }
   const oSet=new Set();
   const dSet=new Set();
   const bothSet=new Set();
@@ -2798,7 +2927,7 @@ function playTimeRow(name){
   }else if(d===2&&o===0){
     why="Only two D · needs two O, or stay on D all four.";
   }
-  return {name,o,d,both:bothSet.size,sit,legal,tag,label,why};
+  return {name,o,d,both:bothSet.size,sit,legal,tag,label,why,out:false};
 }
 function unitFillNote(){
   return UNIT_IDS.map(unit=>{
@@ -2807,28 +2936,51 @@ function unitFillNote(){
     return `Unit ${unit} ${o}/7 O · ${d}/7 D`;
   }).join(" · ");
 }
+function shortRosterNote(n,need){
+  if(n<7) return "Need at least 7 present to play 7on7.";
+  if(n===12) return "With 12 kids you need 2 both-ways if nobody sits.";
+  if(need===1) return "With "+n+" kids you need 1 both-way to keep everyone on.";
+  return "With "+n+" kids you need "+need+" both-ways to keep everyone on.";
+}
 function renderPlayTime(){
   const banner=$("#playTimeBanner");
   const list=$("#playTimeList");
   if(!banner||!list) return;
+  const present=presentKids();
+  const n=present.length;
+  const need=bothWaysNeeded(n);
+  const hasA=bothWaysOnUnit("A");
+  const hasB=bothWaysOnUnit("B");
   const rows=ROSTER.map(playTimeRow);
-  const short=rows.filter(row=>!row.legal);
+  const presentRows=rows.filter(row=>!row.out);
+  const short=presentRows.filter(row=>!row.legal);
   const unitsFull=UNIT_IDS.every(unit=>lineFilled(unitLine(unit,"offense"))===7&&lineFilled(unitLine(unit,"defense"))===7);
-  const cardLegal=!!ROSTER.length&&!short.length&&unitsFull;
+  const enoughKids=n>=7;
+  const cardLegal=!!ROSTER.length&&enoughKids&&!short.length&&unitsFull;
+  const bothNote=need==null
+    ? (n+" present")
+    : (n+" present · need "+need+" both-ways · Unit A has "+hasA+" · Unit B has "+hasB);
   banner.className="play-time-banner "+(cardLegal?"ok":"short");
   if(!ROSTER.length){
     banner.innerHTML=`<b>Sign in to load the roster</b><div class="play-time-sub">Rule check waits for first names.</div>`;
+  }else if(!enoughKids){
+    const outCount=ROSTER.length-n;
+    banner.innerHTML=`<b>Need at least 7 present to play 7on7</b><div class="play-time-sub">${n} here · ${outCount} out. Mark more Present, or this is a skill day — not a 7on7 card.</div>`;
   }else if(cardLegal){
-    banner.innerHTML=`<b>Full-game card is legal</b><div class="play-time-sub">${esc(unitFillNote())} · every kid is 2+2 or one-way.</div>`;
+    banner.innerHTML=`<b>Card is legal · ${esc(bothNote)}</b><div class="play-time-sub">${esc(unitFillNote())} · ${esc(shortRosterNote(n,need))} Every present kid is 2+2 or one-way. No free subs.</div>`;
   }else{
     const bits=[];
     if(short.length) bits.push(short.length===1?displayName(short[0].name)+" is short":short.length+" kids short");
     if(!unitsFull) bits.push("fill every 7+7 first");
-    banner.innerHTML=`<b>Not legal yet · ${esc(bits.join(" · "))}</b><div class="play-time-sub">${esc(unitFillNote())}. No free subs. Injury only.</div>`;
+    if(need!=null&&(hasA<need||hasB<need)) bits.push("still short on both-ways");
+    banner.innerHTML=`<b>Not legal yet · ${esc(bits.join(" · ")||"keep placing")}</b><div class="play-time-sub">${esc(bothNote)}. ${esc(shortRosterNote(n,need))} ${esc(unitFillNote())}. No free subs. Injury only.</div>`;
   }
   list.innerHTML=rows.map(row=>{
     const shown=displayName(row.name);
-    return `<article class="play-row ${row.tag}" data-player="${esc(row.name)}"><div class="play-row-top"><b>${esc(shown)}</b><span class="play-tag">${esc(row.label)}</span></div><div class="play-meta">O ${row.o} · D ${row.d} · both-way ${row.both} · sit ${row.sit}</div><div class="play-meta">${esc(row.why)}</div></article>`;
+    const meta=row.out
+      ? `<div class="play-meta">${esc(row.why)}</div>`
+      : `<div class="play-meta">O ${row.o} · D ${row.d} · both-way ${row.both} · sit ${row.sit}</div><div class="play-meta">${esc(row.why)}</div>`;
+    return `<article class="play-row ${row.tag}" data-player="${esc(row.name)}"><div class="play-row-top"><b>${esc(shown)}</b><span class="play-tag">${esc(row.label)}</span></div>${meta}</article>`;
   }).join("");
 }
 function refreshPlayerSpots(){
@@ -2838,9 +2990,67 @@ function refreshPlayerSpots(){
     $$(`[data-player="${name}"] .player-spots`).forEach(el=>{el.textContent=text});
   });
 }
+function paintAttendanceSession(){
+  const label=$("#sessionLabel");
+  const date=$("#attendanceDate");
+  if(label) label.value=cleanSessionLabel(teamState.sessionLabel);
+  if(date) date.value=cleanAttendanceDate(teamState.attendanceDate);
+}
+function renderAttendance(){
+  if(!teamState.attendance) teamState.attendance=emptyAttendance();
+  paintAttendanceSession();
+  const grid=$("#attendanceGrid");
+  if(!grid) return;
+  grid.innerHTML=ROSTER.map(name=>{
+    const present=isPresent(name);
+    const shown=displayName(name);
+    return `<div class="kid-row" data-att-name="${esc(name)}"><span>${esc(shown)}</span><div class="att-toggle" role="group" aria-label="${esc(shown)} attendance"><button type="button" data-att="${esc(name)}" data-present="1" class="${present?"on":""}" aria-pressed="${present?"true":"false"}">Present</button><button type="button" data-att="${esc(name)}" data-present="0" class="${present?"":"on"}" aria-pressed="${present?"false":"true"}">Out</button></div></div>`;
+  }).join("");
+  $$("#attendanceGrid [data-att]").forEach(button=>{
+    button.onclick=()=>{
+      const present=button.dataset.present==="1";
+      setAttendance(button.dataset.att,present);
+    };
+  });
+}
+function setAttendance(name,present){
+  if(!ROSTER.includes(name)||name==="Brett") return;
+  if(!teamState.attendance) teamState.attendance=emptyAttendance();
+  const next=!!present;
+  const was=isPresent(name);
+  teamState.attendance[name]=next;
+  let note="";
+  if(!next){
+    const cleared=clearNameFromUnits(name);
+    if(teamPick&&teamPick.name===name) teamPick=null;
+    note=cleared.length
+      ? displayName(name)+" marked Out · cleared from "+cleared.join(", ")
+      : displayName(name)+" marked Out";
+  }else if(!was){
+    note=displayName(name)+" marked Present";
+  }
+  persistTeamLocal();
+  renderTeamLineup();
+  if(note) setTeamStatus(note);
+  saveStaffLineupDebounced();
+}
+function setSessionMeta(){
+  teamState.sessionLabel=cleanSessionLabel($("#sessionLabel")&&$("#sessionLabel").value);
+  teamState.attendanceDate=cleanAttendanceDate($("#attendanceDate")&&$("#attendanceDate").value);
+  persistTeamLocal();
+  saveStaffLineupDebounced();
+}
 function renderTeamLineup(){
+  if(!teamState.attendance) teamState.attendance=emptyAttendance();
+  teamState.units=stripAbsentFromUnits(teamState.units,teamState.attendance);
+  syncLegacyLines(teamState);
+  renderAttendance();
   const pool=$("#teamPool");
-  if(pool) pool.innerHTML=ROSTER.map(name=>nameChip(name)).join("");
+  if(pool){
+    const present=presentKids();
+    const out=ROSTER.filter(name=>!isPresent(name));
+    pool.innerHTML=present.concat(out).map(name=>nameChip(name)).join("");
+  }
   UNIT_IDS.forEach(unit=>{
     renderUnitBoard(unit,"offense",OFFENSE_SPOTS);
     renderUnitBoard(unit,"defense",DEFENSE_SPOTS);
@@ -2862,6 +3072,10 @@ let teamState=normalizeLineup(getStore("staff_lineup",null))||emptyTeamState();
 $$("#scoringAsChips [data-scoring-coach]").forEach(button=>button.onclick=()=>setScoringCoach(button.dataset.scoringCoach));
 const sortTeamRanksBtn=$("#sortTeamRanks");
 if(sortTeamRanksBtn) sortTeamRanksBtn.onclick=sortTeamRanks;
+const sessionLabelEl=$("#sessionLabel");
+if(sessionLabelEl) sessionLabelEl.onchange=setSessionMeta;
+const attendanceDateEl=$("#attendanceDate");
+if(attendanceDateEl) attendanceDateEl.onchange=setSessionMeta;
 const TEAM_HOLD_MS=450;
 const TEAM_CANCEL_DIST=18;
 const TEAM_TAP_DIST=12;
@@ -2913,6 +3127,7 @@ function clearSpot(source){
   syncLegacyLines(teamState);
 }
 function placeOnSide(unit,side,index,name){
+  if(!isPresent(name)) return;
   const line=unitLine(unit,side);
   if(!line) return;
   const existing=line.indexOf(name);
@@ -2936,6 +3151,10 @@ function applyTeamDrop(name,source,drop){
     clearSpot(source);
     return;
   }
+  if(!isPresent(name)){
+    setTeamStatus(displayName(name)+" is Out · mark Present to place");
+    return;
+  }
   if(source.kind==="spot"&&source.unit===drop.unit&&source.side===drop.side){
     placeOnSide(drop.unit,drop.side,drop.index,name);
     return;
@@ -2954,8 +3173,8 @@ function sameTeamPick(pick,name,source){
 }
 function teamClearHint(){
   if(!teamPick) return "Clear spot · tap a placed name, then here";
-  if(teamPick.source.kind==="spot") return "Tap here to clear "+teamPick.name;
-  return "Tap a lineup spot to place "+teamPick.name;
+  if(teamPick.source.kind==="spot") return "Tap here to clear "+displayName(teamPick.name);
+  return "Tap a lineup spot to place "+displayName(teamPick.name);
 }
 function paintTeamPick(){
   $$("#page-lineup .name-chip").forEach(chip=>{
@@ -2979,6 +3198,19 @@ function handleTeamChipTap(chip){
   const name=chip&&chip.dataset.name;
   if(!ROSTER.includes(name)) return;
   const source=chipSource(chip);
+  if(source.kind==="pool"&&!isPresent(name)){
+    teamPick=null;
+    paintTeamPick();
+    setTeamStatus(displayName(name)+" is Out · mark Present to place");
+    return;
+  }
+  if(teamPick&&!isPresent(teamPick.name)){
+    const outName=teamPick.name;
+    teamPick=null;
+    paintTeamPick();
+    setTeamStatus(displayName(outName)+" is Out · mark Present to place");
+    return;
+  }
   if(teamPick){
     if(sameTeamPick(teamPick,name,source)){
       teamPick=null;
@@ -3057,6 +3289,7 @@ function beginTeamDrag(event){
   const name=el.dataset.name;
   if(!ROSTER.includes(name)) return;
   const source=chipSource(el);
+  if(source.kind==="pool"&&!isPresent(name)) return;
   teamDrag={
     pointerId:event.pointerId,
     name,
