@@ -365,8 +365,8 @@ body.team-dragging{overflow:hidden;touch-action:none}
         </div>
         <div class="panel callout">
           <span class="dot"></span>
-          <!-- Staff huddle word is Mike; the roster record for the same kid is Michael. Play diagrams no longer carry names — assignments load from the shared lineup after sign-in. -->
-          <div><strong>Passer plan</strong><span>Mike is QB1. Teddy is QB2. Webb is QB3. Teddy still runs routes — split his throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
+          <!-- Play diagrams carry no names; assignments load from the shared lineup after sign-in. -->
+          <div><strong>Passer plan</strong><span>We keep a set QB order — QB1, QB2, QB3. QB2 still runs routes — split throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
         </div>
       </div>
 
@@ -394,7 +394,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <div class="concurrent">
             <div class="station">
               <div class="station-time">1:05 · 20m</div>
-              <div><h4>Throw / catch group</h4><p>Mike is QB1. Teddy is QB2. Webb is QB3. Teddy still splits throwing and routes. Rep clean catches past the line.</p></div>
+              <div><h4>Throw / catch group</h4><p>Set QB order — QB1, QB2, QB3. QB2 still splits throwing and routes. Rep clean catches past the line.</p></div>
               <div class="coach">Chris</div>
             </div>
             <div class="station">
@@ -467,7 +467,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
 
       <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup boards</h2></div><p>7 offense · 7 defense · same kid can be on both</p></div>
-      <div class="binder-note"><b>QB lock:</b> Mike QB1 · Teddy QB2 · Webb QB3. Teddy still runs routes. Michael on this roster is Mike. Five receivers + center; 3 and 2 by play. On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot. A filled spot replaces. The same kid may be on offense and defense at once.</div>
+      <div class="binder-note"><b>QB order:</b> QB1 · QB2 · QB3. QB2 still runs routes. Five receivers + center; 3 and 2 by play. On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot. A filled spot replaces. The same kid may be on offense and defense at once.</div>
       <div class="roster-pool" id="teamPool"></div>
       <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · tap a placed name, then here</div>
       <div class="team-boards">
@@ -779,7 +779,7 @@ const DRILL_LIBRARY=[
     name:"Catch",
     minutes:5,
     group:"skills",
-    how:"Partner catch at 5–7 yards. Hands out. Thumbs together if the ball is at the face, pinkies together if it’s low. Eyes on the ball until it hits the hands. Tuck to the chest, then look up. If it hits the body, that rep doesn’t count. Mike / Teddy / Webb throw. Swap every 5 catches.",
+    how:"Partner catch at 5–7 yards. Hands out. Thumbs together if the ball is at the face, pinkies together if it’s low. Eyes on the ball until it hits the hands. Tuck to the chest, then look up. If it hits the body, that rep doesn’t count. QB1 / QB2 / QB3 throw. Swap every 5 catches.",
     noLines:true
   },
   {
@@ -2623,7 +2623,7 @@ function renderTeamLineup(){
   if(offense){
     offense.innerHTML=OFFENSE_SPOTS.map((label,index)=>{
       const name=teamState.offense[index];
-        const hint=index===0?"Mike 1 · Teddy 2 · Webb 3":"";
+        const hint=index===0?"QB1 · QB2 · QB3":"";
       return `<div class="line-spot" data-drop-side="offense" data-drop-index="${index}"><div class="spot-label">${esc(label)}${hint?`<div>${esc(hint)}</div>`:""}</div><div class="spot-slot">${name?nameChip(name,"offense",index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
     }).join("");
   }

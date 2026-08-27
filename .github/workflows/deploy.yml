@@ -27,6 +27,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # The Commodores staff field book is NOT served on this public GitHub
+      # Pages site. It is hosted separately on Cloudflare Pages behind
+      # Cloudflare Access (coach email login). Strip it from the public artifact.
+      - name: Exclude staff field book from the public site
+        run: rm -f commodores.html commodores.webmanifest
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

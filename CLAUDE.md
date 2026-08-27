@@ -36,7 +36,7 @@ They are independent. **Do not merge them, and do not let a change to one leak i
 push to main  →  GitHub Action  →  https://cbsp4809.github.io/personal-dashboard/
 ```
 
-Everything in this repo is served publicly at that origin. There is no private hosting layer. Treat every file as world-readable.
+Everything in this repo is served publicly at that origin **except** `commodores.html` + `commodores.webmanifest`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book is hosted separately on **Cloudflare Pages behind Cloudflare Access** (coach email one-time-PIN login), so the playbook/practice content is not world-readable. Treat every OTHER file as world-readable. Its manifest uses root-relative paths for the Cloudflare (pages.dev) root, not the `/personal-dashboard/` GitHub sub-path.
 
 ---
 
