@@ -33,6 +33,11 @@ jobs:
       - name: Exclude staff field book from the public site
         run: rm -f commodores.html commodores.webmanifest
 
+      # Virginia's Hub is its own Cloudflare Worker (workers.dev), not this
+      # public GitHub Pages site. Do not serve the planner from github.io.
+      - name: Exclude Virginia's Hub from the public site
+        run: rm -rf virginias-hub
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
