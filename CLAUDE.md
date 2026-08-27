@@ -26,8 +26,9 @@ They are independent. **Do not merge them, and do not let a change to one leak i
   - `index.html` + `ops.html` → project `daddiljpnhfuxcdqsulg` ("studio-pod sales manufacturing dashboard").
   - `commodores.html` → its **own dedicated project** `adjnmtpjoyxvmlogjjpz` ("commodores"), created 2026-08-25 so the public page's key can't reach any other business data. Uses Supabase Auth (email+password) with an allowlist table `commodores_coaches`; roster/ratings/notes/plans are RLS-gated to allowlisted coaches. It uses its own `storageKey` so its session never collides with Ops on the shared origin.
 - **GitHub Pages**, auto-deploy on push to `main` via `.github/workflows/deploy.yml`. There is no staging. **Pushing to `main` is publishing.**
-- **PWA**: `manifest.json` (Ops), `commodores.webmanifest` (Commodores), `sw.js`, `icons/`.
-- `proxy/worker.js` — Cloudflare Worker.
+- **PWA**: `manifest.json` (Ops), `commodores.webmanifest` (Commodores), `plays.webmanifest` (play animator), `sw.js`, `icons/`.
+- `wrangler.toml` — Cloudflare Worker `personal-dashboard` (static assets, no `main`). Required so Git deploy does not fail with Missing entry-point. `.assetsignore` keeps sql/docs out of the Worker.
+- `proxy/worker.js` — separate dashboard-assistant Worker (AI keys), not this host.
 - `sql/*.sql` — idempotent migrations, applied **manually** in the Supabase SQL editor. They are not run by any pipeline.
 
 ## Deploy reality
@@ -36,7 +37,7 @@ They are independent. **Do not merge them, and do not let a change to one leak i
 push to main  →  GitHub Action  →  https://cbsp4809.github.io/personal-dashboard/
 ```
 
-Everything in this repo is served publicly at that origin **except** `commodores.html`, `commodores.webmanifest`, `plays.html`, and `plays.webmanifest`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book and play animator are hosted separately on **Cloudflare Pages / the Worker behind Cloudflare Access** (coach email one-time-PIN login), so the playbook/practice content is not world-readable. Treat every OTHER file as world-readable. Manifests use root-relative paths for the Cloudflare root, not the `/personal-dashboard/` GitHub sub-path.
+Everything in this repo is served publicly at that origin **except** `commodores.html`, `commodores.webmanifest`, `plays.html`, and `plays.webmanifest`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book and play animator are hosted on the **Cloudflare Worker** `personal-dashboard` at `https://personal-dashboard.chrisbailey.workers.dev/` (root `wrangler.toml` static assets). Do not put Cloudflare Access back. Treat every OTHER file as world-readable. Manifests use root-relative paths for the Cloudflare root, not the `/personal-dashboard/` GitHub sub-path.
 
 ---
 
@@ -103,4 +104,4 @@ Rules:
 
 ## Current backlog source
 
-Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is four primary pages plus Season board as reference. **Tonight (Thu Aug 27): ship the Now-5 play animator** (`plays.html`) so coaches can tap 23/26 and 38 on an iPad. Remaining after that: finish nav polish if needed, modular practice builder, play generator. Lineup now has Unit A/B boards and a play-time rule check.
+Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is four primary pages plus Season board as reference. **Tonight (Thu Aug 27): ship the Now-5 play animator** (`plays.html`) with coach draw-and-save so 23/26 and 38 are the lines Chris draws, not guessed cards. Remaining after that: finish nav polish if needed, modular practice builder, play generator. Lineup now has Unit A/B boards and a play-time rule check.

@@ -10,9 +10,17 @@ shared work, persisted in Supabase — without replacing this morning page.
 
 ## Live site
 
-Deploys automatically to **GitHub Pages** on every push to `main`
-(see `.github/workflows/deploy.yml`). URL appears in the Action's summary once
-Pages is enabled.
+Pushing to `main` deploys **two** places:
+
+- **GitHub Pages** (`cbsp4809.github.io/personal-dashboard/`) — public morning
+  dashboard + Ops. `deploy.yml` strips `commodores.html`, `plays.html`, and
+  their manifests so the field book and play animator stay off the public site.
+- **Cloudflare Worker** `personal-dashboard` —
+  **https://personal-dashboard.chrisbailey.workers.dev/** — serves the whole
+  repo, including Commodores and Plays. Cloudflare Git runs
+  `npx wrangler versions upload` from the repo root. The root `wrangler.toml`
+  (static `[assets]`, no Worker `main`) is what stops the
+  **Missing entry-point** build failure. Do not add Cloudflare Access back.
 
 ## Structure
 
@@ -22,8 +30,10 @@ ops.html                   # Ops board (Chris & Sydney) — separate page, same 
 manifest.json              # web app manifest so Ops can be added to an iPhone home screen
 commodores.html            # staff-only Commodores field book (Cloudflare Access + Supabase login; not on GitHub Pages)
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
-plays.html                 # Now-5 play animator (letters only; no roster/notes; not on GitHub Pages)
+plays.html                 # Play animator + coach draw/save editor (letters only; not on GitHub Pages)
 plays.webmanifest          # home-screen app named Dores Plays
+wrangler.toml              # Cloudflare Worker `personal-dashboard` static-asset entry (fixes Missing entry-point)
+.assetsignore              # keep Worker deploy to site files (no .git / sql / markdown)
 icons/                     # original Ops mark plus Commodores gold-star icons (not Vanderbilt marks)
 README.md
 .gitignore
@@ -34,6 +44,7 @@ sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments buc
 sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
+sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
@@ -172,14 +183,24 @@ on the public GitHub Pages site (`deploy.yml` strips `commodores.html` and
 
 **https://personal-dashboard.chrisbailey.workers.dev/commodores.html**
 
-Play animator (letters only, no staff roster or notes):
+Play animator + draw editor (letters only, no staff roster or notes):
 
 **https://personal-dashboard.chrisbailey.workers.dev/plays.html**
 
-Cloudflare Access (coach email one-time PIN) sits in front; the page then uses
-Supabase Auth email+password on the dedicated Commodores project
-(`adjnmtpjoyxvmlogjjpz`), with `storageKey: "commodores-auth"`. Roster loads
-from `commodores_roster` after sign-in. First names only.
+Play mode: tap a saved play (23 / 26 / 38 first), then Play / Flip / Reset.
+Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
+draw its route, Sit for no route, Save with a number and short title. Flip is a
+true left/right mirror of the saved geometry (23↔26 and 2↔19 switch to the
+partner play when that number exists). Same Commodores Supabase project
+(`adjnmtpjoyxvmlogjjpz`) and `storageKey: "commodores-auth"` as the field book,
+so a coach already signed in there is signed in here. Saved plays live in
+`commodores_plays` (RLS: allowlisted coaches only). Apply
+`sql/commodores_plays.sql` on the Commodores project if the table is missing.
+localStorage keeps an offline draft; the database wins when signed in.
+
+Do not put Cloudflare Access back in front of this Worker. The field book still
+uses Supabase Auth email+password. Roster loads from `commodores_roster` after
+sign-in. First names only.
 
 Primary pages: **Today**, **Playbook**, **Lineup**, **Practice**. Season board
 is a reference link (schedule, milestones, goals). Playbook has Offense /
