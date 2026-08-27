@@ -2,7 +2,7 @@
   "id": "/plays.html",
   "name": "Dores Plays",
   "short_name": "Plays",
-  "description": "Now-5 play animator for FWE JV Commodores. Letters only.",
+  "description": "Now-5 play animator for FWE JV Commodores. Kevin’s cards, first names on the dots.",
   "start_url": "/plays.html",
   "scope": "/plays.html",
   "display": "standalone",

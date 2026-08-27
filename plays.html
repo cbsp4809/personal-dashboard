@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   color-scheme:dark;
@@ -25,80 +26,127 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;cursor:pointer}
+button,select{font:inherit;color:inherit;cursor:pointer}
 .wrap{width:min(720px,100%);margin:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .kicker{display:flex;align-items:center;gap:8px;margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
 .star{width:13px;height:13px;fill:var(--gold);flex:none}
 h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:8px;margin:0 0 14px}
+.tabs button{flex:1;min-height:44px;border:1px solid var(--strong);border-radius:999px;background:transparent;color:var(--muted);font-weight:700}
+.tabs button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.pane{display:none}.pane.on{display:block}
 .tonight{margin:0 0 12px;padding:12px 14px;border:1px solid rgba(207,174,112,.32);border-radius:14px;background:var(--gold-soft)}
 .tonight b{display:block;margin-bottom:2px;color:var(--highlight)}
 .tonight span{color:var(--soft);font-size:13px}
-.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 10px}
+.picks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 10px}
 .picks button{min-height:72px;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left}
 .picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
 .picks button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
-.more{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .more button{min-height:56px;padding:8px 8px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft);font-size:13px;font-weight:700}
 .more button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:0 0 10px}
 .tools button{min-height:58px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
 .tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft);font-size:15px}
+.tools .ghost[disabled]{opacity:.35}
 .looks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .looks button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-weight:700}
 .looks button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
 .cue{min-height:42px;margin:0 0 10px;color:var(--soft);font-size:14px}
-.field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000}
+.field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#fff}
 .field{display:block;width:100%;height:auto}
 .field text{font:700 11px var(--sans)}
 .letters{margin:10px 0 0;color:var(--muted);font-size:12px;text-align:center}
 .check{display:flex;align-items:center;gap:8px;margin:10px 0 0;color:var(--muted);font-size:13px;font-weight:600}
 .check input{width:20px;height:20px;accent-color:var(--gold)}
-@media(max-width:420px){
+.book{display:grid;gap:14px}
+.book article{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#111}
+.book img,.book .card-host svg{display:block;width:100%;height:auto;background:#fff}
+.book .copy{padding:12px 14px}
+.book h3{margin:0 0 6px;font:500 20px/1.1 var(--serif)}
+.assign{display:grid;gap:8px}
+.assign-row{display:grid;grid-template-columns:36px 1fr;gap:8px;align-items:center}
+.assign-row b{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--gold);color:#1C1C1C}
+.assign-row select{min-height:44px;border:1px solid var(--strong);border-radius:12px;background:#000;padding:0 10px}
+.assign-note{margin:0 0 12px;color:var(--muted);font-size:13px}
+@media(max-width:520px){
   h1{font-size:26px}
   .picks{grid-template-columns:1fr}
-  .more{grid-template-columns:1fr}
+  .more{grid-template-columns:1fr 1fr}
   .tools{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Now-5 · letters only</div>
+  <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Now-5 · Kevin’s cards</div>
   <h1>Play animator</h1>
-  <p class="sub">Kevin’s letters: Q · C · X · A · B · Y · Z. Passers are QB1 / QB2 / QB3. No kid names on the field.</p>
-  <div class="tonight"><b>Tonight · Thu Aug 27</b><span>Live 23/26, then 38. Smash first. Overload first-down next. No rush.</span></div>
-
-  <div class="picks" role="group" aria-label="Tonight’s two">
-    <button type="button" data-play="2326" class="on"><b>23 / 26</b><small>Smash · Post Corner · Flip</small></button>
-    <button type="button" data-play="38"><b>38</b><small>Overload · first down · no motion</small></button>
-  </div>
-  <div class="more" role="group" aria-label="Rest of Now-5">
-    <button type="button" data-play="68"><b>68 Rice</b></button>
-    <button type="button" data-play="219"><b>2 / 19</b></button>
-    <button type="button" data-play="6"><b>6 Goal Line</b></button>
+  <p class="sub">Routes are traced from Kevin’s clean cards. Letters stay Q C X A B Y Z. First names ride the dots.</p>
+  <div class="tabs" role="tablist">
+    <button type="button" class="on" data-tab="run">Tonight</button>
+    <button type="button" data-tab="book">Playbook</button>
+    <button type="button" data-tab="line">Lineup</button>
   </div>
 
-  <div class="looks" id="looks" role="group" aria-label="Looks"></div>
-  <div class="tools">
-    <button type="button" id="playBtn">Play</button>
-    <button class="ghost" type="button" id="flipBtn">Flip</button>
-    <button class="ghost" type="button" id="resetBtn">Reset</button>
+  <div class="pane on" id="pane-run">
+    <div class="tonight"><b>Tonight · Thu Aug 27</b><span>23, then 26, then 38. Card lines, not a Smash sketch. Defense stands still.</span></div>
+    <div class="picks" role="group" aria-label="Tonight’s three">
+      <button type="button" data-play="23" class="on"><b>23</b><small>Post Corner Right flipped</small></button>
+      <button type="button" data-play="26"><b>26</b><small>Post Corner Right</small></button>
+      <button type="button" data-play="38"><b>38</b><small>Overload first down</small></button>
+    </div>
+    <div class="more" role="group" aria-label="Rest of Now-5">
+      <button type="button" data-play="68"><b>68 Rice</b></button>
+      <button type="button" data-play="2"><b>2 B out</b></button>
+      <button type="button" data-play="19"><b>19 flipped</b></button>
+      <button type="button" data-play="6"><b>6 Goal Line</b></button>
+    </div>
+    <div class="looks" id="looks" role="group" aria-label="Reads"></div>
+    <div class="tools">
+      <button type="button" id="playBtn">Play</button>
+      <button class="ghost" type="button" id="flipBtn">Flip</button>
+      <button class="ghost" type="button" id="resetBtn">Reset</button>
+    </div>
+    <p class="cue" id="cue" aria-live="polite"></p>
+    <div class="field-wrap"><div id="fieldHost"></div></div>
+    <label class="check"><input id="showAreas" type="checkbox"> Show six areas + helper (no rush)</label>
+    <p class="letters">Kevin letters on the card. Assigned first names move on those lines. Defense does not move.</p>
   </div>
-  <p class="cue" id="cue" aria-live="polite"></p>
-  <div class="field-wrap"><div id="fieldHost"></div></div>
-  <label class="check"><input id="showAreas" type="checkbox"> Show six areas + helper (no rush)</label>
-  <p class="letters">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
+
+  <div class="pane" id="pane-book">
+    <p class="sub">Kevin’s clean cards. No star screenshots. Tap Play to run that card’s lines.</p>
+    <div class="book" id="bookHost"></div>
+  </div>
+
+  <div class="pane" id="pane-line">
+    <p class="assign-note">First names only. Q defaults to Mike. Y defaults to Teddy. Other letters take the locked staff lineup when one is saved.</p>
+    <div class="assign" id="assignHost"></div>
+  </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const LETTERS=["Q","C","X","A","B","Y","Z"];
+const COLORS={Q:"#D7263D",C:"#3D3D3D",X:"#F08C00",A:"#1B6CA8",B:"#9AA0A6",Y:"#6F42C1",Z:"#12B886"};
+const ROSTER_OFFICIAL=["Clark","Everett","George","Lucas","Michael","Robert","Teddy","Theodore","Ward","Webb","West","Zeppelin"];
+const STORE_PREFIX="commodores_v1_";
+const LINEUP_ID="staff-lineup";
+const LETTER_ID="letter-lineup";
+const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
+const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
+const LOS=318;
+const FW=360,FH=500;
+
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+function showName(n){if(n==="Michael") return "Mike";return n||""}
+function getStore(key,fallback){try{const v=localStorage.getItem(STORE_PREFIX+key);return v===null?fallback:JSON.parse(v)}catch(_){return fallback}}
+function setStore(key,value){try{localStorage.setItem(STORE_PREFIX+key,JSON.stringify(value));return true}catch(_){return false}}
 function pointAlong(start,points,t){
   const pts=[start,...(points||[])];
-  if(pts.length<2) return start;
+  if(pts.length<2) return {x:start.x,y:start.y};
   let total=0;
   const segs=[];
   for(let i=1;i<pts.length;i++){
@@ -106,7 +154,7 @@ function pointAlong(start,points,t){
     segs.push({a:pts[i-1],b:pts[i],len});
     total+=len;
   }
-  if(!total) return start;
+  if(!total) return {x:start.x,y:start.y};
   let dist=Math.max(0,Math.min(1,t))*total;
   for(const seg of segs){
     if(dist<=seg.len){
@@ -115,209 +163,275 @@ function pointAlong(start,points,t){
     }
     dist-=seg.len;
   }
-  return pts[pts.length-1];
+  return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
 }
-function pathD(start,points){
-  return `M${start.x} ${start.y}`+(points||[]).map(p=>`L${p.x} ${p.y}`).join("");
-}
-function flipX(x){return 360-x}
-function flipSpot(spot){
-  return {
-    ...spot,
-    x:flipX(spot.x),
-    route:(spot.route||[]).map(p=>({x:flipX(p.x),y:p.y}))
-  };
-}
+function pathD(start,points){return `M${start.x} ${start.y}`+(points||[]).map(p=>`L${p.x} ${p.y}`).join("")}
+function flipX(x){return FW-x}
+function flipSpot(spot){return {...spot,x:flipX(spot.x),route:(spot.route||[]).map(p=>({x:flipX(p.x),y:p.y}))}}
+function flipDef(d){return {...d,x:flipX(d.x)}}
+function spot(letter,x,y,route,extra){return {letter,x,y,route:route||[],...(extra||{})}}
 
-function smash(side){
-  const right=side==="right";
-  const X={letter:"X",x:48,y:298,name:"Hitch",route:[{x:48,y:268}]};
-  const A={letter:"A",x:110,y:298,name:right?"Go":"Corner",route:right?[{x:110,y:150}]:[{x:110,y:220},{x:92,y:188},{x:38,y:132}]};
-  const Y={letter:"Y",x:250,y:298,name:right?"Corner":"Go",route:right?[{x:250,y:220},{x:268,y:188},{x:322,y:132}]:[{x:250,y:150}]};
-  const Z={letter:"Z",x:312,y:298,name:"Hitch",route:[{x:312,y:268}]};
-  const C={letter:"C",x:180,y:300,name:"Sit 6",route:[{x:180,y:236}]};
-  const B={letter:"B",x:220,y:348,name:"Check",route:[{x:248,y:328}]};
-  const Q={letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:366}]};
+const COVER3=[
+  {id:"C",x:38,y:276},{id:"C",x:322,y:276},
+  {id:"LB",x:138,y:292},{id:"LB",x:222,y:292},
+  {id:"SS",x:78,y:148},{id:"S",x:180,y:128},{id:"FS",x:282,y:148}
+];
+const NICKEL=[
+  {id:"C",x:36,y:268},{id:"C",x:336,y:268},
+  {id:"LB",x:110,y:288},{id:"LB",x:180,y:288},{id:"LB",x:250,y:288},
+  {id:"SS",x:80,y:198},{id:"FS",x:180,y:148}
+];
+
+function play26(){
   return {
-    id:"2326",
-    title:right?"26 Post Corner":"23 Post Corner",
-    family:"Smash",
-    flipLabel:right?"Flip to 23":"Flip to 26",
-    bullets:right
-      ?["Z takes three steps and sits.","Y stems, then breaks to the far corner.","Look Z first. Corner if the defender jumps the sit."]
-      :["X takes three steps and sits.","A stems, then breaks to the far corner.","Look X first. Corner if the defender jumps the sit."],
+    id:"26",
+    num:"26",
+    title:"Post Corner Right",
+    pair:"23",
+    flipLabel:"Flip to 23",
     looks:[
-      {id:"short",label:"1 · Short",target:right?"Z":"X",cue:"Defender went back. Throw the hitch."},
-      {id:"corner",label:"2 · Over the top",target:right?"Y":"A",cue:"Defender came up. Throw the corner."}
+      {id:"x",label:"1 · X out",target:"X",cue:"X’s out is the first throw."},
+      {id:"y",label:"2 · Y corner",target:"Y",cue:"If they jump X, Y’s corner."}
     ],
-    spots:[Q,C,X,A,B,Y,Z]
+    defense:COVER3,
+    spots:[
+      spot("Q",180,356,[{x:292,y:268}]),
+      spot("C",180,LOS,[]),
+      spot("X",68,326,[{x:22,y:272}]),
+      spot("A",112,324,[{x:112,y:258},{x:186,y:258}]),
+      spot("B",214,338,[{x:214,y:300},{x:150,y:300},{x:308,y:300}]),
+      spot("Y",250,324,[{x:250,y:258},{x:328,y:186}]),
+      spot("Z",320,326,[{x:196,y:206}])
+    ]
   };
 }
-
-function overload(side){
-  const left=side==="left";
-  const trips=left
-    ?[
-      {letter:"X",x:40,y:298,name:"Go",route:[{x:32,y:128}]},
-      {letter:"A",x:82,y:298,name:"Slant",route:[{x:128,y:236}]},
-      {letter:"B",x:122,y:298,name:"Out",route:[{x:122,y:248},{x:52,y:248}]}
-    ]
-    :[
-      {letter:"Z",x:320,y:298,name:"Go",route:[{x:328,y:128}]},
-      {letter:"Y",x:278,y:298,name:"Slant",route:[{x:232,y:236}]},
-      {letter:"B",x:238,y:298,name:"Out",route:[{x:238,y:248},{x:308,y:248}]}
-    ];
-  const weak=left
-    ?[
-      {letter:"Y",x:250,y:298,name:"Out",route:[{x:250,y:248},{x:312,y:248}]},
-      {letter:"Z",x:312,y:298,name:"Go",route:[{x:320,y:150}]}
-    ]
-    :[
-      {letter:"A",x:110,y:298,name:"Out",route:[{x:110,y:248},{x:48,y:248}]},
-      {letter:"X",x:48,y:298,name:"Go",route:[{x:40,y:150}]}
-    ];
+function play23(){
+  const base=play26();
+  return {
+    ...base,
+    id:"23",
+    num:"23",
+    title:"Post Corner Right flipped",
+    pair:"26",
+    flipLabel:"Flip to 26",
+    looks:[
+      {id:"x",label:"1 · X out",target:"X",cue:"X’s out is the first throw."},
+      {id:"y",label:"2 · Y corner",target:"Y",cue:"If they jump X, Y’s corner."}
+    ],
+    defense:COVER3.map(flipDef),
+    spots:base.spots.map(flipSpot)
+  };
+}
+function play38(){
   return {
     id:"38",
-    title:left?"38 Overload · left":"38 Overload · right",
-    family:"Overload",
-    flipLabel:"Flip trips",
-    bullets:["No motion. Lined up, then snap.","Extra kids one side so one leftover comes free.","Throw the first open kid past the line."],
+    num:"38",
+    title:"Overload first down",
+    pair:"",
+    flipLabel:"No flip card",
     looks:[
-      {id:"first",label:"1 · First open",target:"B",cue:"First open past the line. B out, or A/Y slant."},
-      {id:"leftover",label:"2 · Leftover",target:left?"Y":"A",cue:"Helper stayed middle. Throw the leftover out."}
+      {id:"first",label:"1 · First open",target:"B",cue:"First open past the line — B hook or Y flat."},
+      {id:"a",label:"2 · A break",target:"A",cue:"If the right is covered, A’s break."}
     ],
+    defense:NICKEL,
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:366}]},
-      {letter:"C",x:180,y:300,name:"Sit",route:[{x:180,y:248}]},
-      ...trips,
-      ...weak
+      spot("Q",180,356,[],{star:true}),
+      spot("C",180,LOS,[{x:180,y:298},{x:228,y:298}]),
+      spot("A",118,LOS,[{x:118,y:278},{x:128,y:268},{x:48,y:178}]),
+      spot("X",214,LOS,[{x:214,y:258},{x:286,y:198}]),
+      spot("B",250,LOS,[{x:250,y:278},{x:292,y:258},{x:258,y:248}]),
+      spot("Y",286,LOS,[{x:286,y:298},{x:318,y:278},{x:348,y:278}]),
+      spot("Z",328,LOS,[{x:248,y:268},{x:258,y:218},{x:330,y:158}])
     ]
   };
 }
-
-function rice(){
+function play68(){
   return {
     id:"68",
-    title:"68 Rice",
-    family:"Smash · shot",
-    flipLabel:"Flip",
-    bullets:["Deep shot. Windows open as they spread.","Do not rush it. First throw still past the line.","Q looks seam, then the far corner."],
+    num:"68",
+    title:"Rice Touchdown play 1",
+    pair:"",
+    flipLabel:"No flip card",
     looks:[
-      {id:"seam",label:"1 · Seam",target:"A",cue:"Throw the seam if it is clean."},
-      {id:"shot",label:"2 · Far shot",target:"Z",cue:"If the seam is covered, the far Rice window."}
+      {id:"x",label:"1 · X in",target:"X",cue:"X’s in is the first window."},
+      {id:"y",label:"2 · Y post",target:"Y",cue:"If X is covered, Y’s post."}
     ],
+    defense:NICKEL,
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:370}]},
-      {letter:"C",x:180,y:300,name:"Leak",route:[{x:180,y:210}]},
-      {letter:"X",x:48,y:298,name:"Corner",route:[{x:48,y:170},{x:22,y:88}]},
-      {letter:"A",x:118,y:298,name:"Seam",route:[{x:132,y:120}]},
-      {letter:"B",x:220,y:348,name:"Cross",route:[{x:160,y:200},{x:70,y:140}]},
-      {letter:"Y",x:242,y:298,name:"Post",route:[{x:228,y:120}]},
-      {letter:"Z",x:312,y:298,name:"Corner",route:[{x:312,y:170},{x:338,y:88}]}
+      spot("Q",180,356,[{x:180,y:396},{x:158,y:404}]),
+      spot("C",180,LOS,[{x:180,y:306},{x:70,y:306}]),
+      spot("A",88,LOS,[{x:88,y:258},{x:36,y:178}]),
+      spot("X",292,LOS,[{x:292,y:278},{x:200,y:278}]),
+      spot("B",252,330,[{x:252,y:288},{x:90,y:278}]),
+      spot("Y",218,LOS,[{x:90,y:158}]),
+      spot("Z",330,LOS,[{x:330,y:158}])
     ]
   };
 }
-
-function bout(side){
-  const right=side==="right";
-  const B=right
-    ?{letter:"B",x:150,y:298,name:"Out",route:[{x:150,y:246},{x:250,y:246}]}
-    :{letter:"B",x:210,y:298,name:"Out",route:[{x:210,y:246},{x:110,y:246}]};
+function play2(){
   return {
-    id:"219",
-    title:right?"19 B Route out":"2 B Route out",
-    family:"Overload",
-    flipLabel:right?"Flip to 2":"Flip to 19",
-    bullets:["B is the out. Everyone else occupies.","Flip is the same picture the other way.","Throw B if he wins. First throw past the line."],
+    id:"2",
+    num:"2",
+    title:"B Route out",
+    pair:"19",
+    flipLabel:"Flip to 19",
     looks:[
       {id:"b",label:"1 · B out",target:"B",cue:"Throw B on the out."},
-      {id:"sit",label:"2 · Sit",target:"C",cue:"If B is covered, C sits."}
+      {id:"a",label:"2 · A in",target:"A",cue:"If B is covered, A’s in."}
     ],
+    defense:COVER3,
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:366}]},
-      {letter:"C",x:180,y:300,name:"Sit",route:[{x:180,y:248}]},
-      {letter:"X",x:48,y:298,name:"Go",route:[{x:40,y:140}]},
-      {letter:"A",x:110,y:298,name:"Slant",route:[{x:150,y:236}]},
-      B,
-      {letter:"Y",x:250,y:298,name:"Hitch",route:[{x:250,y:266}]},
-      {letter:"Z",x:312,y:298,name:"Go",route:[{x:320,y:140}]}
+      spot("Q",180,356,[{x:236,y:456}]),
+      spot("C",180,LOS,[]),
+      spot("X",46,326,[{x:46,y:306},{x:36,y:312},{x:52,y:300},{x:46,y:298},{x:160,y:298}]),
+      spot("A",110,LOS,[{x:110,y:218},{x:180,y:218}]),
+      spot("B",216,LOS,[{x:216,y:238},{x:316,y:238}]),
+      spot("Y",258,LOS,[{x:258,y:158},{x:198,y:108}]),
+      spot("Z",322,LOS,[{x:322,y:118}])
     ]
   };
 }
-
-function goal(){
+function play19(){
+  return {
+    id:"19",
+    num:"19",
+    title:"B Route out flipped",
+    pair:"2",
+    flipLabel:"Flip to 2",
+    looks:[
+      {id:"b",label:"1 · B out",target:"B",cue:"Throw B on the out."},
+      {id:"x",label:"2 · X flat",target:"X",cue:"If B is covered, X’s flat."}
+    ],
+    defense:COVER3.map(flipDef),
+    spots:[
+      spot("Q",180,356,[{x:124,y:456}]),
+      spot("C",180,LOS,[{x:180,y:218},{x:80,y:218}]),
+      spot("Z",38,LOS,[{x:38,y:118}]),
+      spot("Y",102,LOS,[{x:102,y:238},{x:180,y:158}]),
+      spot("B",146,338,[{x:146,y:278},{x:46,y:278}]),
+      spot("A",250,LOS,[{x:250,y:158},{x:242,y:152}]),
+      spot("X",314,326,[{x:314,y:306},{x:324,y:312},{x:308,y:300},{x:314,y:298},{x:200,y:298}])
+    ]
+  };
+}
+function play6(){
   return {
     id:"6",
-    title:"6 Goal Line 2",
-    family:"Overload · inside 15",
-    flipLabel:"Flip",
-    bullets:["Inside the 15 only.","Short routes. Get it past the line into the end zone.","6 is this picture. Flip is the other way."],
+    num:"6",
+    title:"Goal Line 2",
+    pair:"",
+    flipLabel:"No flip card",
     looks:[
-      {id:"in",label:"1 · Slant",target:"A",cue:"Throw the inside slant."},
-      {id:"cross",label:"2 · B cross",target:"B",cue:"If the slant is jumped, B crosses."}
+      {id:"a",label:"1 · A",target:"A",cue:"A’s break is the first throw."},
+      {id:"b",label:"2 · B",target:"B",cue:"If A is jumped, B’s in."}
     ],
+    defense:NICKEL,
+    endzone:true,
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:360}]},
-      {letter:"C",x:180,y:300,name:"Sit",route:[{x:180,y:262}]},
-      {letter:"X",x:70,y:300,name:"Slant",route:[{x:118,y:252}]},
-      {letter:"A",x:122,y:300,name:"Sit",route:[{x:122,y:262}]},
-      {letter:"B",x:210,y:348,name:"Cross",route:[{x:150,y:268}]},
-      {letter:"Y",x:238,y:300,name:"Sit",route:[{x:238,y:262}]},
-      {letter:"Z",x:290,y:300,name:"Slant",route:[{x:242,y:252}]}
+      spot("Q",180,356,[{x:320,y:220}]),
+      spot("C",180,LOS,[{x:180,y:308},{x:172,y:300},{x:180,y:290},{x:280,y:290}]),
+      spot("X",70,LOS,[{x:130,y:238},{x:190,y:278}]),
+      spot("A",120,LOS,[{x:50,y:238}]),
+      spot("B",220,LOS,[{x:220,y:118},{x:160,y:118}]),
+      spot("Y",258,LOS,[{x:278,y:288},{x:268,y:268},{x:288,y:238},{x:330,y:138}]),
+      spot("Z",310,LOS,[{x:348,y:318}])
     ]
   };
 }
 
-const STATE={
-  id:"2326",
-  side:"right",
-  look:0
+const BUILD={
+  "23":play23,
+  "26":play26,
+  "38":play38,
+  "68":play68,
+  "2":play2,
+  "19":play19,
+  "6":play6
 };
-function currentPlay(){
-  if(STATE.id==="2326") return smash(STATE.side==="left"?"left":"right");
-  if(STATE.id==="38") return overload(STATE.side==="left"?"left":"right");
-  if(STATE.id==="68"){
-    const base=rice();
-    if(STATE.side==="left") base.spots=base.spots.map(flipSpot);
-    return base;
+const BOOK_ORDER=["23","26","38","68","2","19","6"];
+
+const STATE={id:"23",look:0};
+function currentPlay(){return BUILD[STATE.id]()}
+
+function yardLines(){
+  let d="";
+  for(let y=40;y<480;y+=20){
+    if(Math.abs(y-LOS)<1) continue;
+    d+=`M12 ${y}H348`;
   }
-  if(STATE.id==="219") return bout(STATE.side==="left"?"left":"right");
-  const base=goal();
-  if(STATE.side==="left") base.spots=base.spots.map(flipSpot);
-  return base;
+  return `<path d="${d}" fill="none" stroke="#D9D9D9" stroke-width="1"/>
+    <path d="M12 ${LOS}H348" fill="none" stroke="#8A8A8A" stroke-width="2.4"/>`;
 }
-
+function defSVG(play){
+  return (play.defense||[]).map(d=>{
+    const label=d.id.length>2?d.id:d.id;
+    return `<g>
+      <polygon points="${d.x},${d.y-9} ${d.x+8},${d.y+7} ${d.x-8},${d.y+7}" fill="#4A4A4A"/>
+      <text x="${d.x}" y="${d.y+3}" fill="#fff" text-anchor="middle" font-size="7">${esc(label)}</text>
+    </g>`;
+  }).join("");
+}
+function starPath(x,y,r){
+  const pts=[];
+  for(let i=0;i<10;i++){
+    const a=-Math.PI/2+i*Math.PI/5;
+    const rad=i%2?r*0.42:r;
+    pts.push(`${x+Math.cos(a)*rad},${y+Math.sin(a)*rad}`);
+  }
+  return pts.join(" ");
+}
 function areasSVG(){
-  if(!$("#showAreas").checked) return "";
+  if(!$("#showAreas")||!$("#showAreas").checked) return "";
   const box=[{x:70,y:168,n:"left short"},{x:180,y:168,n:"middle short"},{x:290,y:168,n:"right short"},{x:70,y:72,n:"left deep"},{x:180,y:72,n:"middle deep"},{x:290,y:72,n:"right deep"}];
-  const grass=box.map(a=>`<rect x="${a.x-45}" y="${a.y-27}" width="90" height="54" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${a.y+4}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
-  return `<g opacity=".7">${grass}<polygon points="180,106 191,118 180,130 169,118" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="180" y="148" fill="#ECB748" text-anchor="middle" font-size="8">helper</text><text x="180" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
+  const grass=box.map(a=>`<rect x="${a.x-45}" y="${a.y-27}" width="90" height="54" rx="10" fill="rgba(207,174,112,.16)" stroke="#CFAE70" stroke-width="1.2"/><text x="${a.x}" y="${a.y+4}" fill="#5A4A28" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
+  return `<g opacity=".85">${grass}<polygon points="180,106 191,118 180,130 169,118" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="180" y="148" fill="#8A6A20" text-anchor="middle" font-size="8">helper</text></g>`;
 }
-
-function fieldSVG(play,pos,ball){
+function nameFor(letter){return showName(letterMap[letter]||"")}
+function fieldSVG(play,pos,ball,opts){
+  const names=!(opts&&opts.noNames);
   const targets=new Set([play.looks[STATE.look]?.target]);
-  const routes=play.spots.filter(s=>s.letter!=="Q"&&s.route&&s.route.length).map(s=>{
+  const routes=play.spots.filter(s=>s.route&&s.route.length).map(s=>{
     const on=targets.has(s.letter);
-    return `<path d="${esc(pathD(s,s.route))}" fill="none" stroke="${on?"#ECB748":"#FFFFFF"}" stroke-width="${on?4:2.4}" stroke-linecap="round" stroke-linejoin="round" opacity="${on?.95:.42}"/>`;
+    return `<path d="${esc(pathD(s,s.route))}" fill="none" stroke="${COLORS[s.letter]}" stroke-width="${on?4:2.6}" stroke-linecap="round" stroke-linejoin="round" opacity="${on?.95:.8}"/>`;
   }).join("");
   const kids=play.spots.map(s=>{
     const p=pos[s.letter]||s;
     const on=targets.has(s.letter);
-    const r=s.letter==="Q"?13:12;
-    const fill=s.letter==="Q"?"#FFFFFF":(on?"#ECB748":"#CFAE70");
-    const label=s.letter==="Q"?"#1C1C1C":"#1C1C1C";
-    const tag=s.letter==="Q"?"":`<text x="${p.x}" y="${p.y-18}" fill="${on?"#ECB748":"#E0D5C0"}" text-anchor="middle" font-size="8">${esc(s.name)}</text>`;
-    return `<g data-letter="${s.letter}"><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="#1C1C1C" stroke-width="2"/><text x="${p.x}" y="${p.y+4}" fill="${label}" text-anchor="middle" font-size="11">${s.letter}</text>${tag}</g>`;
+    const fill=COLORS[s.letter];
+    const kid=nameFor(s.letter);
+    const main=names&&kid?kid:s.letter;
+    const hint=names&&kid?s.letter:"";
+    const shape=s.star
+      ?`<polygon points="${starPath(p.x,p.y,13)}" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`
+      :s.letter==="C"
+        ?`<rect x="${p.x-11}" y="${p.y-11}" width="22" height="22" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`
+        :`<circle cx="${p.x}" cy="${p.y}" r="${s.letter==="Q"?13:12}" fill="${fill}" stroke="#1C1C1C" stroke-width="1.6"/>`;
+    const tag=hint?`<text x="${p.x}" y="${p.y-18}" fill="${on?"#8A6A20":"#555"}" text-anchor="middle" font-size="8">${esc(hint)}</text>`:"";
+    const size=main.length>6?8:main.length>4?9:11;
+    return `<g data-letter="${s.letter}">${shape}${tag}<text x="${p.x}" y="${p.y+4}" fill="#fff" text-anchor="middle" font-size="${size}">${esc(main)}</text></g>`;
   }).join("");
-  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:300};
-  const endzone=play.id==="6"?`<rect x="16" y="16" width="328" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="300" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
-  return `<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title)}">
-    <rect width="360" height="400" fill="#000"/>
-    <rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
-    <path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
-    <text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>
-    ${endzone}${areasSVG()}${routes}${kids}
-    <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
+  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:LOS};
+  const endzone=play.endzone?`<rect x="16" y="16" width="328" height="56" fill="none" stroke="#B0B0B0" stroke-width="2"/><text x="300" y="34" fill="#777" font-size="9">end zone</text>`:"";
+  return `<svg class="field" viewBox="0 0 ${FW} ${FH}" role="img" aria-label="${esc(play.num+" "+play.title)}">
+    <rect width="${FW}" height="${FH}" fill="#FFFFFF"/>
+    <rect x="8" y="8" width="344" height="484" fill="none" stroke="#C8C8C8" stroke-width="1.5"/>
+    ${yardLines()}${endzone}${areasSVG()}${defSVG(play)}${routes}${kids}
+    <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70" stroke="#1C1C1C" stroke-width="1"/>
+  </svg>`;
+}
+function cardSVG(play){
+  const lookSave=STATE.look;
+  STATE.look=-1;
+  const pos={};
+  play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
+  const inner=fieldSVG(play,pos,play.spots.find(s=>s.letter==="C"),{noNames:true});
+  STATE.look=lookSave;
+  return `<svg viewBox="0 0 360 548" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(play.num+" "+play.title)}">
+    <rect width="360" height="548" fill="#2B2B2B"/>
+    <rect x="10" y="10" width="44" height="28" fill="#111"/>
+    <text x="32" y="30" fill="#fff" text-anchor="middle" font-size="14" font-family="Figtree,Helvetica,sans-serif" font-weight="700">${esc(play.num)}</text>
+    <text x="64" y="30" fill="#E8E8E8" font-size="13" font-family="Figtree,Helvetica,sans-serif">${esc(play.title)}</text>
+    <g transform="translate(0,40)">${inner.replace("<svg class=\"field\"","<svg")}</g>
   </svg>`;
 }
 
@@ -328,24 +442,18 @@ function stopAnim(){
   if(anim.timer) clearTimeout(anim.timer);
   anim=null;
 }
-function paint(play,pos,ball){
-  $("#fieldHost").innerHTML=fieldSVG(play,pos,ball);
-}
+function paint(play,pos,ball){$("#fieldHost").innerHTML=fieldSVG(play,pos,ball)}
 function setCue(play,mode){
   const look=play.looks[STATE.look];
-  const extra=play.bullets[0];
-  $("#cue").textContent=mode==="play"&&look?look.cue:`${play.family} · ${play.title}. ${look?look.cue:extra}`;
+  $("#cue").textContent=mode==="play"&&look?look.cue:`${play.num} ${play.title}. ${look?look.cue:""}`;
 }
 function renderChrome(){
   const play=currentPlay();
   $$("[data-play]").forEach(btn=>btn.classList.toggle("on",btn.dataset.play===STATE.id));
   $("#looks").innerHTML=play.looks.map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
-  $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{
-    STATE.look=Number(btn.dataset.look);
-    stopAnim();
-    render();
-  });
+  $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render()});
   $("#flipBtn").textContent=play.flipLabel;
+  $("#flipBtn").disabled=!play.pair;
   setCue(play,"idle");
 }
 function render(){
@@ -355,15 +463,13 @@ function render(){
   play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
   paint(play,pos,play.spots.find(s=>s.letter==="C"));
 }
-
 function playNow(){
   const play=currentPlay();
   stopAnim();
   const q=play.spots.find(s=>s.letter==="Q");
   const c=play.spots.find(s=>s.letter==="C");
-  const targetLetter=play.looks[STATE.look]?.target;
-  const target=play.spots.find(s=>s.letter===targetLetter);
-  const dest=target?pointAlong(target,target.route,1):null;
+  const target=play.spots.find(s=>s.letter===play.looks[STATE.look]?.target);
+  const dest=target&&target.route&&target.route.length?pointAlong(target,target.route,1):target||null;
   setCue(play,"play");
   const start=performance.now();
   const snap=220, run=1700, throwMs=380, hold=1100;
@@ -382,14 +488,12 @@ function playNow(){
       ball={x:c.x+(q.x-c.x)*p,y:c.y+(q.y-c.y)*p};
     }else if(t<snap+run){
       const drop=pos.Q||q;
-      ball={x:drop.x,y:drop.y+10};
+      ball={x:drop.x,y:drop.y+8};
     }else if(dest){
       const p=ease(Math.min(1,(t-snap-run)/throwMs));
       const from=pos.Q||q;
       ball={x:from.x+(dest.x-from.x)*p,y:from.y+(dest.y-from.y)*p};
-    }else{
-      ball=pos.Q||q;
-    }
+    }else ball=pos.Q||q;
     paint(play,pos,ball);
     if(t<snap+run+throwMs){anim.frame=requestAnimationFrame(tick);return}
     anim.timer=setTimeout(()=>{
@@ -404,37 +508,167 @@ function playNow(){
 
 $$("[data-play]").forEach(btn=>btn.onclick=()=>{
   STATE.id=btn.dataset.play;
-  STATE.side="right";
-  if(STATE.id==="38") STATE.side="left";
   STATE.look=0;
   stopAnim();
   render();
+  location.hash=STATE.id;
 });
 $("#playBtn").onclick=playNow;
 $("#flipBtn").onclick=()=>{
-  STATE.side=STATE.side==="left"?"right":"left";
+  const play=currentPlay();
+  if(!play.pair) return;
+  STATE.id=play.pair;
+  STATE.look=0;
   stopAnim();
   render();
+  location.hash=STATE.id;
 };
-$("#resetBtn").onclick=()=>{stopAnim();render();};
-$("#showAreas").onchange=()=>{stopAnim();render();};
+$("#resetBtn").onclick=()=>{stopAnim();render()};
+$("#showAreas").onchange=()=>{stopAnim();render()};
 document.addEventListener("keydown",event=>{
   if(event.key===" "||event.key==="Enter"){event.preventDefault();playNow()}
   if(event.key==="f"||event.key==="F"){$("#flipBtn").click()}
 });
 
+$$("[data-tab]").forEach(btn=>btn.onclick=()=>{
+  $$("[data-tab]").forEach(b=>b.classList.toggle("on",b===btn));
+  $$(".pane").forEach(p=>p.classList.toggle("on",p.id==="pane-"+btn.dataset.tab));
+  if(btn.dataset.tab==="book") renderBook();
+  if(btn.dataset.tab==="line") renderAssign();
+});
+
+function renderBook(){
+  $("#bookHost").innerHTML=BOOK_ORDER.map(id=>{
+    const play=BUILD[id]();
+    return `<article>
+      <div class="card-host"><img src="play-cards/${esc(id)}.svg" alt="${esc(play.num+" "+play.title)}"></div>
+      <div class="copy">
+        <h3>${esc(play.num)} · ${esc(play.title)}</h3>
+        <button class="ghost" type="button" data-open-play="${esc(id)}" style="min-height:44px;border:1px solid var(--strong);border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;padding:0 14px">Play this card</button>
+      </div>
+    </article>`;
+  }).join("");
+  $$("[data-open-play]").forEach(btn=>btn.onclick=()=>{
+    STATE.id=btn.dataset.openPlay;
+    STATE.look=0;
+    $$("[data-tab]").forEach(b=>b.classList.toggle("on",b.dataset.tab==="run"));
+    $$(".pane").forEach(p=>p.classList.toggle("on",p.id==="pane-run"));
+    stopAnim();
+    render();
+    location.hash=STATE.id;
+  });
+}
+
+let ROSTER=getStore("roster",[])||[];
+if(!ROSTER.length) ROSTER=ROSTER_OFFICIAL.slice();
+let letterMap={};
+
+function defaultLetters(offense){
+  const map={};
+  if(Array.isArray(offense)){
+    LETTERS.forEach((k,i)=>{if(offense[i]) map[k]=offense[i]});
+  }
+  map.Q="Michael";
+  map.Y="Teddy";
+  LETTERS.forEach(k=>{
+    if(k!=="Y"&&map[k]==="Teddy") delete map[k];
+    if(k!=="Q"&&(map[k]==="Michael"||map[k]==="Mike")) delete map[k];
+  });
+  return map;
+}
+function cleanLetters(raw){
+  const map={};
+  if(!raw||typeof raw!=="object") return map;
+  LETTERS.forEach(k=>{
+    const n=raw[k];
+    if(typeof n==="string"&&ROSTER.includes(n)) map[k]=n;
+    if(n==="Mike"&&ROSTER.includes("Michael")) map[k]="Michael";
+  });
+  return map;
+}
+function renderAssign(){
+  const used=new Set(Object.values(letterMap));
+  $("#assignHost").innerHTML=LETTERS.map(letter=>{
+    const cur=letterMap[letter]||"";
+    const opts=["<option value=\"\">Letter only</option>"].concat(ROSTER.map(n=>{
+      const taken=used.has(n)&&n!==cur;
+      return `<option value="${esc(n)}" ${n===cur?"selected":""} ${taken?"disabled":""}>${esc(showName(n))}${taken?" · in":""}</option>`;
+    }));
+    return `<label class="assign-row"><b>${letter}</b><select data-letter="${letter}">${opts.join("")}</select></label>`;
+  }).join("");
+  $$("#assignHost select").forEach(sel=>sel.onchange=()=>{
+    const letter=sel.dataset.letter;
+    const name=sel.value;
+    if(!name) delete letterMap[letter];
+    else{
+      LETTERS.forEach(k=>{if(letterMap[k]===name) delete letterMap[k]});
+      letterMap[letter]=name;
+    }
+    persistLetters();
+    renderAssign();
+    render();
+  });
+}
+function persistLetters(){
+  const payload={id:LETTER_ID,letters:letterMap,updatedAt:new Date().toISOString()};
+  setStore("letter_lineup",payload);
+  if(sb) sb.auth.getSession().then(({data})=>{
+    if(!data||!data.session) return;
+    sb.from("commodores_plans").upsert({id:LETTER_ID,payload,updated_at:payload.updatedAt});
+  });
+}
+async function loadLetters(){
+  const local=cleanLetters((getStore("letter_lineup",null)||{}).letters);
+  let offense=null;
+  const staff=getStore("staff_lineup",null);
+  if(staff&&Array.isArray(staff.offense)) offense=staff.offense;
+  if(sb){
+    try{
+      const {data:sessionData}=await sb.auth.getSession();
+      if(sessionData&&sessionData.session){
+        const {data:rosterRows}=await sb.from("commodores_roster").select("first_name,sort").order("sort",{ascending:true});
+        if(rosterRows&&rosterRows.length){
+          ROSTER=rosterRows.map(r=>r.first_name);
+          setStore("roster",ROSTER);
+        }
+        const {data:line}=await sb.from("commodores_plans").select("payload").eq("id",LINEUP_ID).maybeSingle();
+        if(line&&line.payload&&Array.isArray(line.payload.offense)) offense=line.payload.offense;
+        const {data:saved}=await sb.from("commodores_plans").select("payload").eq("id",LETTER_ID).maybeSingle();
+        if(saved&&saved.payload&&saved.payload.letters){
+          letterMap=cleanLetters(saved.payload.letters);
+          setStore("letter_lineup",saved.payload);
+          renderAssign();
+          render();
+          return;
+        }
+      }
+    }catch(_){}
+  }
+  letterMap=Object.keys(local).length?local:defaultLetters(offense);
+  renderAssign();
+  render();
+}
+
+function showTab(name){
+  $$("[data-tab]").forEach(b=>b.classList.toggle("on",b.dataset.tab===name));
+  $$(".pane").forEach(p=>p.classList.toggle("on",p.id==="pane-"+name));
+  if(name==="book") renderBook();
+  if(name==="line") renderAssign();
+}
 function applyHash(){
   const hash=(location.hash||"").replace("#","").toLowerCase();
-  if(hash==="38") {STATE.id="38";STATE.side="left";STATE.look=0;return}
-  if(hash==="68"||hash==="rice") {STATE.id="68";STATE.side="right";STATE.look=0;return}
-  if(hash==="2"||hash==="19"||hash==="219") {STATE.id="219";STATE.side=hash==="2"?"left":"right";STATE.look=0;return}
-  if(hash==="6"||hash==="gl") {STATE.id="6";STATE.side="right";STATE.look=0;return}
-  if(hash==="23"||hash==="26"||hash==="2326"||hash==="23-26") {STATE.id="2326";STATE.side=hash==="23"?"left":"right";STATE.look=0;return}
-  STATE.id="2326";STATE.side="right";STATE.look=0;
+  if(hash==="book"||hash==="playbook"){showTab("book");return}
+  if(hash==="line"||hash==="lineup"){showTab("line");return}
+  showTab("run");
+  if(BUILD[hash]) {STATE.id=hash;STATE.look=0;return}
+  if(hash==="2326"||hash==="23-26") {STATE.id="23";STATE.look=0;return}
+  if(hash==="219") {STATE.id="2";STATE.look=0;return}
+  STATE.id="23";STATE.look=0;
 }
 applyHash();
-window.addEventListener("hashchange",()=>{applyHash();stopAnim();render();});
-render();
+window.addEventListener("hashchange",()=>{applyHash();stopAnim();render()});
+renderBook();
+loadLetters();
 </script>
 </body>
 </html>
