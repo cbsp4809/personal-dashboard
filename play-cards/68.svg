@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 548" role="img" aria-label="68 Rice Touchdown play 1">
+  <rect width="360" height="548" fill="#2B2B2B"/>
+  <rect x="10" y="10" width="44" height="28" fill="#111"/>
+  <text x="32" y="30" fill="#fff" text-anchor="middle" font-size="14" font-family="Figtree,Helvetica,sans-serif" font-weight="700">68</text>
+  <text x="64" y="30" fill="#E8E8E8" font-size="13" font-family="Figtree,Helvetica,sans-serif">Rice Touchdown play 1</text>
+  <g transform="translate(0,40)">
+    <rect width="360" height="500" fill="#fff"/>
+    <rect x="8" y="8" width="344" height="484" fill="none" stroke="#C8C8C8" stroke-width="1.5"/>
+    <path d="M12 40H348M12 60H348M12 80H348M12 100H348M12 120H348M12 140H348M12 160H348M12 180H348M12 200H348M12 220H348M12 240H348M12 260H348M12 280H348M12 300H348M12 320H348M12 340H348M12 360H348M12 380H348M12 400H348M12 420H348M12 440H348M12 460H348" fill="none" stroke="#D9D9D9" stroke-width="1"/><path d="M12 318H348" fill="none" stroke="#8A8A8A" stroke-width="2.4"/>
+    <polygon points="36,259 44,275 28,275" fill="#4A4A4A"/><text x="36" y="271" fill="#fff" text-anchor="middle" font-size="7">C</text>
+    <polygon points="336,259 344,275 328,275" fill="#4A4A4A"/><text x="336" y="271" fill="#fff" text-anchor="middle" font-size="7">C</text>
+    <polygon points="110,279 118,295 102,295" fill="#4A4A4A"/><text x="110" y="291" fill="#fff" text-anchor="middle" font-size="7">LB</text>
+    <polygon points="180,279 188,295 172,295" fill="#4A4A4A"/><text x="180" y="291" fill="#fff" text-anchor="middle" font-size="7">LB</text>
+    <polygon points="250,279 258,295 242,295" fill="#4A4A4A"/><text x="250" y="291" fill="#fff" text-anchor="middle" font-size="7">LB</text>
+    <polygon points="80,189 88,205 72,205" fill="#4A4A4A"/><text x="80" y="201" fill="#fff" text-anchor="middle" font-size="7">SS</text>
+    <polygon points="180,139 188,155 172,155" fill="#4A4A4A"/><text x="180" y="151" fill="#fff" text-anchor="middle" font-size="7">FS</text>
+    <path d="M180 356 L180 396 L158 404" fill="none" stroke="#D7263D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M180 318 L180 306 L70 306" fill="none" stroke="#3D3D3D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M88 318 L88 258 L36 178" fill="none" stroke="#1B6CA8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M292 318 L292 278 L200 278" fill="none" stroke="#F08C00" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M252 330 L252 288 L90 278" fill="none" stroke="#6C757D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M218 318 L90 158" fill="none" stroke="#6F42C1" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M330 318 L330 158" fill="none" stroke="#12B886" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="180" cy="356" r="13" fill="#D7263D" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="180" y="360" fill="#fff" text-anchor="middle" font-size="11">Q</text>
+    <rect x="169" y="307" width="22" height="22" fill="#3D3D3D" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="180" y="322" fill="#fff" text-anchor="middle" font-size="11">C</text>
+    <circle cx="88" cy="318" r="12" fill="#1B6CA8" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="88" y="322" fill="#fff" text-anchor="middle" font-size="11">A</text>
+    <circle cx="292" cy="318" r="12" fill="#F08C00" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="292" y="322" fill="#fff" text-anchor="middle" font-size="11">X</text>
+    <circle cx="252" cy="330" r="12" fill="#6C757D" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="252" y="334" fill="#fff" text-anchor="middle" font-size="11">B</text>
+    <circle cx="218" cy="318" r="12" fill="#6F42C1" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="218" y="322" fill="#fff" text-anchor="middle" font-size="11">Y</text>
+    <circle cx="330" cy="318" r="12" fill="#12B886" stroke="#1C1C1C" stroke-width="1.6"/>
+    <text x="330" y="322" fill="#fff" text-anchor="middle" font-size="11">Z</text>
+  </g>
+</svg>

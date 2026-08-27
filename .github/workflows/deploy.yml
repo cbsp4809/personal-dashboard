@@ -32,7 +32,9 @@ jobs:
       # Worker / Pages origin behind Cloudflare Access. Strip them from the
       # public artifact. Do not remove this step.
       - name: Exclude staff field book from the public site
-        run: rm -f commodores.html commodores.webmanifest plays.html plays.webmanifest
+        run: |
+          rm -f commodores.html commodores.webmanifest plays.html plays.webmanifest
+          rm -rf play-cards
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

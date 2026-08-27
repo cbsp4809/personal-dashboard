@@ -22,7 +22,8 @@ ops.html                   # Ops board (Chris & Sydney) — separate page, same 
 manifest.json              # web app manifest so Ops can be added to an iPhone home screen
 commodores.html            # staff-only Commodores field book (Cloudflare Access + Supabase login; not on GitHub Pages)
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
-plays.html                 # Now-5 play animator (letters only; no roster/notes; not on GitHub Pages)
+plays.html                 # Now-5 play animator (Kevin’s cards + letter-to-name; not on GitHub Pages)
+play-cards/                # Clean Now-5 card diagrams for the Playbook tab (not on GitHub Pages)
 plays.webmanifest          # home-screen app named Dores Plays
 icons/                     # original Ops mark plus Commodores gold-star icons (not Vanderbilt marks)
 README.md
@@ -166,12 +167,12 @@ morning dashboard.
 ## Add Commodores to an iPhone home screen
 
 The staff field book is its own Safari web app, separate from Ops. It is **not**
-on the public GitHub Pages site (`deploy.yml` strips `commodores.html` and
-`commodores.webmanifest`). Live URL:
+on the public GitHub Pages site (`deploy.yml` strips `commodores.html`,
+`plays.html`, and `play-cards/`). Live URL:
 
 **https://personal-dashboard.chrisbailey.workers.dev/commodores.html**
 
-Play animator (letters only, no staff roster or notes):
+Play animator (Kevin’s clean cards; first names on the dots):
 
 **https://personal-dashboard.chrisbailey.workers.dev/plays.html**
 

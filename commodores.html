@@ -252,6 +252,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .diagram .off-spot{fill:#CFAE70;stroke:#1C1C1C;stroke-width:2}
 .diagram .off-spot.target{fill:#ECB748;stroke:#FFFFFF;stroke-width:2}
 .diagram .off-spot-label{fill:#1C1C1C;font:700 8px var(--sans);text-anchor:middle}
+.kevin-card{display:block;width:100%;height:auto;background:#ffffff;border-top:1px solid var(--line)}
 .binder-list{display:grid;gap:8px}
 .binder-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
 .binder-rank{color:var(--gold);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -445,7 +446,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="panel">
           <div class="eyebrow">Next practice</div>
           <h3>Thu Aug 27 · 5:00 p.m.</h3>
-          <p>Frostwood. Live 23/26, then 38. <a class="go-tab" href="plays.html">Open the play animator</a> — letters only, no roster.</p>
+          <p>Frostwood. Live 23/26, then 38. <a class="go-tab" href="plays.html">Open the play animator</a> — Kevin’s cards, first names on the dots.</p>
         </div>
         <div class="panel">
           <div class="eyebrow">Upcoming games</div>
@@ -477,11 +478,12 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <span class="dot"></span>
         <div>
           <strong>Play animator · iPad</strong>
-          <span>Now-5 with moving routes. Tonight: 23/26 then 38. Letters Q / C / X / A / B / Y / Z only — no roster, no notes.</span>
+          <span>Now-5 from Kevin’s clean cards. Tonight: 23, 26, then 38. First names ride the letters. Defense stays still.</span>
           <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
-            <a class="btn" href="plays.html#2326">23 / 26</a>
+            <a class="btn" href="plays.html#23">23</a>
+            <a class="btn" href="plays.html#26">26</a>
             <a class="btn" href="plays.html#38">38</a>
-            <a class="btn ghost" href="plays.html">All Now-5</a>
+            <a class="btn ghost" href="plays.html#book">Playbook cards</a>
           </div>
         </div>
       </div>
@@ -495,9 +497,9 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="binder-note">
           <b>Taught now</b>
           <ul class="plain-list">
-            <li>Smash and Overload 50/51 only through the Aug 30 scrimmage.</li>
-            <li>No third play. Chris’s 16 stays parked in the binder.</li>
-            <li>Watch Play, both looks, then Flip. Do not add a third look.</li>
+            <li>Kevin’s clean cards are the picture. 23 / 26 first, then 38.</li>
+            <li>Letters stay Q C X A B Y Z. First names come from the animator lineup.</li>
+            <li>Chris’s 16 stays parked in the binder.</li>
           </ul>
         </div>
         <div id="offenseBook"></div>
@@ -1645,54 +1647,25 @@ function renderOffenseBook(){
   const book=$("#offenseBook");
   if(!book) return;
   stopOffenseAnim();
-  book.innerHTML=taughtOffensePlays().map(play=>{
-    const view=offenseView[play.id]||(offenseView[play.id]={flipped:false,look:(offenseLookSpec(play).looks[0]||{}).id||""});
-    const spec=offenseLookSpec(play);
-    const looks=spec.looks.map(look=>`<button class="btn ghost${look.id===view.look?" on":""}" data-off-look="${esc(look.id)}" type="button">${esc(look.label)}</button>`).join("");
-    const how=play.id==="smash"
-      ?["Slam is Smash: two-level outs.","If the defender goes back, throw short. If he comes up, throw over the top.","Flip both ways. First throw past the line. 5-second clock."]
-      :play.id==="overload-50-51"
-        ?["Go, slant, or out.","Extra kids on one side so one leftover kid comes free.","50 one way, 51 the flip."]
-        :[play.how];
-    return `<article class="play-card" data-offense="${esc(play.id)}" style="margin-bottom:14px">
-      <div data-offense-picture>${offenseCardSVG(play)}</div>
+  const cards=[
+    {id:"23",name:"23 Post Corner Right flipped",how:["Kevin’s 23 card. Flip of 26.","X out first. Y corner if they jump it."]},
+    {id:"26",name:"26 Post Corner Right",how:["Kevin’s 26 card.","X out first. Y corner if they jump it."]},
+    {id:"38",name:"38 Overload first down",how:["Kevin’s 38 card. No motion.","First open past the line."]},
+    {id:"68",name:"68 Rice Touchdown play 1",how:["Kevin’s 68 card."]},
+    {id:"2",name:"2 B Route out",how:["Kevin’s 2 card. B is the out."]},
+    {id:"19",name:"19 B Route out flipped",how:["Kevin’s 19 card. Flip of 2."]},
+    {id:"6",name:"6 Goal Line 2",how:["Kevin’s 6 card. Inside the 15 only."]}
+  ];
+  book.innerHTML=cards.map(card=>`<article class="play-card" data-offense="${esc(card.id)}" style="margin-bottom:14px">
+      <img class="kevin-card" src="play-cards/${esc(card.id)}.png" alt="${esc(card.name)}">
       <div class="play-copy">
-        <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge taught">Taught</span></div>
-        <ul class="plain-list">${how.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>
+        <div class="play-head"><h3>${esc(card.name)}</h3><span class="badge taught">Kevin</span></div>
+        <ul class="plain-list">${card.how.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>
         <div class="play-react">
-          <div class="react-toggle" role="group" aria-label="${esc(play.name)} looks">${looks}</div>
-          <button class="btn play-now" data-off-play="${esc(play.id)}" type="button">Play</button>
-          <button class="btn flip" data-off-flip="${esc(play.id)}" type="button">Flip</button>
-          <div class="play-cue" data-play-cue>${esc(offenseCue(play,"idle"))}</div>
+          <a class="btn play-now" href="plays.html#${esc(card.id)}">Play</a>
         </div>
       </div>
-    </article>`;
-  }).join("");
-  $$("#offenseBook [data-off-look]").forEach(button=>button.onclick=()=>{
-    const card=button.closest("[data-offense]");
-    const play=taughtOffensePlays().find(item=>item.id===card.dataset.offense);
-    if(!play) return;
-    stopOffenseAnim();
-    offenseView[play.id].look=button.dataset.offLook;
-    const group=button.closest(".react-toggle");
-    [...group.querySelectorAll("[data-off-look]")].forEach(item=>item.classList.toggle("on",item===button));
-    const holder=card.querySelector("[data-offense-picture]");
-    holder.innerHTML=offenseCardSVG(play);
-    card.querySelector("[data-play-cue]").textContent=offenseCue(play,"idle");
-  });
-  $$("#offenseBook [data-off-flip]").forEach(button=>button.onclick=()=>{
-    const play=taughtOffensePlays().find(item=>item.id===button.dataset.offFlip);
-    const card=button.closest("[data-offense]");
-    if(!play||!card) return;
-    stopOffenseAnim();
-    offenseView[play.id].flipped=!offenseView[play.id].flipped;
-    card.querySelector("[data-offense-picture]").innerHTML=offenseCardSVG(play);
-    card.querySelector("[data-play-cue]").textContent=offenseCue(play,"idle");
-  });
-  $$("#offenseBook [data-off-play]").forEach(button=>button.onclick=()=>{
-    const play=taughtOffensePlays().find(item=>item.id===button.dataset.offPlay);
-    playOffenseLook(play,button.closest(".play-card"));
-  });
+    </article>`).join("");
 }
 let playDraft=structuredClone(builtPlays[0]);
 let selectedSpotId=playDraft.spots[0].id;
