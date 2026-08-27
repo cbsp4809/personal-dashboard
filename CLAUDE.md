@@ -46,7 +46,7 @@ RESOLVED on branch `claude/commodores-auth` (pending Chris's merge + coach invit
 
 1. ~~PIN gate is cosmetic~~ → replaced with Supabase Auth email+password login.
 2. ~~PIN hash in file~~ → removed.
-3. ~~Minors' data on a public URL~~ → roster moved to the DB behind auth; no kid names ship in the HTML except three QB nicknames in coaching prose (Mike/Teddy/Webb). Attendance was always device-local, never public.
+3. ~~Minors' data on a public URL~~ → roster moved to the DB behind auth; no kid names ship in the HTML. QB labels stay generic (QB1 / QB2 / QB3). Attendance tab was removed (redundant with the team clock).
 4. ~~Nominal RLS (`using(true)`)~~ → RLS gates every Commodores table to allowlisted coaches via `commodores_is_coach()`. Verified anon=denied, non-coach=0 rows, coach=full.
    Plus: Commodores moved to its own project (see Stack) so its public key can't touch other data.
 
@@ -75,7 +75,7 @@ The codebase encodes deliberate coaching constraints. **These are decisions, not
 - Game defense: **six kids cover six areas + one helper. No rush** (league rule).
 - "Hip-stay" / "pick-a-guy" / "Man-Free" is a **drill only**, never the game plan.
 - Do not add "zone" as a new package — the six-area look already is that.
-- QB order is locked: Mike QB1, Teddy QB2, Webb QB3. "Michael" on the roster is Mike.
+- QB order is locked in coaching: QB1, QB2, QB3. UI labels stay generic. Do not hardcode kid names or restore Mike/Teddy/Webb as assigned QBs.
 - "Chris's 16" is a parked binder list. Not this week's plays.
 - Two defense groups, set before the quarter, no mid-quarter swapping.
 
@@ -102,4 +102,4 @@ Rules:
 
 ## Current backlog source
 
-Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Headline direction: consolidate `commodores.html` navigation down to **Team/Today, Playbook, Lineup, Practice**; cut instruction bloat to bullets; fix broken lineup drag-and-drop; build a modular practice builder; add a play generator. Attendance and "plan handoff" get removed.
+Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is now the four primary pages **Team/Today, Playbook (Offense/Defense), Lineup, Practice**, plus Season board as a reference surface. Attendance and plan-handoff tabs are gone. Remaining: fix broken lineup drag-and-drop; build a modular practice builder; add a play generator.

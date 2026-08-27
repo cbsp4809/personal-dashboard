@@ -20,7 +20,7 @@ Pages is enabled.
 index.html                 # morning dashboard — self-contained (HTML + CSS + JS inline)
 ops.html                   # Ops board (Chris & Sydney) — separate page, same GitHub Pages site
 manifest.json              # web app manifest so Ops can be added to an iPhone home screen
-commodores.html            # staff-only Commodores field book (PIN, shared notes/plans, not linked from Ops)
+commodores.html            # staff-only Commodores field book (Cloudflare Access + Supabase login; not on GitHub Pages)
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
 icons/                     # original Ops mark plus Commodores gold-star icons (not Vanderbilt marks)
 README.md
@@ -163,9 +163,20 @@ morning dashboard.
 
 ## Add Commodores to an iPhone home screen
 
-The staff field book is its own Safari web app, separate from Ops. Live URL:
+The staff field book is its own Safari web app, separate from Ops. It is **not**
+on the public GitHub Pages site (`deploy.yml` strips `commodores.html` and
+`commodores.webmanifest`). Live URL:
 
-**https://cbsp4809.github.io/personal-dashboard/commodores.html**
+**https://personal-dashboard.chrisbailey.workers.dev/commodores.html**
+
+Cloudflare Access (coach email one-time PIN) sits in front; the page then uses
+Supabase Auth email+password on the dedicated Commodores project
+(`adjnmtpjoyxvmlogjjpz`), with `storageKey: "commodores-auth"`. Roster loads
+from `commodores_roster` after sign-in. First names only.
+
+Primary pages: **Today**, **Playbook**, **Lineup**, **Practice**. Season board
+is a reference link (schedule, milestones, goals). Playbook has Offense /
+Defense sub-tabs.
 
 On Chris’s iPhone:
 
@@ -175,13 +186,11 @@ On Chris’s iPhone:
 4. Tap **Add**.
 
 The gold-star icon is an original mark (not a Vanderbilt or Commodores logo). It
-opens the PIN gate full-screen and does not share the Ops home-screen name or
-icon. This page is intentionally not linked from the morning dashboard or Ops.
+opens the sign-in gate full-screen and does not share the Ops home-screen name
+or icon. This page is intentionally not linked from the morning dashboard or Ops.
 
-Run `sql/commodores_staff.sql` on Studio Pod so after-practice notes and
-practice plans are shared. The page reuses the Ops public Supabase URL and
-publishable key. It never uses a service-role key and it does not read or write
-`ops_cards` or `ops_alerts`.
+The page never uses a service-role key and it does not read or write `ops_cards`
+or `ops_alerts`.
 
 ## Ops alerts
 

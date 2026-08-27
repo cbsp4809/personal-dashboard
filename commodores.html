@@ -54,10 +54,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
 .mast-inner{max-width:1180px;margin:auto;padding:17px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:18px}
 .mast h1{font-size:29px}.mast h1 em{color:var(--soft);font-style:italic}
 .mast .kicker{margin-bottom:4px}.mast .star{width:15px;height:15px}
-.tabs{display:flex;gap:5px;overflow:auto;padding:0 22px 10px;max-width:1180px;margin:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:0 0 auto;min-height:38px;border:1px solid transparent;border-radius:999px;padding:8px 13px;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;overflow:hidden;padding:0 22px 8px;max-width:1180px;margin:auto}
+.tabs button{min-width:0;min-height:38px;border:1px solid transparent;border-radius:999px;padding:8px 6px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;text-align:center}
 .tabs button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
+.ref-nav{display:flex;justify-content:flex-end;padding:0 22px 10px;max-width:1180px;margin:auto}
+.ref-nav button{border:0;background:none;color:var(--muted);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;min-height:32px}
+.ref-nav button.on{color:var(--gold)}
+.subtabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.subtabs button{min-height:40px;border:1px solid var(--strong);border-radius:999px;padding:8px 14px;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
+.subtabs button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
+.playbook-pane{display:none}.playbook-pane.on{display:block}
+.place-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 24px}
+.place-grid h3{margin:5px 0 6px;font:400 22px/1.15 var(--serif)}
+.place-grid p{margin:0;color:var(--muted);font-size:13px}
+.player-spots{margin:3px 0 0;color:var(--muted);font-size:12px}
+.team-card>summary{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;cursor:pointer;list-style:none}
+.team-card>summary::-webkit-details-marker{display:none}
+.team-card>summary>div:first-child{min-width:0}
+.team-card>summary .team-avg{margin-left:auto;flex:none}
 main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .page{display:none}.page.on{display:block}
 .hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr);gap:14px;margin-bottom:18px}
@@ -233,8 +247,8 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .binder-rank{color:var(--gold);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .binder-row b{display:block;min-width:0;overflow-wrap:anywhere;word-break:break-word}
 .binder-row .badge{justify-self:end}
-#page-team{overflow-x:hidden;overscroll-behavior-x:none;max-width:100%}
-.team-cards{display:none;gap:10px}
+#page-today,#page-lineup,#page-playbook,#page-practice,#page-season{overflow-x:hidden;overscroll-behavior-x:none;max-width:100%}
+.team-cards{display:grid;gap:10px}
 .team-card{min-width:0;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
 .team-card-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
 .team-card-top b{min-width:0;overflow-wrap:anywhere;font-size:18px}
@@ -253,7 +267,7 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .rate-input{width:100%;min-width:0;min-height:56px;margin:0;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);padding:8px 0;color:var(--ink);text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;-webkit-appearance:none;appearance:none;touch-action:manipulation}
 .rate-input:focus{outline:none;border-color:var(--gold)}
 .rate-input.filled{border-color:rgba(207,174,112,.55);background:var(--gold-soft)}
-.team-table-wrap{overflow:hidden;max-width:100%;overscroll-behavior-x:none}
+.team-table-wrap{display:none;overflow:hidden;max-width:100%;overscroll-behavior-x:none}
 .team-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0 8px}
 .team-table th{padding:0 3px 6px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left}
 .team-table td{padding:6px 3px;background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle}
@@ -286,8 +300,10 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 body.team-dragging{overflow:hidden;touch-action:none}
 @media(max-width:760px){
   .mast-inner{padding:14px max(16px,env(safe-area-inset-right,0px)) 11px max(16px,env(safe-area-inset-left,0px))}.mast h1{font-size:25px}.mast .btn{min-height:38px;padding:7px 11px}
-  .tabs{padding:0 max(16px,env(safe-area-inset-right,0px)) 9px max(16px,env(safe-area-inset-left,0px))}main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
-  .hero,.play-grid,.note-grid,.builder-layout{grid-template-columns:1fr}
+  .tabs,.ref-nav{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .tabs{padding-bottom:8px}.ref-nav{padding-bottom:9px}
+  main{padding:19px max(16px,env(safe-area-inset-right,0px)) 19px max(16px,env(safe-area-inset-left,0px))}
+  .hero,.play-grid,.note-grid,.builder-layout,.place-grid{grid-template-columns:1fr}
   .play-library{grid-template-columns:repeat(2,minmax(0,1fr))}
   .quick-grid{grid-template-columns:1fr}.quick{padding:13px}
   .station{grid-template-columns:58px minmax(0,1fr)}.coach{grid-column:2;text-align:left}
@@ -295,7 +311,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .board-same{grid-template-columns:1fr}
   .drill-add{margin-left:0}
   .milestone{grid-template-columns:1fr}.mile-date{padding:11px 15px}
-  .team-table-wrap{display:none}.team-cards{display:grid}
+  .team-table-wrap{display:none}
   .team-boards{grid-template-columns:1fr}
   .line-spot{grid-template-columns:minmax(0,1fr);gap:4px}
 }
@@ -343,83 +359,323 @@ body.team-dragging{overflow:hidden;touch-action:none}
     </div>
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
-      <button data-page="team" type="button">Team</button>
       <button data-page="playbook" type="button">Playbook</button>
-      <button data-page="offense" type="button">Offense</button>
-      <button data-page="defense" type="button">Defense</button>
-      <button data-page="builder" type="button">Play builder</button>
-      <button data-page="milestones" type="button">Milestones</button>
-      <button data-page="season" type="button">Season board</button>
-      <button data-page="attendance" type="button">Attendance</button>
-      <button data-page="handoff" type="button">Plan handoff</button>
+      <button data-page="lineup" type="button">Lineup</button>
+      <button data-page="practice" type="button">Practice</button>
     </nav>
+    <div class="ref-nav">
+      <button data-page="season" id="seasonNav" type="button">Season board</button>
+    </div>
   </header>
 
   <main>
     <section class="page on" id="page-today">
       <div class="hero">
         <div class="panel">
-          <div class="eyebrow">Locked hour · Sunday, August 23</div>
+          <div class="eyebrow">Team / Today</div>
           <h2>Two plays. One defense.</h2>
-          <p>By the last snap, kids can line up and run Smash and Overload 50/51 against our game defense: six kids each cover a spot (an area), and one kid roams and helps.</p>
+          <ul class="plain-list">
+            <li>Taught through Aug 30: Smash and Overload 50/51 only. No third play.</li>
+            <li>Game defense: six kids cover six areas + one helper. No rush.</li>
+            <li>Hip-stay / pick-a-guy / Man-Free is a drill only. Never the game plan.</li>
+            <li>Two defense groups, set before the quarter. No mid-quarter swaps.</li>
+          </ul>
         </div>
         <div class="panel callout">
           <span class="dot"></span>
           <!-- Play diagrams carry no names; assignments load from the shared lineup after sign-in. -->
-          <div><strong>Passer plan</strong><span>We keep a set QB order — QB1, QB2, QB3. QB2 still runs routes — split throwing and catching. Five kids go out plus the center. 3 and 2; we switch which side has three by play. Center is the backup throw.</span></div>
+          <div>
+            <strong>Passer plan</strong>
+            <ul class="plain-list">
+              <li>Set QB order: QB1, QB2, QB3.</li>
+              <li>QB2 still runs routes — split throwing and catching.</li>
+              <li>Five kids go out plus the center. 3 and 2; switch which side has three by play.</li>
+              <li>Center is the backup throw.</li>
+            </ul>
+          </div>
         </div>
       </div>
 
       <div class="quick-grid">
-        <div class="quick"><b>1:00–2:00 p.m.</b><span>Frostwood · 60 minutes · 12 kids ages 8–10</span></div>
-        <div class="quick"><b>Offense today</b><span>Smash + Overload only. No third play. Watch both on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</span></div>
-        <div class="quick"><b>Game defense today</b><span>Six kids each cover a spot (an area). One kid roams and helps. No rush. Full look on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</span></div>
+        <div class="quick"><b>Offense</b><span>Smash + Overload only. Full looks in <button class="go-tab" data-go="offense" type="button">Playbook</button>.</span></div>
+        <div class="quick"><b>Defense</b><span>Six areas + one helper. No rush. Full look in <button class="go-tab" data-go="defense" type="button">Playbook</button>.</span></div>
+        <div class="quick"><b>Season</b><span>Schedule, milestones, and goals on the <button class="go-tab" data-go="season" type="button">Season board</button>.</span></div>
       </div>
 
-      <article class="practice-card">
-        <div class="practice-top">
-          <div class="practice-title">
-            <div><div class="eyebrow">Today’s practice</div><h3>Sun Aug 23 · Frostwood</h3><div class="meta">1:00–2:00 p.m. · 60 min</div></div>
-            <span class="badge live">Locked</span>
-          </div>
-          <div class="goal"><b>Goal:</b> Kids can call, line up, and run the week-one book with less coach help each snap.</div>
+      <div class="place-grid">
+        <div class="panel">
+          <div class="eyebrow">Next practice</div>
+          <h3>Placeholder</h3>
+          <p>Thu 5:00 p.m. / Sun 1:00 p.m. at Frostwood through Dec 6. Date list lives on Practice.</p>
         </div>
-        <div class="schedule">
-          <div class="station">
-            <div class="station-time">1:00 · 5m</div>
-            <div><h4>Rules · all together</h4><p>First throw lands past the line. One-hand touch below the neck. Five-second clock.</p></div>
-            <div class="coach">Peter</div>
-          </div>
-          <div class="concurrent-label">Concurrent split · same 20 minutes</div>
-          <div class="concurrent">
-            <div class="station">
-              <div class="station-time">1:05 · 20m</div>
-              <div><h4>Throw / catch group</h4><p>Set QB order — QB1, QB2, QB3. QB2 still splits throwing and routes. Rep clean catches past the line.</p></div>
-              <div class="coach">Chris</div>
+        <div class="panel">
+          <div class="eyebrow">Upcoming games</div>
+          <h3>Placeholder</h3>
+          <p>Official book is GameChanger. Games are not set here yet.</p>
+        </div>
+      </div>
+
+      <div class="section-head"><div><div class="eyebrow">First names only</div><h2>Roster</h2></div><p>Shared with staff · tap a name for ranks</p></div>
+      <div class="scoring-as">
+        <div class="scoring-as-label" id="scoringAsLabel">Scoring as</div>
+        <div class="scoring-as-chips" id="scoringAsChips" role="radiogroup" aria-labelledby="scoringAsLabel">
+          <button type="button" data-scoring-coach="Peter" role="radio" aria-checked="false">Peter</button>
+          <button type="button" data-scoring-coach="Chris" role="radio" aria-checked="false">Chris</button>
+          <button type="button" data-scoring-coach="Ben" role="radio" aria-checked="false">Ben</button>
+        </div>
+      </div>
+      <div class="team-toolbar">
+        <p class="team-order-hint">Order stays frozen while you score. Staff averages still update on each kid.</p>
+        <button class="btn ghost" id="sortTeamRanks" type="button">Sort by staff avg</button>
+      </div>
+      <div class="team-cards" id="teamCards"></div>
+      <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
+    </section>
+
+    <section class="page" id="page-playbook">
+      <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Playbook</h2></div><p>Offense and defense live here. Smash + Overload only through Aug 30.</p></div>
+      <div class="subtabs" role="tablist" aria-label="Playbook">
+        <button class="on" data-playbook-pane="offense" type="button" role="tab" aria-selected="true">Offense</button>
+        <button data-playbook-pane="defense" type="button" role="tab" aria-selected="false">Defense</button>
+        <button data-playbook-pane="builder" type="button" role="tab" aria-selected="false">Builder</button>
+      </div>
+
+      <div class="playbook-pane on" id="playbook-pane-offense">
+        <div class="binder-note">
+          <b>Taught now</b>
+          <ul class="plain-list">
+            <li>Smash and Overload 50/51 only through the Aug 30 scrimmage.</li>
+            <li>No third play. Chris’s 16 stays parked in the binder.</li>
+            <li>Watch Play, both looks, then Flip. Do not add a third look.</li>
+          </ul>
+        </div>
+        <div id="offenseBook"></div>
+
+        <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Later Core 5</h2></div><p>Binder only · do not teach yet</p></div>
+        <div class="play-grid">
+          <article class="play-card">
+            <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
+              <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
+              <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
+              <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
+              <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
+              <text x="74" y="24">three levels: short · middle · deep</text>
+            </svg>
+            <div class="play-copy">
+              <div class="play-head"><h3>Play 3 · staff choice</h3><span class="badge parked">Binder</span></div>
+              <ul class="plain-list">
+                <li>Early September: pick 38 Overload first down or the three-level / drag.</li>
+                <li>Teach one, not both. Goal: three plays the kids can name.</li>
+              </ul>
             </div>
-            <div class="station">
-              <div class="station-time">1:05 · 20m</div>
-              <div><h4>Areas + helper</h4><p>Six kids each cover a spot (an area). One kid roams and helps. Watch the thrower and help where the ball goes. One-hand touch below the neck. No rush on the QB.</p></div>
-              <div class="coach">Ben</div>
+          </article>
+          <article class="play-card">
+            <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
+              <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
+              <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
+              <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
+              <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
+              <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
+              <text x="130" y="164">deep shot · add late September</text>
+            </svg>
+            <div class="play-copy">
+              <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
+              <ul class="plain-list">
+                <li>Late-September deeper shot.</li>
+                <li>Install only after the first three plays are clean.</li>
+              </ul>
             </div>
-          </div>
-          <div class="station">
-            <div class="station-time">1:25 · 25m</div>
-            <div><h4>Live Smash + Overload vs areas + helper</h4><p>Two groups, target seven each and adjust for 12. Offense runs both directions against six kids covering six areas and one kid roaming to help. Coaches get quieter each round.</p></div>
-            <div class="coach">Peter + Chris<br>Ben</div>
-          </div>
-          <div class="station">
-            <div class="station-time">1:50 · 5m</div>
-            <div><h4>Reset · water · one correction</h4><p>Use the built-in buffer; do not install another play.</p></div>
-            <div class="coach">Chris</div>
-          </div>
-          <div class="station">
-            <div class="station-time">1:55 · 5m</div>
-            <div><h4>Race · finish fast</h4><p>Last five minutes. End on energy.</p></div>
-            <div class="coach">Peter</div>
+          </article>
+          <article class="play-card">
+            <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
+              <rect x="20" y="20" width="320" height="68" fill="none" stroke="#777777" stroke-width="2"/><text x="270" y="36">end zone</text>
+              <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
+              <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
+              <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
+              <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
+            </svg>
+            <div class="play-copy">
+              <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
+              <ul class="plain-list">
+                <li>Short-yardage play inside the 15. 5 one way; 6 flips it.</li>
+                <li>Add late September with StarBurst. Do not call it outside that spot.</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+
+        <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Chris’s 16</h2></div><p>Binder list · rank + concept</p></div>
+        <div class="binder-note"><b>Binder only.</b> Chris’s starred favorites, parked in this order. Do not teach them this week.</div>
+        <div class="binder-list">
+          <div class="binder-row"><span class="binder-rank">01</span><b>#50 Overload left</b><span class="badge parked">OVERLOAD</span></div>
+          <div class="binder-row"><span class="binder-rank">02</span><b>#26 Post Corner Right</b><span class="badge parked">SMASH</span></div>
+          <div class="binder-row"><span class="binder-rank">03</span><b>#23 Post Corner Right flipped</b><span class="badge parked">SMASH</span></div>
+          <div class="binder-row"><span class="binder-rank">04</span><b>#38 Overload first down</b><span class="badge parked">OVERLOAD</span></div>
+          <div class="binder-row"><span class="binder-rank">05</span><b>#61 Left Drag…</b><span class="badge parked">DRAG</span></div>
+          <div class="binder-row"><span class="binder-rank">06</span><b>#35 XXX post Corner</b><span class="badge parked">SMASH</span></div>
+          <div class="binder-row"><span class="binder-rank">07</span><b>#45 A Drag Right</b><span class="badge parked">DRAG</span></div>
+          <div class="binder-row"><span class="binder-rank">08</span><b>#21 B far left</b><span class="badge parked">B-MOVER</span></div>
+          <div class="binder-row"><span class="binder-rank">09</span><b>#67 Rice play</b><span class="badge parked">DEEP/RICE</span></div>
+          <div class="binder-row"><span class="binder-rank">10</span><b>#19 B Route out flipped</b><span class="badge parked">B-MOVER</span></div>
+          <div class="binder-row"><span class="binder-rank">11</span><b>#68 Rice Touchdown play 1</b><span class="badge parked">DEEP/RICE</span></div>
+          <div class="binder-row"><span class="binder-rank">12</span><b>#66 Rice touchdown 2</b><span class="badge parked">DEEP/RICE</span></div>
+          <div class="binder-row"><span class="binder-rank">13</span><b>#41 CJ stutter and out</b><span class="badge parked">TIMING</span></div>
+          <div class="binder-row"><span class="binder-rank">14</span><b>#42 Y hitch and go…</b><span class="badge parked">TIMING</span></div>
+          <div class="binder-row"><span class="binder-rank">15</span><b>#64 Man on man CJ</b><span class="badge parked">MAN-TAG</span></div>
+          <div class="binder-row"><span class="binder-rank">16</span><b>#65 B Motion Post post wheel</b><span class="badge parked">MOTION</span></div>
+        </div>
+      </div>
+
+      <div class="playbook-pane" id="playbook-pane-defense">
+        <div class="binder-note">
+          <b>Game defense</b>
+          <ul class="plain-list">
+            <li>Six named spots + one helper with no spot. No rush.</li>
+            <li>Hip-stay / pick-a-guy / Man-Free is a drill only — never the game look.</li>
+            <li>Do not add “zone” as a new package. The six areas already are that look.</li>
+          </ul>
+        </div>
+        <div id="defenseBook"></div>
+        <div class="play-grid">
+          <article class="play-card">
+            <div class="play-copy">
+              <div class="play-head"><h3>Stay on a hip</h3><span class="badge parked">Drill only</span></div>
+              <ul class="plain-list">
+                <li>Pick a kid. Stay on their hip. Practice only.</li>
+                <li>Not the game defense. Do not call it in a game.</li>
+              </ul>
+            </div>
+          </article>
+          <article class="play-card">
+            <div class="play-copy">
+              <div class="play-head"><h3>Two defense groups</h3><span class="badge live">Set before the quarter</span></div>
+              <ul class="plain-list">
+                <li>Two groups. No free swapping mid-quarter.</li>
+                <li>About 12 kids: two groups of about seven. Both groups get a helper.</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+        <div class="season-note" style="margin-top:14px">
+          <b>Do not add</b>
+          <ul class="plain-list">
+            <li>No rush. The league does not allow rushing the thrower.</li>
+            <li>No second package. One game look all year unless staff writes a new one here.</li>
+            <li>If they look lost, make the spots bigger. Do not sneak hip-stay / man back in.</li>
+          </ul>
+        </div>
+        <div class="section-head"><div><div class="eyebrow">Defense only</div><h2>Season ladder</h2></div><p>Same game defense. Cleaner over time.</p></div>
+        <div class="milestones">
+          <article class="milestone"><div class="mile-date">Now–Aug 30</div><div class="mile-copy"><h3>Same look</h3><p>Six areas + one helper. Kids stand in their grass, don’t chase, and tag below the neck. No rush. Hip-stay stays a drill.</p><div class="ladder"><span class="badge live">6 areas + helper</span><span class="badge parked">Hip-stay · drill only</span></div></div></article>
+          <article class="milestone"><div class="mile-date">Early September</div><div class="mile-copy"><h3>Same look, cleaner</h3><p>Kids can name their area and stay put. Helper goes to the extra-people side. Still no second package.</p><div class="ladder"><span class="badge live">Same game defense</span><span class="badge">Name your grass</span></div></div></article>
+          <article class="milestone"><div class="mile-date">Late September</div><div class="mile-copy"><h3>Still the same game defense</h3><p>Do not add zone as a new package. The area look is the zone. Keep no rush and one helper.</p><div class="ladder"><span class="badge live">Same game defense</span><span class="badge parked">No new package</span></div></div></article>
+          <article class="milestone"><div class="mile-date">October</div><div class="mile-copy"><h3>Same look + situations</h3><p>Keep six areas + helper. Practice two situations: 3rd-and-long, and inside the 15. Do not change the game defense to run them.</p><div class="ladder"><span class="badge">3rd-and-long</span><span class="badge">Inside the 15</span></div></div></article>
+          <article class="milestone"><div class="mile-date">November</div><div class="mile-copy"><h3>Point it at that week’s opponent</h3><p>Same game defense. Adjust where the helper starts or which grass we crowd. Do not install a new look.</p><div class="ladder"><span class="badge">Opponent notes</span><span class="badge">Helper adjust only</span></div></div></article>
+        </div>
+      </div>
+
+      <div class="playbook-pane" id="playbook-pane-builder">
+        <div class="section-head"><div><div class="eyebrow">Draw + assign</div><h2>Play builder</h2></div><p>Defense is the staff book · Smash / Overload stay as they are</p></div>
+        <div class="builder-layout">
+          <aside>
+            <div class="binder-note">
+              <b>Week-one guardrail</b>
+              <ul class="plain-list">
+                <li>Smash and Overload are the only taught offense plays.</li>
+                <li>Defense is six named spots + helper. No rush.</li>
+              </ul>
+            </div>
+            <div class="library-label">Offense</div>
+            <div class="play-library" id="playLibrary"></div>
+            <button class="btn ghost" id="newPlay" type="button" style="width:100%;margin-top:9px">+ New parked play</button>
+            <div class="library-label">Defense</div>
+            <div class="play-library" id="defenseLibrary"></div>
+          </aside>
+          <div class="builder">
+            <div class="builder-form">
+              <div class="field"><label for="playName">Play name</label><input id="playName" maxlength="80"></div>
+              <div class="field"><label for="playStatus">Book status</label><select id="playStatus"><option value="parked">Sitting in binder</option><option value="taught">Taught</option></select></div>
+              <div class="field how"><label for="playHow">Kid-language how-to</label><textarea id="playHow" placeholder="Say exactly where kids line up, where they run, and the thrower’s first look."></textarea></div>
+            </div>
+            <div class="field-wrap">
+              <svg class="builder-field" id="builderField" viewBox="0 0 360 300" role="img" aria-label="Interactive 7-on-7 play field">
+                <defs><marker id="routeArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#FFFFFF"></path></marker></defs>
+                <rect width="360" height="300" fill="#000000"></rect>
+                <rect class="sideline" x="12" y="10" width="336" height="280"></rect>
+                <path class="yard" d="M12 55H348M12 105H348M12 155H348M12 205H348M12 255H348"></path>
+                <path class="los" d="M12 220H348"></path>
+                <text x="37" y="213">LINE</text>
+                <g id="defenseLayer"></g>
+                <g id="routeLayer"></g>
+                <g id="spotLayer"></g>
+              </svg>
+            </div>
+            <div class="defense-tools defense-only hidden">
+              <button class="btn flip" id="flipLook" type="button">Flip</button>
+              <button class="btn ghost" id="biggerSpots" type="button">Kids look lost · make spots bigger</button>
+            </div>
+            <div class="builder-toolbar offense-only">
+              <button class="btn ghost on" id="placeMode" type="button">Place / move spots</button>
+              <button class="btn ghost" id="routeMode" type="button">Draw route</button>
+              <button class="btn ghost danger" id="deleteItem" type="button">Delete selected</button>
+            </div>
+            <div class="builder-toolbar defense-only hidden">
+              <button class="btn ghost danger" id="deleteDefenseItem" type="button">Delete selected kid</button>
+            </div>
+            <div class="assignment offense-only">
+              <div class="field"><label for="spotPlayer">Selected spot’s first name</label><select id="spotPlayer"></select></div>
+              <div class="field"><label>Offense spots</label><div class="badge" id="spotCount">0 / 7</div></div>
+            </div>
+            <p class="builder-help" id="builderHelp">Tap the field to add an offensive spot. Drag a spot to move it. Select a spot to assign a first name.</p>
+            <div class="builder-actions">
+              <button class="btn" id="savePlay" type="button">Save into playbook</button>
+              <button class="btn ghost offense-only" id="exportPlays" type="button">Export plays JSON</button>
+              <label class="btn ghost file-btn offense-only">Import plays JSON<input id="playFile" type="file" accept=".json,application/json"></label>
+            </div>
+            <div class="status-line" id="builderStatus" aria-live="polite"></div>
           </div>
         </div>
-      </article>
+        <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Builder.</p></div>
+        <div class="play-grid" id="builtPlaybook"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-lineup">
+      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup</h2></div><p>7 offense · 7 defense · same kid can be on both</p></div>
+      <div class="binder-note">
+        <b>How to set it</b>
+        <ul class="plain-list">
+          <li>QB order: QB1 · QB2 · QB3. QB2 still runs routes.</li>
+          <li>Five receivers + center; 3 and 2 by play.</li>
+          <li>On a phone: tap a name, then tap a spot. On a computer you can also drag.</li>
+          <li>Tap or drop onto Clear to empty a filled spot. A filled spot replaces.</li>
+        </ul>
+      </div>
+      <div class="roster-pool" id="teamPool"></div>
+      <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · tap a placed name, then here</div>
+      <div class="team-boards">
+        <div class="team-board">
+          <h3>Offense · 7</h3>
+          <div id="offenseBoard"></div>
+        </div>
+        <div class="team-board">
+          <h3>Defense · 7</h3>
+          <div id="defenseBoard"></div>
+        </div>
+      </div>
+      <div class="status-line" id="teamStatus" aria-live="polite"></div>
+    </section>
+
+    <section class="page" id="page-practice">
+      <div class="section-head"><div><div class="eyebrow">Date list</div><h2>Practice</h2></div><p>Thu 5:00 p.m. · Sun 1:00 p.m. · Frostwood through Dec 6</p></div>
+      <div class="section-head" id="drill-library"><div><div class="eyebrow">Skills / drills</div><h2>Drill picker</h2></div><p>Tap a drill onto the practice you’re building</p></div>
+      <div class="drill-wrap" id="drillPicker"></div>
+      <div class="shell-tools">
+        <button class="btn ghost" id="expandShells" type="button">Open next four</button>
+        <span class="badge">Thursday written before leaving Sunday</span>
+      </div>
+      <div class="season-list" id="seasonList"></div>
+      <div class="status-line" id="importStatus" aria-live="polite"></div>
 
       <div class="section-head"><div><div class="eyebrow">Continuity</div><h2>Last practice → next practice</h2></div><p>Shared with staff · not local-only</p></div>
       <div class="author-row">
@@ -448,266 +704,17 @@ body.team-dragging{overflow:hidden;touch-action:none}
       </div>
     </section>
 
-    <section class="page" id="page-team">
-      <div class="section-head"><div><div class="eyebrow">Staff ranks + lineups</div><h2>Team</h2></div><p>First names only · shared with staff</p></div>
-      <div class="binder-note"><b>Ranks:</b> pick who you are scoring as, then type 1–5 in each skill box. Numbers only. 5 is strongest. Empty is fine. Overall is set by that coach and is never auto-filled. Coach Average is the mean of that coach’s filled scores among the eight skills. Staff Average is the mean of every filled skill-cell across Peter, Chris, and Ben. Empty coach scores are skipped. Averages update in place after you leave the box. The list does not reshuffle while you score — leave Team and come back, or tap Sort, to rank by staff average.</div>
-      <div class="scoring-as">
-        <div class="scoring-as-label" id="scoringAsLabel">Scoring as</div>
-        <div class="scoring-as-chips" id="scoringAsChips" role="radiogroup" aria-labelledby="scoringAsLabel">
-          <button type="button" data-scoring-coach="Peter" role="radio" aria-checked="false">Peter</button>
-          <button type="button" data-scoring-coach="Chris" role="radio" aria-checked="false">Chris</button>
-          <button type="button" data-scoring-coach="Ben" role="radio" aria-checked="false">Ben</button>
-        </div>
-      </div>
-      <div class="team-toolbar">
-        <p class="team-order-hint">Order stays frozen while you score. Staff averages still update on each kid.</p>
-        <button class="btn ghost" id="sortTeamRanks" type="button">Sort by staff avg</button>
-      </div>
-      <div class="team-cards" id="teamCards"></div>
-      <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
-
-      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup boards</h2></div><p>7 offense · 7 defense · same kid can be on both</p></div>
-      <div class="binder-note"><b>QB order:</b> QB1 · QB2 · QB3. QB2 still runs routes. Five receivers + center; 3 and 2 by play. On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot. A filled spot replaces. The same kid may be on offense and defense at once.</div>
-      <div class="roster-pool" id="teamPool"></div>
-      <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · tap a placed name, then here</div>
-      <div class="team-boards">
-        <div class="team-board">
-          <h3>Offense · 7</h3>
-          <div id="offenseBoard"></div>
-        </div>
-        <div class="team-board">
-          <h3>Defense · 7</h3>
-          <div id="defenseBoard"></div>
-        </div>
-      </div>
-      <div class="status-line" id="teamStatus" aria-live="polite"></div>
-    </section>
-
-    <section class="page" id="page-playbook">
-      <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Core 5 ladder</h2></div><p>Kid language first. Coach terms translated.</p></div>
-      <div class="binder-note"><b>Taught now:</b> Smash + Overload 50/51 only through the Aug 30 scrimmage. Everything else is sitting in the binder. No third play in week one.</div>
-      <div class="binder-note"><b>Skills / drills:</b> Catch, Route feet, and Don’t look live in the drill picker. They are not a third play. Tap one onto a practice on the <button class="go-tab" data-go="season" data-jump="drill-library" type="button">Season board</button>.</div>
-      <div class="play-grid">
-        <article class="play-card" id="game-defense" style="grid-column:1/-1">
-          <div id="playbookDefensePicture"></div>
-          <div class="play-copy">
-            <div class="play-head"><h3 id="playbookDefenseName">Game defense · six spots + one helper</h3><span class="badge taught">Base from week 1</span></div>
-            <p id="playbookDefenseHow">Six named spots and one helper. The full look is drawn from the staff builder.</p>
-            <div class="when">Hip-stay / “pick a guy” / Man-Free is a drill only. It is not the game defense or another package.</div>
-            <div class="when">Full look lives on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Smash route diagram">
-            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
-            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
-            <circle class="ball" cx="180" cy="88" r="5"/><path class="line" d="M180 88V42"/><text x="188" y="46">sit 6</text>
-            <circle class="ball" cx="55" cy="91" r="5"/><path class="line" d="M55 91V65"/><path class="line" d="M48 65H62"/><text x="20" y="55">3 steps + stop</text>
-            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91C112 54 82 34 48 23"/><path class="line" d="M48 23l9 0M48 23l5 8"/><text x="78" y="20">far corner</text>
-            <circle class="def" cx="58" cy="76" r="4"/><circle class="def" cx="107" cy="74" r="4"/>
-            <text x="227" y="156">Flip the same picture both ways</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Smash</h3><span class="badge taught">Taught</span></div>
-            <p>2x2 shotgun, center sits at 6 yards. Outside kid takes three steps and stops. Inside kid on that side runs to the far corner. Thrower looks at the kid who stopped first, corner if the defender jumps the sit. Flip both ways. First throw must land past the line. 5-second clock.</p>
-            <div class="when">“2x2” means two receivers on each side. “Shotgun” means the thrower starts a few steps behind the center.</div>
-            <div class="when">Watch Play, both looks, and Flip on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Overload 50 and 51 diagram">
-            <path class="line muted" d="M20 95H340"/><text x="24" y="88">line</text>
-            <circle class="ball" cx="180" cy="110" r="5"/><text x="170" y="130">QB</text>
-            <circle class="ball" cx="75" cy="91" r="5"/><path class="line" d="M75 91C72 64 54 48 38 34"/>
-            <circle class="ball" cx="112" cy="91" r="5"/><path class="line" d="M112 91V45"/>
-            <circle class="ball" cx="145" cy="91" r="5"/><path class="line" d="M145 91C143 65 130 57 118 48"/>
-            <circle class="ball" cx="292" cy="91" r="5"/><path class="line muted" d="M292 91V52"/>
-            <text x="37" y="20">50: extra kids here</text><text x="224" y="161">51 = flip the picture</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Overload 50/51</h3><span class="badge taught">Taught</span></div>
-            <p>Extra kids to one side, throw the first open one past the line. 50 one way, 51 the flip.</p>
-            <div class="when">“Overload” just means more receivers line up on one side than the other.</div>
-            <div class="when">Watch Play, both looks, and Flip on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
-            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-            <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
-            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
-            <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
-            <text x="74" y="24">three levels: short · middle · deep</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Play 3 · staff choice</h3><span class="badge parked">Binder</span></div>
-            <p>Early September: choose either 38 Overload first down or the three-level / drag. Teach one, not both. Goal: three plays the kids can name.</p>
-            <div class="when">Parked aliases from the older sheet: B far left / Left Drag. “Three-level” means one short route, one middle route, and one deeper route so kids do not bunch up.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
-            <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-            <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
-            <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
-            <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
-            <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
-            <text x="130" y="164">deep shot · add late September</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
-            <p>The late-September deeper shot. Routes spread out as they go downfield so the thrower has clear windows.</p>
-            <div class="when">Not for week one. Install only after the first three plays are clean.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
-            <rect x="20" y="20" width="320" height="68" fill="none" stroke="#777777" stroke-width="2"/><text x="270" y="36">end zone</text>
-            <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
-            <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
-            <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
-            <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
-          </svg>
-          <div class="play-copy">
-            <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
-            <p>The short-yardage play for inside the 15-yard line. 5 goes one way; 6 flips it.</p>
-            <div class="when">Add late September with StarBurst. Do not call it outside the inside-15 situation.</div>
-          </div>
-        </article>
-      </div>
-      <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Play builder.</p></div>
-      <div class="play-grid" id="builtPlaybook"></div>
-      <div class="binder-note" style="margin-top:14px"><b>Do not add:</b> pitches, anything that blocks, offense concepts not selected on the Core 5 ladder, or extra defense packages. Game defense stays six kids covering six areas + one kid roaming to help, with no rush. Hip-stay / “pick a guy” / Man-Free is drill-only, never the game plan. This week’s Smash + Overload Play is on the <button class="go-tab" data-go="offense" type="button">Offense tab</button>. Full defense look is on the <button class="go-tab" data-go="defense" type="button">Defense tab</button>.</div>
-    </section>
-
-    <section class="page" id="page-offense">
-      <div class="section-head"><div><div class="eyebrow">This week’s book</div><h2>Smash + Overload</h2></div><p>Play · two looks · Flip</p></div>
-      <div class="binder-note"><b>Taught now:</b> Smash and Overload 50/51 only. Slam is Smash: two-level outs — if the defender goes back, throw short; if he comes up, throw over the top. Overload is go / slant / out with extra kids on one side so one leftover kid comes free. Watch the play. Two looks, then Flip the same picture. Do not add a third look.</div>
-      <div id="offenseBook"></div>
-
-      <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Chris’s 16</h2></div><p>Binder list · rank + concept</p></div>
-      <div class="binder-note"><b>Binder only.</b> These are Chris’s starred favorites, parked in this order. Do not teach them this week. Do not treat them as new Core 5 plays.</div>
-      <div class="binder-list">
-        <div class="binder-row"><span class="binder-rank">01</span><b>#50 Overload left</b><span class="badge parked">OVERLOAD</span></div>
-        <div class="binder-row"><span class="binder-rank">02</span><b>#26 Post Corner Right</b><span class="badge parked">SMASH</span></div>
-        <div class="binder-row"><span class="binder-rank">03</span><b>#23 Post Corner Right flipped</b><span class="badge parked">SMASH</span></div>
-        <div class="binder-row"><span class="binder-rank">04</span><b>#38 Overload first down</b><span class="badge parked">OVERLOAD</span></div>
-        <div class="binder-row"><span class="binder-rank">05</span><b>#61 Left Drag…</b><span class="badge parked">DRAG</span></div>
-        <div class="binder-row"><span class="binder-rank">06</span><b>#35 XXX post Corner</b><span class="badge parked">SMASH</span></div>
-        <div class="binder-row"><span class="binder-rank">07</span><b>#45 A Drag Right</b><span class="badge parked">DRAG</span></div>
-        <div class="binder-row"><span class="binder-rank">08</span><b>#21 B far left</b><span class="badge parked">B-MOVER</span></div>
-        <div class="binder-row"><span class="binder-rank">09</span><b>#67 Rice play</b><span class="badge parked">DEEP/RICE</span></div>
-        <div class="binder-row"><span class="binder-rank">10</span><b>#19 B Route out flipped</b><span class="badge parked">B-MOVER</span></div>
-        <div class="binder-row"><span class="binder-rank">11</span><b>#68 Rice Touchdown play 1</b><span class="badge parked">DEEP/RICE</span></div>
-        <div class="binder-row"><span class="binder-rank">12</span><b>#66 Rice touchdown 2</b><span class="badge parked">DEEP/RICE</span></div>
-        <div class="binder-row"><span class="binder-rank">13</span><b>#41 CJ stutter and out</b><span class="badge parked">TIMING</span></div>
-        <div class="binder-row"><span class="binder-rank">14</span><b>#42 Y hitch and go…</b><span class="badge parked">TIMING</span></div>
-        <div class="binder-row"><span class="binder-rank">15</span><b>#64 Man on man CJ</b><span class="badge parked">MAN-TAG</span></div>
-        <div class="binder-row"><span class="binder-rank">16</span><b>#65 B Motion Post post wheel</b><span class="badge parked">MOTION</span></div>
-      </div>
-    </section>
-
-    <section class="page" id="page-defense">
-      <div class="section-head"><div><div class="eyebrow">Locked game look</div><h2>Six spots + one helper</h2></div><p>Same picture as Play builder · staff book</p></div>
-      <div class="binder-note"><b>This is the game defense.</b> Six named spots. One helper with no spot. Do not rush the thrower. Hip-stay / pick-a-guy / Man-Free is a drill only — never drawn as the game look.</div>
-      <div id="defenseBook"></div>
-
-      <div class="play-grid">
-        <article class="play-card">
-          <div class="play-copy">
-            <div class="play-head"><h3>Stay on a hip</h3><span class="badge parked">Drill only</span></div>
-            <p>Pick a kid. Stay on their hip. This is a practice drill so kids learn to stay close. It is <b>not</b> the game defense. Do not call it in a game. Do not treat it as a second look.</p>
-            <div class="when">Coach terms for the same drill: hip-stay / pick-a-guy / Man-Free. Never the plan.</div>
-          </div>
-        </article>
-        <article class="play-card">
-          <div class="play-copy">
-            <div class="play-head"><h3>Two defense groups</h3><span class="badge live">Set before the quarter</span></div>
-            <p>We use two defense groups. No free swapping in the middle of a quarter. Set who is in each group before the quarter starts, then keep that group on the field.</p>
-            <div class="when">About 12 kids: two groups of about seven. Adjust the last spot so both groups have a helper.</div>
-          </div>
-        </article>
-      </div>
-
-      <div class="season-note" style="margin-top:14px">
-        <b>Do not add:</b>
+    <section class="page" id="page-season">
+      <div class="section-head"><div><div class="eyebrow">Reference</div><h2>Season board</h2></div><p>Schedule · milestones · goals</p></div>
+      <div class="season-note">
+        <b>Schedule</b>
         <ul class="plain-list">
-          <li>No rush. The league does not allow rushing the thrower.</li>
-          <li>No second package. One game look all year unless staff later writes a new one here.</li>
-          <li>If they look lost, make the spots bigger. Do not sneak hip-stay / man back in.</li>
-          <li>Do not add “zone” as a new package. The six areas already are that look.</li>
+          <li>Practice: Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6.</li>
+          <li>Official book: GameChanger. Games are not set on this page.</li>
+          <li>Date list and shells live on Practice. This board stays the ladder.</li>
         </ul>
       </div>
-
-      <div class="section-head"><div><div class="eyebrow">Defense only</div><h2>Season ladder</h2></div><p>Same game defense. Cleaner over time.</p></div>
-      <div class="milestones">
-        <article class="milestone"><div class="mile-date">Now–Aug 30</div><div class="mile-copy"><h3>Same look</h3><p>Six areas + one helper. Kids stand in their grass, don’t chase, and tag below the neck. No rush. Hip-stay stays a drill.</p><div class="ladder"><span class="badge live">6 areas + helper</span><span class="badge parked">Hip-stay · drill only</span></div></div></article>
-        <article class="milestone"><div class="mile-date">Early September</div><div class="mile-copy"><h3>Same look, cleaner</h3><p>Kids can name their area and stay put. Helper goes to the extra-people side. Still no second package.</p><div class="ladder"><span class="badge live">Same game defense</span><span class="badge">Name your grass</span></div></div></article>
-        <article class="milestone"><div class="mile-date">Late September</div><div class="mile-copy"><h3>Still the same game defense</h3><p>Do not add zone as a new package. The area look is the zone. Keep no rush and one helper.</p><div class="ladder"><span class="badge live">Same game defense</span><span class="badge parked">No new package</span></div></div></article>
-        <article class="milestone"><div class="mile-date">October</div><div class="mile-copy"><h3>Same look + situations</h3><p>Keep six areas + helper. Practice two situations: 3rd-and-long, and inside the 15. Do not change the game defense to run them.</p><div class="ladder"><span class="badge">3rd-and-long</span><span class="badge">Inside the 15</span></div></div></article>
-        <article class="milestone"><div class="mile-date">November</div><div class="mile-copy"><h3>Point it at that week’s opponent</h3><p>Same game defense. Adjust where the helper starts or which grass we crowd. Do not install a new look.</p><div class="ladder"><span class="badge">Opponent notes</span><span class="badge">Helper adjust only</span></div></div></article>
-      </div>
-    </section>
-
-    <section class="page" id="page-builder">
-      <div class="section-head"><div><div class="eyebrow">Draw + assign</div><h2>Play builder</h2></div><p>Defense is the staff book · Smash / Overload stay as they are</p></div>
-      <div class="builder-layout">
-        <aside>
-          <div class="binder-note"><b>Week-one guardrail:</b> Smash and Overload are the only taught offense plays. Defense is six named spots + helper.</div>
-          <div class="library-label">Offense</div>
-          <div class="play-library" id="playLibrary"></div>
-          <button class="btn ghost" id="newPlay" type="button" style="width:100%;margin-top:9px">+ New parked play</button>
-          <div class="library-label">Defense</div>
-          <div class="play-library" id="defenseLibrary"></div>
-        </aside>
-        <div class="builder">
-          <div class="builder-form">
-            <div class="field"><label for="playName">Play name</label><input id="playName" maxlength="80"></div>
-            <div class="field"><label for="playStatus">Book status</label><select id="playStatus"><option value="parked">Sitting in binder</option><option value="taught">Taught</option></select></div>
-            <div class="field how"><label for="playHow">Kid-language how-to</label><textarea id="playHow" placeholder="Say exactly where kids line up, where they run, and the thrower’s first look."></textarea></div>
-          </div>
-          <div class="field-wrap">
-            <svg class="builder-field" id="builderField" viewBox="0 0 360 300" role="img" aria-label="Interactive 7-on-7 play field">
-              <defs><marker id="routeArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#FFFFFF"></path></marker></defs>
-              <rect width="360" height="300" fill="#000000"></rect>
-              <rect class="sideline" x="12" y="10" width="336" height="280"></rect>
-              <path class="yard" d="M12 55H348M12 105H348M12 155H348M12 205H348M12 255H348"></path>
-              <path class="los" d="M12 220H348"></path>
-              <text x="37" y="213">LINE</text>
-              <g id="defenseLayer"></g>
-              <g id="routeLayer"></g>
-              <g id="spotLayer"></g>
-            </svg>
-          </div>
-          <div class="defense-tools defense-only hidden">
-            <button class="btn flip" id="flipLook" type="button">Flip</button>
-            <button class="btn ghost" id="biggerSpots" type="button">Kids look lost · make spots bigger</button>
-          </div>
-          <div class="builder-toolbar offense-only">
-            <button class="btn ghost on" id="placeMode" type="button">Place / move spots</button>
-            <button class="btn ghost" id="routeMode" type="button">Draw route</button>
-            <button class="btn ghost danger" id="deleteItem" type="button">Delete selected</button>
-          </div>
-          <div class="builder-toolbar defense-only hidden">
-            <button class="btn ghost danger" id="deleteDefenseItem" type="button">Delete selected kid</button>
-          </div>
-          <div class="assignment offense-only">
-            <div class="field"><label for="spotPlayer">Selected spot’s first name</label><select id="spotPlayer"></select></div>
-            <div class="field"><label>Offense spots</label><div class="badge" id="spotCount">0 / 7</div></div>
-          </div>
-          <p class="builder-help" id="builderHelp">Tap the field to add an offensive spot. Drag a spot to move it. Select a spot to assign a first name.</p>
-          <div class="builder-actions">
-            <button class="btn" id="savePlay" type="button">Save into playbook</button>
-            <button class="btn ghost offense-only" id="exportPlays" type="button">Export plays JSON</button>
-            <label class="btn ghost file-btn offense-only">Import plays JSON<input id="playFile" type="file" accept=".json,application/json"></label>
-          </div>
-          <div class="status-line" id="builderStatus" aria-live="polite"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="page" id="page-milestones">
-      <div class="section-head"><div><div class="eyebrow">Season plan</div><h2>Milestone board</h2></div><p>The dash protects the ladder.</p></div>
+      <div class="section-head"><div><div class="eyebrow">Season plan</div><h2>Milestones</h2></div><p>The dash protects the ladder.</p></div>
       <div class="milestones">
         <article class="milestone"><div class="mile-date">Now–Aug 30</div><div class="mile-copy"><h3>Two plays + areas and helper</h3><p>Smash and Overload only. Kids run both without coach narration. Six kids each cover an area; one kid roams and helps. No rush.</p><div class="ladder"><span class="badge taught">Smash</span><span class="badge taught">Overload</span><span class="badge live">6 areas + helper</span></div></div></article>
         <article class="milestone"><div class="mile-date">Early September</div><div class="mile-copy"><h3>Add one third play</h3><p>Staff chooses either 38 Overload first down or the three-level / drag. Goal: three plays kids can name. Game defense stays six areas + one helper; teach first-down spacing.</p><div class="ladder"><span class="badge parked">One staff choice</span><span class="badge live">Same game defense</span></div></div></article>
@@ -715,56 +722,28 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <article class="milestone"><div class="mile-date">October</div><div class="mile-copy"><h3>Same five, cleaner</h3><p>No sixth play. Practice goes live and adds one situation: third down, inside 15, or the last play / last 10 seconds.</p><div class="ladder"><span class="badge">Core 5 only</span><span class="badge">One situation</span></div></div></article>
         <article class="milestone"><div class="mile-date">Nov–Dec 6</div><div class="mile-copy"><h3>Point the same book at opponents</h3><p>Build game-week plans once opponents exist. Until then, keep the same five and improve execution.</p><div class="ladder"><span class="badge">Game-week plan</span><span class="badge">No new plays</span></div></div></article>
       </div>
-    </section>
-
-    <section class="page" id="page-season">
-      <div class="section-head"><div><div class="eyebrow">Practice shells</div><h2>Season board</h2></div><p>Official book: GameChanger · games not set</p></div>
-      <div class="season-note"><b>Time check for staff:</b> Peter’s official shells below are Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6. Chris’s usual post-today working slots are Thursday 7:00–8:00 p.m. reps and Sunday 3:00–4:00 p.m. install. Correct the shells when staff confirms. Today’s 1:00 p.m. locked hour is not overwritten.</div>
-      <div class="section-head" id="drill-library"><div><div class="eyebrow">Skills / drills</div><h2>Drill picker</h2></div><p>Tap a drill onto the practice you’re building</p></div>
-      <div class="drill-wrap" id="drillPicker"></div>
-      <div class="shell-tools">
-        <button class="btn ghost" id="expandShells" type="button">Open next four</button>
-        <span class="badge">Thursday written before leaving Sunday</span>
-      </div>
-      <div class="season-list" id="seasonList"></div>
-    </section>
-
-    <section class="page" id="page-attendance">
-      <div class="section-head"><div><div class="eyebrow">This device’s copy</div><h2>Attendance</h2></div><p>First names only · Sun Aug 23</p></div>
-      <div class="attendance" id="attendanceList"></div>
-      <div class="status-line" id="attendanceStatus" aria-live="polite"></div>
-    </section>
-
-    <section class="page" id="page-handoff">
-      <div class="section-head"><div><div class="eyebrow">Staff → field book</div><h2>Practice plan handoff</h2></div><p>Coaches own practice plans</p></div>
+      <div class="section-head"><div><div class="eyebrow">Goals</div><h2>What “done” looks like</h2></div><p>Same book. Cleaner over time.</p></div>
       <div class="panel">
-        <h2 style="font-size:24px">Add next plan</h2>
-        <p>Paste JSON or import a file. Import adds or replaces a plan with the same <code>id</code> and upserts it to the shared <code>commodores_plans</code> table. A newer cloud row wins on the next page load.</p>
-        <div class="import-box">
-          <textarea id="jsonInput" spellcheck="false" placeholder='{"id":"2026-08-27","date":"2026-08-27","time":"5:00 p.m.","location":"Frostwood","duration":60,"goal":"Clean Smash and Overload reps.","stations":[{"minutes":15,"name":"Routes","detail":"Both directions.","coach":"Chris","concurrent":"split-a"}]}'></textarea>
-          <div class="import-actions">
-            <button class="btn" id="importJson" type="button">Import JSON</button>
-            <label class="btn ghost file-btn">Import file<input id="jsonFile" type="file" accept=".json,application/json"></label>
-            <button class="btn ghost" id="exportJson" type="button">Export plans</button>
-          </div>
-        </div>
-        <div class="schema">Shape: <code>{ id, date, time, location, duration, goal, stations: [{ minutes, name, detail, coach, concurrent? }] }</code>. The optional <code>concurrent</code> value groups stations running at the same time.</div>
-        <div class="status-line" id="importStatus" aria-live="polite"></div>
+        <ul class="plain-list">
+          <li>By Aug 30: kids can name, line up, and run Smash and Overload against six areas + one helper.</li>
+          <li>No third offense play and no second defense package until staff writes it here.</li>
+          <li>Thursday written before leaving Sunday.</li>
+        </ul>
       </div>
     </section>
 
     <div class="staff-note">Staff tool · this page is intentionally not linked from the public dashboards · notes, plans, and team lineup are shared for staff · defense drawing is the shared staff book</div>
   </main>
+
 </div>
 
-<noscript>This staff field book needs JavaScript for the PIN gate and shared practice plans.</noscript>
+<noscript>This staff field book needs JavaScript for coach sign-in and shared practice plans.</noscript>
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const STORE_PREFIX="commodores_v1_";
 // Roster is loaded from Supabase after sign-in (RLS-gated to allowlisted
-// coaches) and cached locally. It is intentionally NOT baked into this file,
-// which is served publicly by GitHub Pages.
+// coaches) and cached locally. It is intentionally NOT baked into this file.
 let ROSTER=[];
 const LINEUP_ID="staff-lineup";
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
@@ -967,8 +946,12 @@ function renderDefenseBook(){
     ${defenseCardSVG(look)}
     <div class="play-copy">
       <div class="play-head"><h3>${esc(look.name)}</h3><span class="badge taught">Game defense</span></div>
-      <p>${esc(look.how)}</p>
-      <div class="when">Drawn from Play builder. Helper has no grass. Hip-stay is never drawn here.</div>
+      <ul class="plain-list">
+        <li>Stand in your named grass. Don’t chase a kid who leaves it.</li>
+        <li>If the ball comes to you, catch it. Tag with a one-hand touch below the neck.</li>
+        <li>The helper has no spot — he roams to extra people (Overload).</li>
+        <li>Do not rush the thrower. Hip-stay is never drawn here.</li>
+      </ul>
       <div class="play-react">
         <div class="react-toggle" role="group" aria-label="Helper reaction">
           <button class="btn ghost on" data-react="pile" type="button">Helper to the pile</button>
@@ -984,10 +967,10 @@ function renderDefenseBook(){
     </div>
   </article>`).join("");
   const book=defenseLooks.find(look=>look.id==="game-defense")||defenseLooks[0];
-  if(book){
+  if(book&&$("#playbookDefensePicture")){
     $("#playbookDefensePicture").innerHTML=defenseCardSVG(book);
-    $("#playbookDefenseName").textContent=book.name;
-    $("#playbookDefenseHow").textContent=book.how;
+    if($("#playbookDefenseName")) $("#playbookDefenseName").textContent=book.name;
+    if($("#playbookDefenseHow")) $("#playbookDefenseHow").textContent=book.how;
   }
   $$("#defenseBook [data-bigger]").forEach(button=>button.onclick=()=>{
     const look=defenseLooks.find(item=>item.id===button.dataset.bigger);
@@ -1049,15 +1032,34 @@ function applyCachedDefense(){
     defenseLooks=saved;
   }
 }
+const PAGE_ALIASES={team:"today",offense:"playbook",defense:"playbook",builder:"playbook",milestones:"season",attendance:"today",handoff:"practice"};
+const PLAYBOOK_PANES={offense:"offense",defense:"defense",builder:"builder"};
+function showPlaybookPane(pane){
+  const name=PLAYBOOK_PANES[pane]?pane:"offense";
+  $$("[data-playbook-pane]").forEach(button=>{
+    const on=button.dataset.playbookPane===name;
+    button.classList.toggle("on",on);
+    button.setAttribute("aria-selected",on?"true":"false");
+  });
+  $$(".playbook-pane").forEach(el=>el.classList.toggle("on",el.id==="playbook-pane-"+name));
+  if(name!=="offense"&&typeof stopOffenseAnim==="function") stopOffenseAnim();
+  if(name!=="defense"&&typeof stopDefenseAnim==="function") stopDefenseAnim();
+}
 function showPage(name,options){
-  const button=$(`.tabs button[data-page="${name}"]`);
-  if(!button) return;
-  const wasTeam=$("#page-team")?.classList.contains("on");
+  const requested=name;
+  const resolved=PAGE_ALIASES[name]||name;
+  const page=$("#page-"+resolved);
+  if(!page) return;
+  const button=$(`.tabs button[data-page="${resolved}"]`);
+  const wasToday=$("#page-today")?.classList.contains("on");
   $$(".tabs button").forEach(item=>item.classList.toggle("on",item===button));
-  $$(".page").forEach(page=>page.classList.toggle("on",page.id==="page-"+name));
-  if(name==="team"){
-    if(!wasTeam) enterTeamTab();
-  }else if(wasTeam){
+  const seasonNav=$("#seasonNav");
+  if(seasonNav) seasonNav.classList.toggle("on",resolved==="season");
+  $$(".page").forEach(item=>item.classList.toggle("on",item.id==="page-"+resolved));
+  if(resolved==="playbook") showPlaybookPane((options&&options.pane)||PLAYBOOK_PANES[requested]||"offense");
+  if(resolved==="today"){
+    if(!wasToday) enterTeamTab();
+  }else if(wasToday){
     leaveTeamTab();
   }
   if(!(options&&options.keepScroll)) window.scrollTo({top:0,behavior:"smooth"});
@@ -1065,7 +1067,7 @@ function showPage(name,options){
 function openFromHash(){
   const hash=location.hash.replace(/^#/,"");
   if(!hash) return;
-  if($(`.tabs button[data-page="${hash}"]`)){
+  if(PAGE_ALIASES[hash]||$("#page-"+hash)||$(`.tabs button[data-page="${hash}"]`)||hash==="season"){
     showPage(hash);
     return;
   }
@@ -1182,7 +1184,7 @@ async function upsertCloudPlan(plan){
   const {error}=await sb.from("commodores_plans").upsert({
     id:plan.id,payload:plan,updated_at:updatedAt
   },{onConflict:"id"});
-  if(error) $("#importStatus").textContent="Plan saved here, but cloud sync failed: "+error.message;
+  if(error&&$("#importStatus")) $("#importStatus").textContent="Plan saved here, but cloud sync failed: "+error.message;
 }
 async function loadCloudPlans(){
   if(!sb) return;
@@ -1190,7 +1192,7 @@ async function loadCloudPlans(){
     .select("id,payload,updated_at")
     .order("updated_at",{ascending:false});
   if(error){
-    $("#importStatus").textContent="Could not load shared plans: "+error.message;
+    if($("#importStatus")) $("#importStatus").textContent="Could not load shared plans: "+error.message;
     return;
   }
   let changed=false;
@@ -1211,7 +1213,7 @@ async function loadCloudPlans(){
     setStore("plans",plans);
     renderSeason();
     renderDrillPicker();
-    $("#importStatus").textContent="Loaded newer shared practice plans.";
+    if($("#importStatus")) $("#importStatus").textContent="Loaded newer shared practice plans.";
   }
 }
 async function loadRoster(){
@@ -1239,7 +1241,6 @@ async function openApp(){
   await loadRoster();
   renderSeason();
   renderDrillPicker();
-  renderAttendance();
   renderTeam();
   renderDefenseBook();
   renderOffenseBook();
@@ -1298,7 +1299,8 @@ $("#lockBtn").onclick=async()=>{
   location.reload();
 };
 
-$$(".tabs button").forEach(button=>button.onclick=()=>showPage(button.dataset.page));
+$$(".tabs button, #seasonNav").forEach(button=>button.onclick=()=>showPage(button.dataset.page));
+$$("[data-playbook-pane]").forEach(button=>button.onclick=()=>showPlaybookPane(button.dataset.playbookPane));
 document.addEventListener("click",event=>{
   const link=event.target.closest("[data-go]");
   if(!link) return;
@@ -1526,12 +1528,16 @@ function renderOffenseBook(){
     const view=offenseView[play.id]||(offenseView[play.id]={flipped:false,look:(offenseLookSpec(play).looks[0]||{}).id||""});
     const spec=offenseLookSpec(play);
     const looks=spec.looks.map(look=>`<button class="btn ghost${look.id===view.look?" on":""}" data-off-look="${esc(look.id)}" type="button">${esc(look.label)}</button>`).join("");
+    const how=play.id==="smash"
+      ?["Slam is Smash: two-level outs.","If the defender goes back, throw short. If he comes up, throw over the top.","Flip both ways. First throw past the line. 5-second clock."]
+      :play.id==="overload-50-51"
+        ?["Go, slant, or out.","Extra kids on one side so one leftover kid comes free.","50 one way, 51 the flip."]
+        :[play.how];
     return `<article class="play-card" data-offense="${esc(play.id)}" style="margin-bottom:14px">
       <div data-offense-picture>${offenseCardSVG(play)}</div>
       <div class="play-copy">
         <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge taught">Taught</span></div>
-        <p>${esc(play.id==="smash"?SMASH_HOW:play.id==="overload-50-51"?OVERLOAD_HOW:play.how)}</p>
-        <div class="when">${play.id==="smash"?"Two looks: short if the defender goes back, over the top if he comes up. Same picture both ways.":"Go / slant / out. Extra kids one side so one leftover kid comes free. Two looks. 50 one way, 51 the flip."}</div>
+        <ul class="plain-list">${how.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>
         <div class="play-react">
           <div class="react-toggle" role="group" aria-label="${esc(play.name)} looks">${looks}</div>
           <button class="btn play-now" data-off-play="${esc(play.id)}" type="button">Play</button>
@@ -1597,7 +1603,7 @@ function renderBuiltPlaybook(){
   </article>`).join("");
   $$(".edit-built").forEach(button=>button.onclick=()=>{
     openPlay(button.dataset.id);
-    $(`[data-page="builder"]`).click();
+    showPage("builder");
   });
 }
 function renderPlayLibrary(){
@@ -2010,7 +2016,7 @@ function stationToDraftItem(station,index){
 }
 function draftBoardHTML(){
   if(!practiceDraft.stations.length){
-    return `<div class="board-empty">No drills on this board yet. Tap a card above. Today’s locked Sunday hour stays as it is.</div>`;
+    return `<div class="board-empty">No drills on this board yet. Tap a card above.</div>`;
   }
   let elapsed=0;
   return boardBlocks(practiceDraft.stations).map(block=>{
@@ -2101,7 +2107,7 @@ function renderDrillPicker(){
     </div>
   </button>`).join("");
   host.innerHTML=`<div class="drill-grid">${cards}</div>
-    <p class="drill-soon">More drills get added to this list. Smash + Overload stay the only taught plays. This picker does not write a Thursday hour or change today’s locked Sunday hour.</p>
+    <p class="drill-soon">More drills get added to this list. Smash + Overload stay the only taught plays. This picker does not lock a Thursday hour.</p>
     <div class="drill-board">
       <div class="eyebrow">Practice being built</div>
       <div class="drill-controls">
@@ -2216,27 +2222,6 @@ $("#expandShells").onclick=()=>{
   $("#seasonList").scrollIntoView({behavior:"smooth",block:"start"});
 };
 
-function renderAttendance(){
-  const attendance=getStore("attendance_2026-08-23",{});
-  const clean={};
-  Object.keys(attendance||{}).forEach(name=>{
-    if(ROSTER.includes(name)&&attendance[name]) clean[name]=attendance[name];
-  });
-  if(Object.keys(attendance||{}).some(name=>!ROSTER.includes(name))) setStore("attendance_2026-08-23",clean);
-  $("#attendanceList").innerHTML=ROSTER.map(name=>`<label class="kid-row"><span>${esc(name)}</span><select data-name="${esc(name)}" aria-label="${esc(name)} attendance">
-    <option value=""${!clean[name]?" selected":""}>—</option>
-    <option value="present"${clean[name]==="present"?" selected":""}>Present</option>
-    <option value="late"${clean[name]==="late"?" selected":""}>Late</option>
-    <option value="out"${clean[name]==="out"?" selected":""}>Out</option>
-  </select></label>`).join("");
-  $$("#attendanceList select").forEach(select=>select.onchange=()=>{
-    const latest=getStore("attendance_2026-08-23",{});
-    if(select.value) latest[select.dataset.name]=select.value; else delete latest[select.dataset.name];
-    setStore("attendance_2026-08-23",latest);
-    $("#attendanceStatus").textContent="Attendance saved on this device.";
-  });
-}
-
 function validPlan(plan){
   return plan&&typeof plan==="object"&&typeof plan.id==="string"&&typeof plan.date==="string"
     &&typeof plan.time==="string"&&typeof plan.location==="string"&&Number.isFinite(Number(plan.duration))
@@ -2265,23 +2250,26 @@ function importPayload(raw){
   renderDrillPicker();
   $("#importStatus").textContent=`Imported ${incoming.length} plan${incoming.length===1?"":"s"} into the shared book.`;
 }
-$("#importJson").onclick=()=>{
-  try{importPayload($("#jsonInput").value)}catch(error){$("#importStatus").textContent="Could not import: "+error.message}
+const importJsonBtn=$("#importJson");
+if(importJsonBtn) importJsonBtn.onclick=()=>{
+  try{importPayload($("#jsonInput").value)}catch(error){if($("#importStatus")) $("#importStatus").textContent="Could not import: "+error.message}
 };
-$("#jsonFile").onchange=async event=>{
+const jsonFile=$("#jsonFile");
+if(jsonFile) jsonFile.onchange=async event=>{
   const file=event.target.files&&event.target.files[0];
   if(!file) return;
-  try{importPayload(await file.text())}catch(error){$("#importStatus").textContent="Could not import file: "+error.message}
+  try{importPayload(await file.text())}catch(error){if($("#importStatus")) $("#importStatus").textContent="Could not import file: "+error.message}
   event.target.value="";
 };
-$("#exportJson").onclick=()=>{
+const exportJsonBtn=$("#exportJson");
+if(exportJsonBtn) exportJsonBtn.onclick=()=>{
   const blob=new Blob([JSON.stringify(plans,null,2)],{type:"application/json"});
   const link=document.createElement("a");
   link.href=URL.createObjectURL(blob);
   link.download="commodores-practice-plans.json";
   link.click();
   setTimeout(()=>URL.revokeObjectURL(link.href),1000);
-  $("#importStatus").textContent="Downloaded this device’s practice plans.";
+  if($("#importStatus")) $("#importStatus").textContent="Downloaded this device’s practice plans.";
 };
 
 function emptyLine(){return [null,null,null,null,null,null,null]}
@@ -2590,29 +2578,31 @@ function nameChip(name,side,index){
   const source=side?` data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
   return `<button type="button" class="name-chip" data-name="${esc(name)}"${source} aria-label="${esc(name)} ${avg==="—"?"":"staff average "+avg}">${esc(name)}${avg==="—"?"":`<span class="chip-avg">${avg}</span>`}</button>`;
 }
+function playerSpotLabels(name){
+  const labels=[];
+  OFFENSE_SPOTS.forEach((label,index)=>{if(teamState.offense&&teamState.offense[index]===name) labels.push(label)});
+  DEFENSE_SPOTS.forEach((label,index)=>{if(teamState.defense&&teamState.defense[index]===name) labels.push(label)});
+  return labels;
+}
 function renderTeamRatings(){
   if(scoringInputFocused()) return;
   const order=teamDisplayOrder();
   const cards=$("#teamCards");
   const table=$("#teamTable");
+  const open=new Set($$("#teamCards details[open]").map(el=>el.dataset.player));
   if(cards){
     cards.innerHTML=order.map(name=>{
       const keys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
       const rows=keys.map(key=>`<div class="rate-row${key==="overall"?" overall":""}"><label>${esc(RATE_LABELS[key])}</label>${rateField(name,key,false)}</div>`).join("");
       const breakdown=coachBreakdown(name);
-      return `<article class="team-card" data-player="${esc(name)}"><div class="team-card-top"><b>${esc(name)}</b><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</article>`;
+      const spots=playerSpotLabels(name);
+      const isOpen=open.has(name)?" open":"";
+      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(name)}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
     }).join("");
     bindRateInputs("#teamCards");
   }
   if(table){
-    const tableKeys=["overall"].concat(RATE_KEYS.filter(key=>key!=="overall"));
-    const head=`<thead><tr><th>Name</th><th>Staff avg</th>${tableKeys.map(key=>`<th title="${esc(RATE_LABELS[key])}">${esc(RATE_SHORT[key])}</th>`).join("")}</tr></thead>`;
-    const body=order.map(name=>{
-      const breakdown=coachBreakdown(name);
-      return `<tr data-player="${esc(name)}"><td>${esc(name)}</td><td class="avg-cell"><span class="staff-avg-num">${staffAverageText(name)}</span>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}</td>${tableKeys.map(key=>`<td>${rateField(name,key,true)}</td>`).join("")}</tr>`;
-    }).join("");
-    table.innerHTML=head+`<tbody>${body}</tbody>`;
-    bindRateInputs("#teamTable");
+    table.innerHTML="";
   }
 }
 function renderTeamLineup(){
@@ -2736,11 +2726,11 @@ function teamClearHint(){
   return "Tap a lineup spot to place "+teamPick.name;
 }
 function paintTeamPick(){
-  $$("#page-team .name-chip").forEach(chip=>{
+  $$("#page-lineup .name-chip").forEach(chip=>{
     const source=chipSource(chip);
     chip.classList.toggle("is-picked",!!(teamPick&&sameTeamPick(teamPick,chip.dataset.name,source)));
   });
-  $$("#page-team [data-drop-side]").forEach(spot=>spot.classList.toggle("await-place",!!teamPick));
+  $$("#page-lineup [data-drop-side]").forEach(spot=>spot.classList.toggle("await-place",!!teamPick));
   const clear=$("#teamClear");
   if(clear){
     clear.classList.toggle("await-place",!!teamPick);
@@ -2911,7 +2901,7 @@ function onTeamClearClick(event){
   handleTeamClearTap();
 }
 function bindTeamLineup(){
-  $$("#page-team .name-chip").forEach(chip=>{
+  $$("#page-lineup .name-chip").forEach(chip=>{
     chip.setAttribute("draggable","false");
     chip.onpointerdown=beginTeamDrag;
     chip.onclick=onTeamChipClick;
@@ -2919,7 +2909,7 @@ function bindTeamLineup(){
       if(teamDrag&&teamDrag.el===chip) event.preventDefault();
     };
   });
-  $$("#page-team [data-drop-side]").forEach(spot=>{
+  $$("#page-lineup [data-drop-side]").forEach(spot=>{
     spot.onclick=onTeamSpotClick;
   });
   const clear=$("#teamClear");
