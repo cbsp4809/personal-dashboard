@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Commodores · Play animator</title>
 <meta name="theme-color" content="#1C1C1C">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dores Plays">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   color-scheme:dark;
@@ -25,22 +27,31 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;cursor:pointer}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
 .wrap{width:min(720px,100%);margin:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .kicker{display:flex;align-items:center;gap:8px;margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
 .star{width:13px;height:13px;fill:var(--gold);flex:none}
 h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
-.sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+.sub{margin:0 0 12px;color:var(--muted);font-size:13px}
+.auth{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#000}
+.auth b{color:var(--soft);font-size:13px}
+.auth span{color:var(--muted);font-size:12px}
+.auth input{min-height:44px;min-width:0;flex:1 1 140px;padding:8px 10px;border:1px solid var(--strong);border-radius:10px;background:#111}
+.auth button{min-height:44px;padding:8px 12px;border:0;border-radius:10px;background:var(--gold);color:#1C1C1C;font-weight:800}
+.auth .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
+.modes button{min-height:52px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--muted);font-weight:800}
+.modes button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
 .tonight{margin:0 0 12px;padding:12px 14px;border:1px solid rgba(207,174,112,.32);border-radius:14px;background:var(--gold-soft)}
 .tonight b{display:block;margin-bottom:2px;color:var(--highlight)}
 .tonight span{color:var(--soft);font-size:13px}
-.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 10px}
-.picks button{min-height:72px;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left}
-.picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
-.picks button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
-.more{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
-.more button{min-height:56px;padding:8px 8px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft);font-size:13px;font-weight:700}
-.more button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.picks,.more{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.picks button,.more button{min-height:64px;min-width:88px;flex:1 1 88px;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left;font-weight:800}
+.picks button small,.more button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
+.picks button.on,.more button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.more button{min-height:52px;font-size:13px}
 .tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:0 0 10px}
 .tools button{min-height:58px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
 .tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft);font-size:15px}
@@ -48,17 +59,29 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .looks button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-weight:700}
 .looks button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
 .cue{min-height:42px;margin:0 0 10px;color:var(--soft);font-size:14px}
-.field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000}
-.field{display:block;width:100%;height:auto}
+.field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
+.field{display:block;width:100%;height:auto;touch-action:none}
 .field text{font:700 11px var(--sans)}
 .letters{margin:10px 0 0;color:var(--muted);font-size:12px;text-align:center}
 .check{display:flex;align-items:center;gap:8px;margin:10px 0 0;color:var(--muted);font-size:13px;font-weight:600}
 .check input{width:20px;height:20px;accent-color:var(--gold)}
+.draw-help{margin:0 0 10px;color:var(--soft);font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.chips button{min-width:48px;min-height:48px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
+.chips button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.chips button.sit{opacity:.55}
+.draw-tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px}
+.draw-tools button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft);font-weight:800}
+.draw-tools button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.save{display:grid;grid-template-columns:90px 1fr;gap:8px;margin:12px 0 8px}
+.save input{min-height:52px;padding:10px 12px;border:1px solid var(--strong);border-radius:12px;background:#000}
+.save-actions{display:grid;grid-template-columns:1.4fr .8fr;gap:8px}
+.save-actions button{min-height:56px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800}
+.save-actions .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.status{min-height:20px;margin:8px 0 0;color:var(--highlight);font-size:12.5px}
 @media(max-width:420px){
   h1{font-size:26px}
-  .picks{grid-template-columns:1fr}
-  .more{grid-template-columns:1fr}
-  .tools{grid-template-columns:1fr}
+  .tools,.draw-tools,.save-actions{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -66,39 +89,130 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 <div class="wrap">
   <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Now-5 · letters only</div>
   <h1>Play animator</h1>
-  <p class="sub">Kevin’s letters: Q · C · X · A · B · Y · Z. Passers are QB1 / QB2 / QB3. No kid names on the field.</p>
-  <div class="tonight"><b>Tonight · Thu Aug 27</b><span>Live 23/26, then 38. Smash first. Overload first-down next. No rush.</span></div>
+  <p class="sub">Kevin’s letters: Q · C · X · A · B · Y · Z. Draw the real routes. Passers stay QB1 / QB2 / QB3. No kid names on the field.</p>
 
-  <div class="picks" role="group" aria-label="Tonight’s two">
-    <button type="button" data-play="2326" class="on"><b>23 / 26</b><small>Smash · Post Corner · Flip</small></button>
-    <button type="button" data-play="38"><b>38</b><small>Overload · first down · no motion</small></button>
+  <div class="auth" id="authBar">
+    <form id="loginForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%">
+      <span>Sign in with the same coach email as the field book to save across iPads.</span>
+      <input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Coach email">
+      <input id="password" type="password" autocomplete="current-password" placeholder="Password">
+      <button type="submit">Sign in</button>
+    </form>
   </div>
-  <div class="more" role="group" aria-label="Rest of Now-5">
-    <button type="button" data-play="68"><b>68 Rice</b></button>
-    <button type="button" data-play="219"><b>2 / 19</b></button>
-    <button type="button" data-play="6"><b>6 Goal Line</b></button>
+
+  <div class="modes" role="tablist" aria-label="Mode">
+    <button type="button" id="modePlay" class="on">Play</button>
+    <button type="button" id="modeDraw">Draw</button>
   </div>
+  <div class="tonight"><b>Tonight · Thu Aug 27</b><span>Live 23 / 26, then 38. Smash first. Overload first-down next. No rush. Draw any guessed line before you teach it.</span></div>
+
+  <div class="picks" id="tonightPicks" role="group" aria-label="Tonight’s two"></div>
+  <div class="more" id="morePicks" role="group" aria-label="Other plays"></div>
 
   <div class="looks" id="looks" role="group" aria-label="Looks"></div>
-  <div class="tools">
+  <div class="tools" id="playTools">
     <button type="button" id="playBtn">Play</button>
     <button class="ghost" type="button" id="flipBtn">Flip</button>
     <button class="ghost" type="button" id="resetBtn">Reset</button>
   </div>
+
+  <div id="drawPanel" class="hidden">
+    <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter, then draw its route on the field.</p>
+    <div class="chips" id="letterChips"></div>
+    <div class="draw-tools">
+      <button type="button" id="sitBtn">Sit / no route</button>
+      <button type="button" id="clearBtn">Clear route</button>
+      <button type="button" id="newPlayBtn">New play</button>
+    </div>
+  </div>
+
   <p class="cue" id="cue" aria-live="polite"></p>
   <div class="field-wrap"><div id="fieldHost"></div></div>
   <label class="check"><input id="showAreas" type="checkbox"> Show six areas + helper (no rush)</label>
+
+  <div id="savePanel" class="hidden">
+    <div class="save">
+      <input id="playNumber" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="23" aria-label="Play number">
+      <input id="playTitle" maxlength="48" placeholder="Short title" aria-label="Play title">
+    </div>
+    <div class="save-actions">
+      <button type="button" id="saveBtn">Save play</button>
+      <button class="ghost" type="button" id="deleteBtn">Delete</button>
+    </div>
+    <p class="status" id="saveStatus" aria-live="polite"></p>
+  </div>
   <p class="letters">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
 </div>
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const LETTERS=["Q","C","X","A","B","Y","Z"];
+const TONIGHT=["23","26","38"];
+const FLIPS={"23":"26","26":"23","2":"19","19":"2"};
+const LOCAL_KEY="commodores-plays-v1";
+const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
+const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
+
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function flipX(x){return 360-x}
+function nowISO(){return new Date().toISOString()}
+function numKey(v){return String(v||"").replace(/\D/g,"").slice(0,4)}
+
+function defaultSpots(){
+  return [
+    {letter:"Q",x:180,y:348,sit:false,route:[]},
+    {letter:"C",x:180,y:300,sit:true,route:[]},
+    {letter:"X",x:48,y:298,sit:false,route:[]},
+    {letter:"A",x:110,y:298,sit:false,route:[]},
+    {letter:"B",x:220,y:348,sit:false,route:[]},
+    {letter:"Y",x:250,y:298,sit:false,route:[]},
+    {letter:"Z",x:312,y:298,sit:false,route:[]}
+  ];
+}
+function cleanSpot(raw,letter){
+  const fallback=defaultSpots().find(s=>s.letter===letter)||{letter,x:180,y:300,sit:false,route:[]};
+  const x=Number(raw&&raw.x);
+  const y=Number(raw&&raw.y);
+  const route=Array.isArray(raw&&raw.route)?raw.route.map(p=>({x:Number(p.x),y:Number(p.y)})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)): [];
+  return {
+    letter,
+    x:Number.isFinite(x)?clamp(x,8,352):fallback.x,
+    y:Number.isFinite(y)?clamp(y,8,392):fallback.y,
+    sit:!!(raw&&raw.sit)&&!route.length,
+    route
+  };
+}
+function normalizePlay(raw,fallbackNumber){
+  const number=numKey(raw&&raw.number)||numKey(fallbackNumber);
+  const spots=LETTERS.map(letter=>cleanSpot((raw&&raw.spots||[]).find(s=>s.letter===letter),letter));
+  return {
+    number,
+    title:String((raw&&raw.title)||"").slice(0,48),
+    flipPartner:numKey(raw&&(raw.flipPartner||raw.flip_partner))||FLIPS[number]||"",
+    family:String((raw&&raw.family)||""),
+    bullets:Array.isArray(raw&&raw.bullets)?raw.bullets.map(String):[],
+    looks:Array.isArray(raw&&raw.looks)?raw.looks:[],
+    spots,
+    source:raw&&raw.source||"coach",
+    updatedBy:raw&&(raw.updatedBy||raw.updated_by)||"",
+    updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO()
+  };
+}
+function emptyPlay(number){
+  return normalizePlay({number,title:"",spots:defaultSpots(),source:"new",updatedAt:"1970-01-01T00:00:00.000Z"});
+}
+function clonePlay(play){return JSON.parse(JSON.stringify(play))}
+function flipPlay(play){
+  const next=clonePlay(play);
+  next.spots=next.spots.map(s=>({...s,x:flipX(s.x),route:(s.route||[]).map(p=>({x:flipX(p.x),y:p.y}))}));
+  return next;
+}
 function pointAlong(start,points,t){
   const pts=[start,...(points||[])];
-  if(pts.length<2) return start;
+  if(pts.length<2) return {x:start.x,y:start.y};
   let total=0;
   const segs=[];
   for(let i=1;i<pts.length;i++){
@@ -106,7 +220,7 @@ function pointAlong(start,points,t){
     segs.push({a:pts[i-1],b:pts[i],len});
     total+=len;
   }
-  if(!total) return start;
+  if(!total) return {x:start.x,y:start.y};
   let dist=Math.max(0,Math.min(1,t))*total;
   for(const seg of segs){
     if(dist<=seg.len){
@@ -120,29 +234,16 @@ function pointAlong(start,points,t){
 function pathD(start,points){
   return `M${start.x} ${start.y}`+(points||[]).map(p=>`L${p.x} ${p.y}`).join("");
 }
-function flipX(x){return 360-x}
-function flipSpot(spot){
-  return {
-    ...spot,
-    x:flipX(spot.x),
-    route:(spot.route||[]).map(p=>({x:flipX(p.x),y:p.y}))
-  };
-}
 
 function smash(side){
   const right=side==="right";
-  const X={letter:"X",x:48,y:298,name:"Hitch",route:[{x:48,y:268}]};
-  const A={letter:"A",x:110,y:298,name:right?"Go":"Corner",route:right?[{x:110,y:150}]:[{x:110,y:220},{x:92,y:188},{x:38,y:132}]};
-  const Y={letter:"Y",x:250,y:298,name:right?"Corner":"Go",route:right?[{x:250,y:220},{x:268,y:188},{x:322,y:132}]:[{x:250,y:150}]};
-  const Z={letter:"Z",x:312,y:298,name:"Hitch",route:[{x:312,y:268}]};
-  const C={letter:"C",x:180,y:300,name:"Sit 6",route:[{x:180,y:236}]};
-  const B={letter:"B",x:220,y:348,name:"Check",route:[{x:248,y:328}]};
-  const Q={letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:366}]};
-  return {
-    id:"2326",
+  return normalizePlay({
+    number:right?"26":"23",
     title:right?"26 Post Corner":"23 Post Corner",
     family:"Smash",
-    flipLabel:right?"Flip to 23":"Flip to 26",
+    flipPartner:right?"23":"26",
+    source:"seed",
+    updatedAt:"2026-08-27T00:00:00.000Z",
     bullets:right
       ?["Z takes three steps and sits.","Y stems, then breaks to the far corner.","Look Z first. Corner if the defender jumps the sit."]
       :["X takes three steps and sits.","A stems, then breaks to the far corner.","Look X first. Corner if the defender jumps the sit."],
@@ -150,141 +251,186 @@ function smash(side){
       {id:"short",label:"1 · Short",target:right?"Z":"X",cue:"Defender went back. Throw the hitch."},
       {id:"corner",label:"2 · Over the top",target:right?"Y":"A",cue:"Defender came up. Throw the corner."}
     ],
-    spots:[Q,C,X,A,B,Y,Z]
-  };
+    spots:[
+      {letter:"Q",x:180,y:348,route:[{x:180,y:366}]},
+      {letter:"C",x:180,y:300,route:[{x:180,y:236}]},
+      {letter:"X",x:48,y:298,route:[{x:48,y:268}]},
+      {letter:"A",x:110,y:298,route:right?[{x:110,y:150}]:[{x:110,y:220},{x:92,y:188},{x:38,y:132}]},
+      {letter:"B",x:220,y:348,route:[{x:248,y:328}]},
+      {letter:"Y",x:250,y:298,route:right?[{x:250,y:220},{x:268,y:188},{x:322,y:132}]:[{x:250,y:150}]},
+      {letter:"Z",x:312,y:298,route:[{x:312,y:268}]}
+    ]
+  });
 }
-
 function overload(side){
   const left=side==="left";
   const trips=left
-    ?[
-      {letter:"X",x:40,y:298,name:"Go",route:[{x:32,y:128}]},
-      {letter:"A",x:82,y:298,name:"Slant",route:[{x:128,y:236}]},
-      {letter:"B",x:122,y:298,name:"Out",route:[{x:122,y:248},{x:52,y:248}]}
-    ]
-    :[
-      {letter:"Z",x:320,y:298,name:"Go",route:[{x:328,y:128}]},
-      {letter:"Y",x:278,y:298,name:"Slant",route:[{x:232,y:236}]},
-      {letter:"B",x:238,y:298,name:"Out",route:[{x:238,y:248},{x:308,y:248}]}
-    ];
+    ?[{letter:"X",x:40,y:298,route:[{x:32,y:128}]},{letter:"A",x:82,y:298,route:[{x:128,y:236}]},{letter:"B",x:122,y:298,route:[{x:122,y:248},{x:52,y:248}]}]
+    :[{letter:"Z",x:320,y:298,route:[{x:328,y:128}]},{letter:"Y",x:278,y:298,route:[{x:232,y:236}]},{letter:"B",x:238,y:298,route:[{x:238,y:248},{x:308,y:248}]}];
   const weak=left
-    ?[
-      {letter:"Y",x:250,y:298,name:"Out",route:[{x:250,y:248},{x:312,y:248}]},
-      {letter:"Z",x:312,y:298,name:"Go",route:[{x:320,y:150}]}
-    ]
-    :[
-      {letter:"A",x:110,y:298,name:"Out",route:[{x:110,y:248},{x:48,y:248}]},
-      {letter:"X",x:48,y:298,name:"Go",route:[{x:40,y:150}]}
-    ];
-  return {
-    id:"38",
+    ?[{letter:"Y",x:250,y:298,route:[{x:250,y:248},{x:312,y:248}]},{letter:"Z",x:312,y:298,route:[{x:320,y:150}]}]
+    :[{letter:"A",x:110,y:298,route:[{x:110,y:248},{x:48,y:248}]},{letter:"X",x:48,y:298,route:[{x:40,y:150}]}];
+  return normalizePlay({
+    number:"38",
     title:left?"38 Overload · left":"38 Overload · right",
     family:"Overload",
-    flipLabel:"Flip trips",
+    source:"seed",
+    updatedAt:"2026-08-27T00:00:00.000Z",
     bullets:["No motion. Lined up, then snap.","Extra kids one side so one leftover comes free.","Throw the first open kid past the line."],
     looks:[
       {id:"first",label:"1 · First open",target:"B",cue:"First open past the line. B out, or A/Y slant."},
       {id:"leftover",label:"2 · Leftover",target:left?"Y":"A",cue:"Helper stayed middle. Throw the leftover out."}
     ],
-    spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:366}]},
-      {letter:"C",x:180,y:300,name:"Sit",route:[{x:180,y:248}]},
-      ...trips,
-      ...weak
-    ]
-  };
+    spots:[{letter:"Q",x:180,y:348,route:[{x:180,y:366}]},{letter:"C",x:180,y:300,route:[{x:180,y:248}]},...trips,...weak]
+  });
 }
-
 function rice(){
-  return {
-    id:"68",
-    title:"68 Rice",
-    family:"Smash · shot",
-    flipLabel:"Flip",
-    bullets:["Deep shot. Windows open as they spread.","Do not rush it. First throw still past the line.","Q looks seam, then the far corner."],
-    looks:[
-      {id:"seam",label:"1 · Seam",target:"A",cue:"Throw the seam if it is clean."},
-      {id:"shot",label:"2 · Far shot",target:"Z",cue:"If the seam is covered, the far Rice window."}
-    ],
+  return normalizePlay({
+    number:"68",title:"68 Rice",family:"Smash · shot",source:"seed",updatedAt:"2026-08-27T00:00:00.000Z",
+    bullets:["Deep shot. Windows open as they spread.","Do not rush it. First throw still past the line."],
+    looks:[{id:"seam",label:"1 · Seam",target:"A",cue:"Throw the seam if it is clean."},{id:"shot",label:"2 · Far shot",target:"Z",cue:"If the seam is covered, the far Rice window."}],
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:370}]},
-      {letter:"C",x:180,y:300,name:"Leak",route:[{x:180,y:210}]},
-      {letter:"X",x:48,y:298,name:"Corner",route:[{x:48,y:170},{x:22,y:88}]},
-      {letter:"A",x:118,y:298,name:"Seam",route:[{x:132,y:120}]},
-      {letter:"B",x:220,y:348,name:"Cross",route:[{x:160,y:200},{x:70,y:140}]},
-      {letter:"Y",x:242,y:298,name:"Post",route:[{x:228,y:120}]},
-      {letter:"Z",x:312,y:298,name:"Corner",route:[{x:312,y:170},{x:338,y:88}]}
+      {letter:"Q",x:180,y:348,route:[{x:180,y:370}]},{letter:"C",x:180,y:300,route:[{x:180,y:210}]},
+      {letter:"X",x:48,y:298,route:[{x:48,y:170},{x:22,y:88}]},{letter:"A",x:118,y:298,route:[{x:132,y:120}]},
+      {letter:"B",x:220,y:348,route:[{x:160,y:200},{x:70,y:140}]},{letter:"Y",x:242,y:298,route:[{x:228,y:120}]},
+      {letter:"Z",x:312,y:298,route:[{x:312,y:170},{x:338,y:88}]}
     ]
-  };
+  });
 }
-
 function bout(side){
   const right=side==="right";
-  const B=right
-    ?{letter:"B",x:150,y:298,name:"Out",route:[{x:150,y:246},{x:250,y:246}]}
-    :{letter:"B",x:210,y:298,name:"Out",route:[{x:210,y:246},{x:110,y:246}]};
-  return {
-    id:"219",
+  return normalizePlay({
+    number:right?"19":"2",
     title:right?"19 B Route out":"2 B Route out",
     family:"Overload",
-    flipLabel:right?"Flip to 2":"Flip to 19",
-    bullets:["B is the out. Everyone else occupies.","Flip is the same picture the other way.","Throw B if he wins. First throw past the line."],
-    looks:[
-      {id:"b",label:"1 · B out",target:"B",cue:"Throw B on the out."},
-      {id:"sit",label:"2 · Sit",target:"C",cue:"If B is covered, C sits."}
-    ],
+    flipPartner:right?"2":"19",
+    source:"seed",
+    updatedAt:"2026-08-27T00:00:00.000Z",
+    bullets:["B is the out. Everyone else occupies.","Throw B if he wins. First throw past the line."],
+    looks:[{id:"b",label:"1 · B out",target:"B",cue:"Throw B on the out."},{id:"sit",label:"2 · Sit",target:"C",cue:"If B is covered, C sits."}],
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:366}]},
-      {letter:"C",x:180,y:300,name:"Sit",route:[{x:180,y:248}]},
-      {letter:"X",x:48,y:298,name:"Go",route:[{x:40,y:140}]},
-      {letter:"A",x:110,y:298,name:"Slant",route:[{x:150,y:236}]},
-      B,
-      {letter:"Y",x:250,y:298,name:"Hitch",route:[{x:250,y:266}]},
-      {letter:"Z",x:312,y:298,name:"Go",route:[{x:320,y:140}]}
+      {letter:"Q",x:180,y:348,route:[{x:180,y:366}]},{letter:"C",x:180,y:300,route:[{x:180,y:248}]},
+      {letter:"X",x:48,y:298,route:[{x:40,y:140}]},{letter:"A",x:110,y:298,route:[{x:150,y:236}]},
+      {letter:"B",x:right?150:210,y:298,route:right?[{x:150,y:246},{x:250,y:246}]:[{x:210,y:246},{x:110,y:246}]},
+      {letter:"Y",x:250,y:298,route:[{x:250,y:266}]},{letter:"Z",x:312,y:298,route:[{x:320,y:140}]}
     ]
-  };
+  });
 }
-
 function goal(){
-  return {
-    id:"6",
-    title:"6 Goal Line 2",
-    family:"Overload · inside 15",
-    flipLabel:"Flip",
-    bullets:["Inside the 15 only.","Short routes. Get it past the line into the end zone.","6 is this picture. Flip is the other way."],
-    looks:[
-      {id:"in",label:"1 · Slant",target:"A",cue:"Throw the inside slant."},
-      {id:"cross",label:"2 · B cross",target:"B",cue:"If the slant is jumped, B crosses."}
-    ],
+  return normalizePlay({
+    number:"6",title:"6 Goal Line 2",family:"Overload · inside 15",source:"seed",updatedAt:"2026-08-27T00:00:00.000Z",
+    bullets:["Inside the 15 only.","Short routes. Get it past the line into the end zone."],
+    looks:[{id:"in",label:"1 · Slant",target:"A",cue:"Throw the inside slant."},{id:"cross",label:"2 · B cross",target:"B",cue:"If the slant is jumped, B crosses."}],
     spots:[
-      {letter:"Q",x:180,y:348,name:"Drop",route:[{x:180,y:360}]},
-      {letter:"C",x:180,y:300,name:"Sit",route:[{x:180,y:262}]},
-      {letter:"X",x:70,y:300,name:"Slant",route:[{x:118,y:252}]},
-      {letter:"A",x:122,y:300,name:"Sit",route:[{x:122,y:262}]},
-      {letter:"B",x:210,y:348,name:"Cross",route:[{x:150,y:268}]},
-      {letter:"Y",x:238,y:300,name:"Sit",route:[{x:238,y:262}]},
-      {letter:"Z",x:290,y:300,name:"Slant",route:[{x:242,y:252}]}
+      {letter:"Q",x:180,y:348,route:[{x:180,y:360}]},{letter:"C",x:180,y:300,route:[{x:180,y:262}]},
+      {letter:"X",x:70,y:300,route:[{x:118,y:252}]},{letter:"A",x:122,y:300,route:[{x:122,y:262}]},
+      {letter:"B",x:210,y:348,route:[{x:150,y:268}]},{letter:"Y",x:238,y:300,route:[{x:238,y:262}]},
+      {letter:"Z",x:290,y:300,route:[{x:242,y:252}]}
     ]
-  };
+  });
+}
+function seedPlays(){
+  return [smash("left"),smash("right"),overload("left"),rice(),bout("left"),bout("right"),goal()];
 }
 
 const STATE={
-  id:"2326",
-  side:"right",
-  look:0
+  mode:"play",
+  number:"23",
+  generatedFlip:false,
+  look:0,
+  selected:"X",
+  dirty:false,
+  coach:null
 };
-function currentPlay(){
-  if(STATE.id==="2326") return smash(STATE.side==="left"?"left":"right");
-  if(STATE.id==="38") return overload(STATE.side==="left"?"left":"right");
-  if(STATE.id==="68"){
-    const base=rice();
-    if(STATE.side==="left") base.spots=base.spots.map(flipSpot);
-    return base;
+const STORE={};
+let draft=null;
+let anim=null;
+let pointer=null;
+
+function loadLocal(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
+    return Array.isArray(raw)?raw.map(p=>normalizePlay(p)).filter(p=>p.number):[];
+  }catch(_){return []}
+}
+function writeLocal(){
+  const rows=Object.values(STORE).filter(p=>p.source!=="seed").map(p=>({
+    number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
+    bullets:p.bullets,looks:p.looks,spots:p.spots,source:p.source,
+    updatedBy:p.updatedBy,updatedAt:p.updatedAt
+  }));
+  try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows))}catch(_){}
+}
+function mergePlay(play){
+  const cur=STORE[play.number];
+  if(!cur||String(play.updatedAt)>=String(cur.updatedAt)) STORE[play.number]=play;
+}
+function rebuildStore(localRows,cloudRows){
+  Object.keys(STORE).forEach(k=>delete STORE[k]);
+  seedPlays().forEach(mergePlay);
+  (localRows||[]).forEach(mergePlay);
+  (cloudRows||[]).forEach(mergePlay);
+}
+function rowFromCloud(row){
+  return normalizePlay({
+    number:row.number,title:row.title,flipPartner:row.flip_partner,
+    family:row.family,bullets:row.bullets,looks:row.looks,spots:row.spots,
+    source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at
+  });
+}
+async function fetchCloud(){
+  if(!sb||!STATE.coach) return [];
+  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at");
+  if(error||!data) return [];
+  return data.map(rowFromCloud);
+}
+async function upsertCloud(play){
+  if(!sb||!STATE.coach) return {ok:false,error:"Sign in to save for every coach iPad."};
+  const payload={
+    number:play.number,
+    title:play.title||play.number,
+    flip_partner:play.flipPartner||null,
+    spots:play.spots,
+    looks:play.looks||[],
+    family:play.family||"",
+    bullets:play.bullets||[],
+    updated_by:STATE.coach.first_name,
+    updated_at:play.updatedAt
+  };
+  const {error}=await sb.from("commodores_plays").upsert(payload,{onConflict:"number"});
+  return {ok:!error,error:error&&error.message};
+}
+async function deleteCloud(number){
+  if(!sb||!STATE.coach) return {ok:true};
+  const {error}=await sb.from("commodores_plays").delete().eq("number",number);
+  return {ok:!error,error:error&&error.message};
+}
+async function syncPlays(){
+  const local=loadLocal();
+  const cloud=await fetchCloud();
+  rebuildStore(local,cloud);
+  if(STATE.coach){
+    for(const play of Object.values(STORE)){
+      if(play.source==="seed") continue;
+      const cloudPlay=cloud.find(p=>p.number===play.number);
+      if(!cloudPlay||String(play.updatedAt)>String(cloudPlay.updatedAt)){
+        await upsertCloud(play);
+      }
+    }
   }
-  if(STATE.id==="219") return bout(STATE.side==="left"?"left":"right");
-  const base=goal();
-  if(STATE.side==="left") base.spots=base.spots.map(flipSpot);
-  return base;
+}
+
+function storedPlay(number){return STORE[number]||emptyPlay(number)}
+function workingPlay(){
+  if(STATE.mode==="draw"&&draft) return draft;
+  const base=clonePlay(storedPlay(STATE.number));
+  return STATE.generatedFlip?flipPlay(base):base;
+}
+function setDraftFromStore(){
+  draft=clonePlay(storedPlay(STATE.number));
+  STATE.generatedFlip=false;
+  STATE.dirty=false;
+  STATE.selected="X";
 }
 
 function areasSVG(){
@@ -293,77 +439,112 @@ function areasSVG(){
   const grass=box.map(a=>`<rect x="${a.x-45}" y="${a.y-27}" width="90" height="54" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${a.y+4}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
   return `<g opacity=".7">${grass}<polygon points="180,106 191,118 180,130 169,118" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="180" y="148" fill="#ECB748" text-anchor="middle" font-size="8">helper</text><text x="180" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
 }
-
-function fieldSVG(play,pos,ball){
+function fieldSVG(play,pos,ball,liveRoute){
   const targets=new Set([play.looks[STATE.look]?.target]);
   const routes=play.spots.filter(s=>s.letter!=="Q"&&s.route&&s.route.length).map(s=>{
-    const on=targets.has(s.letter);
+    const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
     return `<path d="${esc(pathD(s,s.route))}" fill="none" stroke="${on?"#ECB748":"#FFFFFF"}" stroke-width="${on?4:2.4}" stroke-linecap="round" stroke-linejoin="round" opacity="${on?.95:.42}"/>`;
   }).join("");
+  const live=liveRoute&&liveRoute.length?`<path d="${esc(pathD(play.spots.find(s=>s.letter===STATE.selected)||liveRoute[0],liveRoute))}" fill="none" stroke="#ECB748" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`:"";
   const kids=play.spots.map(s=>{
     const p=pos[s.letter]||s;
-    const on=targets.has(s.letter);
-    const r=s.letter==="Q"?13:12;
+    const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
+    const r=s.letter==="Q"?14:13;
     const fill=s.letter==="Q"?"#FFFFFF":(on?"#ECB748":"#CFAE70");
-    const label=s.letter==="Q"?"#1C1C1C":"#1C1C1C";
-    const tag=s.letter==="Q"?"":`<text x="${p.x}" y="${p.y-18}" fill="${on?"#ECB748":"#E0D5C0"}" text-anchor="middle" font-size="8">${esc(s.name)}</text>`;
-    return `<g data-letter="${s.letter}"><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="#1C1C1C" stroke-width="2"/><text x="${p.x}" y="${p.y+4}" fill="${label}" text-anchor="middle" font-size="11">${s.letter}</text>${tag}</g>`;
+    return `<g data-letter="${s.letter}"><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${p.x}" y="${p.y+4}" fill="#1C1C1C" text-anchor="middle" font-size="12">${s.letter}</text></g>`;
   }).join("");
   const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:300};
-  const endzone=play.id==="6"?`<rect x="16" y="16" width="328" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="300" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
-  return `<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title)}">
+  const endzone=play.number==="6"?`<rect x="16" y="16" width="328" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="300" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
+  const title=play.title||`Play ${play.number}`;
+  return `<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(title)}">
     <rect width="360" height="400" fill="#000"/>
     <rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
     <path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
     <text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>
-    ${endzone}${areasSVG()}${routes}${kids}
+    ${endzone}${areasSVG()}${routes}${live}${kids}
     <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
   </svg>`;
 }
 
-let anim=null;
 function stopAnim(){
   if(!anim) return;
   if(anim.frame) cancelAnimationFrame(anim.frame);
   if(anim.timer) clearTimeout(anim.timer);
   anim=null;
 }
-function paint(play,pos,ball){
-  $("#fieldHost").innerHTML=fieldSVG(play,pos,ball);
+function paint(play,pos,ball,liveRoute){
+  $("#fieldHost").innerHTML=fieldSVG(play,pos,ball,liveRoute);
 }
 function setCue(play,mode){
   const look=play.looks[STATE.look];
-  const extra=play.bullets[0];
-  $("#cue").textContent=mode==="play"&&look?look.cue:`${play.family} · ${play.title}. ${look?look.cue:extra}`;
+  if(STATE.mode==="draw"){
+    const spot=play.spots.find(s=>s.letter===STATE.selected);
+    const routeNote=spot&&spot.sit?"Sit. Stays put.":(spot&&spot.route.length?`${spot.route.length} point route.`:"No route yet.");
+    $("#cue").textContent=`Draw ${STATE.selected}. ${routeNote}`;
+    return;
+  }
+  const guessed=play.source==="seed"?"Guessed line — tap Draw and replace it. ":"";
+  const flipped=STATE.generatedFlip?"True left/right flip of the saved drawing. ":"";
+  $("#cue").textContent=guessed+flipped+(mode==="play"&&look?look.cue:`${play.family?play.family+" · ":""}${play.title||"Play "+play.number}. ${look?look.cue:""}`.trim());
+}
+function orderedNumbers(){
+  const nums=Object.keys(STORE);
+  const rest=nums.filter(n=>!TONIGHT.includes(n)).sort((a,b)=>Number(a)-Number(b));
+  return [...TONIGHT.filter(n=>STORE[n]),...rest];
+}
+function renderPicks(){
+  const numbers=orderedNumbers();
+  const tonight=numbers.filter(n=>TONIGHT.includes(n));
+  const more=numbers.filter(n=>!TONIGHT.includes(n));
+  const btn=n=>{
+    const play=STORE[n];
+    const drawn=play&&play.source!=="seed";
+    return `<button type="button" data-play="${esc(n)}" class="${n===STATE.number?"on":""}"><b>${esc(n)}</b><small>${esc((play&&play.title||"").replace(/^\d+\s*/,"" )||(drawn?"Drawn":"Guessed"))}</small></button>`;
+  };
+  $("#tonightPicks").innerHTML=tonight.map(btn).join("");
+  $("#morePicks").innerHTML=more.map(btn).join("")+`<button type="button" id="addPlayChip"><b>+ New</b><small>Blank formation</small></button>`;
+  $$("[data-play]").forEach(el=>el.onclick=()=>selectPlay(el.dataset.play));
+  $("#addPlayChip").onclick=startNewPlay;
 }
 function renderChrome(){
-  const play=currentPlay();
-  $$("[data-play]").forEach(btn=>btn.classList.toggle("on",btn.dataset.play===STATE.id));
-  $("#looks").innerHTML=play.looks.map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
-  $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{
-    STATE.look=Number(btn.dataset.look);
-    stopAnim();
-    render();
-  });
-  $("#flipBtn").textContent=play.flipLabel;
+  const play=workingPlay();
+  $("#modePlay").classList.toggle("on",STATE.mode==="play");
+  $("#modeDraw").classList.toggle("on",STATE.mode==="draw");
+  $("#drawPanel").classList.toggle("hidden",STATE.mode!=="draw");
+  $("#savePanel").classList.toggle("hidden",STATE.mode!=="draw");
+  renderPicks();
+  $("#looks").innerHTML=(STATE.mode==="play"?play.looks:[]).map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
+  $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
+  const partner=play.flipPartner||FLIPS[play.number];
+  $("#flipBtn").textContent=partner?`Flip to ${partner}`:"Flip";
+  $("#letterChips").innerHTML=LETTERS.map(letter=>{
+    const spot=play.spots.find(s=>s.letter===letter);
+    return `<button type="button" data-letter="${letter}" class="${letter===STATE.selected?"on":""} ${spot&&spot.sit?"sit":""}">${letter}</button>`;
+  }).join("");
+  $$("#letterChips [data-letter]").forEach(btn=>btn.onclick=()=>{STATE.selected=btn.dataset.letter;render();});
+  if(STATE.mode==="draw"){
+    $("#playNumber").value=draft?draft.number:STATE.number;
+    $("#playTitle").value=draft?draft.title:play.title;
+  }
   setCue(play,"idle");
 }
-function render(){
-  const play=currentPlay();
+function render(liveRoute){
+  const play=workingPlay();
   renderChrome();
   const pos={};
   play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
-  paint(play,pos,play.spots.find(s=>s.letter==="C"));
+  paint(play,pos,play.spots.find(s=>s.letter==="C"),liveRoute);
 }
 
 function playNow(){
-  const play=currentPlay();
+  if(STATE.mode==="draw") return;
+  const play=workingPlay();
   stopAnim();
   const q=play.spots.find(s=>s.letter==="Q");
   const c=play.spots.find(s=>s.letter==="C");
   const targetLetter=play.looks[STATE.look]?.target;
   const target=play.spots.find(s=>s.letter===targetLetter);
-  const dest=target?pointAlong(target,target.route,1):null;
+  const dest=target&&!target.sit?pointAlong(target,target.route,1):null;
   setCue(play,"play");
   const start=performance.now();
   const snap=220, run=1700, throwMs=380, hold=1100;
@@ -372,9 +553,8 @@ function playNow(){
     const t=now-start;
     const pos={};
     play.spots.forEach(s=>{
-      if(t<snap){pos[s.letter]={x:s.x,y:s.y};return}
-      const p=ease(Math.min(1,(t-snap)/run));
-      pos[s.letter]=s.route&&s.route.length?pointAlong(s,s.route,p):{x:s.x,y:s.y};
+      if(t<snap||s.sit||!s.route.length){pos[s.letter]={x:s.x,y:s.y};return}
+      pos[s.letter]=pointAlong(s,s.route,ease(Math.min(1,(t-snap)/run)));
     });
     let ball={x:c.x,y:c.y};
     if(t<snap){
@@ -402,39 +582,310 @@ function playNow(){
   anim.frame=requestAnimationFrame(tick);
 }
 
-$$("[data-play]").forEach(btn=>btn.onclick=()=>{
-  STATE.id=btn.dataset.play;
-  STATE.side="right";
-  if(STATE.id==="38") STATE.side="left";
+function selectPlay(number){
+  if(STATE.mode==="draw"&&STATE.dirty&&!confirm("Leave this drawing? Unsaved strokes stay only if you saved.")) return;
+  STATE.number=numKey(number);
+  STATE.generatedFlip=false;
+  STATE.look=0;
+  if(STATE.mode==="draw") setDraftFromStore();
+  stopAnim();
+  render();
+}
+function startNewPlay(){
+  if(STATE.mode!=="draw") setMode("draw");
+  else if(STATE.dirty&&!confirm("Start a blank play? Unsaved strokes are lost.")) return;
+  draft=emptyPlay("");
+  STATE.number="";
+  STATE.generatedFlip=false;
+  STATE.dirty=true;
+  STATE.selected="X";
+  $("#playNumber").value="";
+  $("#playTitle").value="";
+  $("#saveStatus").textContent="Blank formation. Place letters, draw routes, give it a number, Save.";
+  stopAnim();
+  render();
+}
+function setMode(mode){
+  if(mode===STATE.mode) return;
+  if(mode==="play"&&STATE.dirty&&!confirm("Leave Draw? Save first if you want these lines.")) return;
+  STATE.mode=mode;
+  STATE.generatedFlip=false;
+  if(mode==="draw"){
+    if(!draft||draft.number!==STATE.number) setDraftFromStore();
+  }else{
+    draft=null;
+    STATE.dirty=false;
+  }
+  stopAnim();
+  render();
+}
+
+function svgPoint(evt){
+  const svg=$("#fieldHost svg");
+  if(!svg) return null;
+  const rect=svg.getBoundingClientRect();
+  if(!rect.width||!rect.height) return null;
+  return {
+    x:clamp((evt.clientX-rect.left)*360/rect.width,8,352),
+    y:clamp((evt.clientY-rect.top)*400/rect.height,8,392)
+  };
+}
+function hitLetter(play,pt){
+  let best=null,bestD=22;
+  play.spots.forEach(s=>{
+    const d=Math.hypot(s.x-pt.x,s.y-pt.y);
+    if(d<bestD){best=s.letter;bestD=d}
+  });
+  return best;
+}
+function selectedSpot(){
+  if(!draft) return null;
+  return draft.spots.find(s=>s.letter===STATE.selected);
+}
+function markDirty(){STATE.dirty=true;$("#saveStatus").textContent="Not saved yet."}
+
+function onFieldPointerDown(evt){
+  if(STATE.mode!=="draw"||!draft) return;
+  const pt=svgPoint(evt);
+  if(!pt) return;
+  evt.preventDefault();
+  const hit=hitLetter(draft,pt);
+  if(hit){
+    STATE.selected=hit;
+    pointer={kind:"drag",letter:hit,moved:false};
+    render();
+    return;
+  }
+  const spot=selectedSpot();
+  if(!spot) return;
+  spot.sit=false;
+  spot.route=[];
+  pointer={kind:"draw",points:[pt]};
+  markDirty();
+  render(pointer.points);
+}
+function onFieldPointerMove(evt){
+  if(!pointer||STATE.mode!=="draw"||!draft) return;
+  const pt=svgPoint(evt);
+  if(!pt) return;
+  evt.preventDefault();
+  if(pointer.kind==="drag"){
+    const spot=draft.spots.find(s=>s.letter===pointer.letter);
+    if(!spot) return;
+    if(Math.hypot(pt.x-spot.x,pt.y-spot.y)>3) pointer.moved=true;
+    spot.x=pt.x;
+    spot.y=pt.y;
+    markDirty();
+    render();
+    return;
+  }
+  const last=pointer.points[pointer.points.length-1];
+  if(!last||Math.hypot(pt.x-last.x,pt.y-last.y)>=5) pointer.points.push(pt);
+  render(pointer.points);
+}
+function onFieldPointerUp(){
+  if(!pointer||!draft){pointer=null;return}
+  if(pointer.kind==="draw"){
+    const spot=selectedSpot();
+    if(spot){
+      spot.sit=false;
+      spot.route=pointer.points.slice();
+      if(spot.route.length<2) spot.route=[];
+    }
+  }
+  pointer=null;
+  render();
+}
+
+function sitSelected(){
+  const spot=selectedSpot();
+  if(!spot) return;
+  spot.sit=true;
+  spot.route=[];
+  markDirty();
+  render();
+}
+function clearSelected(){
+  const spot=selectedSpot();
+  if(!spot) return;
+  spot.sit=false;
+  spot.route=[];
+  markDirty();
+  render();
+}
+async function saveDraft(){
+  if(!draft) return;
+  const number=numKey($("#playNumber").value);
+  const title=$("#playTitle").value.trim();
+  if(!number){
+    $("#saveStatus").textContent="Type a play number, like 23.";
+    $("#playNumber").focus();
+    return;
+  }
+  const existing=STORE[number];
+  if(existing&&existing.source!=="seed"&&existing.number!==draft.number){
+    if(!confirm(`Play ${number} already exists. Overwrite it?`)) return;
+  }
+  draft.number=number;
+  draft.title=title||number;
+  draft.flipPartner=FLIPS[number]||"";
+  // Drawn plays keep the geometry Chris made. Drop seed look-chips so
+  // Save-as-99 does not inherit Smash/Overload read labels from another play.
+  draft.looks=[];
+  draft.bullets=[];
+  draft.family="";
+  draft.source="coach";
+  draft.updatedBy=STATE.coach?STATE.coach.first_name:"local";
+  draft.updatedAt=nowISO();
+  STORE[number]=clonePlay(draft);
+  STATE.number=number;
+  STATE.dirty=false;
+  writeLocal();
+  const cloud=await upsertCloud(STORE[number]);
+  $("#saveStatus").textContent=cloud.ok
+    ?`Saved ${number} for every signed-in coach.`
+    :(STATE.coach?`Saved on this device. Cloud: ${cloud.error}`:"Saved on this device. Sign in to share it.");
+  render();
+}
+async function deleteDraft(){
+  const number=numKey($("#playNumber").value||STATE.number);
+  if(!number||!STORE[number]) return;
+  if(!confirm(`Delete play ${number}?`)) return;
+  delete STORE[number];
+  writeLocal();
+  await deleteCloud(number);
+  const seed=seedPlays().find(p=>p.number===number);
+  if(seed) mergePlay(seed);
+  STATE.number=STORE[number]?number:(orderedNumbers()[0]||"23");
+  setDraftFromStore();
+  $("#saveStatus").textContent=seed?`Deleted your ${number}. Guessed seed is back.`:`Deleted ${number}.`;
+  render();
+}
+
+function renderAuth(){
+  if(STATE.coach){
+    $("#authBar").innerHTML=`<b>Signed in as ${esc(STATE.coach.first_name)}</b><span>Saves go to every coach iPad.</span><button class="ghost" type="button" id="lockBtn">Lock</button>`;
+    $("#lockBtn").onclick=async()=>{try{if(sb) await sb.auth.signOut()}catch(_){}STATE.coach=null;location.reload()};
+    return;
+  }
+  $("#authBar").innerHTML=`<form id="loginForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%"><span>Sign in with the same coach email as the field book to save across iPads.</span><input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Coach email"><input id="password" type="password" autocomplete="current-password" placeholder="Password"><button type="submit">Sign in</button></form><span class="status" id="authMsg"></span>`;
+  $("#loginForm").onsubmit=onLogin;
+}
+async function coachForSession(session){
+  if(!sb||!session||!session.user) return null;
+  const email=(session.user.email||"").toLowerCase();
+  try{
+    const {data,error}=await sb.from("commodores_coaches").select("first_name").eq("email",email).maybeSingle();
+    if(error||!data) return null;
+    return {email,first_name:data.first_name};
+  }catch(_){return null}
+}
+async function onLogin(event){
+  event.preventDefault();
+  const email=$("#email").value.trim().toLowerCase();
+  const password=$("#password").value;
+  const msg=$("#authMsg")||$("#saveStatus");
+  if(!email||!password){msg.textContent="Enter your email and password.";return}
+  if(!sb){msg.textContent="Cannot reach sign-in right now.";return}
+  msg.textContent="Signing in…";
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error){msg.textContent=(error.message||"").toLowerCase().includes("invalid")?"Email or password is wrong.":(error.message||"Sign-in failed.");return}
+    const coach=await coachForSession(data.session);
+    if(!coach){await sb.auth.signOut();msg.textContent="This account is not on the Commodores staff list.";return}
+    STATE.coach=coach;
+    renderAuth();
+    await syncPlays();
+    if(STATE.mode==="draw") setDraftFromStore();
+    render();
+    $("#saveStatus").textContent="Signed in. Saved plays will follow you.";
+  }catch(_){msg.textContent="Sign-in failed. Check your connection."}
+}
+
+$("#modePlay").onclick=()=>setMode("play");
+$("#modeDraw").onclick=()=>setMode("draw");
+$("#playBtn").onclick=playNow;
+$("#flipBtn").onclick=()=>{
+  const play=workingPlay();
+  const partner=play.flipPartner||FLIPS[play.number];
+  if(STATE.mode==="draw"){
+    if(!draft) return;
+    draft.spots=flipPlay(draft).spots;
+    STATE.dirty=true;
+    $("#saveStatus").textContent="Flipped this drawing. Save if you want this side.";
+    stopAnim();
+    render();
+    return;
+  }
+  if(partner&&STORE[partner]&&!STATE.generatedFlip){
+    STATE.number=partner;
+    STATE.generatedFlip=false;
+  }else{
+    STATE.generatedFlip=!STATE.generatedFlip;
+  }
   STATE.look=0;
   stopAnim();
   render();
-});
-$("#playBtn").onclick=playNow;
-$("#flipBtn").onclick=()=>{
-  STATE.side=STATE.side==="left"?"right":"left";
+};
+$("#resetBtn").onclick=()=>{
   stopAnim();
+  if(STATE.mode==="draw"){
+    setDraftFromStore();
+    $("#saveStatus").textContent="Back to the last saved version.";
+  }
+  STATE.generatedFlip=false;
   render();
 };
-$("#resetBtn").onclick=()=>{stopAnim();render();};
-$("#showAreas").onchange=()=>{stopAnim();render();};
+$("#showAreas").onchange=()=>{stopAnim();render()};
+$("#sitBtn").onclick=sitSelected;
+$("#clearBtn").onclick=clearSelected;
+$("#newPlayBtn").onclick=startNewPlay;
+$("#saveBtn").onclick=saveDraft;
+$("#deleteBtn").onclick=deleteDraft;
+const host=$("#fieldHost");
+host.addEventListener("pointerdown",onFieldPointerDown);
+window.addEventListener("pointermove",onFieldPointerMove,{passive:false});
+window.addEventListener("pointerup",onFieldPointerUp);
+window.addEventListener("pointercancel",onFieldPointerUp);
 document.addEventListener("keydown",event=>{
-  if(event.key===" "||event.key==="Enter"){event.preventDefault();playNow()}
-  if(event.key==="f"||event.key==="F"){$("#flipBtn").click()}
+  if(event.key===" "||event.key==="Enter"){
+    if(event.target&&(event.target.tagName==="INPUT"||event.target.tagName==="TEXTAREA")) return;
+    event.preventDefault();
+    if(STATE.mode==="play") playNow();
+  }
+  if((event.key==="f"||event.key==="F")&&event.target.tagName!=="INPUT") $("#flipBtn").click();
 });
 
 function applyHash(){
   const hash=(location.hash||"").replace("#","").toLowerCase();
-  if(hash==="38") {STATE.id="38";STATE.side="left";STATE.look=0;return}
-  if(hash==="68"||hash==="rice") {STATE.id="68";STATE.side="right";STATE.look=0;return}
-  if(hash==="2"||hash==="19"||hash==="219") {STATE.id="219";STATE.side=hash==="2"?"left":"right";STATE.look=0;return}
-  if(hash==="6"||hash==="gl") {STATE.id="6";STATE.side="right";STATE.look=0;return}
-  if(hash==="23"||hash==="26"||hash==="2326"||hash==="23-26") {STATE.id="2326";STATE.side=hash==="23"?"left":"right";STATE.look=0;return}
-  STATE.id="2326";STATE.side="right";STATE.look=0;
+  const n=numKey(hash);
+  if(n&&STORE[n]){STATE.number=n;STATE.generatedFlip=false;STATE.look=0;return}
+  if(hash==="2326"||hash==="23-26"){STATE.number="26";STATE.generatedFlip=false;STATE.look=0;return}
+  STATE.number=STORE["23"]?"23":(orderedNumbers()[0]||"23");
+  STATE.generatedFlip=false;
+  STATE.look=0;
 }
+
+rebuildStore(loadLocal(),[]);
 applyHash();
-window.addEventListener("hashchange",()=>{applyHash();stopAnim();render();});
+renderAuth();
 render();
+window.addEventListener("hashchange",()=>{applyHash();if(STATE.mode==="draw") setDraftFromStore();stopAnim();render();});
+(async()=>{
+  if(!sb) return;
+  try{
+    const {data}=await sb.auth.getSession();
+    const coach=await coachForSession(data&&data.session);
+    if(coach){
+      STATE.coach=coach;
+      renderAuth();
+      await syncPlays();
+      if(STATE.mode==="draw") setDraftFromStore();
+      applyHash();
+      render();
+    }
+  }catch(_){}
+})();
 </script>
 </body>
 </html>

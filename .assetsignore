@@ -1,0 +1,13 @@
+# Keep the personal-dashboard Worker to site files only.
+# Cloudflare Git deploys from repo root using wrangler.toml [assets].
+.git/
+.github/
+node_modules/
+sql/
+.env
+.env.*
+*.md
+HANDOFF_TO_GROK.md
+COMMODORES_AUTH_HANDOFF.md
+CLOUDFLARE_ACCESS_SETUP.md
+CLAUDE.md
