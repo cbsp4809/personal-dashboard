@@ -36,7 +36,7 @@ They are independent. **Do not merge them, and do not let a change to one leak i
 push to main  →  GitHub Action  →  https://cbsp4809.github.io/personal-dashboard/
 ```
 
-Everything in this repo is served publicly at that origin **except** `commodores.html` + `commodores.webmanifest`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book is hosted separately on **Cloudflare Pages behind Cloudflare Access** (coach email one-time-PIN login), so the playbook/practice content is not world-readable. Treat every OTHER file as world-readable. Its manifest uses root-relative paths for the Cloudflare (pages.dev) root, not the `/personal-dashboard/` GitHub sub-path.
+Everything in this repo is served publicly at that origin **except** `commodores.html`, `commodores.webmanifest`, `plays.html`, and `plays.webmanifest`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book and play animator are hosted separately on **Cloudflare Pages / the Worker behind Cloudflare Access** (coach email one-time-PIN login), so the playbook/practice content is not world-readable. Treat every OTHER file as world-readable. Manifests use root-relative paths for the Cloudflare root, not the `/personal-dashboard/` GitHub sub-path.
 
 ---
 
@@ -102,4 +102,4 @@ Rules:
 
 ## Current backlog source
 
-Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is now the four primary pages **Team/Today, Playbook (Offense/Defense), Lineup, Practice**, plus Season board as a reference surface. Attendance and plan-handoff tabs are gone. Remaining: fix broken lineup drag-and-drop; build a modular practice builder; add a play generator.
+Chris's 2026-08-25 voice note ("Consolidating the Team Today app"). Navigation is four primary pages plus Season board as reference. **Tonight (Thu Aug 27): ship the Now-5 play animator** (`plays.html`) so coaches can tap 23/26 and 38 on an iPad. Remaining after that: finish nav polish if needed, fix lineup drag-and-drop, modular practice builder, play generator.
