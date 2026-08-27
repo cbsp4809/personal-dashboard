@@ -1,0 +1,27 @@
+{
+  "id": "/plays.html",
+  "name": "Dores Plays",
+  "short_name": "Plays",
+  "description": "Now-5 play animator for FWE JV Commodores. Letters only.",
+  "start_url": "/plays.html",
+  "scope": "/plays.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1C1C1C",
+  "theme_color": "#1C1C1C",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/commodores-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/commodores-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
