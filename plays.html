@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Commodores · Play animator</title>
 <meta name="theme-color" content="#1C1C1C">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Dores Plays">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -727,7 +728,12 @@ async function saveDraft(){
   }
   draft.number=number;
   draft.title=title||number;
-  draft.flipPartner=FLIPS[number]||draft.flipPartner||"";
+  draft.flipPartner=FLIPS[number]||"";
+  // Drawn plays keep the geometry Chris made. Drop seed look-chips so
+  // Save-as-99 does not inherit Smash/Overload read labels from another play.
+  draft.looks=[];
+  draft.bullets=[];
+  draft.family="";
   draft.source="coach";
   draft.updatedBy=STATE.coach?STATE.coach.first_name:"local";
   draft.updatedAt=nowISO();
