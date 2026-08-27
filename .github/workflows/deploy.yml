@@ -27,11 +27,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # The Commodores staff field book is NOT served on this public GitHub
-      # Pages site. It is hosted separately on Cloudflare Pages behind
-      # Cloudflare Access (coach email login). Strip it from the public artifact.
+      # The Commodores staff field book and play animator are NOT served on
+      # this public GitHub Pages site. They are hosted on the Cloudflare
+      # Worker / Pages origin behind Cloudflare Access. Strip them from the
+      # public artifact. Do not remove this step.
       - name: Exclude staff field book from the public site
-        run: rm -f commodores.html commodores.webmanifest
+        run: rm -f commodores.html commodores.webmanifest plays.html plays.webmanifest
 
       # Virginia's Hub is its own Cloudflare Worker (workers.dev), not this
       # public GitHub Pages site. Do not serve the planner from github.io.
