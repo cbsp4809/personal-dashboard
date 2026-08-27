@@ -185,7 +185,9 @@ is a reference link (schedule, milestones, goals). Playbook has Offense /
 Defense sub-tabs. Lineup is two units (A = Q1/Q3, B = Q2/Q4), each with 7
 offense and 7 defense, plus a live play-time rule check (2+2 or one-way).
 Assignments persist on `commodores_plans` row `staff-lineup` (`skillsByCoach`
-plus `units`; older `offense` / `defense` arrays still mirror Unit A).
+plus `units` and `attendance`; older `offense` / `defense` arrays still mirror
+Unit A). Mark Present / Out for the session first; the rule check uses only the
+kids who showed and short-roster both-way math (11→3, 10→4, … 7→all).
 
 On Chris’s iPhone:
 
