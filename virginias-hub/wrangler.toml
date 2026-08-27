@@ -1,11 +1,12 @@
 # Virginia's Hub — its own Cloudflare Worker (workers.dev).
-# This Worker is NOT the Commodores field book and must not sit behind
-# that Access gate. Deploy from this folder only:
-#   npx wrangler deploy
+# Deploy from this folder only:  npx wrangler deploy
+# Do not point the personal-dashboard Git deploy at this file.
+# Do not attach Cloudflare Access to this Worker.
 name = "virginias-hub"
 main = "worker.js"
 compatibility_date = "2026-08-27"
 workers_dev = true
+account_id = "05def328b503ecf2c5c1daf1f618d631"
 
 [assets]
 directory = "./public"

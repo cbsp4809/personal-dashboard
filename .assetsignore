@@ -1,0 +1,7 @@
+# Not part of the Commodores/Ops Worker. Hub deploys from virginias-hub/
+# as its own Worker (npx wrangler deploy in that folder).
+virginias-hub/
+
+.git/
+.github/
+node_modules/

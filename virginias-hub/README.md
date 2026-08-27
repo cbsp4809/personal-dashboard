@@ -12,15 +12,16 @@ https://virginias-hub.<your-account>.workers.dev
 
 ## Deploy (Cloudflare Worker only)
 
-From this folder, once (links the Worker named `virginias-hub`):
+From this folder only (creates/updates Worker `virginias-hub`):
 
 ```bash
 npx wrangler deploy
 ```
 
-That publishes `public/` as its own `workers.dev` site. Do not add this
-folder to the GitHub Pages artifact and do not attach the Commodores
-Access application to this Worker.
+That publishes `public/` as its own `workers.dev` site. The repo-root
+`wrangler.toml` is for Worker `personal-dashboard` and ignores this
+folder. Do not add this folder to the GitHub Pages artifact and do not
+attach Cloudflare Access to this Worker.
 
 ## How it signs in
 

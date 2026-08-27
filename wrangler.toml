@@ -1,0 +1,12 @@
+# personal-dashboard Worker (Commodores / Ops / plays / morning page).
+# Cloudflare Git runs `npx wrangler versions upload` from repo root.
+# This file must stay at the root so that command keeps this Worker’s
+# assets entry and does not pick up virginias-hub/wrangler.toml.
+name = "personal-dashboard"
+compatibility_date = "2026-08-27"
+workers_dev = true
+
+[assets]
+directory = "."
+html_handling = "auto-trailing-slash"
+not_found_handling = "none"
