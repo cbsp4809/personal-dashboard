@@ -34,6 +34,7 @@ sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments buc
 sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 virginias-hub/                 # Virginia's Hub planner PWA — own Cloudflare Worker, not GitHub Pages
+wrangler.toml                  # personal-dashboard Worker (ignores virginias-hub/)
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
