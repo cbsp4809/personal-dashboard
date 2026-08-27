@@ -68,26 +68,27 @@ NICKEL = [
     {"id": "FS", "x": 180, "y": 140},
 ]
 
-# --- Traced from clean cards ---
-# 26 Post Corner Right (source). 23 = true horizontal flip.
+# --- Traced from Kevin’s clean card crops (attached play-26 / play-23 / play-38). ---
+# 26 Post Corner Right (source). 23 = true horizontal flip of 26.
 P26 = {
     "num": "26",
     "title": "Post Corner Right",
     "defense": COVER3,
     "spots": [
-        # Q rolls forward-right to open circle (not a sideline scramble)
-        spot("Q", 180, 345, [{"x": 275, "y": 245}]),
-        spot("C", 180, LOS, []),
+        # Q throw to open circle on the right (primary window near Y/Z)
+        spot("Q", 175, 348, [{"x": 290, "y": 242}]),
+        # C short engagement triangle toward left LB (offense C, not defense)
+        spot("C", 180, LOS, [{"x": 155, "y": 278}]),
         # X short out
-        spot("X", 62, 308, [{"x": 28, "y": 262}]),
-        # A dig: up then 90° in
-        spot("A", 112, 305, [{"x": 112, "y": 235}, {"x": 185, "y": 235}]),
-        # B zig: up, left across C, then right to open circle
-        spot("B", 212, 320, [{"x": 212, "y": 278}, {"x": 155, "y": 278}, {"x": 295, "y": 278}]),
+        spot("X", 58, 308, [{"x": 28, "y": 262}]),
+        # A dig/curl: up then in toward middle
+        spot("A", 108, 305, [{"x": 108, "y": 232}, {"x": 178, "y": 232}]),
+        # B zig: up, left across under C, then right to open circle
+        spot("B", 215, 320, [{"x": 215, "y": 278}, {"x": 158, "y": 278}, {"x": 300, "y": 278}]),
         # Y corner
-        spot("Y", 252, 305, [{"x": 252, "y": 235}, {"x": 318, "y": 175}]),
+        spot("Y", 255, 305, [{"x": 255, "y": 232}, {"x": 325, "y": 168}]),
         # Z post: diagonal deep left, crosses Y
-        spot("Z", 318, 308, [{"x": 195, "y": 165}]),
+        spot("Z", 318, 308, [{"x": 198, "y": 158}]),
     ],
 }
 P23 = {
@@ -95,22 +96,26 @@ P23 = {
     "title": "Post Corner Right flipped",
     "defense": [{**d, "x": flipx(d["x"])} for d in COVER3],
     "spots": [flips(s) for s in P26["spots"]],
-    # C engagement triangle on the card (short nudge toward LB) — keep C still for animation
 }
 P38 = {
     "num": "38",
     "title": "Overload first down",
     "defense": NICKEL,
     "spots": [
-        # Card shows red Q circle (no path). Animator uses named circle, not star.
+        # Card may show a red Q; animator keeps a named circle so kids see Mike.
         spot("Q", 180, 348, []),
-        spot("C", 172, LOS, [{"x": 172, "y": 278}, {"x": 210, "y": 278}]),
-        spot("A", 122, LOS, [{"x": 122, "y": 255}, {"x": 135, "y": 240}, {"x": 55, "y": 165}]),
-        # X is the red path on the card: up then break up-right
-        spot("X", 205, LOS, [{"x": 205, "y": 215}, {"x": 265, "y": 165}]),
-        spot("B", 240, LOS, [{"x": 240, "y": 255}, {"x": 275, "y": 235}, {"x": 250, "y": 225}]),
-        spot("Y", 278, LOS, [{"x": 278, "y": 275}, {"x": 310, "y": 255}, {"x": 340, "y": 255}]),
-        spot("Z", 315, LOS, [{"x": 250, "y": 245}, {"x": 255, "y": 200}, {"x": 325, "y": 145}]),
+        # C short block right
+        spot("C", 162, LOS, [{"x": 162, "y": 275}, {"x": 205, "y": 275}]),
+        # A: up, slight right, break left-up (not a deep sideline post)
+        spot("A", 118, LOS, [{"x": 118, "y": 248}, {"x": 148, "y": 218}, {"x": 105, "y": 175}]),
+        # X is the red path on Kevin’s card: vertical then break right
+        spot("X", 198, LOS, [{"x": 198, "y": 185}, {"x": 275, "y": 162}]),
+        # B short hook / open-circle stop
+        spot("B", 232, LOS, [{"x": 232, "y": 258}, {"x": 268, "y": 242}, {"x": 252, "y": 232}]),
+        # Y slant then flat right open circle
+        spot("Y", 268, LOS, [{"x": 295, "y": 268}, {"x": 338, "y": 252}]),
+        # Z: stem left then deep right
+        spot("Z", 305, LOS, [{"x": 248, "y": 248}, {"x": 255, "y": 195}, {"x": 328, "y": 138}]),
     ],
 }
 P68 = {
