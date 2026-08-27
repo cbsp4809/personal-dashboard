@@ -182,7 +182,10 @@ from `commodores_roster` after sign-in. First names only.
 
 Primary pages: **Today**, **Playbook**, **Lineup**, **Practice**. Season board
 is a reference link (schedule, milestones, goals). Playbook has Offense /
-Defense sub-tabs.
+Defense sub-tabs. Lineup is two units (A = Q1/Q3, B = Q2/Q4), each with 7
+offense and 7 defense, plus a live play-time rule check (2+2 or one-way).
+Assignments persist on `commodores_plans` row `staff-lineup` (`skillsByCoach`
+plus `units`; older `offense` / `defense` arrays still mirror Unit A).
 
 On Chris’s iPhone:
 
