@@ -136,7 +136,7 @@ const LETTER_ID="letter-lineup";
 const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
 const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
-const LOS=318;
+const LOS=300;
 const FW=360,FH=500;
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -172,16 +172,17 @@ function flipDef(d){return {...d,x:flipX(d.x)}}
 function spot(letter,x,y,route,extra){return {letter,x,y,route:route||[],...(extra||{})}}
 
 const COVER3=[
-  {id:"C",x:38,y:276},{id:"C",x:322,y:276},
-  {id:"LB",x:138,y:292},{id:"LB",x:222,y:292},
-  {id:"SS",x:78,y:148},{id:"S",x:180,y:128},{id:"FS",x:282,y:148}
+  {id:"C",x:42,y:255},{id:"C",x:318,y:255},
+  {id:"LB",x:135,y:275},{id:"LB",x:225,y:275},
+  {id:"SS",x:85,y:145},{id:"S",x:180,y:125},{id:"FS",x:275,y:145}
 ];
 const NICKEL=[
-  {id:"C",x:36,y:268},{id:"C",x:336,y:268},
-  {id:"LB",x:110,y:288},{id:"LB",x:180,y:288},{id:"LB",x:250,y:288},
-  {id:"SS",x:80,y:198},{id:"FS",x:180,y:148}
+  {id:"C",x:40,y:248},{id:"C",x:320,y:248},
+  {id:"LB",x:115,y:268},{id:"LB",x:180,y:268},{id:"LB",x:245,y:268},
+  {id:"SS",x:85,y:175},{id:"FS",x:180,y:140}
 ];
 
+// Traced from Kevin’s clean no-star cards. 23 = true flip of 26.
 function play26(){
   return {
     id:"26",
@@ -195,13 +196,13 @@ function play26(){
     ],
     defense:COVER3,
     spots:[
-      spot("Q",180,356,[{x:292,y:268}]),
+      spot("Q",180,345,[{x:275,y:245}]),
       spot("C",180,LOS,[]),
-      spot("X",68,326,[{x:22,y:272}]),
-      spot("A",112,324,[{x:112,y:258},{x:186,y:258}]),
-      spot("B",214,338,[{x:214,y:300},{x:150,y:300},{x:308,y:300}]),
-      spot("Y",250,324,[{x:250,y:258},{x:328,y:186}]),
-      spot("Z",320,326,[{x:196,y:206}])
+      spot("X",62,308,[{x:28,y:262}]),
+      spot("A",112,305,[{x:112,y:235},{x:185,y:235}]),
+      spot("B",212,320,[{x:212,y:278},{x:155,y:278},{x:295,y:278}]),
+      spot("Y",252,305,[{x:252,y:235},{x:318,y:175}]),
+      spot("Z",318,308,[{x:195,y:165}])
     ]
   };
 }
@@ -235,13 +236,14 @@ function play38(){
     ],
     defense:NICKEL,
     spots:[
-      spot("Q",180,356,[],{star:true}),
-      spot("C",180,LOS,[{x:180,y:298},{x:228,y:298}]),
-      spot("A",118,LOS,[{x:118,y:278},{x:128,y:268},{x:48,y:178}]),
-      spot("X",214,LOS,[{x:214,y:258},{x:286,y:198}]),
-      spot("B",250,LOS,[{x:250,y:278},{x:292,y:258},{x:258,y:248}]),
-      spot("Y",286,LOS,[{x:286,y:298},{x:318,y:278},{x:348,y:278}]),
-      spot("Z",328,LOS,[{x:248,y:268},{x:258,y:218},{x:330,y:158}])
+      // Card may show a red Q; animator keeps a named circle so kids see Mike.
+      spot("Q",180,348,[]),
+      spot("C",172,LOS,[{x:172,y:278},{x:210,y:278}]),
+      spot("A",122,LOS,[{x:122,y:255},{x:135,y:240},{x:55,y:165}]),
+      spot("X",205,LOS,[{x:205,y:215},{x:265,y:165}]),
+      spot("B",240,LOS,[{x:240,y:255},{x:275,y:235},{x:250,y:225}]),
+      spot("Y",278,LOS,[{x:278,y:275},{x:310,y:255},{x:340,y:255}]),
+      spot("Z",315,LOS,[{x:250,y:245},{x:255,y:200},{x:325,y:145}])
     ]
   };
 }
@@ -258,13 +260,13 @@ function play68(){
     ],
     defense:NICKEL,
     spots:[
-      spot("Q",180,356,[{x:180,y:396},{x:158,y:404}]),
-      spot("C",180,LOS,[{x:180,y:306},{x:70,y:306}]),
-      spot("A",88,LOS,[{x:88,y:258},{x:36,y:178}]),
-      spot("X",292,LOS,[{x:292,y:278},{x:200,y:278}]),
-      spot("B",252,330,[{x:252,y:288},{x:90,y:278}]),
-      spot("Y",218,LOS,[{x:90,y:158}]),
-      spot("Z",330,LOS,[{x:330,y:158}])
+      spot("Q",180,345,[{x:165,y:395}]),
+      spot("C",175,LOS,[{x:175,y:285},{x:70,y:285}]),
+      spot("A",95,LOS,[{x:95,y:230},{x:95,y:190},{x:45,y:145}]),
+      spot("X",285,LOS,[{x:285,y:255},{x:285,y:235},{x:255,y:215}]),
+      spot("B",255,315,[{x:255,y:265},{x:120,y:250}]),
+      spot("Y",225,LOS,[{x:95,y:130}]),
+      spot("Z",320,LOS,[{x:320,y:130}])
     ]
   };
 }
@@ -281,13 +283,13 @@ function play2(){
     ],
     defense:COVER3,
     spots:[
-      spot("Q",180,356,[{x:236,y:456}]),
+      spot("Q",180,345,[{x:265,y:255}]),
       spot("C",180,LOS,[]),
-      spot("X",46,326,[{x:46,y:306},{x:36,y:312},{x:52,y:300},{x:46,y:298},{x:160,y:298}]),
-      spot("A",110,LOS,[{x:110,y:218},{x:180,y:218}]),
-      spot("B",216,LOS,[{x:216,y:238},{x:316,y:238}]),
-      spot("Y",258,LOS,[{x:258,y:158},{x:198,y:108}]),
-      spot("Z",322,LOS,[{x:322,y:118}])
+      spot("X",48,308,[{x:48,y:290},{x:38,y:295},{x:55,y:285},{x:48,y:280},{x:140,y:280}]),
+      spot("A",110,LOS,[{x:110,y:220},{x:175,y:220}]),
+      spot("B",215,LOS,[{x:215,y:245},{x:300,y:245}]),
+      spot("Y",260,LOS,[{x:260,y:200},{x:200,y:145}]),
+      spot("Z",320,LOS,[{x:320,y:120}])
     ]
   };
 }
@@ -304,13 +306,13 @@ function play19(){
     ],
     defense:COVER3.map(flipDef),
     spots:[
-      spot("Q",180,356,[{x:124,y:456}]),
-      spot("C",180,LOS,[{x:180,y:218},{x:80,y:218}]),
-      spot("Z",38,LOS,[{x:38,y:118}]),
-      spot("Y",102,LOS,[{x:102,y:238},{x:180,y:158}]),
-      spot("B",146,338,[{x:146,y:278},{x:46,y:278}]),
-      spot("A",250,LOS,[{x:250,y:158},{x:242,y:152}]),
-      spot("X",314,326,[{x:314,y:306},{x:324,y:312},{x:308,y:300},{x:314,y:298},{x:200,y:298}])
+      spot("Q",180,345,[{x:95,y:255}]),
+      spot("C",180,LOS,[{x:180,y:230},{x:180,y:210},{x:130,y:210}]),
+      spot("Z",40,LOS,[{x:40,y:120}]),
+      spot("Y",100,LOS,[{x:100,y:220},{x:165,y:150}]),
+      spot("B",145,320,[{x:145,y:260},{x:55,y:260}]),
+      spot("A",250,LOS,[{x:250,y:160}]),
+      spot("X",312,308,[{x:312,y:290},{x:322,y:295},{x:305,y:285},{x:312,y:280},{x:220,y:280}])
     ]
   };
 }
@@ -328,13 +330,13 @@ function play6(){
     defense:NICKEL,
     endzone:true,
     spots:[
-      spot("Q",180,356,[{x:320,y:220}]),
-      spot("C",180,LOS,[{x:180,y:308},{x:172,y:300},{x:180,y:290},{x:280,y:290}]),
-      spot("X",70,LOS,[{x:130,y:238},{x:190,y:278}]),
-      spot("A",120,LOS,[{x:50,y:238}]),
-      spot("B",220,LOS,[{x:220,y:118},{x:160,y:118}]),
-      spot("Y",258,LOS,[{x:278,y:288},{x:268,y:268},{x:288,y:238},{x:330,y:138}]),
-      spot("Z",310,LOS,[{x:348,y:318}])
+      spot("Q",180,345,[{x:320,y:210}]),
+      spot("C",175,LOS,[{x:175,y:285},{x:175,y:270},{x:230,y:270}]),
+      spot("X",75,LOS,[{x:120,y:230},{x:145,y:255}]),
+      spot("A",120,LOS,[{x:45,y:230}]),
+      spot("B",220,LOS,[{x:220,y:180},{x:220,y:155},{x:165,y:155}]),
+      spot("Y",255,LOS,[{x:255,y:270},{x:270,y:240},{x:310,y:160}]),
+      spot("Z",300,LOS,[{x:345,y:300}])
     ]
   };
 }
@@ -542,7 +544,7 @@ function renderBook(){
   $("#bookHost").innerHTML=BOOK_ORDER.map(id=>{
     const play=BUILD[id]();
     return `<article>
-      <div class="card-host"><img src="play-cards/${esc(id)}.svg" alt="${esc(play.num+" "+play.title)}"></div>
+      <div class="card-host"><img src="play-cards/${esc(id)}.png" alt="${esc(play.num+" "+play.title)}"></div>
       <div class="copy">
         <h3>${esc(play.num)} · ${esc(play.title)}</h3>
         <button class="ghost" type="button" data-open-play="${esc(id)}" style="min-height:44px;border:1px solid var(--strong);border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;padding:0 14px">Play this card</button>

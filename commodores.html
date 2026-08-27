@@ -1624,7 +1624,7 @@ function renderOffenseBook(){
     {id:"6",name:"6 Goal Line 2",how:["Kevin’s 6 card. Inside the 15 only."]}
   ];
   book.innerHTML=cards.map(card=>`<article class="play-card" data-offense="${esc(card.id)}" style="margin-bottom:14px">
-      <img class="kevin-card" src="play-cards/${esc(card.id)}.svg" alt="${esc(card.name)}">
+      <img class="kevin-card" src="play-cards/${esc(card.id)}.png" alt="${esc(card.name)}">
       <div class="play-copy">
         <div class="play-head"><h3>${esc(card.name)}</h3><span class="badge taught">Kevin</span></div>
         <ul class="plain-list">${card.how.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>
