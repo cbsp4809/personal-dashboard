@@ -193,6 +193,26 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .name-chip .chip-out{color:#e07a6a;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
 .status-line{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12px}
 .staff-note{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
+.league-block{min-width:0;max-width:100%}
+.league-block .section-head{flex-direction:column;align-items:flex-start;gap:4px}
+.league-block .section-head p{text-align:left}
+.game-list,.standings{display:grid;gap:8px}
+.game-row,.stand-row{min-width:0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
+.game-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:start}
+.game-row.is-next{border-color:rgba(207,174,112,.48);background:var(--gold-soft)}
+.game-when,.game-field,.game-address{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.game-row h3{margin:2px 0 3px;font:500 16px/1.2 var(--serif);overflow-wrap:anywhere}
+.game-address{margin-top:2px}
+.game-score{margin-top:4px;color:var(--soft);font-size:12.5px;font-weight:700}
+#nextGameCopy{overflow-wrap:anywhere}
+.stand-row{display:grid;grid-template-columns:minmax(0,1fr) 4.6em;gap:8px;align-items:center}
+.stand-row.is-us{border-color:rgba(207,174,112,.48);background:var(--gold-soft)}
+.stand-row b{min-width:0;overflow-wrap:anywhere}
+.stand-coach{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:600}
+.stand-rec{color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.stand-rec span{display:block;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.league-source{margin:0;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.league-source a{color:var(--gold)}
 .go-tab{border:0;padding:0;background:none;color:var(--gold);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .plain-list{margin:8px 0 0;padding-left:18px;color:var(--soft)}
 .plain-list li+li{margin-top:6px}
@@ -438,7 +458,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="quick-grid">
         <div class="quick"><b>Offense</b><span>Smash + Overload only. Full looks in <button class="go-tab" data-go="offense" type="button">Playbook</button>.</span></div>
         <div class="quick"><b>Defense</b><span>Six areas + one helper. No rush. Full look in <button class="go-tab" data-go="defense" type="button">Playbook</button>.</span></div>
-        <div class="quick"><b>Season</b><span>Schedule, milestones, and goals on the <button class="go-tab" data-go="season" type="button">Season board</button>.</span></div>
+        <div class="quick"><b>Season</b><span>SBMSA slate + standings below. Milestones on the <button class="go-tab" data-go="season" type="button">Season board</button>.</span></div>
       </div>
 
       <div class="place-grid">
@@ -447,12 +467,14 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <h3>Thu Aug 27 · 5:00 p.m.</h3>
           <p>Frostwood. Live 23/26, then 38. <a class="go-tab" href="plays.html">Open the play animator</a> — letters only, no roster.</p>
         </div>
-        <div class="panel">
-          <div class="eyebrow">Upcoming games</div>
-          <h3>Placeholder</h3>
-          <p>Official book is GameChanger. Games are not set here yet.</p>
+        <div class="panel" id="nextGamePanel">
+          <div class="eyebrow" id="nextGameEyebrow">Upcoming games</div>
+          <h3 id="nextGameTitle">Commodores slate</h3>
+          <p id="nextGameCopy">Official SBMSA book loads with the shared staff row.</p>
         </div>
       </div>
+
+      <div class="league-block" id="todayLeague"></div>
 
       <div class="section-head"><div><div class="eyebrow">First names only</div><h2>Roster</h2></div><p>Shared with staff · tap a name for ranks</p></div>
       <div class="scoring-as">
@@ -802,13 +824,14 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <section class="page" id="page-season">
       <div class="section-head"><div><div class="eyebrow">Reference</div><h2>Season board</h2></div><p>Schedule · milestones · goals</p></div>
       <div class="season-note">
-        <b>Schedule</b>
+        <b>Week rhythm</b>
         <ul class="plain-list">
           <li>Practice: Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6.</li>
-          <li>Official book: GameChanger. Games are not set on this page.</li>
+          <li>Official game book: SBMSA JV 7on7 Maxwell. Record, next game, and the Commodores slate also sit on Today.</li>
           <li>Date list and shells live on Practice. This board stays the ladder.</li>
         </ul>
       </div>
+      <div class="league-block" id="seasonLeague"></div>
       <div class="section-head"><div><div class="eyebrow">Season plan</div><h2>Milestones</h2></div><p>The dash protects the ladder.</p></div>
       <div class="milestones">
         <article class="milestone"><div class="mile-date">Now–Aug 30</div><div class="mile-copy"><h3>Two plays + areas and helper</h3><p>Smash and Overload only. Kids run both without coach narration. Six kids each cover an area; one kid roams and helps. No rush.</p><div class="ladder"><span class="badge taught">Smash</span><span class="badge taught">Overload</span><span class="badge live">6 areas + helper</span></div></div></article>
@@ -841,6 +864,11 @@ const STORE_PREFIX="commodores_v1_";
 // coaches) and cached locally. It is intentionally NOT baked into this file.
 let ROSTER=[];
 const LINEUP_ID="staff-lineup";
+const LEAGUE_ID="sbmsa-jv-maxwell";
+const LEAGUE_TZ="America/Chicago";
+function reservedPlanId(id){
+  return id===LINEUP_ID||id===LEAGUE_ID;
+}
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
 const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
 const RATE_SHORT={speed:"Speed",catching:"Catch",passing:"Pass",agility:"Agility",listening:"Listen",routes:"Routes",coverage:"Cover",overall:"Overall"};
@@ -1318,7 +1346,7 @@ async function loadCloudPlans(){
   }
   let changed=false;
   (data||[]).forEach(row=>{
-    if(!row||!row.id||row.id===LINEUP_ID) return;
+    if(!row||!row.id||reservedPlanId(row.id)) return;
     const cloud=cloudPlanFromRow(row);
     if(!validPlan(cloud)) return;
     const index=plans.findIndex(plan=>plan.id===row.id);
@@ -1336,6 +1364,262 @@ async function loadCloudPlans(){
     renderDrillPicker();
     if($("#importStatus")) $("#importStatus").textContent="Loaded newer shared practice plans.";
   }
+}
+function seedLeague(){
+  // Official SBMSA JV 7on7 Maxwell book, revision Tue Aug 25, 2026 5:17 PM.
+  // Commodores games only. Do not invent scores — all 0-0-0 / 0 GP as of 2026-08-27.
+  return {
+    id:LEAGUE_ID,
+    kind:"league-schedule",
+    league:"SBMSA Fall 2026 JV 7on7 Maxwell",
+    source:"https://sbmsa.net/schedule/740099/jv-7-on-7-maxwell",
+    revisedAt:"2026-08-25T17:17:00-05:00",
+    timezone:LEAGUE_TZ,
+    team:"Commodores",
+    coach:"Selber",
+    updatedAt:"2026-08-27T14:45:00-05:00",
+    venues:{
+      MMS:{name:"Memorial Middle School",address:"12550 Vindon Dr, Houston, TX 77024"},
+      SFMS:{name:"Spring Forest Middle School",address:"14240 Memorial Dr, Houston, TX 77079"}
+    },
+    standings:[
+      {team:"Sooners",coach:"Laxalt",w:0,l:0,t:0,gp:0},
+      {team:"Rebels",coach:"Matlack",w:0,l:0,t:0,gp:0},
+      {team:"MS ST Bulldogs",coach:"Johnson",w:0,l:0,t:0,gp:0},
+      {team:"LSU Tigers",coach:"Meche",w:0,l:0,t:0,gp:0},
+      {team:"Longhorns",coach:"Armbruster",w:0,l:0,t:0,gp:0},
+      {team:"Irish",coach:"Robisheaux",w:0,l:0,t:0,gp:0},
+      {team:"Georgia Bulldogs",coach:"Elliott",w:0,l:0,t:0,gp:0},
+      {team:"Crimson Tide",coach:"Hicks",w:0,l:0,t:0,gp:0},
+      {team:"Commodores",coach:"Selber",w:0,l:0,t:0,gp:0}
+    ],
+    games:[
+      {id:"2026-09-01-georgia",week:1,date:"2026-09-01",time:"18:00",home:"Commodores",away:"Georgia Bulldogs",location:"MMS North West",result:null},
+      {id:"2026-09-08-msst",week:2,date:"2026-09-08",time:"18:00",home:"MS ST Bulldogs",away:"Commodores",location:"MMS North West",result:null},
+      {id:"2026-09-15-irish",week:3,date:"2026-09-15",time:"19:30",home:"Commodores",away:"Irish",location:"MMS North West",result:null},
+      {id:"2026-09-22-longhorns",week:4,date:"2026-09-22",time:"19:30",home:"Commodores",away:"Longhorns",location:"MMS North West",result:null},
+      {id:"2026-10-03-tide",week:5,date:"2026-10-03",time:"10:30",home:"Crimson Tide",away:"Commodores",location:"SFMS South",result:null},
+      {id:"2026-10-05-sooners",week:6,date:"2026-10-05",time:"18:00",home:"Sooners",away:"Commodores",location:"MMS South East",result:null},
+      {id:"2026-10-17-rebels",week:7,date:"2026-10-17",time:"09:00",home:"Rebels",away:"Commodores",location:"SFMS North",result:null},
+      {id:"2026-10-27-lsu",week:9,date:"2026-10-27",time:"19:30",home:"Commodores",away:"LSU Tigers",location:"MMS North East",result:null}
+    ]
+  };
+}
+function cleanRecord(n){
+  return Number.isFinite(Number(n))&&Number(n)>=0?Number(n):0;
+}
+function cleanResult(result){
+  if(!result||typeof result!=="object") return null;
+  const home=Number(result.home);
+  const away=Number(result.away);
+  if(!Number.isFinite(home)||!Number.isFinite(away)) return null;
+  return {home,away};
+}
+function normalizeLeague(raw){
+  if(!raw||typeof raw!=="object") return null;
+  const standings=Array.isArray(raw.standings)?raw.standings.map(row=>{
+    if(!row||!row.team) return null;
+    return {
+      team:String(row.team),
+      coach:row.coach?String(row.coach):"",
+      w:cleanRecord(row.w),
+      l:cleanRecord(row.l),
+      t:cleanRecord(row.t),
+      gp:cleanRecord(row.gp)
+    };
+  }).filter(Boolean):[];
+  const games=Array.isArray(raw.games)?raw.games.map(game=>{
+    if(!game||!game.date||!game.home||!game.away) return null;
+    return {
+      id:String(game.id||game.date+"-"+game.home+"-"+game.away),
+      week:cleanRecord(game.week),
+      date:String(game.date),
+      time:String(game.time||"00:00"),
+      home:String(game.home),
+      away:String(game.away),
+      location:String(game.location||""),
+      result:cleanResult(game.result)
+    };
+  }).filter(Boolean):[];
+  if(!standings.length||!games.length) return null;
+  const seedVenues=seedLeague().venues;
+  const venuesRaw=raw.venues&&typeof raw.venues==="object"?raw.venues:{};
+  const venues={
+    MMS:{
+      name:String((venuesRaw.MMS&&venuesRaw.MMS.name)||seedVenues.MMS.name),
+      address:String((venuesRaw.MMS&&venuesRaw.MMS.address)||seedVenues.MMS.address)
+    },
+    SFMS:{
+      name:String((venuesRaw.SFMS&&venuesRaw.SFMS.name)||seedVenues.SFMS.name),
+      address:String((venuesRaw.SFMS&&venuesRaw.SFMS.address)||seedVenues.SFMS.address)
+    }
+  };
+  return {
+    id:LEAGUE_ID,
+    kind:"league-schedule",
+    league:String(raw.league||"SBMSA Fall 2026 JV 7on7 Maxwell"),
+    source:String(raw.source||"https://sbmsa.net/schedule/740099/jv-7-on-7-maxwell"),
+    revisedAt:String(raw.revisedAt||raw.revised_at||""),
+    timezone:String(raw.timezone||LEAGUE_TZ),
+    team:String(raw.team||"Commodores"),
+    coach:String(raw.coach||"Selber"),
+    updatedAt:String(raw.updatedAt||raw.updated_at||raw.revisedAt||""),
+    venues,
+    standings,
+    games
+  };
+}
+function venueForLocation(location,book){
+  const loc=String(location||"");
+  const venues=(book&&book.venues)||seedLeague().venues;
+  if(loc.startsWith("MMS")) return venues.MMS;
+  if(loc.startsWith("SFMS")) return venues.SFMS;
+  return null;
+}
+function formatVenueLine(location,book){
+  const venue=venueForLocation(location,book);
+  if(!venue) return "";
+  return `${venue.name}, ${venue.address}`;
+}
+function leagueRank(book){
+  return [Date.parse(book&&book.revisedAt||0)||0, Date.parse(book&&book.updatedAt||0)||0];
+}
+function pickLeague(...books){
+  return books.map(normalizeLeague).filter(Boolean).reduce((best,book)=>{
+    if(!best) return book;
+    const a=leagueRank(best), b=leagueRank(book);
+    return (b[0]>a[0]||(b[0]===a[0]&&b[1]>=a[1]))?book:best;
+  },null)||seedLeague();
+}
+function chicagoStamp(date,time){
+  const day=(date||"").split("-").map(Number);
+  const clock=(time||"00:00").split(":").map(Number);
+  if(day.length<3||clock.length<2) return new Date(NaN);
+  const y=day[0],m=day[1],d=day[2],hh=clock[0],mm=clock[1];
+  let ms=Date.UTC(y,m-1,d,hh,mm,0);
+  for(let i=0;i<2;i++){
+    const seen=new Intl.DateTimeFormat("en-US",{
+      timeZone:LEAGUE_TZ,year:"numeric",month:"2-digit",day:"2-digit",
+      hour:"2-digit",minute:"2-digit",hourCycle:"h23"
+    }).formatToParts(new Date(ms));
+    const num=type=>Number((seen.find(part=>part.type===type)||{}).value);
+    ms+=Date.UTC(y,m-1,d,hh,mm)-Date.UTC(num("year"),num("month")-1,num("day"),num("hour"),num("minute"));
+  }
+  return new Date(ms);
+}
+function formatRecord(row){
+  return `${cleanRecord(row&&row.w)}-${cleanRecord(row&&row.l)}-${cleanRecord(row&&row.t)}`;
+}
+function ourStanding(book){
+  return (book.standings||[]).find(row=>row.team===book.team)||{team:book.team,w:0,l:0,t:0,gp:0,coach:book.coach};
+}
+function isHomeGame(game,book){
+  return game.home===book.team;
+}
+function gameOpponent(game,book){
+  return isHomeGame(game,book)?game.away:game.home;
+}
+function gameFinal(game){
+  return !!(game&&game.result);
+}
+function nextLeagueGame(book){
+  const now=Date.now();
+  const upcoming=(book.games||[]).filter(game=>!gameFinal(game));
+  return upcoming.find(game=>chicagoStamp(game.date,game.time).getTime()>=now-3*60*60*1000)||upcoming[0]||null;
+}
+function formatKickoff(game){
+  const stamp=chicagoStamp(game.date,game.time);
+  const time=Number.isNaN(stamp.getTime())?(game.time||""):stamp.toLocaleTimeString("en-US",{
+    timeZone:LEAGUE_TZ,hour:"numeric",minute:"2-digit"
+  });
+  return `${labelDate(game.date)} · ${time}`;
+}
+function formatRevised(iso){
+  const stamp=Date.parse(iso);
+  if(!stamp) return "";
+  return new Date(stamp).toLocaleString("en-US",{
+    timeZone:LEAGUE_TZ,weekday:"short",month:"short",day:"numeric",year:"numeric",
+    hour:"numeric",minute:"2-digit"
+  });
+}
+function ourScoreline(game,book){
+  if(!gameFinal(game)) return "";
+  const us=isHomeGame(game,book)?game.result.home:game.result.away;
+  const them=isHomeGame(game,book)?game.result.away:game.result.home;
+  const mark=us>them?"W":us<them?"L":"T";
+  return `${mark} ${us}–${them}`;
+}
+function leagueHTML(book){
+  const next=nextLeagueGame(book);
+  const games=(book.games||[]).map(game=>{
+    const home=isHomeGame(game,book);
+    const score=ourScoreline(game,book);
+    const venueLine=formatVenueLine(game.location,book);
+    return `<article class="game-row${next&&game.id===next.id?" is-next":""}">
+      <div>
+        <div class="game-when">${esc(formatKickoff(game))}</div>
+        <h3>${home?"vs":"at"} ${esc(gameOpponent(game,book))}</h3>
+        <div class="game-field">${esc(game.location)}</div>
+        ${venueLine?`<div class="game-address">${esc(venueLine)}</div>`:""}
+        ${score?`<div class="game-score">${esc(score)}</div>`:""}
+      </div>
+      <span class="badge ${home?"live":""}">${home?"Home":"Away"}</span>
+    </article>`;
+  }).join("");
+  const standings=(book.standings||[]).map(row=>`<div class="stand-row${row.team===book.team?" is-us":""}">
+    <div><b>${esc(row.team)}</b><span class="stand-coach">${esc(row.coach||"")}</span></div>
+    <div class="stand-rec">${esc(formatRecord(row))}<span>GP ${esc(row.gp)}</span></div>
+  </div>`).join("");
+  const revised=formatRevised(book.revisedAt);
+  return `<div class="section-head"><div><div class="eyebrow">${esc(book.league)}</div><h2>Commodores slate</h2></div>
+    <p class="league-source"><a href="${esc(book.source)}" target="_blank" rel="noopener">Official SBMSA book</a>${revised?" · revised "+esc(revised):""}</p></div>
+    <div class="game-list">${games}</div>
+    <div class="section-head"><div><div class="eyebrow">Division</div><h2>Standings</h2></div><p>9 teams · W-L-T</p></div>
+    <div class="standings">${standings}</div>`;
+}
+function renderNextGame(book){
+  const us=ourStanding(book);
+  const next=nextLeagueGame(book);
+  const eyebrow=$("#nextGameEyebrow");
+  const title=$("#nextGameTitle");
+  const copy=$("#nextGameCopy");
+  if(!eyebrow||!title||!copy) return;
+  eyebrow.textContent=`Commodores · ${formatRecord(us)}`;
+  if(!next){
+    title.textContent="No remaining games";
+    copy.textContent=`${us.gp||0} played · league coach ${book.coach}.`;
+    return;
+  }
+  const home=isHomeGame(next,book);
+  const venueLine=formatVenueLine(next.location,book);
+  title.textContent=formatKickoff(next);
+  copy.textContent=`${home?"HOME vs":"AWAY at"} ${gameOpponent(next,book)} — ${next.location}${venueLine?" · "+venueLine:""}`;
+}
+function renderLeagueSchedule(){
+  const html=leagueHTML(league);
+  ["#todayLeague","#seasonLeague"].forEach(sel=>{
+    const root=$(sel);
+    if(root) root.innerHTML=html;
+  });
+  renderNextGame(league);
+}
+let league=pickLeague(getStore("league_schedule",null),seedLeague());
+setStore("league_schedule",league);
+async function loadLeagueSchedule(){
+  league=pickLeague(seedLeague(),getStore("league_schedule",null));
+  setStore("league_schedule",league);
+  renderLeagueSchedule();
+  if(!sb) return;
+  const {data,error}=await sb.from("commodores_plans").select("id,payload,updated_at").eq("id",LEAGUE_ID).maybeSingle();
+  if(error||!data) return;
+  const cloud=normalizeLeague({
+    ...(data.payload&&typeof data.payload==="object"?data.payload:{}),
+    updatedAt:data.updated_at
+  });
+  if(!cloud) return;
+  league=pickLeague(league,cloud);
+  setStore("league_schedule",league);
+  renderLeagueSchedule();
 }
 async function loadRoster(){
   if(!sb) return;
@@ -1362,6 +1646,7 @@ async function openApp(){
   await loadRoster();
   renderSeason();
   renderDrillPicker();
+  renderLeagueSchedule();
   renderTeam();
   renderDefenseBook();
   renderOffenseBook();
@@ -1378,6 +1663,7 @@ async function openApp(){
   });
   await loadComments();
   await loadCloudPlans();
+  await loadLeagueSchedule();
   await loadStaffLineup();
   openFromHash();
 }

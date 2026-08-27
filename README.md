@@ -33,6 +33,7 @@ sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
 sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments bucket
 sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
+sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
@@ -188,6 +189,19 @@ Assignments persist on `commodores_plans` row `staff-lineup` (`skillsByCoach`
 plus `units` and `attendance`; older `offense` / `defense` arrays still mirror
 Unit A). Mark Present / Out for the session first; the rule check uses only the
 kids who showed and short-roster both-way math (11→3, 10→4, … 7→all).
+
+Official games are the SBMSA Fall 2026 JV 7on7 Maxwell book
+(https://sbmsa.net/schedule/740099/jv-7-on-7-maxwell, revised Tue Aug 25, 2026
+5:17 PM). Today shows the Commodores record, next game, full slate, and a
+compact division table; Season board repeats the slate. Data lives on
+`commodores_plans` row `sbmsa-jv-maxwell`. Apply
+`sql/commodores_league_schedule.sql` on the Commodores project to seed or
+revise. Later scores edit that JSON (`standings` w/l/t/gp and `games[].result`)
+and bump `updated_at` — no page deploy. The HTML keeps a matching fallback seed
+if the row is missing. League coach on the book is Selber. Field labels keep the
+SBMSA names (MMS North West, SFMS South, …); addresses come from `venues`:
+MMS → Memorial Middle School, 12550 Vindon Dr, Houston, TX 77024; SFMS → Spring
+Forest Middle School, 14240 Memorial Dr, Houston, TX 77079 (not St. Francis).
 
 On Chris’s iPhone:
 
