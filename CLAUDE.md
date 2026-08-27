@@ -78,6 +78,7 @@ The codebase encodes deliberate coaching constraints. **These are decisions, not
 - QB order is locked in coaching: QB1, QB2, QB3. UI labels stay generic. Do not hardcode kid names or restore Mike/Teddy/Webb as assigned QBs.
 - "Chris's 16" is a parked binder list. Not this week's plays.
 - Two defense groups, set before the quarter, no mid-quarter swapping.
+- Official games: SBMSA Fall 2026 JV 7on7 Maxwell only. Do not invent games or scores. Shared book is `commodores_plans` row `sbmsa-jv-maxwell`.
 
 ## Conventions
 
