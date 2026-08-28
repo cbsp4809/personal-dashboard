@@ -42,6 +42,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .auth input{min-height:44px;min-width:0;flex:1 1 140px;padding:8px 10px;border:1px solid var(--strong);border-radius:10px;background:#111}
 .auth button{min-height:44px;padding:8px 12px;border:0;border-radius:10px;background:var(--gold);color:#1C1C1C;font-weight:800}
 .auth .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.auth .forgot{flex:1 1 100%;min-height:44px;border:0;background:none;color:var(--gold);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
 .modes button{min-height:52px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--muted);font-weight:800}
 .modes button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
@@ -133,6 +134,7 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
       <input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Coach email">
       <input id="password" type="password" autocomplete="current-password" placeholder="Password">
       <button type="submit">Sign in</button>
+      <button class="forgot" type="button" id="forgotBtn">Forgot password?</button>
     </form>
   </div>
 
@@ -212,7 +214,17 @@ const IS_EMBED=new URLSearchParams(location.search).get("embed")==="1";
 const OFFENSE_SPOT_ORDER=["Q","C","X","A","B","Y","Z"];
 const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
-const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
+const RECOVERY_URL="https://personal-dashboard.chrisbailey.workers.dev/reset.html";
+function isAuthCallbackUrl(){
+  const query=new URLSearchParams(location.search);
+  if(query.get("error")||query.get("error_code")||query.get("code")||query.get("token_hash")||query.get("type")==="recovery") return true;
+  const raw=(location.hash||"").replace(/^#/,"");
+  const hash=new URLSearchParams(raw.includes("=")?raw:"");
+  return !!(hash.get("error")||hash.get("error_code")||hash.get("type")==="recovery"||hash.get("access_token")||hash.get("refresh_token"));
+}
+const skipAuthClient=!IS_EMBED&&isAuthCallbackUrl();
+if(skipAuthClient) location.replace("reset.html"+location.search+location.hash);
+const sb=(!skipAuthClient&&window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
@@ -929,6 +941,35 @@ async function deleteDraft(){
   if(wasPublished&&STATE.shareToken) await publishSnapshot(false);
 }
 
+function bindForgot(){
+  const button=$("#forgotBtn");
+  if(button) button.onclick=renderForgot;
+}
+function renderForgot(){
+  $("#coachTools").classList.add("hidden");
+  $("#authBar").innerHTML=`<form id="forgotForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%"><span>Enter your coach email. We’ll send a reset link for this play editor and the field book.</span><input id="forgotEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Coach email"><button type="submit">Send reset link</button><button class="forgot" type="button" id="backToLogin">Back to sign in</button></form><span class="status" id="authMsg"></span>`;
+  $("#forgotForm").onsubmit=onForgot;
+  $("#backToLogin").onclick=()=>{STATE.coach=null;renderAuth()};
+}
+async function onForgot(event){
+  event.preventDefault();
+  const email=$("#forgotEmail").value.trim().toLowerCase();
+  const msg=$("#authMsg")||$("#saveStatus");
+  if(!email){msg.textContent="Enter your coach email.";return}
+  if(!sb){msg.textContent="Cannot reach sign-in right now.";return}
+  msg.textContent="Sending reset link…";
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:RECOVERY_URL});
+    if(error){
+      const message=(error.message||"").toLowerCase();
+      msg.textContent=(message.includes("rate")||message.includes("seconds")||message.includes("after"))
+        ?"Wait a minute, then request another link."
+        :(error.message||"Could not send the reset email.");
+      return;
+    }
+    msg.textContent="If that email is a coach login, a reset link is on the way. Check spam if it is not in the inbox.";
+  }catch(_){msg.textContent="Could not send the reset email. Check your connection."}
+}
 function renderAuth(){
   $("#coachTools").classList.toggle("hidden",!STATE.coach);
   if(STATE.coach){
@@ -936,8 +977,9 @@ function renderAuth(){
     $("#lockBtn").onclick=async()=>{try{if(sb) await sb.auth.signOut()}catch(_){}STATE.coach=null;location.reload()};
     return;
   }
-  $("#authBar").innerHTML=`<form id="loginForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%"><span>Sign in with the same coach email as the field book to save across iPads.</span><input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Coach email"><input id="password" type="password" autocomplete="current-password" placeholder="Password"><button type="submit">Sign in</button></form><span class="status" id="authMsg"></span>`;
+  $("#authBar").innerHTML=`<form id="loginForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%"><span>Sign in with the same coach email as the field book to save across iPads.</span><input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Coach email"><input id="password" type="password" autocomplete="current-password" placeholder="Password"><button type="submit">Sign in</button><button class="forgot" type="button" id="forgotBtn">Forgot password?</button></form><span class="status" id="authMsg"></span>`;
   $("#loginForm").onsubmit=onLogin;
+  bindForgot();
 }
 async function coachForSession(session){
   if(!sb||!session||!session.user) return null;

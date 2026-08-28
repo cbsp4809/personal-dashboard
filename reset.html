@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Commodores · Set new password</title>
+<meta name="theme-color" content="#1C1C1C">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/commodores-favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/commodores-icon-192.png">
+<link rel="apple-touch-icon" href="icons/commodores-apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#1C1C1C;--bg-2:#000000;--panel:#1C1C1C;--ink:#FFFFFF;
+  --soft:#E0D5C0;--muted:#777777;--strong:rgba(207,174,112,.32);
+  --gold:#CFAE70;--gold-soft:rgba(207,174,112,.15);--highlight:#ECB748;
+  --sans:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --serif:"Newsreader",Georgia,serif;--shadow:0 14px 50px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:14.5px/1.48 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.gate{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));background:radial-gradient(900px 420px at 50% -10%,rgba(207,174,112,.16),transparent 60%),var(--bg)}
+.gate-card{width:min(420px,100%);padding:34px 30px 28px;background:var(--panel);border:1px solid var(--strong);border-radius:18px;box-shadow:var(--shadow)}
+.kicker{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+.star{width:13px;height:13px;flex:none;fill:var(--gold)}
+h1{margin:0;font:400 36px/1.05 var(--serif);letter-spacing:-.025em}
+p{margin:10px 0 22px;color:var(--muted)}
+label.small{display:block;margin-bottom:6px;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+input{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-size:16px;margin:4px 0 12px}
+input:focus{outline:2px solid rgba(207,174,112,.55);outline-offset:1px}
+.btn{min-height:44px;width:100%;border:0;border-radius:10px;padding:9px 14px;background:var(--gold);color:#1C1C1C;font-weight:700}
+.btn.ghost{margin-top:8px;border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.gate-link{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:4px;border:0;background:none;color:var(--gold);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.gate-msg{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12.5px;text-align:center}
+.gate-foot{margin-top:20px;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:390px){
+  .gate-card{padding:28px 20px 23px}h1{font-size:31px}
+}
+</style>
+</head>
+<body>
+<section class="gate" aria-labelledby="gateTitle">
+  <form class="gate-card hidden" id="forgotForm">
+    <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
+    <h1 id="gateTitle">Forgot password?</h1>
+    <p id="forgotLead">Enter your coach email. We’ll send a reset link to this phone or iPad.</p>
+    <label class="small" for="forgotEmail">Email</label>
+    <input id="forgotEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="forgotMsg">
+    <button class="btn" type="submit">Send reset link</button>
+    <a class="gate-link" href="commodores.html">Back to sign in</a>
+    <div class="gate-msg" id="forgotMsg" aria-live="polite"></div>
+    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
+  </form>
+
+  <form class="gate-card hidden" id="resetForm">
+    <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
+    <h1>Set new password</h1>
+    <p>Choose a new password for this coach login. Enter it twice.</p>
+    <label class="small" for="newPassword">New password</label>
+    <input id="newPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="resetMsg">
+    <label class="small" for="confirmPassword">Confirm password</label>
+    <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="resetMsg">
+    <button class="btn" type="submit">Save password</button>
+    <button class="btn ghost" type="button" id="requestAgain">Need a new reset link?</button>
+    <div class="gate-msg" id="resetMsg" aria-live="polite"></div>
+    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
+  </form>
+</section>
+<script>
+const $=s=>document.querySelector(s);
+const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
+const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
+const FIELD_BOOK="commodores.html";
+const RECOVERY_URL="https://personal-dashboard.chrisbailey.workers.dev/reset.html";
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+let recoveryReady=false;
+
+function showPane(pane){
+  $("#forgotForm").classList.toggle("hidden",pane!=="forgot");
+  $("#resetForm").classList.toggle("hidden",pane!=="reset");
+}
+function setMsg(id,text){
+  const el=$(id);
+  if(el) el.textContent=text||"";
+}
+function readAuthCallback(){
+  const query=new URLSearchParams(location.search);
+  const raw=(location.hash||"").replace(/^#/,"");
+  const hash=new URLSearchParams(raw.includes("=")?raw:"");
+  const pick=key=>hash.get(key)||query.get(key);
+  return {
+    error:pick("error"),
+    errorCode:pick("error_code"),
+    errorDescription:(pick("error_description")||"").replace(/\+/g," "),
+    type:pick("type"),
+    hasTokens:!!(pick("access_token")||pick("refresh_token")||query.get("code")||query.get("token_hash"))
+  };
+}
+function resetLinkError(cb){
+  const blob=[cb.error,cb.errorCode,cb.errorDescription].join(" ").toLowerCase();
+  if(!cb.error&&!cb.errorCode) return "";
+  if(blob.includes("otp_expired")||blob.includes("expired")||blob.includes("otp expired"))
+    return "This reset link has expired. Request a new one.";
+  if(blob.includes("access_denied")||blob.includes("invalid")||blob.includes("denied"))
+    return "This reset link is no longer valid. Request a new one.";
+  return "This reset link did not work. Request a new one.";
+}
+function passwordError(error){
+  const message=((error&&error.message)||"").toLowerCase();
+  if(message.includes("same")||message.includes("should be different"))
+    return "Pick a password that is different from the last one.";
+  if(message.includes("least")||message.includes("short")||message.includes("6 character")||message.includes("8 character"))
+    return "Use at least 8 characters.";
+  if(message.includes("leaked")||message.includes("pwned")||message.includes("compromised"))
+    return "That password showed up in a known leak. Choose another.";
+  if(message.includes("expired")||message.includes("otp")||message.includes("session")||message.includes("denied"))
+    return "This reset link has expired. Request a new one.";
+  return (error&&error.message)||"Could not save the new password.";
+}
+function stripAuthParams(){
+  try{history.replaceState({},document.title,location.pathname);}catch(_){}
+}
+async function requestReset(email,msgId){
+  if(!sb){setMsg(msgId,"Cannot reach sign-in right now. Check your connection.");return}
+  setMsg(msgId,"Sending reset link…");
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:RECOVERY_URL});
+    if(error){
+      const message=(error.message||"").toLowerCase();
+      if(message.includes("rate")||message.includes("seconds")||message.includes("after"))
+        setMsg(msgId,"Wait a minute, then request another link.");
+      else setMsg(msgId,error.message||"Could not send the reset email.");
+      return;
+    }
+    setMsg(msgId,"If that email is a coach login, a reset link is on the way. Check spam if it is not in the inbox.");
+  }catch(_){
+    setMsg(msgId,"Could not send the reset email. Check your connection.");
+  }
+}
+$("#forgotForm").onsubmit=async event=>{
+  event.preventDefault();
+  const email=$("#forgotEmail").value.trim().toLowerCase();
+  if(!email){setMsg("#forgotMsg","Enter your coach email.");return}
+  await requestReset(email,"#forgotMsg");
+};
+$("#resetForm").onsubmit=async event=>{
+  event.preventDefault();
+  const password=$("#newPassword").value;
+  const confirm=$("#confirmPassword").value;
+  if(!password||!confirm){setMsg("#resetMsg","Enter the new password twice.");return}
+  if(password.length<8){setMsg("#resetMsg","Use at least 8 characters.");return}
+  if(password!==confirm){setMsg("#resetMsg","Those two passwords do not match.");return}
+  if(!sb){setMsg("#resetMsg","Cannot reach sign-in right now. Check your connection.");return}
+  setMsg("#resetMsg","Saving new password…");
+  try{
+    const {error}=await sb.auth.updateUser({password});
+    if(error){
+      setMsg("#resetMsg",passwordError(error));
+      return;
+    }
+    $("#newPassword").value="";
+    $("#confirmPassword").value="";
+    setMsg("#resetMsg","Password updated. Opening the field book…");
+    location.replace(FIELD_BOOK);
+  }catch(_){
+    setMsg("#resetMsg","Could not save the new password. Check your connection.");
+  }
+};
+$("#requestAgain").onclick=()=>{
+  showPane("forgot");
+  $("#forgotLead").textContent="This reset link is done. Enter your coach email for a new one.";
+  setMsg("#forgotMsg","");
+};
+if(sb){
+  sb.auth.onAuthStateChange((event)=>{
+    if(event==="PASSWORD_RECOVERY"){
+      recoveryReady=true;
+      showPane("reset");
+      setMsg("#resetMsg","Choose a new password for this coach login.");
+      stripAuthParams();
+    }
+  });
+}
+(async()=>{
+  const cb=readAuthCallback();
+  const expired=resetLinkError(cb);
+  if(expired){
+    showPane("forgot");
+    $("#forgotLead").textContent=expired;
+    setMsg("#forgotMsg","Request a new reset link below.");
+    return;
+  }
+  showPane(cb.hasTokens||cb.type==="recovery"?"reset":"forgot");
+  if(cb.hasTokens||cb.type==="recovery") setMsg("#resetMsg","Checking your reset link…");
+  if(!sb){
+    setMsg(cb.hasTokens?"#resetMsg":"#forgotMsg","Cannot reach sign-in right now. Check your connection.");
+    return;
+  }
+  try{
+    const {data}=await sb.auth.getSession();
+    if(data&&data.session&&(cb.hasTokens||cb.type==="recovery"||recoveryReady)){
+      recoveryReady=true;
+      showPane("reset");
+      setMsg("#resetMsg","Choose a new password for this coach login.");
+      stripAuthParams();
+      return;
+    }
+    if(cb.hasTokens||cb.type==="recovery"){
+      setTimeout(async()=>{
+        if(recoveryReady) return;
+        try{
+          const again=await sb.auth.getSession();
+          if(again.data&&again.data.session){
+            recoveryReady=true;
+            showPane("reset");
+            setMsg("#resetMsg","Choose a new password for this coach login.");
+            stripAuthParams();
+            return;
+          }
+        }catch(_){}
+        showPane("forgot");
+        $("#forgotLead").textContent="This reset link has expired or already been used. Request a new one.";
+        setMsg("#forgotMsg","");
+      },1600);
+      return;
+    }
+    showPane("forgot");
+  }catch(_){
+    showPane("forgot");
+    setMsg("#forgotMsg","Could not check this reset link. Request a new one.");
+  }
+})();
+</script>
+</body>
+</html>
