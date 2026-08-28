@@ -44,6 +44,7 @@ sql/ops_events.sql             # Ops notify table (Sydney owns pings)
 sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
 sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments bucket
 sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
+sql/ops_email_kind.sql         # Emails-tab sales/lead flag (Sydney applies)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
@@ -69,8 +70,8 @@ A five-column board for work Chris and Sydney share:
 
 Cards persist in Supabase table `public.ops_cards` on the same Studio Pod
 project Chris already signs into (`daddiljpnhfuxcdqsulg`). Sign in with that
-account (password or magic link). Do not invent extra columns; Sydney (and
-anyone writing from chat/email) should insert/update rows on `ops_cards`.
+account (password or magic link). Sydney (and anyone writing from chat/email)
+should insert/update rows on `ops_cards` using the columns documented here.
 
 Each card has a title, optional snippet, project tag (`studio-pod` / `cbp` /
 `personal`), owner (`chris` / `sydney`), optional due date, and a source
@@ -103,7 +104,11 @@ saves `reply_attachments` with a ~1 hour `signed_url` so Sydney can GET the
 private file without a dashboard login. Send and Send now remint those URLs
 and still only queue the card. The bucket stays private. Do not add Google
 Drive. Sydney GETs `signed_url` and attaches those bytes to the Gmail reply. The
-current dashboard treats `project` as the inbox label. `source_ref` is
+current dashboard treats `project` as the inbox label. `email_kind` is
+`sales`, `lead`, or `other` so the Emails list can badge and filter pipeline
+mail. Apply `sql/ops_email_kind.sql` so the flag persists; until then the
+page still badges from title / subject / inbound body. Inbox watch should
+set `email_kind` on create when it already knows the kind. `source_ref` is
 available to the watch alongside `inbound_message_id`, but this repository
 does not establish which Gmail identifier existing producers store there.
 
