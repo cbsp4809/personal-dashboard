@@ -45,6 +45,7 @@ sql/ops_card_received_at.sql   # Optional source-email receipt timestamp
 sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments bucket
 sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/ops_email_kind.sql         # Emails-tab sales/lead flag (Sydney applies)
+sql/ops_content.sql            # LinkedIn Content tab queue + ops-content-photos bucket
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
@@ -131,6 +132,27 @@ If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the
 queue columns exist. Attach and inbound-file open stay disabled until the
 attachment columns and storage bucket exist.
+
+**Content** is a fifth top-bar view for the Studio Pod LinkedIn pipeline.
+ChatGPT writes the caption; a Drive folder (connector separate) is where
+drafts land; this tab is where Chris reviews, approves, requests changes, and
+attaches or points at a photo; Sydney posts after Approve. The page never
+auto-rewrites ChatGPT prose.
+
+Rows live in `public.ops_content`, not `ops_cards`. Cards already own the
+kanban plus the email reply queue (`column_key`, `send_requested_at`,
+attachments). A LinkedIn status machine (Draft → Ready → Needs you →
+Needs changes → Approved → Scheduled → Posted) would leak into the board,
+Emails, alerts, and Send now if it reused that table. Apply
+`sql/ops_content.sql` manually on Studio Pod before using the tab. Photos use
+the private `ops-content-photos` bucket with the same signed-in / signed-URL
+pattern as email attachments. An optional Drive URL is a pointer only.
+
+Each item shows a hook, the full editable caption, status, optional planned
+date, a photo thumbnail or “no photo”, and a source that defaults to
+ChatGPT. Actions: Approve, Request changes (note), Save caption, Attach /
+replace photo, Mark posted, Ready for Chris. New draft pastes a caption as
+written. The tab does not post to LinkedIn.
 
 The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
 Needs you, Today, This week, and Later before a quiet Sydney owns column.
