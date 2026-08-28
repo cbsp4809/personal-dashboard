@@ -59,7 +59,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .looks button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
 .cue{min-height:42px;margin:0 0 10px;color:var(--soft);font-size:14px}
 .immersive-shell{position:relative}
-.immersive-done{display:none;position:absolute;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:4;min-width:92px;min-height:52px;border:0;border-radius:999px;padding:10px 18px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}
+.immersive-done{display:none;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;padding:10px 18px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}
 .field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .field-wrap.is-drawing{touch-action:none}
 .field{display:block;width:100%;height:auto}
@@ -533,8 +533,9 @@ function fieldSVG(play,pos,ball,liveRoute){
     <rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
     <path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
     <text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>
-    ${endzone}${areasSVG()}${routes}${live}${kids}
+    ${endzone}${areasSVG()}${routes}${live}
     <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
+    ${kids}
   </svg>`;
 }
 
