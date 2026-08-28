@@ -1071,6 +1071,7 @@ function syncActorUI(){
   $("#contentFilters").classList.toggle("hidden", !showingContent);
   $("#projectFilters").classList.toggle("hidden", !showingBoardTools);
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
+  $("#doneBtn").classList.toggle("hidden", showingContent);
   $("#app").classList.toggle("content-view", showingContent);
   $(".viewbar-label").textContent = showingEmails || showingDigest || showingContent ? "View" : "Whose board?";
   const input = $("#composerInput");
