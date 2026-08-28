@@ -18,7 +18,8 @@ Pushing to `main` deploys **two** places:
   the public site.
 - **Cloudflare Worker** `personal-dashboard` —
   **https://personal-dashboard.chrisbailey.workers.dev/** — serves the whole
-  repo, including Commodores and Plays. Cloudflare Git runs
+  repo, including Commodores, Plays, and the living coach manual at
+  `/coach-manual.html`. Cloudflare Git runs
   `npx wrangler versions upload` from the repo root. The root `wrangler.toml`
   (static `[assets]`, no Worker `main`) is what stops the
   **Missing entry-point** build failure. Do not add Cloudflare Access back.
@@ -34,6 +35,7 @@ commodores.webmanifest     # separate home-screen app named Commodores / Dores
 plays.html                 # Play animator + coach draw/save editor (letters only; not on GitHub Pages)
 plays.webmanifest          # home-screen app named Dores Plays
 watch.html                 # token-only kids/parents published-play viewer (Worker only)
+coach-manual.html          # living staff user manual (Worker: /coach-manual.html)
 wrangler.toml              # Cloudflare Worker `personal-dashboard` static-asset entry (fixes Missing entry-point)
 .assetsignore              # keep Worker deploy to site files (no .git / sql / markdown)
 icons/                     # CB Ops wordmark plus Commodores gold-star icons (not Vanderbilt marks)
@@ -216,6 +218,14 @@ on the public GitHub Pages site (`deploy.yml` strips `commodores.html` and
 The field book now has a **Plays** tab containing the animator + draw editor:
 
 **https://personal-dashboard.chrisbailey.workers.dev/plays.html**
+
+Staff user manual (same Worker origin):
+
+**https://personal-dashboard.chrisbailey.workers.dev/coach-manual.html**
+
+The field-book login and a post-login Help control open that page. It is staff
+only: install, sign-in, the five tabs, play publish, and troubleshooting. No
+passwords.
 
 Direct access to `plays.html` uses the same coach allowlist gate; unsigned
 visitors cannot open the editor. The offense book starts empty and lists only

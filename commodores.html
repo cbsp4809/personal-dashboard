@@ -50,6 +50,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
 .btn.danger{color:var(--oak)}
 .gate-msg{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12.5px;text-align:center}
 .gate-foot{margin-top:20px;color:var(--muted);font-size:11px;text-align:center}
+.gate-foot a{color:var(--gold);font-weight:700}
+.mast-actions{display:flex;align-items:center;gap:8px;flex:none}
 #app{display:none;min-height:100vh;padding-bottom:calc(50px + env(safe-area-inset-bottom,0px))}
 .mast{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top,0px);background:rgba(28,28,28,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .mast-inner{max-width:1180px;margin:auto;padding:17px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:18px}
@@ -416,7 +418,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <input id="password" type="password" autocomplete="current-password" aria-describedby="gateMsg">
     <button class="btn" type="submit" style="width:100%;margin-top:4px">Sign in</button>
     <div class="gate-msg" id="gateMsg" aria-live="polite"></div>
-    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
+    <div class="gate-foot"><a href="coach-manual.html">Coach user manual</a><br>FWE JV Vanderbilt Commodores · Fall 2026</div>
   </form>
 </section>
 
@@ -427,7 +429,10 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff field book</div>
         <h1>Commodores <em>Fall ’26</em></h1>
       </div>
-      <button class="btn ghost" id="lockBtn" type="button" aria-label="Lock this phone" title="Lock this phone">Lock</button>
+      <div class="mast-actions">
+        <a class="btn ghost" href="coach-manual.html">Help</a>
+        <button class="btn ghost" id="lockBtn" type="button" aria-label="Lock this phone" title="Lock this phone">Lock</button>
+      </div>
     </div>
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>

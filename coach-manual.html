@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Commodores · Coach manual</title>
+<meta name="theme-color" content="#1C1C1C">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Coach Manual">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/commodores-favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/commodores-icon-192.png">
+<link rel="apple-touch-icon" href="icons/commodores-apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#1C1C1C;--bg-2:#000000;--panel:#1C1C1C;--ink:#FFFFFF;
+  --soft:#E0D5C0;--muted:#777777;--line:rgba(207,174,112,.16);--strong:rgba(207,174,112,.32);
+  --gold:#CFAE70;--gold-soft:rgba(207,174,112,.15);--highlight:#ECB748;
+  --sans:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --serif:"Newsreader",Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:15.5px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--gold)}
+.mast{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top,0px);background:rgba(28,28,28,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.mast-inner{max-width:760px;margin:auto;padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.kicker{display:flex;align-items:center;gap:8px;margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.star{width:13px;height:13px;flex:none;fill:var(--gold)}
+.mast h1{margin:0;font:400 26px/1.05 var(--serif);letter-spacing:-.02em}
+.btn{min-height:42px;border:1px solid var(--strong);border-radius:10px;padding:8px 13px;background:transparent;color:var(--soft);font:700 13px var(--sans);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.btn.gold{border:0;background:var(--gold);color:#1C1C1C}
+main{width:min(760px,100%);margin:auto;padding:22px 20px calc(48px + env(safe-area-inset-bottom,0px))}
+.lede{margin:0 0 18px;color:var(--soft);font:400 19px/1.4 var(--serif)}
+.toc{display:grid;gap:8px;margin:0 0 28px;padding:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px}
+.toc a{min-height:44px;display:flex;align-items:center;padding:8px 10px;border-radius:10px;color:var(--ink);font-weight:700;text-decoration:none}
+.toc a:hover,.toc a:focus{background:var(--gold-soft);outline:none}
+h2{margin:32px 0 10px;padding-top:6px;font:400 28px/1.15 var(--serif)}
+h3{margin:20px 0 8px;font:600 16px/1.3 var(--sans)}
+p,li{color:var(--soft)}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li+li{margin-top:8px}
+.panel{margin:0 0 14px;padding:16px 17px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.panel.gold{background:var(--gold-soft);border-color:rgba(207,174,112,.32)}
+.panel strong{display:block;margin-bottom:4px;color:var(--ink)}
+.urls{display:grid;gap:10px;margin:0 0 16px}
+.urls a{display:block;padding:14px 15px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-weight:700;text-decoration:none;overflow-wrap:anywhere}
+.urls a span{display:block;margin-top:3px;color:var(--muted);font-size:12.5px;font-weight:600}
+.letters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.letters b{min-width:40px;min-height:40px;display:grid;place-items:center;border-radius:10px;background:var(--gold);color:#1C1C1C;font-size:15px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:step}
+.steps li{counter-increment:step;position:relative;margin:0 0 10px;padding:12px 14px 12px 52px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+.steps li::before{content:counter(step);position:absolute;left:12px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#1C1C1C;font:700 13px/28px var(--sans);text-align:center}
+.muted{color:var(--muted)}
+code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highlight);font-size:13px}
+.foot{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+@media(max-width:420px){
+  .mast h1{font-size:22px}
+  .mast-inner{padding:12px 16px 10px}
+  main{padding:18px 16px calc(40px + env(safe-area-inset-bottom,0px))}
+  h2{font-size:25px}
+}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="mast-inner">
+    <div>
+      <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only</div>
+      <h1>Coach user manual</h1>
+    </div>
+    <a class="btn gold" href="commodores.html">Open field book</a>
+  </div>
+</header>
+
+<main>
+  <p class="lede">Living staff guide for the Commodores field book. Open it anytime from this Worker page. No passwords live here.</p>
+
+  <nav class="toc" aria-label="Manual sections">
+    <a href="#what">1. What this app is</a>
+    <a href="#install">2. Install on iPhone / iPad</a>
+    <a href="#signin">3. Sign in</a>
+    <a href="#tabs">4. The five tabs</a>
+    <a href="#plays">5. Play builder and kids links</a>
+    <a href="#trace">6. Chris traces plays — send feedback</a>
+    <a href="#fix">7. Troubleshooting</a>
+  </nav>
+
+  <section id="what">
+    <h2>What this app is</h2>
+    <p>This is the <strong>staff field book</strong> for FWE JV Vanderbilt Commodores, Fall 2026. Peter, Chris, and Ben use it. It is not a parent app and it is not a kid app.</p>
+    <div class="panel gold">
+      <strong>Who uses what</strong>
+      Coaches use this book. Parents stay on GameChanger. Kids only get a secret watch link when staff publishes plays — they never sign in here.
+    </div>
+    <ul>
+      <li><b>Staff</b> — schedule, playbook, lineups, practice notes, ratings, and the play builder.</li>
+      <li><b>Parents</b> — GameChanger for team comms, games, and family updates. Do not send them this login page.</li>
+      <li><b>Kids</b> — a read-only watch page with a secret <code>watch.html?t=</code> link. No coach email. No roster. No editor.</li>
+    </ul>
+    <p>The book lives on the Cloudflare Worker, not the public GitHub Pages site. Cloudflare Access is off. Sign-in is the coach email and password only.</p>
+    <div class="urls">
+      <a href="https://personal-dashboard.chrisbailey.workers.dev/commodores.html">Field book<span>personal-dashboard.chrisbailey.workers.dev/commodores.html</span></a>
+      <a href="https://personal-dashboard.chrisbailey.workers.dev/plays.html">Play animator<span>personal-dashboard.chrisbailey.workers.dev/plays.html</span></a>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Install / reinstall on iPhone or iPad</h2>
+    <p>This is a Safari web app, not an App Store download. Chrome and other browsers cannot add it the same way.</p>
+    <div class="panel">
+      <strong>If an old icon is already on the Home Screen</strong>
+      Delete that icon first. Long-press it → Remove App → Delete Bookmark. Then add it again from the Worker URL. An old github.io icon will not open the live book.
+    </div>
+    <ol class="steps">
+      <li>Open <a href="https://personal-dashboard.chrisbailey.workers.dev/commodores.html">commodores.html</a> in <b>Safari</b>.</li>
+      <li>Tap the <b>Share</b> button (square with the up arrow).</li>
+      <li>Tap <b>Add to Home Screen</b>.</li>
+      <li>Name it <b>Commodores</b> (short name <b>Dores</b>) and tap <b>Add</b>.</li>
+    </ol>
+    <p>The gold-star icon should open the sign-in screen full-screen. To reinstall later, delete the icon and repeat the same four steps.</p>
+  </section>
+
+  <section id="signin">
+    <h2>Sign in</h2>
+    <p>Use the coach email Chris invited, plus the password you set. That is Supabase Auth. There is no Cloudflare Access screen and no PIN.</p>
+    <ul>
+      <li>The phone or iPad stays signed in until you tap <b>Lock</b>.</li>
+      <li>The same login works on the field book and on the play animator.</li>
+      <li>Only allowlisted coaches see roster, ratings, notes, and plays.</li>
+      <li>First names only after you are in.</li>
+    </ul>
+    <p class="muted">Forgot the password or your email is refused? Text Chris. Do not share passwords in this manual, in texts to parents, or on GameChanger.</p>
+  </section>
+
+  <section id="tabs">
+    <h2>The five tabs</h2>
+    <p>Primary pages across the top: <b>Team / Today</b>, <b>Playbook</b>, <b>Plays</b>, <b>Lineup</b>, <b>Practice</b>. Season board is a reference link under the tabs — schedule, milestones, goals. It is not a sixth working page.</p>
+
+    <h3>Team / Today</h3>
+    <p>Home screen after sign-in. Next practice, the official SBMSA slate, the two-play / one-defense reminder, and the shared roster with staff ratings. Score as yourself. Order stays frozen while you rate.</p>
+
+    <h3>Playbook</h3>
+    <p>The staff book kids get taught from. Offense and Defense sub-tabs. Offense lists the saved drawings. Defense is still six areas + one helper, no rush. Hip-stay / pick-a-guy is a drill only — never the game look.</p>
+
+    <h3>Lineup</h3>
+    <p>Two units. Unit A = Q1 and Q3. Unit B = Q2 and Q4. Each unit has 7 offense and 7 defense. Mark Present / Out first. The play-time rule check uses only the kids who showed (2+2 or one-way; short-roster both-way math if we are short). No mid-quarter swapping.</p>
+    <p>Offense letters: Q · C · X · A · B · Y · Z. Those names are what the play builder uses.</p>
+
+    <h3>Practice</h3>
+    <p>Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6. Date list, drill picker, and the last-practice → next-practice notes staff share. Write Thursday’s plan before you leave Sunday.</p>
+
+    <h3>Plays</h3>
+    <p>Coach-only animator and draw editor. Build the real routes here, save them, then teach from Playbook. Same page also lives at the Plays URL if you want it on its own Home Screen icon.</p>
+  </section>
+
+  <section id="plays">
+    <h2>Play builder and kids links</h2>
+    <p>Open <b>Plays</b> in the field book, or go straight to the animator. Draw the seven spots. Labels come from the current lineup in this fixed order:</p>
+    <div class="letters" aria-label="Offense letters">
+      <b>Q</b><b>C</b><b>X</b><b>A</b><b>B</b><b>Y</b><b>Z</b>
+    </div>
+    <p>Q is the thrower. C is the center. X left out, Z right out, A / B / Y inside. Empty spots stay as the letter. Pick Unit A or Unit B names before you show a play.</p>
+    <ul>
+      <li><b>Draw</b> — drag a letter to place it. Tap a letter, then finger-draw its route. Sit = no route.</li>
+      <li><b>Save</b> — give it a number and a short title. That is the staff drawing, not a guessed card.</li>
+      <li><b>Play</b> — Play / Pause, scrub, Flip, Reset, or full-screen on the iPad (rotate either way).</li>
+    </ul>
+    <div class="panel gold">
+      <strong>Publishing to kids is a different door</strong>
+      Kids never use the coach login. Mark <b>Publish this play</b>, then <b>Republish names + plays</b>. Copy the secret link. It looks like <code>watch.html?t=</code> plus a long token. That page has no roster, no editor, and no save.
+    </div>
+    <ul>
+      <li>Send kids only that watch link — not commodores.html, not plays.html, not this manual.</li>
+      <li>After you change routes or lineup names, tap <b>Republish names + plays</b> or the watch page stays stale.</li>
+      <li><b>Rotate secret link</b> kills the old URL. Make a new one only if a link leaked.</li>
+    </ul>
+  </section>
+
+  <section id="trace">
+    <h2>Chris traces plays into the playbook</h2>
+    <p>Chris will trace the real routes into the playbook so 23/26, 38, and the rest are the lines we actually teach — not guessed cards. If a drawing looks wrong, say so.</p>
+    <div class="panel">
+      <strong>Ask for feedback</strong>
+      If a route, a name on a letter, or a kids-link snapshot is off, tell Chris. The book stays living. Better a one-line correction than a kid learning the wrong stem.
+    </div>
+  </section>
+
+  <section id="fix">
+    <h2>Troubleshooting</h2>
+    <h3>The Home Screen icon opens the wrong page or an old book</h3>
+    <p>Delete the icon and add it again from Safari on the Worker URL. Old github.io icons are dead.</p>
+    <h3>I do not see Add to Home Screen</h3>
+    <p>You are probably in Chrome or a Facebook/Messages in-app browser. Open the link in Safari, then Share.</p>
+    <h3>Sign-in says the account is not on the staff list</h3>
+    <p>The email is not on the coach allowlist, or you typed a different address than the invite. Check with Chris. Do not create a new account on your own.</p>
+    <h3>I am signed in but roster or plays are empty</h3>
+    <p>Check the network, pull to refresh, or Lock and sign in again. If it is still empty, Chris needs to look at the shared staff row — do not rebuild the roster in the page.</p>
+    <h3>Kids say the watch link does nothing</h3>
+    <p>The link must include <code>?t=</code> and the full token. A rotated link is dead. After lineup or route edits, republish. Kids should not be sent the coach pages.</p>
+    <h3>Play names do not match who is in that spot</h3>
+    <p>Fix Lineup first (Unit A or B), then reopen Plays and republish. Letters follow the lineup; they do not invent names.</p>
+    <h3>I got a Cloudflare email-code screen</h3>
+    <p>That should not appear. Access is off. You want the gold field-book sign-in card only. If a code screen shows up, stop and tell Chris — do not put Access back.</p>
+  </section>
+
+  <p class="foot">FWE JV Vanderbilt Commodores · Fall 2026 · Updated 28 Aug 2026 · Staff only. Parents: GameChanger. Kids: secret watch link only.</p>
+</main>
+</body>
+</html>
