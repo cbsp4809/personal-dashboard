@@ -25,13 +25,14 @@ h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:v
 .picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}.picks small{display:block;margin-top:2px;font-size:11px;opacity:.75}
 .units,.looks{display:flex;gap:8px;margin:0 0 10px}.units button,.looks button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:7px 10px;background:transparent;color:var(--muted);font-weight:800}
 .units button.on,.looks button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
-.field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}
+.field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
 .tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}.speed button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .scrub{width:100%;accent-color:var(--gold)}.cue{min-height:38px;margin:9px 0 0;color:var(--soft);font-size:13px}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
-body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 16px),calc((var(--vvh) - 128px)*.9));height:auto;max-width:calc(var(--vvw) - 16px);max-height:calc(var(--vvh) - 128px);aspect-ratio:9/10}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 16px),calc((var(--vvh) - 116px)*.9));max-height:calc(var(--vvh) - 116px)}}
-@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.tools{grid-template-columns:1fr 1fr}.tools #full{grid-column:1/-1}}
+body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:6px;padding-right:6px}.tools{grid-template-columns:1fr 1fr}.tools #full{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -51,6 +52,11 @@ body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fix
       <button class="done" type="button" id="done">Done</button>
       <div class="field-wrap"><div id="field"></div></div>
       <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="reset">Reset</button><button class="ghost" type="button" id="full">Full screen</button></div>
+      <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
+        <button type="button" data-speed="0.5">0.5×</button>
+        <button type="button" data-speed="1">1×</button>
+        <button type="button" data-speed="2">2×</button>
+      </div>
       <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
       <p class="cue" id="cue" aria-live="polite"></p>
     </div>
@@ -64,7 +70,11 @@ const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
 const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-watch",persistSession:false,autoRefreshToken:false}}):null;
 const LETTERS=["Q","C","X","A","B","Y","Z"];
-const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null};
+const SPEED_KEY="commodores-play-speed";
+const SPEEDS=[0.5,1,2];
+function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
+function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
+const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null,speed:loadSpeed()};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function pointAlong(start,points,t){
@@ -77,16 +87,55 @@ function pointAlong(start,points,t){
 }
 function cleanPlay(raw){
   if(!raw||!String(raw.number||"").match(/^\d{1,4}$/)||!Array.isArray(raw.spots))return null;
+  const fromW=playCoordWidth(raw);
   const spots=LETTERS.map(letter=>{
     const source=raw.spots.find(spot=>spot&&spot.letter===letter)||{};
-    const route=Array.isArray(source.route)?source.route.map(point=>({x:Number(point.x),y:Number(point.y)})).filter(point=>Number.isFinite(point.x)&&Number.isFinite(point.y)):[];
-    return{letter,x:Number(source.x)||180,y:Number(source.y)||300,sit:!!source.sit,route};
+    const route=Array.isArray(source.route)?source.route.map(point=>{
+      const x=scaleX(Number(point.x),fromW),y=Number(point.y);
+      return Number.isFinite(x)&&Number.isFinite(y)?{x,y}:null;
+    }).filter(Boolean):[];
+    const x=scaleX(Number(source.x),fromW);
+    return{letter,x:Number.isFinite(x)?x:FIELD_W/2,y:Number(source.y)||300,sit:!!source.sit,route};
   });
-  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],spots};
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots};
 }
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||state.plays[0]}
 function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
+const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,LOS_Y=300,YARD=7;
+function scaleX(x,fromW){const src=Number(fromW)||LEGACY_FIELD_W;if(!Number.isFinite(x)||src===FIELD_W)return x;return x*FIELD_W/src}
+function playCoordWidth(raw){
+  const top=Number(raw&&raw.fieldW);if(top===FIELD_W||top===LEGACY_FIELD_W)return top;
+  const marked=(raw&&Array.isArray(raw.spots)?raw.spots:[]).find(s=>Number(s&&s.fieldW)===FIELD_W||Number(s&&s.fieldW)===LEGACY_FIELD_W);
+  return marked?Number(marked.fieldW):LEGACY_FIELD_W;
+}
+function pillSize(label){const name=String(label||""),len=name.length;return{width:Math.max(22,Math.min(48,11+len*4.4)),height:22,font:len>9?7:len>6?8:9}}
+function routeTip(start,points){
+  const pts=[start,...(points||[])].filter(point=>point&&Number.isFinite(point.x)&&Number.isFinite(point.y));
+  if(pts.length<2)return null;
+  const tip=pts[pts.length-1];
+  let prev=pts[pts.length-2];
+  for(let i=pts.length-2;i>=0;i--){if(Math.hypot(tip.x-pts[i].x,tip.y-pts[i].y)>6){prev=pts[i];break}}
+  const dx=tip.x-prev.x,dy=tip.y-prev.y,len=Math.hypot(dx,dy);
+  if(len<4)return null;
+  return{x:tip.x,y:tip.y,ux:dx/len,uy:dy/len};
+}
+function arrow(start,points,color,size,opacity){
+  const tip=routeTip(start,points);if(!tip)return"";
+  const s=size||8,w=s*.55,bx=tip.x-tip.ux*s,by=tip.y-tip.uy*s,px=-tip.uy*w,py=tip.ux*w;
+  return`<polygon points="${tip.x},${tip.y} ${bx+px},${by+py} ${bx-px},${by-py}" fill="${color}" opacity="${opacity==null?1:opacity}"/>`;
+}
+function route(start,points,on){
+  if(!points||!points.length)return"";
+  const color=on?"#ECB748":"#FFFFFF",width=on?4:2.4,opacity=on?.95:.43;
+  return`<path d="${esc(path(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrow(start,points,color,on?9:7,opacity)}`;
+}
+function yardLines(){
+  const ticks=[];const labels=[];
+  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
+  const back=LOS_Y+YARD*10;if(back<386)ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
+  return`<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}</g>`;
+}
 function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
 function paint(progress){
   const play=currentPlay();if(!play)return;
@@ -102,9 +151,9 @@ function paint(progress){
   else if(destination){const p=ease((progress-run)/(1-run));ball={x:positions.Q.x+(destination.x-positions.Q.x)*p,y:positions.Q.y+(destination.y-positions.Q.y)*p}}
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
-  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>`<path d="${esc(path(spot,spot.route))}" fill="none" stroke="${highlighted.has(spot.letter)?"#ECB748":"#FFFFFF"}" stroke-width="${highlighted.has(spot.letter)?4:2.4}" stroke-linecap="round" stroke-linejoin="round" opacity="${highlighted.has(spot.letter)?.95:.43}"/>`).join("");
-  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),width=Math.max(26,Math.min(66,14+name.length*5.6)),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-width/2}" y="${point.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${name.length>8?8:10}">${esc(name)}</text></g>`}).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="360" height="400" fill="#000"/><rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/><path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
+  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,highlighted.has(spot.letter))).join("");
+  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
 function render(){
@@ -118,9 +167,22 @@ function render(){
   $("#cue").textContent=(look&&look.cue)||`${play.family?play.family+" · ":""}${play.title||"Play "+play.number}`;
   paint(0);
 }
+function renderSpeed(){
+  $$("#speedPicks [data-speed]").forEach(button=>{
+    const value=Number(button.dataset.speed);
+    button.classList.toggle("on",value===state.speed);
+    button.setAttribute("aria-pressed",value===state.speed?"true":"false");
+  });
+}
+function setSpeed(speed){
+  const next=SPEEDS.includes(Number(speed))?Number(speed):0.5;
+  state.speed=next;
+  saveSpeed(next);
+  renderSpeed();
+}
 function play(){
   if(state.anim){stop();return}
-  const started=performance.now(),duration=2300;state.anim={frame:0};$("#play").textContent="Pause";
+  const started=performance.now(),duration=2300/(state.speed||0.5);state.anim={frame:0};$("#play").textContent="Pause";
   const tick=now=>{const progress=Math.min(1,(now-started)/duration);paint(progress);if(progress<1){state.anim.frame=requestAnimationFrame(tick);return}state.anim=null;$("#play").textContent="Play"};
   state.anim.frame=requestAnimationFrame(tick);
 }
@@ -164,9 +226,11 @@ function setImmersive(active){
 }
 $("#units").onclick=event=>{const button=event.target.closest("[data-unit]");if(!button)return;state.unit=button.dataset.unit==="B"?"B":"A";render()};
 $("#play").onclick=play;
+$("#speedPicks").onclick=event=>{const button=event.target.closest("[data-speed]");if(!button)return;setSpeed(button.dataset.speed)};
 $("#reset").onclick=render;
 $("#full").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#done").onclick=()=>setImmersive(false);
+renderSpeed();
 document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{})});
 $("#scrub").oninput=()=>{stop();paint(Number($("#scrub").value)/1000)};
 bindViewport();

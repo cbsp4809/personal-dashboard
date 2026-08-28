@@ -236,14 +236,24 @@ Direct access to `plays.html` uses the same coach allowlist gate; unsigned
 visitors cannot open the editor. The offense book starts empty and lists only
 coach-saved `commodores_plays` rows; no numbered routes are seeded in the page
 or recreated in Supabase. Play mode: tap a saved play, then Play / Pause /
-scrub / Flip / Reset or open the immersive full-screen field.
+scrub / Flip / Reset or open the immersive full-screen field. A small
+**0.5× / 1× / 2×** speed row sits under those controls (default **0.5×** so
+kids can see the routes); the choice is kept in localStorage. The kids
+watch page uses the same speeds.
 Full-screen Play is a CSS overlay sized from the visual viewport, not the
 browser fullscreen API, so an iPad can rotate between landscape and portrait.
 Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
 draw its route, Sit for no route, Save with a number and short title. Only the
 field captures touch while drawing, so the rest of the phone/iPad page keeps
 normal vertical scrolling. Flip is a true left/right mirror of the saved
-geometry. Same Commodores Supabase project
+geometry. New-play dots start slightly behind the line of scrimmage. Route
+lines end with a small arrowhead at the tip. The field shows 10-yard stripes
+as visual markers only. The optional six-areas overlay (no rush) places the
+three short spots about five yards off the LOS, the three deep spots behind
+them, and the rover as a deep-middle helper. The canvas is 480×400 (was
+360×400) with tighter name pills so a 5-wide can spread without stacking
+labels; legacy 360-wide drawings scale on load. The kids watch page uses the
+same field, arrow, and width drawing. Same Commodores Supabase project
 (`adjnmtpjoyxvmlogjjpz`) and `storageKey: "commodores-auth"` as the field book,
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply

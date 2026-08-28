@@ -34,7 +34,7 @@ comment on column public.commodores_plays.title is
 comment on column public.commodores_plays.flip_partner is
   'Other-direction number when one exists (23↔26, 2↔19). Null if Flip is a live X-mirror.';
 comment on column public.commodores_plays.spots is
-  'Array of {letter, x, y, sit, route:[{x,y}]}. Letters Q C X A B Y Z. Field is 360×400, line at y=300.';
+  'Array of {letter, x, y, sit, route:[{x,y}], fieldW?}. Letters Q C X A B Y Z. Field is 480×400 (legacy 360×400 scaled on load), line at y=300.';
 comment on column public.commodores_plays.looks is
   'Optional read chips: [{id, label, target, cue}]. Empty for drawn plays is fine.';
 comment on column public.commodores_plays.updated_by is
