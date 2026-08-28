@@ -79,6 +79,18 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .save-actions button{min-height:56px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800}
 .save-actions .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
 .status{min-height:20px;margin:8px 0 0;color:var(--highlight);font-size:12.5px}
+.unit-picks,.publish-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.unit-picks button,.publish-actions button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:800}
+.unit-picks button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.scrub{width:100%;margin:0 0 12px;accent-color:var(--gold)}
+.publish{margin:14px 0 0;padding:12px;border:1px solid var(--strong);border-radius:14px;background:#000}
+.publish strong{display:block;margin-bottom:3px;color:var(--soft)}
+.publish-copy{margin:0 0 10px;color:var(--muted);font-size:12px}
+.share-row{display:grid;grid-template-columns:1fr auto;gap:8px}
+.share-row input{min-width:0;min-height:44px;padding:8px 10px;border:1px solid var(--strong);border-radius:10px;background:#111;color:var(--soft)}
+.share-row button{min-height:44px;border:0;border-radius:10px;padding:8px 12px;background:var(--gold);color:#1C1C1C;font-weight:800}
+body.embed .wrap{width:100%;padding:12px}
+body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{display:none}
 @media(max-width:420px){
   h1{font-size:26px}
   .tools,.draw-tools,.save-actions{grid-template-columns:1fr}
@@ -89,7 +101,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 <div class="wrap">
   <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Now-5 · letters only</div>
   <h1>Play animator</h1>
-  <p class="sub">Kevin’s letters: Q · C · X · A · B · Y · Z. Draw the real routes. Passers stay QB1 / QB2 / QB3. No kid names on the field.</p>
+  <p class="sub">Kevin’s letters: Q · C · X · A · B · Y · Z. Draw the real routes; the current offense lineup supplies first-name labels.</p>
 
   <div class="auth" id="authBar">
     <form id="loginForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%">
@@ -100,6 +112,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
     </form>
   </div>
 
+  <div id="coachTools" class="hidden">
   <div class="modes" role="tablist" aria-label="Mode">
     <button type="button" id="modePlay" class="on">Play</button>
     <button type="button" id="modeDraw">Draw</button>
@@ -110,11 +123,16 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
   <div class="more" id="morePicks" role="group" aria-label="Other plays"></div>
 
   <div class="looks" id="looks" role="group" aria-label="Looks"></div>
+  <div class="unit-picks" id="unitPicks" role="group" aria-label="Offense lineup unit">
+    <button type="button" data-unit="A" class="on">Unit A names</button>
+    <button type="button" data-unit="B">Unit B names</button>
+  </div>
   <div class="tools" id="playTools">
     <button type="button" id="playBtn">Play</button>
     <button class="ghost" type="button" id="flipBtn">Flip</button>
     <button class="ghost" type="button" id="resetBtn">Reset</button>
   </div>
+  <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
 
   <div id="drawPanel" class="hidden">
     <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter, then draw its route on the field.</p>
@@ -141,7 +159,22 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
     </div>
     <p class="status" id="saveStatus" aria-live="polite"></p>
   </div>
+  <div class="publish hidden" id="publishPanel">
+    <strong>Kids / parents watch page</strong>
+    <p class="publish-copy">Mark saved plays for the watch page, then republish whenever routes or lineup names change.</p>
+    <div class="publish-actions">
+      <button type="button" id="publishToggle">Publish this play</button>
+      <button type="button" id="publishNow">Republish names + plays</button>
+      <button type="button" id="rotateShare">Rotate secret link</button>
+    </div>
+    <div class="share-row">
+      <input id="shareUrl" type="text" readonly placeholder="Publish a saved play to create the secret link" aria-label="Kids watch URL">
+      <button type="button" id="copyShare">Copy</button>
+    </div>
+    <p class="status" id="publishStatus" aria-live="polite"></p>
+  </div>
   <p class="letters">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
+  </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
@@ -150,6 +183,10 @@ const LETTERS=["Q","C","X","A","B","Y","Z"];
 const TONIGHT=["23","26","38"];
 const FLIPS={"23":"26","26":"23","2":"19","19":"2"};
 const LOCAL_KEY="commodores-plays-v1";
+const SHARE_ORIGIN="https://personal-dashboard.chrisbailey.workers.dev";
+// The field-book offense array uses this exact stable order: Q, C, then the
+// five receiver spots X, A, B, Y, Z. Never infer names from another roster.
+const OFFENSE_SPOT_ORDER=["Q","C","X","A","B","Y","Z"];
 const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
 const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
@@ -198,7 +235,8 @@ function normalizePlay(raw,fallbackNumber){
     spots,
     source:raw&&raw.source||"coach",
     updatedBy:raw&&(raw.updatedBy||raw.updated_by)||"",
-    updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO()
+    updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO(),
+    published:!!(raw&&raw.published)
   };
 }
 function emptyPlay(number){
@@ -340,7 +378,10 @@ const STATE={
   look:0,
   selected:"X",
   dirty:false,
-  coach:null
+  coach:null,
+  lineupUnit:"A",
+  lineups:{A:{},B:{}},
+  shareToken:""
 };
 const STORE={};
 let draft=null;
@@ -357,7 +398,7 @@ function writeLocal(){
   const rows=Object.values(STORE).filter(p=>p.source!=="seed").map(p=>({
     number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
     bullets:p.bullets,looks:p.looks,spots:p.spots,source:p.source,
-    updatedBy:p.updatedBy,updatedAt:p.updatedAt
+    updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published
   }));
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows))}catch(_){}
 }
@@ -375,12 +416,12 @@ function rowFromCloud(row){
   return normalizePlay({
     number:row.number,title:row.title,flipPartner:row.flip_partner,
     family:row.family,bullets:row.bullets,looks:row.looks,spots:row.spots,
-    source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at
+    source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at,published:row.published
   });
 }
 async function fetchCloud(){
   if(!sb||!STATE.coach) return [];
-  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at");
+  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published");
   if(error||!data) return [];
   return data.map(rowFromCloud);
 }
@@ -395,7 +436,8 @@ async function upsertCloud(play){
     family:play.family||"",
     bullets:play.bullets||[],
     updated_by:STATE.coach.first_name,
-    updated_at:play.updatedAt
+    updated_at:play.updatedAt,
+    published:!!play.published
   };
   const {error}=await sb.from("commodores_plays").upsert(payload,{onConflict:"number"});
   return {ok:!error,error:error&&error.message};
@@ -418,6 +460,117 @@ async function syncPlays(){
       }
     }
   }
+}
+function shownFirstName(name){
+  return name==="Michael"?"Mike":String(name||"");
+}
+function cleanLineups(raw){
+  const out={A:{},B:{}};
+  ["A","B"].forEach(unit=>{
+    const source=raw&&raw[unit];
+    if(Array.isArray(source)){
+      OFFENSE_SPOT_ORDER.forEach((letter,index)=>{out[unit][letter]=shownFirstName(source[index])});
+    }else{
+      OFFENSE_SPOT_ORDER.forEach(letter=>{out[unit][letter]=shownFirstName(source&&source[letter])});
+    }
+  });
+  return out;
+}
+async function loadLineups(){
+  if(!sb||!STATE.coach) return;
+  const {data,error}=await sb.from("commodores_plans").select("payload").eq("id","staff-lineup").maybeSingle();
+  if(error||!data||!data.payload) return;
+  const units=data.payload.units||{A:{offense:data.payload.offense||[]},B:{offense:[]}};
+  STATE.lineups=cleanLineups({
+    A:units.A&&units.A.offense,
+    B:units.B&&units.B.offense
+  });
+}
+function playLabel(letter){
+  return (STATE.lineups[STATE.lineupUnit]||{})[letter]||letter;
+}
+function randomToken(){
+  const bytes=new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function shareUrl(){
+  return STATE.shareToken?`${SHARE_ORIGIN}/watch.html?t=${encodeURIComponent(STATE.shareToken)}`:"";
+}
+async function loadShare(){
+  if(!sb||!STATE.coach) return;
+  const {data,error}=await sb.from("commodores_play_shares").select("token").eq("id","current").maybeSingle();
+  if(!error&&data&&data.token) STATE.shareToken=data.token;
+}
+function publishedSnapshot(){
+  const plays=Object.values(STORE)
+    .filter(play=>play.source!=="seed"&&play.published)
+    .sort((a,b)=>Number(a.number)-Number(b.number))
+    .map(play=>({
+      number:play.number,title:play.title,flipPartner:play.flipPartner||"",
+      spots:play.spots,looks:play.looks||[],family:play.family||"",bullets:play.bullets||[]
+    }));
+  return {
+    version:1,
+    publishedAt:nowISO(),
+    lineups:cleanLineups(STATE.lineups),
+    plays
+  };
+}
+async function publishSnapshot(rotate){
+  const status=$("#publishStatus");
+  if(!sb||!STATE.coach){status.textContent="Coach sign-in is required.";return false}
+  const snapshot=publishedSnapshot();
+  if(!snapshot.plays.length&&!STATE.shareToken){
+    status.textContent="Mark at least one saved play as published first.";
+    return false;
+  }
+  if(rotate||!STATE.shareToken) STATE.shareToken=randomToken();
+  status.textContent="Publishing…";
+  const {error}=await sb.from("commodores_play_shares").upsert({
+    id:"current",token:STATE.shareToken,snapshot,
+    published_at:snapshot.publishedAt,updated_by:STATE.coach.first_name
+  },{onConflict:"id"});
+  if(error){
+    status.textContent="Could not publish: "+error.message;
+    return false;
+  }
+  status.textContent=snapshot.plays.length
+    ?`Published ${snapshot.plays.length} play${snapshot.plays.length===1?"":"s"} with current Unit A/B names.`
+    :"Kids page cleared. No plays are currently published.";
+  renderPublish();
+  return true;
+}
+async function togglePublished(){
+  const play=STORE[STATE.number];
+  if(!play||play.source==="seed"){
+    $("#publishStatus").textContent="Save the coach-drawn play before publishing it.";
+    return;
+  }
+  play.published=!play.published;
+  play.updatedAt=nowISO();
+  const result=await upsertCloud(play);
+  if(!result.ok){
+    play.published=!play.published;
+    $("#publishStatus").textContent="Could not change publishing: "+result.error;
+    renderPublish();
+    return;
+  }
+  writeLocal();
+  renderPublish();
+  await publishSnapshot(false);
+}
+function renderPublish(){
+  const panel=$("#publishPanel");
+  if(!panel) return;
+  panel.classList.toggle("hidden",!STATE.coach);
+  const play=STORE[STATE.number];
+  const saved=play&&play.source!=="seed";
+  $("#publishToggle").disabled=!saved;
+  $("#publishToggle").textContent=saved&&play.published?"Published · remove":"Publish this play";
+  $("#shareUrl").value=shareUrl();
+  $("#copyShare").disabled=!STATE.shareToken;
+  $("#rotateShare").disabled=!STATE.shareToken;
 }
 
 function storedPlay(number){return STORE[number]||emptyPlay(number)}
@@ -449,9 +602,10 @@ function fieldSVG(play,pos,ball,liveRoute){
   const kids=play.spots.map(s=>{
     const p=pos[s.letter]||s;
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
-    const r=s.letter==="Q"?14:13;
     const fill=s.letter==="Q"?"#FFFFFF":(on?"#ECB748":"#CFAE70");
-    return `<g data-letter="${s.letter}"><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${p.x}" y="${p.y+4}" fill="#1C1C1C" text-anchor="middle" font-size="12">${s.letter}</text></g>`;
+    const label=playLabel(s.letter);
+    const width=Math.max(26,Math.min(62,14+label.length*5.6));
+    return `<g data-letter="${s.letter}"><rect x="${p.x-width/2}" y="${p.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${p.x}" y="${p.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${label.length>8?8:10}">${esc(label)}</text></g>`;
   }).join("");
   const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:300};
   const endzone=play.number==="6"?`<rect x="16" y="16" width="328" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="300" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
@@ -471,6 +625,7 @@ function stopAnim(){
   if(anim.frame) cancelAnimationFrame(anim.frame);
   if(anim.timer) clearTimeout(anim.timer);
   anim=null;
+  if($("#playBtn")) $("#playBtn").textContent="Play";
 }
 function paint(play,pos,ball,liveRoute){
   $("#fieldHost").innerHTML=fieldSVG(play,pos,ball,liveRoute);
@@ -512,9 +667,11 @@ function renderChrome(){
   $("#modeDraw").classList.toggle("on",STATE.mode==="draw");
   $("#drawPanel").classList.toggle("hidden",STATE.mode!=="draw");
   $("#savePanel").classList.toggle("hidden",STATE.mode!=="draw");
+  $("#scrub").disabled=STATE.mode==="draw";
   renderPicks();
   $("#looks").innerHTML=(STATE.mode==="play"?play.looks:[]).map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
   $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
+  $$("#unitPicks [data-unit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.unit===STATE.lineupUnit));
   const partner=play.flipPartner||FLIPS[play.number];
   $("#flipBtn").textContent=partner?`Flip to ${partner}`:"Flip";
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
@@ -527,6 +684,7 @@ function renderChrome(){
     $("#playTitle").value=draft?draft.title:play.title;
   }
   setCue(play,"idle");
+  renderPublish();
 }
 function render(liveRoute){
   const play=workingPlay();
@@ -535,46 +693,58 @@ function render(liveRoute){
   play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
   paint(play,pos,play.spots.find(s=>s.letter==="C"),liveRoute);
 }
-
-function playNow(){
-  if(STATE.mode==="draw") return;
-  const play=workingPlay();
-  stopAnim();
+function paintProgress(play,progress){
   const q=play.spots.find(s=>s.letter==="Q");
   const c=play.spots.find(s=>s.letter==="C");
   const targetLetter=play.looks[STATE.look]?.target;
   const target=play.spots.find(s=>s.letter===targetLetter);
   const dest=target&&!target.sit?pointAlong(target,target.route,1):null;
+  const snap=.096, run=.835, throwEnd=1;
+  const pos={};
+  play.spots.forEach(s=>{
+    if(progress<snap||s.sit||!s.route.length){pos[s.letter]={x:s.x,y:s.y};return}
+    pos[s.letter]=pointAlong(s,s.route,ease(Math.min(1,(progress-snap)/(run-snap))));
+  });
+  let ball={x:c.x,y:c.y};
+  if(progress<snap){
+    const p=ease(progress/snap);
+    ball={x:c.x+(q.x-c.x)*p,y:c.y+(q.y-c.y)*p};
+  }else if(progress<run){
+    const drop=pos.Q||q;
+    ball={x:drop.x,y:drop.y+10};
+  }else if(dest){
+    const p=ease(Math.min(1,(progress-run)/(throwEnd-run)));
+    const from=pos.Q||q;
+    ball={x:from.x+(dest.x-from.x)*p,y:from.y+(dest.y-from.y)*p};
+  }else{
+    ball=pos.Q||q;
+  }
+  paint(play,pos,ball);
+  $("#scrub").value=String(Math.round(progress*1000));
+}
+
+function playNow(){
+  if(STATE.mode==="draw") return;
+  if(anim){stopAnim();$("#playBtn").textContent="Play";return}
+  const play=workingPlay();
+  stopAnim();
+  const c=play.spots.find(s=>s.letter==="C");
   setCue(play,"play");
+  $("#playBtn").textContent="Pause";
   const start=performance.now();
   const snap=220, run=1700, throwMs=380, hold=1100;
+  const total=snap+run+throwMs;
   anim={frame:0,timer:0};
   const tick=now=>{
     const t=now-start;
-    const pos={};
-    play.spots.forEach(s=>{
-      if(t<snap||s.sit||!s.route.length){pos[s.letter]={x:s.x,y:s.y};return}
-      pos[s.letter]=pointAlong(s,s.route,ease(Math.min(1,(t-snap)/run)));
-    });
-    let ball={x:c.x,y:c.y};
-    if(t<snap){
-      const p=ease(t/snap);
-      ball={x:c.x+(q.x-c.x)*p,y:c.y+(q.y-c.y)*p};
-    }else if(t<snap+run){
-      const drop=pos.Q||q;
-      ball={x:drop.x,y:drop.y+10};
-    }else if(dest){
-      const p=ease(Math.min(1,(t-snap-run)/throwMs));
-      const from=pos.Q||q;
-      ball={x:from.x+(dest.x-from.x)*p,y:from.y+(dest.y-from.y)*p};
-    }else{
-      ball=pos.Q||q;
-    }
-    paint(play,pos,ball);
-    if(t<snap+run+throwMs){anim.frame=requestAnimationFrame(tick);return}
+    paintProgress(play,Math.min(1,t/total));
+    if(t<total){anim.frame=requestAnimationFrame(tick);return}
     anim.timer=setTimeout(()=>{
+      const pos={};
       play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
       paint(play,pos,c);
+      $("#scrub").value="0";
+      $("#playBtn").textContent="Play";
       setCue(play,"idle");
       anim=null;
     },hold);
@@ -751,6 +921,7 @@ async function deleteDraft(){
   const number=numKey($("#playNumber").value||STATE.number);
   if(!number||!STORE[number]) return;
   if(!confirm(`Delete play ${number}?`)) return;
+  const wasPublished=!!STORE[number].published;
   delete STORE[number];
   writeLocal();
   await deleteCloud(number);
@@ -760,9 +931,11 @@ async function deleteDraft(){
   setDraftFromStore();
   $("#saveStatus").textContent=seed?`Deleted your ${number}. Guessed seed is back.`:`Deleted ${number}.`;
   render();
+  if(wasPublished&&STATE.shareToken) await publishSnapshot(false);
 }
 
 function renderAuth(){
+  $("#coachTools").classList.toggle("hidden",!STATE.coach);
   if(STATE.coach){
     $("#authBar").innerHTML=`<b>Signed in as ${esc(STATE.coach.first_name)}</b><span>Saves go to every coach iPad.</span><button class="ghost" type="button" id="lockBtn">Lock</button>`;
     $("#lockBtn").onclick=async()=>{try{if(sb) await sb.auth.signOut()}catch(_){}STATE.coach=null;location.reload()};
@@ -796,6 +969,7 @@ async function onLogin(event){
     STATE.coach=coach;
     renderAuth();
     await syncPlays();
+    await Promise.all([loadLineups(),loadShare()]);
     if(STATE.mode==="draw") setDraftFromStore();
     render();
     $("#saveStatus").textContent="Signed in. Saved plays will follow you.";
@@ -837,6 +1011,37 @@ $("#resetBtn").onclick=()=>{
   render();
 };
 $("#showAreas").onchange=()=>{stopAnim();render()};
+$("#unitPicks").onclick=event=>{
+  const button=event.target.closest("[data-unit]");
+  if(!button) return;
+  STATE.lineupUnit=button.dataset.unit==="B"?"B":"A";
+  stopAnim();
+  render();
+};
+$("#scrub").oninput=()=>{
+  if(STATE.mode==="draw") return;
+  stopAnim();
+  const play=workingPlay();
+  paintProgress(play,Number($("#scrub").value)/1000);
+  setCue(play,"play");
+};
+$("#publishToggle").onclick=togglePublished;
+$("#publishNow").onclick=()=>publishSnapshot(false);
+$("#rotateShare").onclick=()=>{
+  if(confirm("Rotate the secret link? The old kids link will stop working.")) publishSnapshot(true);
+};
+$("#copyShare").onclick=async()=>{
+  const value=shareUrl();
+  if(!value) return;
+  try{
+    await navigator.clipboard.writeText(value);
+    $("#publishStatus").textContent="Kids link copied.";
+  }catch(_){
+    $("#shareUrl").focus();
+    $("#shareUrl").select();
+    $("#publishStatus").textContent="Link selected. Copy it from the field.";
+  }
+};
 $("#sitBtn").onclick=sitSelected;
 $("#clearBtn").onclick=clearSelected;
 $("#newPlayBtn").onclick=startNewPlay;
@@ -871,6 +1076,21 @@ applyHash();
 renderAuth();
 render();
 window.addEventListener("hashchange",()=>{applyHash();if(STATE.mode==="draw") setDraftFromStore();stopAnim();render();});
+window.addEventListener("message",event=>{
+  if(event.origin!==location.origin||!event.data||event.data.type!=="commodores-lineups") return;
+  STATE.lineups=cleanLineups(event.data.lineups);
+  stopAnim();
+  render();
+});
+if(new URLSearchParams(location.search).get("embed")==="1"){
+  document.body.classList.add("embed");
+  if(window.ResizeObserver){
+    new ResizeObserver(()=>window.parent.postMessage({
+      type:"commodores-plays-ready",
+      height:Math.ceil(document.documentElement.scrollHeight)
+    },location.origin)).observe(document.body);
+  }
+}
 (async()=>{
   if(!sb) return;
   try{
@@ -880,9 +1100,16 @@ window.addEventListener("hashchange",()=>{applyHash();if(STATE.mode==="draw") se
       STATE.coach=coach;
       renderAuth();
       await syncPlays();
+      await Promise.all([loadLineups(),loadShare()]);
       if(STATE.mode==="draw") setDraftFromStore();
       applyHash();
       render();
+      if(window.parent!==window){
+        window.parent.postMessage({
+          type:"commodores-plays-ready",
+          height:Math.ceil(document.documentElement.scrollHeight)
+        },location.origin);
+      }
     }
   }catch(_){}
 })();

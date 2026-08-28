@@ -37,7 +37,7 @@ They are independent. **Do not merge them, and do not let a change to one leak i
 push to main  →  GitHub Action  →  https://cbsp4809.github.io/personal-dashboard/
 ```
 
-Everything in this repo is served publicly at that origin **except** `commodores.html`, `commodores.webmanifest`, `plays.html`, and `plays.webmanifest`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book and play animator are hosted on the **Cloudflare Worker** `personal-dashboard` at `https://personal-dashboard.chrisbailey.workers.dev/` (root `wrangler.toml` static assets). Do not put Cloudflare Access back. Treat every OTHER file as world-readable. Manifests use root-relative paths for the Cloudflare root, not the `/personal-dashboard/` GitHub sub-path.
+Everything in this repo is served publicly at that origin **except** `commodores.html`, `commodores.webmanifest`, `plays.html`, `plays.webmanifest`, and `watch.html`, which the deploy workflow strips from the public artifact (see `deploy.yml`). The Commodores field book, coach play editor, and token-only watch page are hosted on the **Cloudflare Worker** `personal-dashboard` at `https://personal-dashboard.chrisbailey.workers.dev/` (root `wrangler.toml` static assets). Do not put Cloudflare Access back. Treat every OTHER file as world-readable. Manifests use root-relative paths for the Cloudflare root, not the `/personal-dashboard/` GitHub sub-path.
 
 ---
 

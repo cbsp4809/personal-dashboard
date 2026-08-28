@@ -54,7 +54,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
 .mast-inner{max-width:1180px;margin:auto;padding:17px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:18px}
 .mast h1{font-size:29px}.mast h1 em{color:var(--soft);font-style:italic}
 .mast .kicker{margin-bottom:4px}.mast .star{width:15px;height:15px}
-.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;overflow:hidden;padding:0 22px 8px;max-width:1180px;margin:auto}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;overflow:hidden;padding:0 22px 8px;max-width:1180px;margin:auto}
 .tabs button{min-width:0;min-height:38px;border:1px solid transparent;border-radius:999px;padding:8px 6px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;text-align:center}
 .tabs button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
 .ref-nav{display:flex;justify-content:flex-end;padding:0 22px 10px;max-width:1180px;margin:auto}
@@ -74,6 +74,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
 .team-card>summary .team-avg{margin-left:auto;flex:none}
 main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .page{display:none}.page.on{display:block}
+.plays-shell{overflow:hidden;padding:0}
+.plays-frame{display:block;width:100%;min-height:900px;border:0;background:#1C1C1C}
 .hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr);gap:14px;margin-bottom:18px}
 .panel,.practice-card,.play-card,.milestone{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:16px}
 .panel{padding:20px}
@@ -419,6 +421,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <nav class="tabs" aria-label="Field book">
       <button class="on" data-page="today" type="button">Today</button>
       <button data-page="playbook" type="button">Playbook</button>
+      <button data-page="plays" type="button">Plays</button>
       <button data-page="lineup" type="button">Lineup</button>
       <button data-page="practice" type="button">Practice</button>
     </nav>
@@ -465,7 +468,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="panel">
           <div class="eyebrow">Next practice</div>
           <h3>Thu Aug 27 · 5:00 p.m.</h3>
-          <p>Frostwood. Live 23/26, then 38. <a class="go-tab" href="plays.html">Open the play animator</a> — letters only, no roster.</p>
+          <p>Frostwood. Live 23/26, then 38. <button class="go-tab" data-go="plays" type="button">Open Plays</button> — current lineup names follow each letter.</p>
         </div>
         <div class="panel" id="nextGamePanel">
           <div class="eyebrow" id="nextGameEyebrow">Upcoming games</div>
@@ -498,12 +501,10 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="panel callout" style="margin-bottom:18px">
         <span class="dot"></span>
         <div>
-          <strong>Play animator · iPad</strong>
-          <span>Now-5 with moving routes. Tonight: 23/26 then 38. Letters Q / C / X / A / B / Y / Z only — no roster, no notes.</span>
+          <strong>Plays · iPad</strong>
+          <span>Now-5 with moving routes. Tonight: 23/26 then 38. The seven letters use the current Unit A or Unit B offense names.</span>
           <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
-            <a class="btn" href="plays.html#2326">23 / 26</a>
-            <a class="btn" href="plays.html#38">38</a>
-            <a class="btn ghost" href="plays.html">All Now-5</a>
+            <button class="btn" data-go="plays" type="button">Open Plays</button>
           </div>
         </div>
       </div>
@@ -710,6 +711,17 @@ body.team-dragging{overflow:hidden;touch-action:none}
         </div>
         <div class="section-head"><div><div class="eyebrow">Saved builds</div><h2>Editable play files</h2></div><p>Open any one in Builder.</p></div>
         <div class="play-grid" id="builtPlaybook"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-plays">
+      <div class="section-head"><div><div class="eyebrow">Draw · animate · publish</div><h2>Plays</h2></div><p>Coach-only editor · current offense lineup names</p></div>
+      <div class="binder-note">
+        <b>One play book, one lineup.</b> Q and C map to those lineup spots; X, A, B, Y, Z follow the five receiver spots in that stable order. Choose Unit A or B below. Publishing captures both units’ current first-name labels for the kids page.
+      </div>
+      <div class="panel plays-shell">
+        <!-- Loaded only after the field book's coach allowlist check succeeds. -->
+        <iframe id="playsFrame" class="plays-frame" data-src="plays.html?embed=1" title="Commodores coach play animator"></iframe>
       </div>
     </section>
 
@@ -1205,6 +1217,7 @@ function showPage(name,options){
   const seasonNav=$("#seasonNav");
   if(seasonNav) seasonNav.classList.toggle("on",resolved==="season");
   $$(".page").forEach(item=>item.classList.toggle("on",item.id==="page-"+resolved));
+  if(resolved==="plays") startPlaysFrame();
   if(resolved==="playbook") showPlaybookPane((options&&options.pane)||PLAYBOOK_PANES[requested]||"offense");
   if(resolved==="today"){
     if(!wasToday) enterTeamTab();
@@ -1213,6 +1226,40 @@ function showPage(name,options){
   }
   if(!(options&&options.keepScroll)) window.scrollTo({top:0,behavior:"smooth"});
 }
+function currentPlayLineups(){
+  // Stable play-letter mapping: lineup indices are Q, C, then receivers
+  // X, A, B, Y, Z. Do not create a second roster or reorder these slots.
+  const lineups={};
+  UNIT_IDS.forEach(unit=>{
+    const line=(teamState&&teamState.units&&teamState.units[unit]&&teamState.units[unit].offense)||[];
+    lineups[unit]=Object.fromEntries(OFFENSE_SPOTS.map((spot,index)=>[
+      spot.id,line[index]?displayName(line[index]):""
+    ]));
+  });
+  return lineups;
+}
+function postPlayLineups(){
+  const frame=$("#playsFrame");
+  if(!frame||!frame.contentWindow) return;
+  frame.contentWindow.postMessage({type:"commodores-lineups",lineups:currentPlayLineups()},location.origin);
+}
+function startPlaysFrame(){
+  const frame=$("#playsFrame");
+  if(!frame) return;
+  if(!frame.getAttribute("src")){
+    frame.src=frame.dataset.src;
+    frame.addEventListener("load",postPlayLineups);
+  }else{
+    postPlayLineups();
+  }
+}
+window.addEventListener("message",event=>{
+  if(event.origin!==location.origin||!event.data||event.data.type!=="commodores-plays-ready") return;
+  postPlayLineups();
+  const frame=$("#playsFrame");
+  const height=Number(event.data.height);
+  if(frame&&Number.isFinite(height)) frame.style.height=Math.max(760,Math.min(1800,height))+"px";
+});
 function openFromHash(){
   const hash=location.hash.replace(/^#/,"");
   if(!hash) return;
@@ -1665,6 +1712,7 @@ async function openApp(){
   await loadCloudPlans();
   await loadLeagueSchedule();
   await loadStaffLineup();
+  postPlayLineups();
   openFromHash();
 }
 $("#loginForm").onsubmit=async event=>{
@@ -3344,6 +3392,7 @@ function renderTeamLineup(){
   renderPlayTime();
   refreshPlayerSpots();
   bindTeamLineup();
+  postPlayLineups();
 }
 function renderTeam(){
   renderScoringCoach();

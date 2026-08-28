@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Commodores Plays</title>
+<meta name="theme-color" content="#1C1C1C">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/commodores-icon-192.png">
+<link rel="apple-touch-icon" href="icons/commodores-apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#1C1C1C;--ink:#fff;--soft:#E0D5C0;--muted:#8d8d8d;--line:rgba(207,174,112,.18);--strong:rgba(207,174,112,.36);--gold:#CFAE70;--highlight:#ECB748;--sans:"Figtree","Helvetica Neue",Arial,sans-serif;--serif:"Newsreader",Georgia,serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font:inherit}.hidden{display:none!important}
+.wrap{width:min(720px,100%);margin:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.kicker{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.17em;text-transform:uppercase}.star{width:14px;height:14px;fill:var(--gold)}
+h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+.status{padding:18px;border:1px solid var(--line);border-radius:15px;background:#000;color:var(--soft)}
+.picks{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 10px;scroll-snap-type:x proximity}
+.picks button{min-width:100px;min-height:58px;scroll-snap-align:start;border:1px solid var(--strong);border-radius:13px;padding:9px 11px;background:#000;color:var(--soft);text-align:left;font-weight:800}
+.picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}.picks small{display:block;margin-top:2px;font-size:11px;opacity:.75}
+.units,.looks{display:flex;gap:8px;margin:0 0 10px}.units button,.looks button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:7px 10px;background:transparent;color:var(--muted);font-weight:800}
+.units button.on,.looks button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
+.field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}
+.tools{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.scrub{width:100%;accent-color:var(--gold)}.cue{min-height:38px;margin:9px 0 0;color:var(--soft);font-size:13px}
+.stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Vanderbilt · Fall ’26</div>
+  <h1>Commodores Plays</h1>
+  <p class="sub">Tap a play, choose your unit, and watch your route.</p>
+  <div class="status" id="status">Loading plays…</div>
+  <section id="viewer" class="hidden" aria-label="Published Commodores plays">
+    <div class="picks" id="picks"></div>
+    <div class="units" id="units" role="group" aria-label="Lineup unit">
+      <button type="button" data-unit="A" class="on">Unit A</button>
+      <button type="button" data-unit="B">Unit B</button>
+    </div>
+    <div class="looks" id="looks"></div>
+    <div class="field-wrap"><div id="field"></div></div>
+    <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="reset">Reset</button></div>
+    <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
+    <p class="cue" id="cue" aria-live="polite"></p>
+    <p class="stamp" id="stamp"></p>
+  </section>
+</main>
+<script>
+const $=selector=>document.querySelector(selector);
+const $$=selector=>[...document.querySelectorAll(selector)];
+const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
+const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-watch",persistSession:false,autoRefreshToken:false}}):null;
+const LETTERS=["Q","C","X","A","B","Y","Z"];
+const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null};
+const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function pointAlong(start,points,t){
+  const pts=[start,...(points||[])],segments=[];let total=0;
+  for(let i=1;i<pts.length;i++){const length=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);segments.push({a:pts[i-1],b:pts[i],length});total+=length}
+  if(!total)return{x:start.x,y:start.y};
+  let distance=Math.max(0,Math.min(1,t))*total;
+  for(const segment of segments){if(distance<=segment.length){const p=segment.length?distance/segment.length:1;return{x:segment.a.x+(segment.b.x-segment.a.x)*p,y:segment.a.y+(segment.b.y-segment.a.y)*p}}distance-=segment.length}
+  return pts[pts.length-1];
+}
+function cleanPlay(raw){
+  if(!raw||!String(raw.number||"").match(/^\d{1,4}$/)||!Array.isArray(raw.spots))return null;
+  const spots=LETTERS.map(letter=>{
+    const source=raw.spots.find(spot=>spot&&spot.letter===letter)||{};
+    const route=Array.isArray(source.route)?source.route.map(point=>({x:Number(point.x),y:Number(point.y)})).filter(point=>Number.isFinite(point.x)&&Number.isFinite(point.y)):[];
+    return{letter,x:Number(source.x)||180,y:Number(source.y)||300,sit:!!source.sit,route};
+  });
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],spots};
+}
+function currentPlay(){return state.plays.find(play=>play.number===state.number)||state.plays[0]}
+function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
+function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
+function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
+function paint(progress){
+  const play=currentPlay();if(!play)return;
+  const q=play.spots.find(spot=>spot.letter==="Q"),c=play.spots.find(spot=>spot.letter==="C");
+  const targetLetter=play.looks[state.look]&&play.looks[state.look].target;
+  const target=play.spots.find(spot=>spot.letter===targetLetter);
+  const destination=target&&!target.sit?pointAlong(target,target.route,1):null;
+  const snap=.096,run=.835,positions={};
+  play.spots.forEach(spot=>{positions[spot.letter]=progress<snap||spot.sit||!spot.route.length?{x:spot.x,y:spot.y}:pointAlong(spot,spot.route,ease(Math.min(1,(progress-snap)/(run-snap))))});
+  let ball={x:c.x,y:c.y};
+  if(progress<snap){const p=ease(progress/snap);ball={x:c.x+(q.x-c.x)*p,y:c.y+(q.y-c.y)*p}}
+  else if(progress<run){ball={x:positions.Q.x,y:positions.Q.y+10}}
+  else if(destination){const p=ease((progress-run)/(1-run));ball={x:positions.Q.x+(destination.x-positions.Q.x)*p,y:positions.Q.y+(destination.y-positions.Q.y)*p}}
+  else ball=positions.Q;
+  const highlighted=new Set([targetLetter]);
+  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>`<path d="${esc(path(spot,spot.route))}" fill="none" stroke="${highlighted.has(spot.letter)?"#ECB748":"#FFFFFF"}" stroke-width="${highlighted.has(spot.letter)?4:2.4}" stroke-linecap="round" stroke-linejoin="round" opacity="${highlighted.has(spot.letter)?.95:.43}"/>`).join("");
+  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),width=Math.max(26,Math.min(66,14+name.length*5.6)),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-width/2}" y="${point.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${name.length>8?8:10}">${esc(name)}</text></g>`}).join("");
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="360" height="400" fill="#000"/><rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/><path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>${routes}${markers}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/></svg>`;
+  $("#scrub").value=String(Math.round(progress*1000));
+}
+function render(){
+  stop();const play=currentPlay();if(!play)return;
+  $("#picks").innerHTML=state.plays.map(item=>`<button type="button" data-play="${esc(item.number)}" class="${item.number===play.number?"on":""}"><b>${esc(item.number)}</b><small>${esc((item.title||"Play").replace(/^\d+\s*/,""))}</small></button>`).join("");
+  $$("#picks [data-play]").forEach(button=>button.onclick=()=>{state.number=button.dataset.play;state.look=0;render()});
+  $$("#units [data-unit]").forEach(button=>button.classList.toggle("on",button.dataset.unit===state.unit));
+  $("#looks").innerHTML=(play.looks||[]).map((look,index)=>`<button type="button" data-look="${index}" class="${index===state.look?"on":""}">${esc(look.label||"Look "+(index+1))}</button>`).join("");
+  $$("#looks [data-look]").forEach(button=>button.onclick=()=>{state.look=Number(button.dataset.look);render()});
+  const look=play.looks[state.look];
+  $("#cue").textContent=(look&&look.cue)||`${play.family?play.family+" · ":""}${play.title||"Play "+play.number}`;
+  paint(0);
+}
+function play(){
+  if(state.anim){stop();return}
+  const started=performance.now(),duration=2300;state.anim={frame:0};$("#play").textContent="Pause";
+  const tick=now=>{const progress=Math.min(1,(now-started)/duration);paint(progress);if(progress<1){state.anim.frame=requestAnimationFrame(tick);return}state.anim=null;$("#play").textContent="Play"};
+  state.anim.frame=requestAnimationFrame(tick);
+}
+$("#units").onclick=event=>{const button=event.target.closest("[data-unit]");if(!button)return;state.unit=button.dataset.unit==="B"?"B":"A";render()};
+$("#play").onclick=play;
+$("#reset").onclick=render;
+$("#scrub").oninput=()=>{stop();paint(Number($("#scrub").value)/1000)};
+(async()=>{
+  const token=new URLSearchParams(location.search).get("t")||"";
+  if(!sb||!/^[A-Za-z0-9_-]{43,}$/.test(token)){$("#status").textContent="This play link is not available.";return}
+  try{
+    const {data,error}=await sb.rpc("commodores_watch_plays",{p_token:token});
+    const plays=data&&Array.isArray(data.plays)?data.plays.map(cleanPlay).filter(Boolean):[];
+    if(error||!data||!plays.length)throw new Error("unavailable");
+    state.plays=plays;state.lineups=data.lineups&&typeof data.lineups==="object"?data.lineups:{A:{},B:{}};state.number=plays[0].number;
+    $("#status").classList.add("hidden");$("#viewer").classList.remove("hidden");
+    if(data.publishedAt){const date=new Date(data.publishedAt);if(!Number.isNaN(date.getTime()))$("#stamp").textContent="Playbook updated "+date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
+    render();
+  }catch(_){$("#status").textContent="This play link is not available."}
+})();
+</script>
+</body>
+</html>
