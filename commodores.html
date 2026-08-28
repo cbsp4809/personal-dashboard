@@ -1830,7 +1830,7 @@ async function requestResetEmail(email,msgEl){
 function showForgot(message){
   recoveryMode=true;
   showGate("forgot");
-  if(message) $("#forgotLead").textContent=message;
+  $("#forgotLead").textContent=message||"Enter your coach email. We’ll send a reset link to this phone or iPad.";
   $("#forgotMsg").textContent=message?"Request a new reset link below.":"";
 }
 function showReset(message){
@@ -1838,6 +1838,21 @@ function showReset(message){
   showGate("reset");
   $("#resetMsg").textContent=message||"Choose a new password for this coach login.";
 }
+function applyRecoveryLanding(){
+  const cb=readAuthCallback();
+  const expired=resetLinkError(cb);
+  if(expired){
+    showForgot(expired);
+    return cb;
+  }
+  if(cb.type==="recovery"||cb.hasTokens||cb.wantsReset){
+    showReset(cb.hasTokens||cb.type==="recovery"?"Checking your reset link…":"Choose a new password for this coach login.");
+  }
+  return cb;
+}
+applyRecoveryLanding();
+window.addEventListener("hashchange",()=>applyRecoveryLanding());
+window.addEventListener("popstate",()=>applyRecoveryLanding());
 $("#loginForm").onsubmit=async event=>{
   event.preventDefault();
   const email=$("#email").value.trim().toLowerCase();
@@ -3946,22 +3961,13 @@ async function loadStaffLineup(){
 // not burned by opening the field book. Anyone else stays on sign-in.
 (async()=>{
   if(!sb) return;
-  const cb=readAuthCallback();
-  const expired=resetLinkError(cb);
-  if(expired){
-    showForgot(expired);
-    return;
-  }
-  if(cb.type==="recovery"||cb.hasTokens||cb.wantsReset){
-    recoveryMode=true;
-    showReset(cb.hasTokens||cb.type==="recovery"?"Checking your reset link…":"Choose a new password for this coach login.");
-  }
+  const cb=applyRecoveryLanding();
   try{
     const {data}=await sb.auth.getSession();
     if(recoveryMode){
-      if(data&&data.session){
+      if(data&&data.session&&(cb.hasTokens||cb.type==="recovery"||cb.wantsReset)){
         showReset("Choose a new password for this coach login.");
-        stripAuthParams(true);
+        if(cb.hasTokens||cb.type==="recovery") stripAuthParams(true);
         return;
       }
       if(cb.hasTokens||cb.type==="recovery"){
@@ -3979,7 +3985,10 @@ async function loadStaffLineup(){
         },1600);
         return;
       }
-      showForgot("Need a new reset link? Enter your coach email.");
+      if(cb.wantsReset){
+        showReset("Open the reset link from your email, then choose a new password here.");
+        return;
+      }
       return;
     }
     const coach=await coachForSession(data&&data.session);
