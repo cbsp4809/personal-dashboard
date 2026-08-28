@@ -181,6 +181,25 @@ a{color:var(--brass)}
 .content-empty-sub{margin-top:8px;font-family:var(--sans);font-style:normal;font-size:13px;overflow-wrap:anywhere;}
 .content-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:0 0 16px;}
 .content-filterbar .filters{justify-content:flex-end;padding:0;}
+.content-help{min-width:0;max-width:760px;margin:0 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
+.content-help[open]{border-color:var(--line-strong);}
+.content-help-toggle{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:8px 12px;cursor:pointer;list-style:none;color:var(--soft);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.content-help-toggle::-webkit-details-marker{display:none;}
+.content-help-toggle::marker{content:"";}
+.content-help-toggle:hover,.content-help-toggle:focus-visible{color:var(--ink);outline:none;}
+.content-help[open] .content-help-toggle{color:var(--ink);border-bottom:1px solid var(--line);}
+.content-help-toggle::after{flex-shrink:0;content:"+";color:var(--brass);font-size:16px;font-weight:600;line-height:1;}
+.content-help[open] .content-help-toggle::after{content:"–";}
+.content-help-sheet{min-width:0;max-width:100%;padding:12px 12px 14px;}
+.content-help-kicker{margin:0 0 4px;color:var(--brass);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;}
+.content-help-sheet h2{margin:0 0 10px;font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.02em;overflow-wrap:anywhere;}
+.content-help-sheet p,.content-help-sheet li{min-width:0;max-width:100%;margin:0 0 8px;color:var(--soft);font-size:13px;line-height:1.4;overflow-wrap:anywhere;}
+.content-help-sheet p:last-child,.content-help-sheet ol{margin-bottom:0;}
+.content-help-sheet strong{color:var(--ink);font-weight:700;}
+.content-help-sheet code{display:inline;overflow-wrap:anywhere;word-break:break-word;color:var(--brass);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;}
+.content-help-sheet ol{margin:0 0 10px;padding:0 0 0 1.15em;}
+.content-help-sheet li{padding-left:2px;}
+.content-help-sheet li:last-child{margin-bottom:10px;}
 #app.content-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
 #app.content-view .composer{display:none;}
 .modal .box.content-box{max-width:560px;}
@@ -349,6 +368,10 @@ a{color:var(--brass)}
   .content-filterbar{display:block;padding-bottom:14px;}
   .content-filterbar .viewbar-label{display:block;margin-bottom:8px;}
   .content-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
+  .content-help{margin-bottom:12px;}
+  .content-help-toggle{min-height:44px;padding:10px 12px;}
+  .content-help-sheet{padding:12px;}
+  .content-help-sheet h2{font-size:20px;}
   .content-commandbar{align-items:stretch;flex-direction:column;}
   .content-new{width:100%;min-height:44px;}
   .content-card-toggle{padding:12px;}
@@ -591,6 +614,26 @@ body.card-detail-open{overflow:hidden;}
         <button class="chip" data-content-status="posted">Posted</button>
       </div>
     </div>
+    <details class="content-help hidden" id="contentHelp">
+      <summary class="content-help-toggle">Help</summary>
+      <div class="content-help-sheet">
+        <div class="content-help-kicker">Ops Content</div>
+        <h2>LinkedIn cheat sheet</h2>
+        <p><strong>Drafts.</strong> ChatGPT drops finished posts in Drive <code>ready/</code> as <code>YYYY-MM-DD-short-slug.md</code>. Sydney files them on Content.</p>
+        <p><strong>Statuses</strong></p>
+        <ol>
+          <li><strong>Ready</strong> — new draft for Chris</li>
+          <li><strong>Needs you</strong> — his call (names, claims, Iris/PopCam, etc.)</li>
+          <li><strong>Needs changes</strong> — he wants edits; leave a note; ChatGPT revises; back to Ready</li>
+          <li><strong>Approved</strong> — locked; Sydney attaches photo; Studio Pod PR posts</li>
+          <li><strong>Scheduled</strong> — waiting Tue 11 / Wed 3 / Thu 1 CT (or a time he sets)</li>
+          <li><strong>Posted</strong> — live; Drive file moves to <code>posted/</code></li>
+        </ol>
+        <p><strong>Chris.</strong> Open the card → read the ChatGPT copy (do not rewrite unless he asks) → Approve, Needs changes (+ note), or Needs you if a flag looks off → confirm personal LinkedIn (default) and the photo.</p>
+        <p><strong>Sydney / PR.</strong> After Approved → photo on the card → PR posts → live link → Posted.</p>
+        <p><strong>Cadence.</strong> Tue 11:00 a.m., Wed 3:00 p.m., Thu 1:00 p.m. America/Chicago. Destination default: personal LinkedIn.</p>
+      </div>
+    </details>
   </div>
 
   <div class="board" id="board"></div>
@@ -1069,6 +1112,7 @@ function syncActorUI(){
   const showingBoardTools = !showingEmails && !showingDigest && !showingContent;
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
   $("#contentFilters").classList.toggle("hidden", !showingContent);
+  $("#contentHelp").classList.toggle("hidden", !showingContent);
   $("#projectFilters").classList.toggle("hidden", !showingBoardTools);
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
   $("#doneBtn").classList.toggle("hidden", showingContent);

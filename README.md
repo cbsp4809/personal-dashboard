@@ -151,6 +151,10 @@ Emails, alerts, and Send now if it reused that table. Apply
 the private `ops-content-photos` bucket with the same signed-in / signed-URL
 pattern as email attachments. An optional Drive URL is a pointer only.
 
+A collapsible **Help** cheat sheet sits at the top of this tab (collapsed
+by default) so Chris can recall the status path, his review steps, Sydney/PR
+handoff, and the Tue 11 / Wed 3 / Thu 1 CT cadence.
+
 Each item shows a hook, the full editable caption, status, optional planned
 date, a photo thumbnail or “no photo”, and a source that defaults to
 ChatGPT. Actions: Approve, Request changes (note), Save caption, Attach /
