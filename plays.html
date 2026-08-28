@@ -26,9 +26,9 @@
   --serif:"Newsreader",Georgia,serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
+html,body{margin:0;width:100%;min-height:100%;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
 button,input{font:inherit;color:inherit}
-button{cursor:pointer}
+button{cursor:pointer;touch-action:manipulation}
 .hidden{display:none!important}
 .wrap{width:min(720px,100%);margin:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .kicker{display:flex;align-items:center;gap:8px;margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
@@ -47,27 +47,29 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .tonight{margin:0 0 12px;padding:12px 14px;border:1px solid rgba(207,174,112,.32);border-radius:14px;background:var(--gold-soft)}
 .tonight b{display:block;margin-bottom:2px;color:var(--highlight)}
 .tonight span{color:var(--soft);font-size:13px}
-.picks,.more{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
-.picks button,.more button{min-height:64px;min-width:88px;flex:1 1 88px;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left;font-weight:800}
-.picks button small,.more button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
-.picks button.on,.more button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
-.more button{min-height:52px;font-size:13px}
-.tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:0 0 10px}
+.picks{display:flex;gap:8px;overflow-x:auto;margin:0 0 10px;padding:1px 1px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.picks button{min-height:60px;min-width:104px;flex:0 0 auto;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left;font-weight:800;scroll-snap-align:start}
+.picks button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
+.picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.tools{display:grid;grid-template-columns:1.25fr repeat(3,1fr);gap:8px;margin:10px 0}
 .tools button{min-height:58px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
 .tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft);font-size:15px}
 .looks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .looks button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-weight:700}
 .looks button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
 .cue{min-height:42px;margin:0 0 10px;color:var(--soft);font-size:14px}
-.field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
-.field{display:block;width:100%;height:auto;touch-action:none}
+.immersive-shell{position:relative}
+.immersive-done{display:none;position:absolute;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:4;min-width:92px;min-height:52px;border:0;border-radius:999px;padding:10px 18px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}
+.field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.field-wrap.is-drawing{touch-action:none}
+.field{display:block;width:100%;height:auto}
 .field text{font:700 11px var(--sans)}
 .letters{margin:10px 0 0;color:var(--muted);font-size:12px;text-align:center}
 .check{display:flex;align-items:center;gap:8px;margin:10px 0 0;color:var(--muted);font-size:13px;font-weight:600}
 .check input{width:20px;height:20px;accent-color:var(--gold)}
 .draw-help{margin:0 0 10px;color:var(--soft);font-size:13px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
-.chips button{min-width:48px;min-height:48px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;touch-action:pan-y}
+.chips button{min-width:52px;min-height:52px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
 .chips button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
 .chips button.sit{opacity:.55}
 .draw-tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px}
@@ -80,7 +82,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .save-actions .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
 .status{min-height:20px;margin:8px 0 0;color:var(--highlight);font-size:12.5px}
 .unit-picks,.publish-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
-.unit-picks button,.publish-actions button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:800}
+.unit-picks button,.publish-actions button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:800}
 .unit-picks button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .scrub{width:100%;margin:0 0 12px;accent-color:var(--gold)}
 .publish{margin:14px 0 0;padding:12px;border:1px solid var(--strong);border-radius:14px;background:#000}
@@ -91,17 +93,34 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .share-row button{min-height:44px;border:0;border-radius:10px;padding:8px 12px;background:var(--gold);color:#1C1C1C;font-weight:800}
 body.embed .wrap{width:100%;padding:12px}
 body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{display:none}
+body.immersive{overflow:hidden;overscroll-behavior:none;background:#000}
+body.immersive .wrap{position:fixed;inset:0;z-index:100;width:100%;height:100dvh;max-width:none;padding:0;background:#000}
+body.immersive .wrap> :not(#coachTools),body.immersive #coachTools> :not(.immersive-shell){display:none!important}
+body.immersive #coachTools{display:block!important;height:100%}
+body.immersive .immersive-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+body.immersive .immersive-done{display:block}
+body.immersive .cue{display:none}
+body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0;touch-action:none}
+body.immersive .field-host{display:grid;width:100%;height:100%;place-items:center}
+body.immersive .field{width:auto;height:100%;max-width:100%;max-height:100%}
+body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}
+body.immersive .tools button{display:none}
+body.immersive .tools #playBtn{display:block}
+body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 @media(max-width:420px){
   h1{font-size:26px}
-  .tools,.draw-tools,.save-actions{grid-template-columns:1fr}
+  .tools{grid-template-columns:1fr 1fr}
+  .draw-tools{grid-template-columns:1fr 1fr}
+  .save-actions{grid-template-columns:1.35fr .65fr}
+  .wrap{padding-left:10px;padding-right:10px}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Now-5 · letters only</div>
+  <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Coach play builder</div>
   <h1>Play animator</h1>
-  <p class="sub">Kevin’s letters: Q · C · X · A · B · Y · Z. Draw the real routes; the current offense lineup supplies first-name labels.</p>
+  <p class="sub">Draw the real routes for Q · C · X · A · B · Y · Z. The current offense lineup supplies first-name labels.</p>
 
   <div class="auth" id="authBar">
     <form id="loginForm" class="auth" style="margin:0;padding:0;border:0;background:none;width:100%">
@@ -117,23 +136,13 @@ body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{displ
     <button type="button" id="modePlay" class="on">Play</button>
     <button type="button" id="modeDraw">Draw</button>
   </div>
-  <div class="tonight"><b>Tonight · Thu Aug 27</b><span>Live 23 / 26, then 38. Smash first. Overload first-down next. No rush. Draw any guessed line before you teach it.</span></div>
-
-  <div class="picks" id="tonightPicks" role="group" aria-label="Tonight’s two"></div>
-  <div class="more" id="morePicks" role="group" aria-label="Other plays"></div>
+  <div class="picks" id="playPicks" role="group" aria-label="Saved plays"></div>
 
   <div class="looks" id="looks" role="group" aria-label="Looks"></div>
   <div class="unit-picks" id="unitPicks" role="group" aria-label="Offense lineup unit">
     <button type="button" data-unit="A" class="on">Unit A names</button>
     <button type="button" data-unit="B">Unit B names</button>
   </div>
-  <div class="tools" id="playTools">
-    <button type="button" id="playBtn">Play</button>
-    <button class="ghost" type="button" id="flipBtn">Flip</button>
-    <button class="ghost" type="button" id="resetBtn">Reset</button>
-  </div>
-  <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
-
   <div id="drawPanel" class="hidden">
     <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter, then draw its route on the field.</p>
     <div class="chips" id="letterChips"></div>
@@ -144,13 +153,23 @@ body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{displ
     </div>
   </div>
 
-  <p class="cue" id="cue" aria-live="polite"></p>
-  <div class="field-wrap"><div id="fieldHost"></div></div>
+  <div class="immersive-shell" id="immersiveShell">
+    <button class="immersive-done" type="button" id="doneBtn">Done</button>
+    <p class="cue" id="cue" aria-live="polite"></p>
+    <div class="field-wrap" id="fieldWrap"><div class="field-host" id="fieldHost"></div></div>
+    <div class="tools" id="playTools">
+      <button type="button" id="playBtn">Play</button>
+      <button class="ghost" type="button" id="flipBtn">Flip</button>
+      <button class="ghost" type="button" id="fullScreenBtn">Full screen</button>
+      <button class="ghost" type="button" id="resetBtn">Reset</button>
+    </div>
+    <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
+  </div>
   <label class="check"><input id="showAreas" type="checkbox"> Show six areas + helper (no rush)</label>
 
   <div id="savePanel" class="hidden">
     <div class="save">
-      <input id="playNumber" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="23" aria-label="Play number">
+      <input id="playNumber" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="12" aria-label="Play number">
       <input id="playTitle" maxlength="48" placeholder="Short title" aria-label="Play title">
     </div>
     <div class="save-actions">
@@ -180,10 +199,9 @@ body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{displ
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const LETTERS=["Q","C","X","A","B","Y","Z"];
-const TONIGHT=["23","26","38"];
-const FLIPS={"23":"26","26":"23","2":"19","19":"2"};
-const LOCAL_KEY="commodores-plays-v1";
+const LOCAL_KEY="commodores-plays-v2";
 const SHARE_ORIGIN="https://personal-dashboard.chrisbailey.workers.dev";
+const IS_EMBED=new URLSearchParams(location.search).get("embed")==="1";
 // The field-book offense array uses this exact stable order: Q, C, then the
 // five receiver spots X, A, B, Y, Z. Never infer names from another roster.
 const OFFENSE_SPOT_ORDER=["Q","C","X","A","B","Y","Z"];
@@ -228,7 +246,7 @@ function normalizePlay(raw,fallbackNumber){
   return {
     number,
     title:String((raw&&raw.title)||"").slice(0,48),
-    flipPartner:numKey(raw&&(raw.flipPartner||raw.flip_partner))||FLIPS[number]||"",
+    flipPartner:numKey(raw&&(raw.flipPartner||raw.flip_partner))||"",
     family:String((raw&&raw.family)||""),
     bullets:Array.isArray(raw&&raw.bullets)?raw.bullets.map(String):[],
     looks:Array.isArray(raw&&raw.looks)?raw.looks:[],
@@ -273,107 +291,9 @@ function pathD(start,points){
   return `M${start.x} ${start.y}`+(points||[]).map(p=>`L${p.x} ${p.y}`).join("");
 }
 
-function smash(side){
-  const right=side==="right";
-  return normalizePlay({
-    number:right?"26":"23",
-    title:right?"26 Post Corner":"23 Post Corner",
-    family:"Smash",
-    flipPartner:right?"23":"26",
-    source:"seed",
-    updatedAt:"2026-08-27T00:00:00.000Z",
-    bullets:right
-      ?["Z takes three steps and sits.","Y stems, then breaks to the far corner.","Look Z first. Corner if the defender jumps the sit."]
-      :["X takes three steps and sits.","A stems, then breaks to the far corner.","Look X first. Corner if the defender jumps the sit."],
-    looks:[
-      {id:"short",label:"1 · Short",target:right?"Z":"X",cue:"Defender went back. Throw the hitch."},
-      {id:"corner",label:"2 · Over the top",target:right?"Y":"A",cue:"Defender came up. Throw the corner."}
-    ],
-    spots:[
-      {letter:"Q",x:180,y:348,route:[{x:180,y:366}]},
-      {letter:"C",x:180,y:300,route:[{x:180,y:236}]},
-      {letter:"X",x:48,y:298,route:[{x:48,y:268}]},
-      {letter:"A",x:110,y:298,route:right?[{x:110,y:150}]:[{x:110,y:220},{x:92,y:188},{x:38,y:132}]},
-      {letter:"B",x:220,y:348,route:[{x:248,y:328}]},
-      {letter:"Y",x:250,y:298,route:right?[{x:250,y:220},{x:268,y:188},{x:322,y:132}]:[{x:250,y:150}]},
-      {letter:"Z",x:312,y:298,route:[{x:312,y:268}]}
-    ]
-  });
-}
-function overload(side){
-  const left=side==="left";
-  const trips=left
-    ?[{letter:"X",x:40,y:298,route:[{x:32,y:128}]},{letter:"A",x:82,y:298,route:[{x:128,y:236}]},{letter:"B",x:122,y:298,route:[{x:122,y:248},{x:52,y:248}]}]
-    :[{letter:"Z",x:320,y:298,route:[{x:328,y:128}]},{letter:"Y",x:278,y:298,route:[{x:232,y:236}]},{letter:"B",x:238,y:298,route:[{x:238,y:248},{x:308,y:248}]}];
-  const weak=left
-    ?[{letter:"Y",x:250,y:298,route:[{x:250,y:248},{x:312,y:248}]},{letter:"Z",x:312,y:298,route:[{x:320,y:150}]}]
-    :[{letter:"A",x:110,y:298,route:[{x:110,y:248},{x:48,y:248}]},{letter:"X",x:48,y:298,route:[{x:40,y:150}]}];
-  return normalizePlay({
-    number:"38",
-    title:left?"38 Overload · left":"38 Overload · right",
-    family:"Overload",
-    source:"seed",
-    updatedAt:"2026-08-27T00:00:00.000Z",
-    bullets:["No motion. Lined up, then snap.","Extra kids one side so one leftover comes free.","Throw the first open kid past the line."],
-    looks:[
-      {id:"first",label:"1 · First open",target:"B",cue:"First open past the line. B out, or A/Y slant."},
-      {id:"leftover",label:"2 · Leftover",target:left?"Y":"A",cue:"Helper stayed middle. Throw the leftover out."}
-    ],
-    spots:[{letter:"Q",x:180,y:348,route:[{x:180,y:366}]},{letter:"C",x:180,y:300,route:[{x:180,y:248}]},...trips,...weak]
-  });
-}
-function rice(){
-  return normalizePlay({
-    number:"68",title:"68 Rice",family:"Smash · shot",source:"seed",updatedAt:"2026-08-27T00:00:00.000Z",
-    bullets:["Deep shot. Windows open as they spread.","Do not rush it. First throw still past the line."],
-    looks:[{id:"seam",label:"1 · Seam",target:"A",cue:"Throw the seam if it is clean."},{id:"shot",label:"2 · Far shot",target:"Z",cue:"If the seam is covered, the far Rice window."}],
-    spots:[
-      {letter:"Q",x:180,y:348,route:[{x:180,y:370}]},{letter:"C",x:180,y:300,route:[{x:180,y:210}]},
-      {letter:"X",x:48,y:298,route:[{x:48,y:170},{x:22,y:88}]},{letter:"A",x:118,y:298,route:[{x:132,y:120}]},
-      {letter:"B",x:220,y:348,route:[{x:160,y:200},{x:70,y:140}]},{letter:"Y",x:242,y:298,route:[{x:228,y:120}]},
-      {letter:"Z",x:312,y:298,route:[{x:312,y:170},{x:338,y:88}]}
-    ]
-  });
-}
-function bout(side){
-  const right=side==="right";
-  return normalizePlay({
-    number:right?"19":"2",
-    title:right?"19 B Route out":"2 B Route out",
-    family:"Overload",
-    flipPartner:right?"2":"19",
-    source:"seed",
-    updatedAt:"2026-08-27T00:00:00.000Z",
-    bullets:["B is the out. Everyone else occupies.","Throw B if he wins. First throw past the line."],
-    looks:[{id:"b",label:"1 · B out",target:"B",cue:"Throw B on the out."},{id:"sit",label:"2 · Sit",target:"C",cue:"If B is covered, C sits."}],
-    spots:[
-      {letter:"Q",x:180,y:348,route:[{x:180,y:366}]},{letter:"C",x:180,y:300,route:[{x:180,y:248}]},
-      {letter:"X",x:48,y:298,route:[{x:40,y:140}]},{letter:"A",x:110,y:298,route:[{x:150,y:236}]},
-      {letter:"B",x:right?150:210,y:298,route:right?[{x:150,y:246},{x:250,y:246}]:[{x:210,y:246},{x:110,y:246}]},
-      {letter:"Y",x:250,y:298,route:[{x:250,y:266}]},{letter:"Z",x:312,y:298,route:[{x:320,y:140}]}
-    ]
-  });
-}
-function goal(){
-  return normalizePlay({
-    number:"6",title:"6 Goal Line 2",family:"Overload · inside 15",source:"seed",updatedAt:"2026-08-27T00:00:00.000Z",
-    bullets:["Inside the 15 only.","Short routes. Get it past the line into the end zone."],
-    looks:[{id:"in",label:"1 · Slant",target:"A",cue:"Throw the inside slant."},{id:"cross",label:"2 · B cross",target:"B",cue:"If the slant is jumped, B crosses."}],
-    spots:[
-      {letter:"Q",x:180,y:348,route:[{x:180,y:360}]},{letter:"C",x:180,y:300,route:[{x:180,y:262}]},
-      {letter:"X",x:70,y:300,route:[{x:118,y:252}]},{letter:"A",x:122,y:300,route:[{x:122,y:262}]},
-      {letter:"B",x:210,y:348,route:[{x:150,y:268}]},{letter:"Y",x:238,y:300,route:[{x:238,y:262}]},
-      {letter:"Z",x:290,y:300,route:[{x:242,y:252}]}
-    ]
-  });
-}
-function seedPlays(){
-  return [smash("left"),smash("right"),overload("left"),rice(),bout("left"),bout("right"),goal()];
-}
-
 const STATE={
-  mode:"play",
-  number:"23",
+  mode:"draw",
+  number:"",
   generatedFlip:false,
   look:0,
   selected:"X",
@@ -395,7 +315,7 @@ function loadLocal(){
   }catch(_){return []}
 }
 function writeLocal(){
-  const rows=Object.values(STORE).filter(p=>p.source!=="seed").map(p=>({
+  const rows=Object.values(STORE).map(p=>({
     number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
     bullets:p.bullets,looks:p.looks,spots:p.spots,source:p.source,
     updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published
@@ -408,7 +328,6 @@ function mergePlay(play){
 }
 function rebuildStore(localRows,cloudRows){
   Object.keys(STORE).forEach(k=>delete STORE[k]);
-  seedPlays().forEach(mergePlay);
   (localRows||[]).forEach(mergePlay);
   (cloudRows||[]).forEach(mergePlay);
 }
@@ -453,7 +372,6 @@ async function syncPlays(){
   rebuildStore(local,cloud);
   if(STATE.coach){
     for(const play of Object.values(STORE)){
-      if(play.source==="seed") continue;
       const cloudPlay=cloud.find(p=>p.number===play.number);
       if(!cloudPlay||String(play.updatedAt)>String(cloudPlay.updatedAt)){
         await upsertCloud(play);
@@ -504,7 +422,7 @@ async function loadShare(){
 }
 function publishedSnapshot(){
   const plays=Object.values(STORE)
-    .filter(play=>play.source!=="seed"&&play.published)
+    .filter(play=>play.published)
     .sort((a,b)=>Number(a.number)-Number(b.number))
     .map(play=>({
       number:play.number,title:play.title,flipPartner:play.flipPartner||"",
@@ -543,7 +461,7 @@ async function publishSnapshot(rotate){
 }
 async function togglePublished(){
   const play=STORE[STATE.number];
-  if(!play||play.source==="seed"){
+  if(!play){
     $("#publishStatus").textContent="Save the coach-drawn play before publishing it.";
     return;
   }
@@ -565,7 +483,7 @@ function renderPublish(){
   if(!panel) return;
   panel.classList.toggle("hidden",!STATE.coach);
   const play=STORE[STATE.number];
-  const saved=play&&play.source!=="seed";
+  const saved=!!play;
   $("#publishToggle").disabled=!saved;
   $("#publishToggle").textContent=saved&&play.published?"Published · remove":"Publish this play";
   $("#shareUrl").value=shareUrl();
@@ -638,26 +556,19 @@ function setCue(play,mode){
     $("#cue").textContent=`Draw ${STATE.selected}. ${routeNote}`;
     return;
   }
-  const guessed=play.source==="seed"?"Guessed line — tap Draw and replace it. ":"";
   const flipped=STATE.generatedFlip?"True left/right flip of the saved drawing. ":"";
-  $("#cue").textContent=guessed+flipped+(mode==="play"&&look?look.cue:`${play.family?play.family+" · ":""}${play.title||"Play "+play.number}. ${look?look.cue:""}`.trim());
+  $("#cue").textContent=flipped+(mode==="play"&&look?look.cue:`${play.family?play.family+" · ":""}${play.title||(play.number?"Play "+play.number:"Blank play")}. ${look?look.cue:""}`.trim());
 }
 function orderedNumbers(){
-  const nums=Object.keys(STORE);
-  const rest=nums.filter(n=>!TONIGHT.includes(n)).sort((a,b)=>Number(a)-Number(b));
-  return [...TONIGHT.filter(n=>STORE[n]),...rest];
+  return Object.keys(STORE).sort((a,b)=>Number(a)-Number(b));
 }
 function renderPicks(){
   const numbers=orderedNumbers();
-  const tonight=numbers.filter(n=>TONIGHT.includes(n));
-  const more=numbers.filter(n=>!TONIGHT.includes(n));
   const btn=n=>{
     const play=STORE[n];
-    const drawn=play&&play.source!=="seed";
-    return `<button type="button" data-play="${esc(n)}" class="${n===STATE.number?"on":""}"><b>${esc(n)}</b><small>${esc((play&&play.title||"").replace(/^\d+\s*/,"" )||(drawn?"Drawn":"Guessed"))}</small></button>`;
+    return `<button type="button" data-play="${esc(n)}" class="${n===STATE.number?"on":""}"><b>${esc(n)}</b><small>${esc((play&&play.title||"").replace(/^\d+\s*/,"" )||"Saved play")}</small></button>`;
   };
-  $("#tonightPicks").innerHTML=tonight.map(btn).join("");
-  $("#morePicks").innerHTML=more.map(btn).join("")+`<button type="button" id="addPlayChip"><b>+ New</b><small>Blank formation</small></button>`;
+  $("#playPicks").innerHTML=numbers.map(btn).join("")+`<button type="button" id="addPlayChip"><b>+ New</b><small>Blank formation</small></button>`;
   $$("[data-play]").forEach(el=>el.onclick=()=>selectPlay(el.dataset.play));
   $("#addPlayChip").onclick=startNewPlay;
 }
@@ -672,8 +583,8 @@ function renderChrome(){
   $("#looks").innerHTML=(STATE.mode==="play"?play.looks:[]).map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
   $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
   $$("#unitPicks [data-unit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.unit===STATE.lineupUnit));
-  const partner=play.flipPartner||FLIPS[play.number];
-  $("#flipBtn").textContent=partner?`Flip to ${partner}`:"Flip";
+  $("#flipBtn").textContent="Flip";
+  $("#fieldWrap").classList.toggle("is-drawing",STATE.mode==="draw");
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
     const spot=play.spots.find(s=>s.letter===letter);
     return `<button type="button" data-letter="${letter}" class="${letter===STATE.selected?"on":""} ${spot&&spot.sit?"sit":""}">${letter}</button>`;
@@ -692,6 +603,32 @@ function render(liveRoute){
   const pos={};
   play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
   paint(play,pos,play.spots.find(s=>s.letter==="C"),liveRoute);
+}
+function notifyParent(type,detail){
+  if(window.parent===window) return;
+  window.parent.postMessage({type,...(detail||{})},location.origin);
+}
+function setImmersive(active){
+  document.body.classList.toggle("immersive",active);
+  $("#fullScreenBtn").setAttribute("aria-pressed",active?"true":"false");
+  notifyParent("commodores-plays-immersive",{active});
+}
+async function enterImmersive(){
+  if(STATE.mode==="draw"){
+    setMode("play");
+    if(STATE.mode==="draw") return;
+  }
+  setImmersive(true);
+  const shell=$("#immersiveShell");
+  if(shell&&shell.requestFullscreen){
+    try{await shell.requestFullscreen()}catch(_){}
+  }
+}
+async function exitImmersive(){
+  if(document.fullscreenElement&&document.exitFullscreen){
+    try{await document.exitFullscreen()}catch(_){}
+  }
+  setImmersive(false);
 }
 function paintProgress(play,progress){
   const q=play.spots.find(s=>s.letter==="Q");
@@ -819,10 +756,11 @@ function onFieldPointerDown(evt){
   const pt=svgPoint(evt);
   if(!pt) return;
   evt.preventDefault();
+  try{$("#fieldHost").setPointerCapture(evt.pointerId)}catch(_){}
   const hit=hitLetter(draft,pt);
   if(hit){
     STATE.selected=hit;
-    pointer={kind:"drag",letter:hit,moved:false};
+    pointer={kind:"drag",letter:hit,moved:false,id:evt.pointerId};
     render();
     return;
   }
@@ -830,7 +768,7 @@ function onFieldPointerDown(evt){
   if(!spot) return;
   spot.sit=false;
   spot.route=[];
-  pointer={kind:"draw",points:[pt]};
+  pointer={kind:"draw",points:[pt],id:evt.pointerId};
   markDirty();
   render(pointer.points);
 }
@@ -853,8 +791,9 @@ function onFieldPointerMove(evt){
   if(!last||Math.hypot(pt.x-last.x,pt.y-last.y)>=5) pointer.points.push(pt);
   render(pointer.points);
 }
-function onFieldPointerUp(){
+function onFieldPointerUp(evt){
   if(!pointer||!draft){pointer=null;return}
+  const pointerId=pointer.id;
   if(pointer.kind==="draw"){
     const spot=selectedSpot();
     if(spot){
@@ -864,6 +803,7 @@ function onFieldPointerUp(){
     }
   }
   pointer=null;
+  try{if($("#fieldHost").hasPointerCapture(pointerId)) $("#fieldHost").releasePointerCapture(pointerId)}catch(_){}
   render();
 }
 
@@ -893,14 +833,13 @@ async function saveDraft(){
     return;
   }
   const existing=STORE[number];
-  if(existing&&existing.source!=="seed"&&existing.number!==draft.number){
+  if(existing&&existing.number!==draft.number){
     if(!confirm(`Play ${number} already exists. Overwrite it?`)) return;
   }
   draft.number=number;
   draft.title=title||number;
-  draft.flipPartner=FLIPS[number]||"";
-  // Drawn plays keep the geometry Chris made. Drop seed look-chips so
-  // Save-as-99 does not inherit Smash/Overload read labels from another play.
+  draft.flipPartner="";
+  // Coach drawings do not inherit read labels from another play.
   draft.looks=[];
   draft.bullets=[];
   draft.family="";
@@ -916,6 +855,7 @@ async function saveDraft(){
     ?`Saved ${number} for every signed-in coach.`
     :(STATE.coach?`Saved on this device. Cloud: ${cloud.error}`:"Saved on this device. Sign in to share it.");
   render();
+  notifyParent("commodores-plays-changed");
 }
 async function deleteDraft(){
   const number=numKey($("#playNumber").value||STATE.number);
@@ -925,12 +865,11 @@ async function deleteDraft(){
   delete STORE[number];
   writeLocal();
   await deleteCloud(number);
-  const seed=seedPlays().find(p=>p.number===number);
-  if(seed) mergePlay(seed);
-  STATE.number=STORE[number]?number:(orderedNumbers()[0]||"23");
+  STATE.number=orderedNumbers()[0]||"";
   setDraftFromStore();
-  $("#saveStatus").textContent=seed?`Deleted your ${number}. Guessed seed is back.`:`Deleted ${number}.`;
+  $("#saveStatus").textContent=`Deleted ${number}.`;
   render();
+  notifyParent("commodores-plays-changed");
   if(wasPublished&&STATE.shareToken) await publishSnapshot(false);
 }
 
@@ -979,9 +918,13 @@ async function onLogin(event){
 $("#modePlay").onclick=()=>setMode("play");
 $("#modeDraw").onclick=()=>setMode("draw");
 $("#playBtn").onclick=playNow;
+$("#fullScreenBtn").onclick=enterImmersive;
+$("#doneBtn").onclick=exitImmersive;
+document.addEventListener("fullscreenchange",()=>{
+  if(!document.fullscreenElement&&document.body.classList.contains("immersive")) setImmersive(false);
+});
 $("#flipBtn").onclick=()=>{
   const play=workingPlay();
-  const partner=play.flipPartner||FLIPS[play.number];
   if(STATE.mode==="draw"){
     if(!draft) return;
     draft.spots=flipPlay(draft).spots;
@@ -991,12 +934,7 @@ $("#flipBtn").onclick=()=>{
     render();
     return;
   }
-  if(partner&&STORE[partner]&&!STATE.generatedFlip){
-    STATE.number=partner;
-    STATE.generatedFlip=false;
-  }else{
-    STATE.generatedFlip=!STATE.generatedFlip;
-  }
+  STATE.generatedFlip=!STATE.generatedFlip;
   STATE.look=0;
   stopAnim();
   render();
@@ -1065,24 +1003,31 @@ function applyHash(){
   const hash=(location.hash||"").replace("#","").toLowerCase();
   const n=numKey(hash);
   if(n&&STORE[n]){STATE.number=n;STATE.generatedFlip=false;STATE.look=0;return}
-  if(hash==="2326"||hash==="23-26"){STATE.number="26";STATE.generatedFlip=false;STATE.look=0;return}
-  STATE.number=STORE["23"]?"23":(orderedNumbers()[0]||"23");
+  STATE.number=orderedNumbers()[0]||"";
   STATE.generatedFlip=false;
   STATE.look=0;
 }
 
 rebuildStore(loadLocal(),[]);
 applyHash();
+setDraftFromStore();
 renderAuth();
 render();
 window.addEventListener("hashchange",()=>{applyHash();if(STATE.mode==="draw") setDraftFromStore();stopAnim();render();});
 window.addEventListener("message",event=>{
-  if(event.origin!==location.origin||!event.data||event.data.type!=="commodores-lineups") return;
-  STATE.lineups=cleanLineups(event.data.lineups);
-  stopAnim();
-  render();
+  if(event.origin!==location.origin||event.source!==window.parent||!event.data) return;
+  if(event.data.type==="commodores-lineups"){
+    STATE.lineups=cleanLineups(event.data.lineups);
+    stopAnim();
+    render();
+    return;
+  }
+  if(event.data.type==="commodores-open-play"){
+    const number=numKey(event.data.number);
+    if(number&&STORE[number]) selectPlay(number);
+  }
 });
-if(new URLSearchParams(location.search).get("embed")==="1"){
+if(IS_EMBED){
   document.body.classList.add("embed");
   if(window.ResizeObserver){
     new ResizeObserver(()=>window.parent.postMessage({
@@ -1101,8 +1046,8 @@ if(new URLSearchParams(location.search).get("embed")==="1"){
       renderAuth();
       await syncPlays();
       await Promise.all([loadLineups(),loadShare()]);
-      if(STATE.mode==="draw") setDraftFromStore();
       applyHash();
+      if(STATE.mode==="draw") setDraftFromStore();
       render();
       if(window.parent!==window){
         window.parent.postMessage({
