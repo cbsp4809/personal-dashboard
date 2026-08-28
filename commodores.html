@@ -52,6 +52,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
 .gate-foot{margin-top:20px;color:var(--muted);font-size:11px;text-align:center}
 .gate-foot a{color:var(--gold);font-weight:700}
 .mast-actions{display:flex;align-items:center;gap:8px;flex:none}
+.gate-link{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:4px;border:0;background:none;color:var(--gold);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.gate-card .btn{width:100%}
 #app{display:none;min-height:100vh;padding-bottom:calc(50px + env(safe-area-inset-bottom,0px))}
 .mast{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top,0px);background:rgba(28,28,28,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .mast-inner{max-width:1180px;margin:auto;padding:17px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:18px}
@@ -416,9 +418,34 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <input id="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="gateMsg">
     <label class="small" for="password">Password</label>
     <input id="password" type="password" autocomplete="current-password" aria-describedby="gateMsg">
-    <button class="btn" type="submit" style="width:100%;margin-top:4px">Sign in</button>
+    <button class="btn" type="submit" style="margin-top:4px">Sign in</button>
+    <button class="gate-link" type="button" id="forgotBtn">Forgot password?</button>
     <div class="gate-msg" id="gateMsg" aria-live="polite"></div>
     <div class="gate-foot"><a href="coach-manual.html">Coach user manual</a><br>FWE JV Vanderbilt Commodores · Fall 2026</div>
+  </form>
+  <form class="gate-card hidden" id="forgotForm">
+    <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
+    <h1>Forgot password?</h1>
+    <p id="forgotLead">Enter your coach email. We’ll send a reset link to this phone or iPad.</p>
+    <label class="small" for="forgotEmail">Email</label>
+    <input id="forgotEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="forgotMsg">
+    <button class="btn" type="submit">Send reset link</button>
+    <button class="gate-link" type="button" id="backToLogin">Back to sign in</button>
+    <div class="gate-msg" id="forgotMsg" aria-live="polite"></div>
+    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
+  </form>
+  <form class="gate-card hidden" id="resetForm">
+    <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
+    <h1>Set new password</h1>
+    <p>Choose a new password for this coach login. Enter it twice.</p>
+    <label class="small" for="newPassword">New password</label>
+    <input id="newPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="resetMsg">
+    <label class="small" for="confirmPassword">Confirm password</label>
+    <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="resetMsg">
+    <button class="btn" type="submit">Save password</button>
+    <button class="gate-link" type="button" id="resetNeedNew">Need a new reset link?</button>
+    <div class="gate-msg" id="resetMsg" aria-live="polite"></div>
+    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
   </form>
 </section>
 
@@ -878,10 +905,27 @@ const NOTE_NEXT="next-install";
 // sales/manufacturing tables). Publishable key only.
 const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
+const RECOVERY_URL="https://personal-dashboard.chrisbailey.workers.dev/reset.html";
 // Own storageKey so the Commodores sign-in never collides with the Ops /
 // morning-dashboard session on this same origin.
-const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true}}):null;
+const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-auth",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 let currentCoach=null;
+let recoveryMode=false;
+if(sb){
+  sb.auth.onAuthStateChange((event)=>{
+    if(event==="PASSWORD_RECOVERY"){
+      recoveryMode=true;
+      const resetForm=$("#resetForm");
+      if(resetForm){
+        $("#loginForm").classList.add("hidden");
+        $("#forgotForm").classList.add("hidden");
+        resetForm.classList.remove("hidden");
+        $("#resetMsg").textContent="Choose a new password for this coach login.";
+      }
+      try{history.replaceState({},document.title,location.pathname+"#reset")}catch(_){}
+    }
+  });
+}
 
 function getStore(key,fallback){
   try{const value=localStorage.getItem(STORE_PREFIX+key);return value===null?fallback:JSON.parse(value)}catch(_){return fallback}
@@ -1721,6 +1765,94 @@ async function openApp(){
   postPlayLineups();
   openFromHash();
 }
+function showGate(pane){
+  $("#loginForm").classList.toggle("hidden",pane!=="login");
+  $("#forgotForm").classList.toggle("hidden",pane!=="forgot");
+  $("#resetForm").classList.toggle("hidden",pane!=="reset");
+}
+function readAuthCallback(){
+  const query=new URLSearchParams(location.search);
+  const raw=(location.hash||"").replace(/^#/,"");
+  const hash=new URLSearchParams(raw.includes("=")?raw:"");
+  const pick=key=>hash.get(key)||query.get(key);
+  return {
+    error:pick("error"),
+    errorCode:pick("error_code"),
+    errorDescription:(pick("error_description")||"").replace(/\+/g," "),
+    type:pick("type"),
+    hasTokens:!!(pick("access_token")||pick("refresh_token")||query.get("code")||query.get("token_hash")),
+    wantsReset:raw==="reset"||raw.startsWith("reset&")||query.get("reset")==="1"
+  };
+}
+function resetLinkError(cb){
+  const blob=[cb.error,cb.errorCode,cb.errorDescription].join(" ").toLowerCase();
+  if(!cb.error&&!cb.errorCode) return "";
+  if(blob.includes("otp_expired")||blob.includes("expired")||blob.includes("otp expired"))
+    return "This reset link has expired. Request a new one.";
+  if(blob.includes("access_denied")||blob.includes("invalid")||blob.includes("denied"))
+    return "This reset link is no longer valid. Request a new one.";
+  return "This reset link did not work. Request a new one.";
+}
+function passwordSaveError(error){
+  const message=((error&&error.message)||"").toLowerCase();
+  if(message.includes("same")||message.includes("should be different"))
+    return "Pick a password that is different from the last one.";
+  if(message.includes("least")||message.includes("short")||message.includes("6 character")||message.includes("8 character"))
+    return "Use at least 8 characters.";
+  if(message.includes("leaked")||message.includes("pwned")||message.includes("compromised"))
+    return "That password showed up in a known leak. Choose another.";
+  if(message.includes("expired")||message.includes("otp")||message.includes("session")||message.includes("denied"))
+    return "This reset link has expired. Request a new one.";
+  return (error&&error.message)||"Could not save the new password.";
+}
+function stripAuthParams(keepReset){
+  try{
+    history.replaceState({},document.title,location.pathname+(keepReset?"#reset":location.hash&&!location.hash.includes("=")?location.hash:""));
+  }catch(_){}
+}
+async function requestResetEmail(email,msgEl){
+  if(!sb){msgEl.textContent="Cannot reach sign-in right now. Check your connection.";return}
+  msgEl.textContent="Sending reset link…";
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:RECOVERY_URL});
+    if(error){
+      const message=(error.message||"").toLowerCase();
+      if(message.includes("rate")||message.includes("seconds")||message.includes("after"))
+        msgEl.textContent="Wait a minute, then request another link.";
+      else msgEl.textContent=error.message||"Could not send the reset email.";
+      return;
+    }
+    msgEl.textContent="If that email is a coach login, a reset link is on the way. Check spam if it is not in the inbox.";
+  }catch(_){
+    msgEl.textContent="Could not send the reset email. Check your connection.";
+  }
+}
+function showForgot(message){
+  recoveryMode=true;
+  showGate("forgot");
+  $("#forgotLead").textContent=message||"Enter your coach email. We’ll send a reset link to this phone or iPad.";
+  $("#forgotMsg").textContent=message?"Request a new reset link below.":"";
+}
+function showReset(message){
+  recoveryMode=true;
+  showGate("reset");
+  $("#resetMsg").textContent=message||"Choose a new password for this coach login.";
+}
+function applyRecoveryLanding(){
+  const cb=readAuthCallback();
+  const expired=resetLinkError(cb);
+  if(expired){
+    showForgot(expired);
+    return cb;
+  }
+  if(cb.type==="recovery"||cb.hasTokens||cb.wantsReset){
+    showReset(cb.hasTokens||cb.type==="recovery"?"Checking your reset link…":"Choose a new password for this coach login.");
+  }
+  return cb;
+}
+applyRecoveryLanding();
+window.addEventListener("hashchange",()=>applyRecoveryLanding());
+window.addEventListener("popstate",()=>applyRecoveryLanding());
 $("#loginForm").onsubmit=async event=>{
   event.preventDefault();
   const email=$("#email").value.trim().toLowerCase();
@@ -1752,6 +1884,59 @@ $("#loginForm").onsubmit=async event=>{
     await openApp();
   }catch(_){
     $("#gateMsg").textContent="Sign-in failed. Check your connection.";
+  }
+};
+$("#forgotBtn").onclick=()=>{
+  showGate("forgot");
+  $("#forgotLead").textContent="Enter your coach email. We’ll send a reset link to this phone or iPad.";
+  $("#forgotMsg").textContent="";
+  $("#forgotEmail").value=$("#email").value.trim();
+  $("#forgotEmail").focus();
+};
+$("#backToLogin").onclick=()=>{
+  recoveryMode=false;
+  showGate("login");
+  $("#gateMsg").textContent="";
+};
+$("#forgotForm").onsubmit=async event=>{
+  event.preventDefault();
+  const email=$("#forgotEmail").value.trim().toLowerCase();
+  if(!email){$("#forgotMsg").textContent="Enter your coach email.";return}
+  await requestResetEmail(email,$("#forgotMsg"));
+};
+$("#resetNeedNew").onclick=()=>showForgot("This reset link is done. Enter your coach email for a new one.");
+$("#resetForm").onsubmit=async event=>{
+  event.preventDefault();
+  const password=$("#newPassword").value;
+  const confirm=$("#confirmPassword").value;
+  if(!password||!confirm){$("#resetMsg").textContent="Enter the new password twice.";return}
+  if(password.length<8){$("#resetMsg").textContent="Use at least 8 characters.";return}
+  if(password!==confirm){$("#resetMsg").textContent="Those two passwords do not match.";return}
+  if(!sb){$("#resetMsg").textContent="Cannot reach sign-in right now. Check your connection.";return}
+  $("#resetMsg").textContent="Saving new password…";
+  try{
+    const {error}=await sb.auth.updateUser({password});
+    if(error){
+      $("#resetMsg").textContent=passwordSaveError(error);
+      return;
+    }
+    $("#newPassword").value="";
+    $("#confirmPassword").value="";
+    stripAuthParams(false);
+    const {data}=await sb.auth.getSession();
+    const coach=await coachForSession(data&&data.session);
+    if(!coach){
+      try{await sb.auth.signOut()}catch(_){}
+      recoveryMode=false;
+      showGate("login");
+      $("#gateMsg").textContent="Password updated. Sign in with the new password.";
+      return;
+    }
+    recoveryMode=false;
+    currentCoach=coach;
+    await openApp();
+  }catch(_){
+    $("#resetMsg").textContent="Could not save the new password. Check your connection.";
   }
 };
 $("#lockBtn").onclick=async()=>{
@@ -3772,12 +3957,40 @@ async function loadStaffLineup(){
 }
 
 // On load, resume an existing coach session (persisted per this page's own
-// storageKey). Anyone else — signed out, or signed in but not on the staff
-// allowlist — stays on the sign-in screen.
+// storageKey). Recovery links stay on the set-password screen so the OTP is
+// not burned by opening the field book. Anyone else stays on sign-in.
 (async()=>{
   if(!sb) return;
+  const cb=applyRecoveryLanding();
   try{
     const {data}=await sb.auth.getSession();
+    if(recoveryMode){
+      if(data&&data.session&&(cb.hasTokens||cb.type==="recovery"||cb.wantsReset)){
+        showReset("Choose a new password for this coach login.");
+        if(cb.hasTokens||cb.type==="recovery") stripAuthParams(true);
+        return;
+      }
+      if(cb.hasTokens||cb.type==="recovery"){
+        setTimeout(async()=>{
+          if(!recoveryMode||!$("#resetForm")||$("#resetForm").classList.contains("hidden")) return;
+          try{
+            const again=await sb.auth.getSession();
+            if(again.data&&again.data.session){
+              showReset("Choose a new password for this coach login.");
+              stripAuthParams(true);
+              return;
+            }
+          }catch(_){}
+          showForgot("This reset link has expired or already been used. Request a new one.");
+        },1600);
+        return;
+      }
+      if(cb.wantsReset){
+        showReset("Open the reset link from your email, then choose a new password here.");
+        return;
+      }
+      return;
+    }
     const coach=await coachForSession(data&&data.session);
     if(coach){ currentCoach=coach; await openApp(); }
   }catch(_){}

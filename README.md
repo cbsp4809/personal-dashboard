@@ -14,8 +14,8 @@ Pushing to `main` deploys **two** places:
 
 - **GitHub Pages** (`cbsp4809.github.io/personal-dashboard/`) — public morning
   dashboard + Ops. `deploy.yml` strips `commodores.html`, `plays.html`,
-  `watch.html`, and the coach manifests so the Commodores workflow stays off
-  the public site.
+  `watch.html`, `reset.html`, and the coach manifests so the Commodores
+  workflow stays off the public site.
 - **Cloudflare Worker** `personal-dashboard` —
   **https://personal-dashboard.chrisbailey.workers.dev/** — serves the whole
   repo, including Commodores, Plays, and the living coach manual at
@@ -34,6 +34,7 @@ commodores.html            # staff-only Commodores field book (Supabase login; n
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
 plays.html                 # Play animator + coach draw/save editor (letters only; not on GitHub Pages)
 plays.webmanifest          # home-screen app named Dores Plays
+reset.html                 # coach password reset / set-new-password (Worker only)
 watch.html                 # token-only kids/parents published-play viewer (Worker only)
 coach-manual.html          # living staff user manual (Worker: /coach-manual.html)
 wrangler.toml              # Cloudflare Worker `personal-dashboard` static-asset entry (fixes Missing entry-point)
@@ -265,6 +266,26 @@ the old URL.
 Do not put Cloudflare Access back in front of this Worker. The field book still
 uses Supabase Auth email+password. Roster loads from `commodores_roster` after
 sign-in. First names only.
+
+Coaches reset their own password from **Forgot password?** on
+`commodores.html` or `plays.html`. That calls `resetPasswordForEmail` with
+`redirectTo` set to the Worker reset page:
+
+**https://personal-dashboard.chrisbailey.workers.dev/reset.html**
+
+That URL (and the field-book URL below) must be in the Commodores project
+(`adjnmtpjoyxvmlogjjpz`) Auth **Redirect URLs**. Site URL should be the Worker
+field book, not GitHub Pages:
+
+- Site URL: `https://personal-dashboard.chrisbailey.workers.dev/commodores.html`
+- Redirect URLs: `https://personal-dashboard.chrisbailey.workers.dev/reset.html`
+- Also allow: `https://personal-dashboard.chrisbailey.workers.dev/commodores.html`
+
+The email link opens `reset.html`, which listens for `PASSWORD_RECOVERY` /
+hash tokens and shows **Set new password**. After `updateUser({ password })`
+the coach is signed in on the same `commodores-auth` session. Expired or
+already-used links (`otp_expired`, `access_denied`) ask them to request a new
+reset. `watch.html` stays token-only — no coach login or reset.
 
 Primary pages: **Today**, **Playbook**, **Plays**, **Lineup**, **Practice**. Season board
 is a reference link (schedule, milestones, goals). Playbook has Offense /
