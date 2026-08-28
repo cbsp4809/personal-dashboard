@@ -137,6 +137,59 @@ a{color:var(--brass)}
 .board{display:grid;width:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1720px;margin:0 auto;}
 .board.email-board{display:block;max-width:900px;}
 .board.digest-board{display:block;max-width:640px;}
+.board.content-board{display:block;max-width:760px;}
+.content{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:12px;}
+.content-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
+.content-command-copy{min-width:0;max-width:100%;}
+.content-command-title{display:block;min-width:0;max-width:100%;color:var(--ink);font-size:13px;font-weight:700;overflow-wrap:anywhere;}
+.content-command-sub{display:block;margin-top:3px;color:var(--muted);font-size:11px;overflow-wrap:anywhere;}
+.content-new{flex-shrink:0;}
+.content-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
+.content-card{padding:0;overflow:hidden;}
+.content-card-toggle{display:flex;width:100%;min-width:0;max-width:100%;align-items:flex-start;gap:12px;padding:12px 14px;background:transparent;border:0;color:inherit;text-align:left;}
+.content-card-toggle:hover,.content-card-toggle:focus-visible{background:rgba(255,255,255,.025);outline:none;}
+.content-card.open .content-card-toggle{background:rgba(196,165,116,.045);}
+.content-thumb{width:56px;height:56px;min-width:56px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--line-strong);color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-align:center;line-height:1.2;padding:6px;}
+.content-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.content-card-copy{flex:1;min-width:0;}
+.content-hook{display:block;min-width:0;overflow-wrap:anywhere;color:var(--ink);font-size:15px;font-weight:700;}
+.content-preview{display:block;min-width:0;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;margin-top:4px;color:var(--muted);font-size:12.5px;white-space:normal;}
+.content-meta{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.content-status{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:2px 7px;border:1px solid var(--line-strong);color:var(--soft);}
+.content-status.draft,.content-status.posted{color:var(--muted);}
+.content-status.ready{color:var(--week);border-color:rgba(143,163,176,.4);}
+.content-status.needs_you{color:var(--needs);border-color:rgba(212,160,154,.4);}
+.content-status.needs_changes{color:var(--soon);border-color:rgba(212,176,106,.4);background:rgba(212,176,106,.12);}
+.content-status.approved{color:var(--sydney);border-color:rgba(154,175,152,.4);background:rgba(154,175,152,.1);}
+.content-status.scheduled{color:#e4cfaa;border-color:rgba(196,165,116,.35);background:var(--brass-soft);}
+.content-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);padding:12px 14px 14px;}
+.content-field{min-width:0;max-width:100%;margin:0 0 12px;}
+.content-field label,.content-label{display:block;margin:0 0 6px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.content-field input[type="text"],.content-field input[type="url"],.content-field input[type="date"],.content-caption{display:block;width:100%;min-width:0;max-width:100%;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;padding:10px 12px;}
+.content-field input:focus,.content-caption:focus{outline:none;border-color:var(--brass);}
+.content-caption{min-height:180px;resize:vertical;line-height:1.45;}
+.content-hint{margin:6px 0 0;color:var(--muted);font-size:11px;overflow-wrap:anywhere;}
+.content-photo-row{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:12px;}
+.content-photo-preview{width:88px;height:88px;min-width:88px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--line-strong);color:var(--muted);font-size:11px;text-align:center;padding:8px;}
+.content-photo-preview img{width:100%;height:100%;object-fit:cover;display:block;}
+.content-photo-actions{flex:1;min-width:0;}
+.content-photo-name{display:block;min-width:0;overflow-wrap:anywhere;color:var(--soft);font-size:13px;}
+.content-change-note{min-width:0;margin:0 0 12px;padding:12px;border:1px solid rgba(212,176,106,.32);border-radius:12px;background:rgba(212,176,106,.08);color:var(--soft);font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap;}
+.content-actions{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.content-save-state{flex:1 1 100%;min-width:0;color:var(--muted);font-size:11px;}
+.content-empty{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:42px 20px;text-align:center;color:var(--muted);font-family:var(--serif);font-style:italic;}
+.content-empty-sub{margin-top:8px;font-family:var(--sans);font-style:normal;font-size:13px;overflow-wrap:anywhere;}
+.content-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:0 0 16px;}
+.content-filterbar .filters{justify-content:flex-end;padding:0;}
+#app.content-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
+#app.content-view .composer{display:none;}
+.modal .box.content-box{max-width:560px;}
+.modal textarea{display:block;width:100%;min-height:140px;resize:vertical;padding:11px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;margin-bottom:12px;}
+.modal textarea:focus{outline:none;border-color:var(--brass);}
+.modal .box label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;}
+.modal .box input[type="text"],.modal .box input[type="url"],.modal .box input[type="date"]{width:100%;background:var(--bg);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;margin-bottom:12px;font-size:16px;}
+.modal .box input:focus{outline:none;border-color:var(--brass);}
+.email-attach-btn.content-attach-btn{margin-top:8px;}
 .digest{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:18px;}
 .digest-today{min-width:0;max-width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:22px 20px 20px;}
 .digest-kicker{color:var(--brass);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
@@ -282,8 +335,8 @@ a{color:var(--brass)}
   .brand .navlinks{display:none;}
   .viewbar{padding:12px 0 10px;}
   .viewbar-label{display:none;}
-  .viewbar .actor{width:100%;display:flex;}
-  .viewbar .actor button{flex:1 1 0;min-width:0;min-height:44px;padding:8px 4px;font-size:13px;}
+  .viewbar .actor{width:100%;display:flex;flex-wrap:wrap;}
+  .viewbar .actor button{flex:1 1 calc(20% - 4px);min-width:62px;min-height:44px;padding:8px 4px;font-size:12px;}
   .digest-today{padding:18px 16px 16px;}
   .digest-date{font-size:26px;}
   .email-filterbar{display:flex;flex-direction:column;align-items:stretch;padding-bottom:14px;}
@@ -293,6 +346,18 @@ a{color:var(--brass)}
   .email-kind-bar{align-items:flex-start;flex-direction:column;padding:0 12px 10px;}
   .email-kind-buttons{display:flex;width:100%;}
   .email-kind-buttons button{flex:1;min-width:0;min-height:40px;}
+  .content-filterbar{display:block;padding-bottom:14px;}
+  .content-filterbar .viewbar-label{display:block;margin-bottom:8px;}
+  .content-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
+  .content-commandbar{align-items:stretch;flex-direction:column;}
+  .content-new{width:100%;min-height:44px;}
+  .content-card-toggle{padding:12px;}
+  .content-detail{padding:12px;}
+  .content-photo-row{flex-direction:column;}
+  .content-photo-preview{width:100%;height:160px;}
+  .content-actions .btn{flex:1 1 calc(50% - 4px);min-height:44px;}
+  .content-caption{min-height:200px;}
+  #app.content-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
   .email-commandbar{align-items:stretch;flex-direction:column;}
   .email-command-copy,.email-command-sub,.email-mail-line{width:100%;max-width:100%;}
   .send-now{width:100%;min-height:44px;}
@@ -493,6 +558,7 @@ body.card-detail-open{overflow:hidden;}
         <button type="button" data-actor="chris" class="on">Chris</button>
         <button type="button" data-actor="sydney">Sydney</button>
         <button type="button" data-actor="emails">Emails</button>
+        <button type="button" data-actor="content">Content</button>
         <button type="button" data-actor="digest">Digest</button>
       </div>
     </div>
@@ -512,6 +578,17 @@ body.card-detail-open{overflow:hidden;}
           <button class="chip on" data-email-kind="">All</button>
           <button class="chip" data-email-kind="sales">Sales &amp; leads</button>
         </div>
+      </div>
+    </div>
+    <div class="content-filterbar hidden" id="contentFilters">
+      <span class="viewbar-label">Queue</span>
+      <div class="filters" aria-label="Filter LinkedIn drafts by status">
+        <button class="chip on" data-content-status="open">Open</button>
+        <button class="chip" data-content-status="">All</button>
+        <button class="chip" data-content-status="needs_you">Needs you</button>
+        <button class="chip" data-content-status="needs_changes">Needs changes</button>
+        <button class="chip" data-content-status="approved">Approved</button>
+        <button class="chip" data-content-status="posted">Posted</button>
       </div>
     </div>
   </div>
@@ -579,11 +656,17 @@ const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
 
 let currentUser = null;
 let actor = localStorage.getItem("ops_actor") || "chris";
-if(!["chris","sydney","emails","digest"].includes(actor)) actor = "chris";
+if(!["chris","sydney","emails","content","digest"].includes(actor)) actor = "chris";
 let cards = [];
 let morningDigests = [];
 let digestsAvailable = true;
 let openDigestDate = null;
+let contentItems = [];
+let contentAvailable = true;
+let contentStatusFilter = "open";
+let openContentId = null;
+let contentPhotoBusy = new Set();
+const contentDrafts = new Map();
 let openCardDetailId = null;
 let detailColumnsAvailable = true;
 let openEmailCardId = null;
@@ -636,6 +719,18 @@ const EMAIL_ATTACH_MAX_BYTES = 25 * 1024 * 1024;
 const EMAIL_ATTACH_MAX_FILES = 10;
 const EMAIL_ATTACH_ACCEPT = ".pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf";
 const EMAIL_ATTACH_EXT = /\.(pdf|png|jpe?g|gif|webp|heic|heif|docx?|xlsx?|pptx?|txt|csv|rtf)$/i;
+const CONTENT_PHOTO_BUCKET = "ops-content-photos";
+const CONTENT_PHOTO_ACCEPT = "image/*,.png,.jpg,.jpeg,.gif,.webp,.heic,.heif";
+const CONTENT_PHOTO_EXT = /\.(png|jpe?g|gif|webp|heic|heif)$/i;
+const CONTENT_STATUSES = [
+  { key:"draft", label:"Draft" },
+  { key:"ready", label:"Ready" },
+  { key:"needs_you", label:"Needs you" },
+  { key:"needs_changes", label:"Needs changes" },
+  { key:"approved", label:"Approved" },
+  { key:"scheduled", label:"Scheduled" },
+  { key:"posted", label:"Posted" }
+];
 
 function setStatus(msg, err){
   const el = $("#status");
@@ -970,11 +1065,15 @@ function syncActorUI(){
   $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
   const showingEmails = actor==="emails";
   const showingDigest = actor==="digest";
-  const showingBoardTools = !showingEmails && !showingDigest;
+  const showingContent = actor==="content";
+  const showingBoardTools = !showingEmails && !showingDigest && !showingContent;
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
+  $("#contentFilters").classList.toggle("hidden", !showingContent);
   $("#projectFilters").classList.toggle("hidden", !showingBoardTools);
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
-  $(".viewbar-label").textContent = showingEmails || showingDigest ? "View" : "Whose board?";
+  $("#doneBtn").classList.toggle("hidden", showingContent);
+  $("#app").classList.toggle("content-view", showingContent);
+  $(".viewbar-label").textContent = showingEmails || showingDigest || showingContent ? "View" : "Whose board?";
   const input = $("#composerInput");
   if(input) input.placeholder = actor==="sydney"
     ? "Tell Ops what Sydney should pick up…"
@@ -983,6 +1082,7 @@ function syncActorUI(){
 
 $$(".actor button").forEach(b => b.onclick = async () => {
   if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
+  if(actor==="content") snapshotOpenContentForm();
   actor = b.dataset.actor;
   if(actor==="digest") openDigestDate = null;
   localStorage.setItem("ops_actor", actor);
@@ -992,6 +1092,7 @@ $$(".actor button").forEach(b => b.onclick = async () => {
     loadMailStatus();
     repairQueuedReplySignedUrls();
   }
+  if(actor==="content") loadContent();
   if(actor==="digest") loadMorningDigests();
 });
 
@@ -1037,6 +1138,7 @@ async function onSignedIn(session){
   await loadSendNowStatus();
   await repairQueuedReplySignedUrls();
   await loadMorningDigests();
+  await loadContent();
   await loadAlerts();
   subscribeToAlerts();
   startSendNowPolling();
@@ -1141,8 +1243,13 @@ async function loadCards(){
     openEmailCardId = null;
   }
   applyDetectedEmailKinds();
-  setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
   persistDetectedEmailKinds();
+  if(actor==="content"){
+    $("#doneCount").textContent = String(doneCards().length);
+    if(drawerOpen) renderDrawer();
+    return;
+  }
+  setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
   if(shouldPreserveOpenEmailReply()){
     $("#doneCount").textContent = String(doneCards().length);
     refreshEmailWaitChips();
@@ -2525,21 +2632,599 @@ function renderDigest(root){
   });
 }
 
+function contentStatusLabel(status){
+  const row = CONTENT_STATUSES.find(item => item.key===status);
+  return row ? row.label : (status || "Draft");
+}
+
+function contentPhotoRecord(value){
+  if(!value) return null;
+  let item = value;
+  if(typeof value==="string"){
+    try{ item = JSON.parse(value); }catch(_){ return null; }
+  }
+  if(Array.isArray(item)) item = item[0];
+  if(!item || typeof item!=="object") return null;
+  const name = String(item.name || item.filename || "").trim();
+  const path = String(item.path || item.storage_path || "").trim();
+  const url = String(item.url || item.signed_url || "").trim();
+  if(!name && !path && !url) return null;
+  return {
+    id:String(item.id || path || name),
+    name:name || (path.split("/").pop() || "Photo"),
+    mime:String(item.mime || item.content_type || item.type || ""),
+    size:Number(item.size || item.bytes || 0) || 0,
+    path,
+    url,
+    signed_url_expires_at:item.signed_url_expires_at || item.expires_at || null
+  };
+}
+
+function contentPhotoPayload(photo){
+  if(!photo) return null;
+  const record = {
+    id:photo.id,
+    name:photo.name,
+    mime:photo.mime || null,
+    size:photo.size || 0,
+    path:photo.path || null
+  };
+  if(photo.url) record.signed_url = photo.url;
+  if(photo.signed_url_expires_at) record.signed_url_expires_at = photo.signed_url_expires_at;
+  return record;
+}
+
+function contentPhotoAllowed(file){
+  const name = file && file.name || "";
+  const mime = file && file.type || "";
+  if(CONTENT_PHOTO_EXT.test(name)) return true;
+  return /^image\//i.test(mime);
+}
+
+function contentDraftFor(item){
+  if(!item || !item.id) return { title:"", caption:"", planned_on:"", drive_url:"", source:"ChatGPT" };
+  if(!contentDrafts.has(item.id)){
+    contentDrafts.set(item.id, {
+      title:item.title || "",
+      caption:item.caption || "",
+      planned_on:item.planned_on || "",
+      drive_url:item.drive_url || "",
+      source:item.source || "ChatGPT"
+    });
+  }
+  return contentDrafts.get(item.id);
+}
+
+function visibleContentItems(){
+  return (contentItems||[]).filter(item => {
+    if(contentStatusFilter==="open") return item.status!=="posted";
+    if(!contentStatusFilter) return true;
+    return item.status===contentStatusFilter;
+  }).sort((a, b) => {
+    const order = { needs_you:0, ready:1, draft:2, needs_changes:3, approved:4, scheduled:5, posted:6 };
+    return (order[a.status]??9) - (order[b.status]??9)
+      || String(a.planned_on||"9999").localeCompare(String(b.planned_on||"9999"))
+      || String(b.created_at||"").localeCompare(String(a.created_at||""))
+      || String(a.id).localeCompare(String(b.id));
+  });
+}
+
+function applyContentRow(row){
+  if(!row || !row.id) return null;
+  const next = {
+    photo:null,
+    change_note:null,
+    planned_on:null,
+    drive_url:null,
+    approved_at:null,
+    approved_by:null,
+    posted_at:null,
+    posted_by:null,
+    ...row
+  };
+  const idx = contentItems.findIndex(item => item.id===row.id);
+  if(idx>=0) contentItems[idx] = { ...contentItems[idx], ...next };
+  else contentItems.unshift(next);
+  const draft = contentDrafts.get(row.id);
+  if(draft){
+    draft.title = next.title || "";
+    draft.caption = next.caption || "";
+    draft.planned_on = next.planned_on || "";
+    draft.drive_url = next.drive_url || "";
+    draft.source = next.source || "ChatGPT";
+  }
+  return next;
+}
+
+async function mintContentPhotoUrl(path){
+  if(!path || !sb) return null;
+  const { data, error } = await sb.storage.from(CONTENT_PHOTO_BUCKET).createSignedUrl(path, EMAIL_ATTACH_SIGNED_TTL);
+  if(error || !data || !data.signedUrl) return null;
+  return { url:data.signedUrl, expiresAt:replySignedUrlExpiryIso() };
+}
+
+async function ensureContentPhotoUrl(item){
+  const photo = contentPhotoRecord(item && item.photo);
+  if(!photo || !photo.path) return photo;
+  if(!replyAttachmentNeedsSignedUrl(photo)) return photo;
+  const minted = await mintContentPhotoUrl(photo.path);
+  if(!minted) return photo;
+  photo.url = minted.url;
+  photo.signed_url_expires_at = minted.expiresAt;
+  item.photo = contentPhotoPayload(photo);
+  return photo;
+}
+
+async function loadContent(){
+  snapshotOpenContentForm();
+  if(!sb) return;
+  const { data, error } = await sb.from("ops_content")
+    .select("id,title,caption,status,planned_on,source,drive_url,photo,change_note,created_by,approved_at,approved_by,posted_at,posted_by,created_at,updated_at")
+    .order("created_at", { ascending:false });
+  if(error){
+    contentAvailable = !(error.code==="42P01" || /ops_content|schema cache/i.test(error.message||""));
+    contentItems = [];
+    if(actor==="content") renderBoard();
+    return;
+  }
+  contentAvailable = true;
+  contentItems = data || [];
+  if(openContentId && !contentItems.some(item => item.id===openContentId)) openContentId = null;
+  for(const item of contentItems){
+    const draft = contentDrafts.get(item.id);
+    if(draft){
+      item.title = draft.title;
+      item.caption = draft.caption;
+      item.planned_on = draft.planned_on || null;
+      item.drive_url = draft.drive_url || null;
+      item.source = draft.source || item.source;
+    }
+  }
+  if(actor==="content") renderBoard();
+}
+
+async function patchContent(id, fields, options){
+  if(!sb || !id) return null;
+  const payload = { ...fields, updated_at:isoNow() };
+  const { data, error } = await sb.from("ops_content").update(payload).eq("id", id).select("*").single();
+  if(error){
+    if(error.code==="42P01") contentAvailable = false;
+    setStatus("Could not save content: "+error.message, true);
+    return null;
+  }
+  const saved = applyContentRow(data);
+  if(!options || options.render!==false) renderBoard();
+  return saved;
+}
+
+function contentPreviewText(item){
+  const draft = contentDraftFor(item);
+  return String(draft.caption || item.caption || "").replace(/\s+/g, " ").trim();
+}
+
+function contentThumbHTML(item, photo){
+  if(photo && photo.url){
+    return `<span class="content-thumb"><img src="${esc(photo.url)}" alt=""></span>`;
+  }
+  return `<span class="content-thumb">No photo</span>`;
+}
+
+function contentCardHTML(item, photo){
+  const draft = contentDraftFor(item);
+  const open = item.id===openContentId;
+  const preview = contentPreviewText(item);
+  const planned = draft.planned_on || item.planned_on || "";
+  const source = draft.source || item.source || "ChatGPT";
+  const posted = item.status==="posted";
+  const detail = open ? `
+    <section class="content-detail" aria-label="LinkedIn draft">
+      <div class="content-field">
+        <label for="content-title-${esc(item.id)}">Title / hook</label>
+        <input class="content-title" id="content-title-${esc(item.id)}" type="text" value="${esc(draft.title)}" autocomplete="off">
+      </div>
+      <div class="content-field">
+        <label for="content-caption-${esc(item.id)}">Caption</label>
+        <textarea class="content-caption" id="content-caption-${esc(item.id)}" placeholder="Paste the ChatGPT caption as written.">${esc(draft.caption)}</textarea>
+        <p class="content-hint">Review the ChatGPT caption as written. Edit only if you mean to change the words — Ops does not rewrite it.</p>
+      </div>
+      <div class="content-field">
+        <label for="content-planned-${esc(item.id)}">Planned date</label>
+        <input class="content-planned" id="content-planned-${esc(item.id)}" type="date" value="${esc(planned)}">
+      </div>
+      <div class="content-field">
+        <label for="content-drive-${esc(item.id)}">Drive file link</label>
+        <input class="content-drive" id="content-drive-${esc(item.id)}" type="url" inputmode="url" placeholder="https://drive.google.com/…" value="${esc(draft.drive_url)}" autocomplete="off">
+      </div>
+      <div class="content-field">
+        <label for="content-source-${esc(item.id)}">Source</label>
+        <input class="content-source" id="content-source-${esc(item.id)}" type="text" value="${esc(source)}" autocomplete="off">
+      </div>
+      <div class="content-field">
+        <span class="content-label">Photo</span>
+        <div class="content-photo-row">
+          <div class="content-photo-preview">${photo && photo.url ? `<img src="${esc(photo.url)}" alt="${esc(photo.name)}">` : "No photo"}</div>
+          <div class="content-photo-actions">
+            ${photo ? `<span class="content-photo-name">${esc(photo.name)}${photo.size ? " · "+esc(formatFileSize(photo.size)) : ""}</span>` : `<span class="content-photo-name">Attach a photo for Sydney to post with this caption.</span>`}
+            <label class="btn tiny ghost email-attach-btn content-attach-btn">
+              ${photo ? "Replace photo" : "Attach photo"}
+              <input class="content-photo-input" type="file" accept="${CONTENT_PHOTO_ACCEPT}" ${contentAvailable?"":" disabled"}>
+            </label>
+          </div>
+        </div>
+      </div>
+      ${item.change_note ? `<div class="content-change-note"><strong>Requested changes</strong>\n${esc(item.change_note)}</div>` : ""}
+      <div class="content-actions">
+        <span class="content-save-state" aria-live="polite"></span>
+        <button type="button" class="btn tiny ghost content-save">Save</button>
+        ${item.status==="draft"||item.status==="needs_changes" ? `<button type="button" class="btn tiny ghost content-ready">Ready for Chris</button>` : ""}
+        ${posted ? "" : `<button type="button" class="btn tiny ghost content-changes">Request changes</button>`}
+        ${posted || item.status==="approved" || item.status==="scheduled" ? "" : `<button type="button" class="btn tiny content-approve">Approve</button>`}
+        ${posted ? "" : `<button type="button" class="btn tiny ghost content-posted">Mark posted</button>`}
+      </div>
+    </section>` : "";
+  return `<article class="card content-card${open?" open":""}" data-content-id="${esc(item.id)}">
+    <button type="button" class="content-card-toggle" aria-expanded="${open}">
+      ${contentThumbHTML(item, photo)}
+      <span class="content-card-copy">
+        <span class="content-hook">${esc(draft.title || "Untitled draft")}</span>
+        <span class="content-preview">${esc(preview || "No caption yet.")}</span>
+        <span class="content-meta">
+          <span class="content-status ${esc(item.status||"draft")}">${esc(contentStatusLabel(item.status))}</span>
+          ${planned ? `<span class="duechip ${dueClass(planned)}">${esc(fmtDue(planned))}</span>` : ""}
+          <span class="src">${esc(source || "ChatGPT")}</span>
+          ${photo ? `<span class="email-files">Photo</span>` : `<span class="src">No photo</span>`}
+        </span>
+      </span>
+    </button>
+    ${detail}
+  </article>`;
+}
+
+function snapshotOpenContentForm(){
+  if(!openContentId) return;
+  const cardEl = document.querySelector(`[data-content-id="${CSS.escape(openContentId)}"]`);
+  const item = contentItems.find(row => row.id===openContentId);
+  if(cardEl && item) readContentForm(cardEl, item);
+}
+
+function renderContent(root){
+  snapshotOpenContentForm();
+  const list = visibleContentItems();
+  const openCount = (contentItems||[]).filter(item => item.status!=="posted").length;
+  const setup = !contentAvailable;
+  root.classList.add("content-board");
+  root.innerHTML = `<div class="content">
+    <div class="content-commandbar" aria-label="LinkedIn content queue">
+      <div class="content-command-copy">
+        <span class="content-command-title">${setup ? "Content setup needed" : `${openCount} open ${openCount===1?"draft":"drafts"}`}</span>
+        <span class="content-command-sub">${setup
+          ? "Apply sql/ops_content.sql on Studio Pod, then refresh."
+          : "Review ChatGPT captions as written. Approve for Sydney, or request changes."}</span>
+      </div>
+      <button type="button" class="btn tiny content-new"${setup?" disabled":""}>New draft</button>
+    </div>
+    ${setup
+      ? `<div class="content-empty">Apply sql/ops_content.sql to open the LinkedIn queue.<div class="content-empty-sub">Do not run it from this page. Sydney or Chris applies it in the Studio Pod SQL editor.</div></div>`
+      : (list.length
+        ? `<div class="content-list">${list.map(item => contentCardHTML(item, contentPhotoRecord(item.photo))).join("")}</div>`
+        : `<div class="content-empty">No LinkedIn drafts in this filter.<div class="content-empty-sub">New draft pastes a ChatGPT caption. The Drive folder watcher is separate.</div></div>`)}
+  </div>`;
+  bindContentBoard(root);
+  refreshContentPhotoThumbs(root);
+}
+
+async function refreshContentPhotoThumbs(root){
+  const open = visibleContentItems();
+  for(const item of open){
+    const photo = await ensureContentPhotoUrl(item);
+    if(!photo || !photo.url || !root.isConnected) continue;
+    root.querySelectorAll(`[data-content-id="${CSS.escape(item.id)}"] .content-thumb, [data-content-id="${CSS.escape(item.id)}"] .content-photo-preview`).forEach(el => {
+      el.innerHTML = `<img src="${esc(photo.url)}" alt="${esc(photo.name||"")}">`;
+    });
+  }
+}
+
+function readContentForm(cardEl, item){
+  const draft = contentDraftFor(item);
+  const title = cardEl.querySelector(".content-title");
+  const caption = cardEl.querySelector(".content-caption");
+  const planned = cardEl.querySelector(".content-planned");
+  const drive = cardEl.querySelector(".content-drive");
+  const source = cardEl.querySelector(".content-source");
+  if(title) draft.title = title.value;
+  if(caption) draft.caption = caption.value;
+  if(planned) draft.planned_on = planned.value;
+  if(drive) draft.drive_url = drive.value.trim();
+  if(source) draft.source = source.value.trim() || "ChatGPT";
+  return draft;
+}
+
+async function saveContentFields(item, cardEl, extra){
+  const draft = cardEl ? readContentForm(cardEl, item) : contentDraftFor(item);
+  const state = cardEl && cardEl.querySelector(".content-save-state");
+  if(state) state.textContent = "Saving…";
+  const fields = {
+    title:(draft.title || "").trim() || "Untitled draft",
+    caption:draft.caption || "",
+    planned_on:draft.planned_on || null,
+    drive_url:draft.drive_url || null,
+    source:draft.source || "ChatGPT",
+    ...(extra||{})
+  };
+  const saved = await patchContent(item.id, fields, { render:false });
+  if(state) state.textContent = saved ? "Saved" : "Not saved";
+  return saved;
+}
+
+function nextApprovedStatus(plannedOn){
+  if(plannedOn && plannedOn > chicagoDateISO()) return "scheduled";
+  return "approved";
+}
+
+function bindContentBoard(root){
+  const createBtn = root.querySelector(".content-new");
+  if(createBtn) createBtn.onclick = () => openContentCreateModal();
+  root.querySelectorAll(".content-card").forEach(cardEl => {
+    const id = cardEl.dataset.contentId;
+    const item = contentItems.find(row => row.id===id);
+    if(!item) return;
+    const toggle = cardEl.querySelector(".content-card-toggle");
+    if(toggle){
+      toggle.onclick = () => {
+        if(openContentId===id){
+          readContentForm(cardEl, item);
+          openContentId = null;
+        }else{
+          if(openContentId){
+            const openEl = root.querySelector(`[data-content-id="${CSS.escape(openContentId)}"]`);
+            const openItem = contentItems.find(row => row.id===openContentId);
+            if(openEl && openItem) readContentForm(openEl, openItem);
+          }
+          openContentId = id;
+        }
+        renderBoard();
+      };
+    }
+    const saveBtn = cardEl.querySelector(".content-save");
+    if(saveBtn) saveBtn.onclick = async () => {
+      saveBtn.disabled = true;
+      const saved = await saveContentFields(item, cardEl);
+      saveBtn.disabled = false;
+      if(saved){
+        setStatus("Saved caption as written.");
+        renderBoard();
+      }
+    };
+    const readyBtn = cardEl.querySelector(".content-ready");
+    if(readyBtn) readyBtn.onclick = async () => {
+      readyBtn.disabled = true;
+      const saved = await saveContentFields(item, cardEl, { status:"needs_you" });
+      readyBtn.disabled = false;
+      if(saved){
+        setStatus("Marked ready for Chris.");
+        renderBoard();
+      }
+    };
+    const approveBtn = cardEl.querySelector(".content-approve");
+    if(approveBtn) approveBtn.onclick = async () => {
+      const draft = readContentForm(cardEl, item);
+      approveBtn.disabled = true;
+      const saved = await saveContentFields(item, cardEl, {
+        status:nextApprovedStatus(draft.planned_on),
+        approved_at:isoNow(),
+        approved_by:currentUser && currentUser.email || "chris"
+      });
+      approveBtn.disabled = false;
+      if(saved){
+        setStatus("Approved. Sydney can post this caption as written.");
+        renderBoard();
+      }
+    };
+    const postedBtn = cardEl.querySelector(".content-posted");
+    if(postedBtn) postedBtn.onclick = async () => {
+      postedBtn.disabled = true;
+      const saved = await saveContentFields(item, cardEl, {
+        status:"posted",
+        posted_at:isoNow(),
+        posted_by:currentUser && currentUser.email || "sydney"
+      });
+      postedBtn.disabled = false;
+      if(saved){
+        setStatus("Marked posted.");
+        openContentId = null;
+        renderBoard();
+      }
+    };
+    const changesBtn = cardEl.querySelector(".content-changes");
+    if(changesBtn) changesBtn.onclick = () => openContentChangesModal(item, cardEl);
+    const photoInput = cardEl.querySelector(".content-photo-input");
+    if(photoInput){
+      photoInput.onchange = async () => {
+        const file = photoInput.files && photoInput.files[0];
+        photoInput.value = "";
+        if(file) await attachContentPhoto(item, file, cardEl);
+      };
+    }
+  });
+}
+
+async function attachContentPhoto(item, file, cardEl){
+  if(!contentAvailable || !sb){
+    setStatus("Apply sql/ops_content.sql before attaching a photo.", true);
+    return;
+  }
+  if(!contentPhotoAllowed(file)){
+    setStatus(file.name+" is not an image.", true);
+    return;
+  }
+  if(file.size > EMAIL_ATTACH_MAX_BYTES){
+    setStatus(file.name+" is larger than 25 MB.", true);
+    return;
+  }
+  const state = cardEl && cardEl.querySelector(".content-save-state");
+  if(state) state.textContent = "Uploading "+file.name+"…";
+  const id = newAttachmentId();
+  const path = item.id+"/"+id+"/"+sanitizeAttachName(file.name);
+  contentPhotoBusy.add(item.id);
+  const { error } = await sb.storage.from(CONTENT_PHOTO_BUCKET).upload(path, file, {
+    cacheControl:"3600",
+    contentType:file.type || "image/jpeg",
+    upsert:false
+  });
+  if(error){
+    contentPhotoBusy.delete(item.id);
+    setStatus("Could not attach "+file.name+": "+error.message, true);
+    if(state) state.textContent = "Photo not attached";
+    return;
+  }
+  const minted = await mintContentPhotoUrl(path);
+  const photo = contentPhotoPayload({
+    id,
+    name:file.name,
+    mime:file.type || "image/jpeg",
+    size:file.size || 0,
+    path,
+    url:minted ? minted.url : "",
+    signed_url_expires_at:minted ? minted.expiresAt : null
+  });
+  const previous = contentPhotoRecord(item.photo);
+  const saved = await saveContentFields(item, cardEl, { photo });
+  contentPhotoBusy.delete(item.id);
+  if(!saved){
+    await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([path]);
+    if(state) state.textContent = "Photo not attached";
+    return;
+  }
+  if(previous && previous.path && previous.path!==path){
+    await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([previous.path]);
+  }
+  setStatus("Photo attached.");
+  renderBoard();
+}
+
+function closeContentModal(){
+  const wrap = document.querySelector(".modal.content-modal");
+  if(wrap) wrap.remove();
+}
+
+function openContentChangesModal(item, cardEl){
+  closeContentModal();
+  const wrap = document.createElement("div");
+  wrap.className = "modal content-modal";
+  wrap.innerHTML = `<div class="box content-box">
+    <h3>Request changes</h3>
+    <div class="msub">Tell Sydney what to change. The ChatGPT caption stays as written until someone edits it.</div>
+    <label for="content-change-note">Note for Sydney</label>
+    <textarea id="content-change-note" placeholder="What should change?">${esc(item.change_note||"")}</textarea>
+    <div class="macts">
+      <button type="button" class="btn tiny ghost" id="contentChangeCancel">Cancel</button>
+      <button type="button" class="btn tiny" id="contentChangeSave">Send note</button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector("#contentChangeCancel").onclick = closeContentModal;
+  wrap.onclick = e => { if(e.target===wrap) closeContentModal(); };
+  wrap.querySelector("#contentChangeSave").onclick = async () => {
+    const note = wrap.querySelector("#content-change-note").value.trim();
+    if(!note){
+      wrap.querySelector("#content-change-note").reportValidity();
+      return;
+    }
+    const btn = wrap.querySelector("#contentChangeSave");
+    btn.disabled = true;
+    const saved = await saveContentFields(item, cardEl, { status:"needs_changes", change_note:note });
+    btn.disabled = false;
+    if(saved){
+      closeContentModal();
+      setStatus("Requested changes.");
+      renderBoard();
+    }
+  };
+}
+
+function openContentCreateModal(){
+  closeContentModal();
+  const wrap = document.createElement("div");
+  wrap.className = "modal content-modal";
+  wrap.innerHTML = `<div class="box content-box">
+    <h3>New LinkedIn draft</h3>
+    <div class="msub">Paste the ChatGPT caption as written. Ops will not rewrite it.</div>
+    <label for="content-create-title">Title / hook</label>
+    <input id="content-create-title" type="text" placeholder="Short hook" autocomplete="off">
+    <label for="content-create-caption">Caption</label>
+    <textarea id="content-create-caption" placeholder="Paste the ChatGPT caption as written."></textarea>
+    <label for="content-create-planned">Planned date</label>
+    <input id="content-create-planned" type="date">
+    <label for="content-create-drive">Drive file link</label>
+    <input id="content-create-drive" type="url" inputmode="url" placeholder="https://drive.google.com/…" autocomplete="off">
+    <div class="macts">
+      <button type="button" class="btn tiny ghost" id="contentCreateCancel">Cancel</button>
+      <button type="button" class="btn tiny" id="contentCreateSave">Add to queue</button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector("#contentCreateCancel").onclick = closeContentModal;
+  wrap.onclick = e => { if(e.target===wrap) closeContentModal(); };
+  wrap.querySelector("#content-create-title").focus();
+  wrap.querySelector("#contentCreateSave").onclick = async () => {
+    const title = wrap.querySelector("#content-create-title").value.trim();
+    const caption = wrap.querySelector("#content-create-caption").value;
+    const planned = wrap.querySelector("#content-create-planned").value || null;
+    const drive = wrap.querySelector("#content-create-drive").value.trim() || null;
+    if(!title && !caption.trim()){
+      wrap.querySelector("#content-create-title").reportValidity();
+      return;
+    }
+    const btn = wrap.querySelector("#contentCreateSave");
+    btn.disabled = true;
+    const { data, error } = await sb.from("ops_content").insert({
+      title:title || "Untitled draft",
+      caption,
+      status:"ready",
+      planned_on:planned,
+      source:"ChatGPT",
+      drive_url:drive,
+      created_by:currentUser && currentUser.email || null
+    }).select("*").single();
+    btn.disabled = false;
+    if(error){
+      if(error.code==="42P01") contentAvailable = false;
+      setStatus("Could not add draft: "+error.message, true);
+      return;
+    }
+    applyContentRow(data);
+    openContentId = data.id;
+    closeContentModal();
+    setStatus("Draft added. Review the caption as written.");
+    renderBoard();
+  };
+}
+
 function renderBoard(){
   tick();
   const root = $("#board");
   $("#doneCount").textContent = String(doneCards().length);
   if(actor==="emails"){
     root.classList.remove("digest-board");
+    root.classList.remove("content-board");
     renderEmails(root);
     return;
   }
+  if(actor==="content"){
+    root.classList.remove("email-board");
+    root.classList.remove("digest-board");
+    renderContent(root);
+    return;
+  }
   if(actor==="digest"){
+    root.classList.remove("email-board");
+    root.classList.remove("content-board");
     renderDigest(root);
     return;
   }
   root.classList.remove("email-board");
   root.classList.remove("digest-board");
+  root.classList.remove("content-board");
   const open = openCards().filter(c => !isEmailCard(c)).filter(visible);
   const ordered = actor==="chris"
     ? COLUMNS
@@ -3470,6 +4155,12 @@ $$("[data-email-kind]").forEach(ch => ch.onclick = async () => {
   renderBoard();
 });
 
+$$("[data-content-status]").forEach(ch => ch.onclick = () => {
+  contentStatusFilter = ch.dataset.contentStatus === undefined ? "open" : ch.dataset.contentStatus;
+  $$("[data-content-status]").forEach(x => x.classList.toggle("on", x===ch));
+  renderBoard();
+});
+
 $("#sendBtn").onclick = sendComposer;
 $("#composerInput").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); sendComposer(); } };
 $("#loginBtn").onclick = signInPassword;
@@ -3483,6 +4174,7 @@ $("#alertBtn").onclick = () => {
 $("#alertBack").onclick = closeAlertPanel;
 $("#alertMarkAll").onclick = markAllAlertsRead;
 document.addEventListener("keydown", e => {
+  if(e.key==="Escape" && document.querySelector(".modal.content-modal")){ closeContentModal(); return; }
   if(e.key==="Escape" && openCardDetailId) closeCardDetail(false);
   if(e.key==="Escape" && alertPanelOpen) closeAlertPanel();
   if(e.key==="Escape" && drawerOpen) closeDrawer();
@@ -3542,7 +4234,7 @@ function renderDrawer(){
     document.body.appendChild(d);
     panel = d;
   }
-  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="digest"?"Back to Digest":"Back to board"}</button></div>
+  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="content"?"Back to Content":actor==="digest"?"Back to Digest":"Back to board"}</button></div>
     <div class="sub">Finished cards leave the board. Restore one if it came back.</div>` +
     (items.length ? items.map(c => `<div class="done-item">
       <div class="t">${esc(c.title)}</div>
@@ -3712,12 +4404,13 @@ document.addEventListener("visibilitychange", () => {
     loadCards();
     loadMailStatus();
     loadMorningDigests();
+    loadContent();
     loadSendNowStatus();
     loadAlerts({ notifyNew:true });
     if(actor==="emails") repairQueuedReplySignedUrls();
   }
 });
-setInterval(() => { if(currentUser){ loadCards(); loadMailStatus(); loadMorningDigests(); } }, 45000);
+setInterval(() => { if(currentUser){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); } }, 45000);
 boot();
 </script>
 </body>
