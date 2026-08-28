@@ -76,6 +76,8 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .page{display:none}.page.on{display:block}
 .plays-shell{overflow:hidden;padding:0}
 .plays-frame{display:block;width:100%;min-height:900px;border:0;background:#1C1C1C}
+body.plays-immersive{overflow:hidden}
+body.plays-immersive .plays-frame{position:fixed;inset:0;z-index:200;width:100vw;height:100dvh!important;min-height:100dvh;border-radius:0;background:#000}
 .hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr);gap:14px;margin-bottom:18px}
 .panel,.practice-card,.play-card,.milestone{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:16px}
 .panel{padding:20px}
@@ -134,6 +136,13 @@ main{width:min(1180px,100%);margin:auto;padding:24px 22px}
 .diagram .muted{stroke:#777777}.diagram .ball{fill:#CFAE70}.diagram .def{fill:#777777}
 .binder-note{margin-bottom:14px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;color:var(--soft)}
 .binder-note b{color:var(--gold)}
+.offense-empty{padding:28px 20px;border:1px dashed var(--strong);border-radius:16px;background:var(--bg-2);text-align:center}
+.offense-empty h3{margin:0 0 7px;font:500 23px/1.15 var(--serif)}
+.offense-empty p{max-width:480px;margin:0 auto 14px;color:var(--muted)}
+.saved-play-list{display:grid;gap:10px}
+.saved-play-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.saved-play-row h3{margin:0 0 3px;font:500 20px/1.15 var(--serif)}
+.saved-play-row p{margin:0;color:var(--muted);font-size:12px}
 .milestones{display:grid;gap:11px}
 .milestone{display:grid;grid-template-columns:130px minmax(0,1fr);overflow:hidden}
 .mile-date{padding:17px;background:var(--gold-soft);color:var(--gold);font-size:12px;font-weight:700}
@@ -388,6 +397,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .author-row{display:grid;grid-template-columns:1fr}
   .author-row .field{min-width:0}
   .comment-compose .btn{width:100%}
+  .saved-play-row{grid-template-columns:1fr}.saved-play-row .btn{width:100%}
 }
 .gate-card input{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-size:16px;margin:4px 0 12px}
 .gate-card input:focus{outline:2px solid rgba(207,174,112,.55);outline-offset:1px}
@@ -437,7 +447,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <div class="eyebrow">Team / Today</div>
           <h2>Two plays. One defense.</h2>
           <ul class="plain-list">
-            <li>Taught through Aug 30: Smash and Overload 50/51 only. No third play.</li>
+            <li>Build plays in Plays, then teach the saved drawings from the Playbook.</li>
             <li>Game defense: six kids cover six areas + one helper. No rush.</li>
             <li>Hip-stay / pick-a-guy / Man-Free is a drill only. Never the game plan.</li>
             <li>Two defense groups, set before the quarter. No mid-quarter swaps.</li>
@@ -459,7 +469,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       </div>
 
       <div class="quick-grid">
-        <div class="quick"><b>Offense</b><span>Smash + Overload only. Full looks in <button class="go-tab" data-go="offense" type="button">Playbook</button>.</span></div>
+        <div class="quick"><b>Offense</b><span>Build plays in <button class="go-tab" data-go="plays" type="button">Plays</button>, then teach the saved drawings from the Playbook.</span></div>
         <div class="quick"><b>Defense</b><span>Six areas + one helper. No rush. Full look in <button class="go-tab" data-go="defense" type="button">Playbook</button>.</span></div>
         <div class="quick"><b>Season</b><span>SBMSA slate + standings below. Milestones on the <button class="go-tab" data-go="season" type="button">Season board</button>.</span></div>
       </div>
@@ -468,7 +478,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="panel">
           <div class="eyebrow">Next practice</div>
           <h3>Thu Aug 27 · 5:00 p.m.</h3>
-          <p>Frostwood. Live 23/26, then 38. <button class="go-tab" data-go="plays" type="button">Open Plays</button> — current lineup names follow each letter.</p>
+          <p>Frostwood. Build plays in <button class="go-tab" data-go="plays" type="button">Plays</button>, then teach from the Playbook. Current lineup names follow each letter.</p>
         </div>
         <div class="panel" id="nextGamePanel">
           <div class="eyebrow" id="nextGameEyebrow">Upcoming games</div>
@@ -497,12 +507,12 @@ body.team-dragging{overflow:hidden;touch-action:none}
     </section>
 
     <section class="page" id="page-playbook">
-      <div class="section-head"><div><div class="eyebrow">Taught vs binder</div><h2>Playbook</h2></div><p>Offense and defense live here. Smash + Overload only through Aug 30.</p></div>
+      <div class="section-head"><div><div class="eyebrow">Saved staff book</div><h2>Playbook</h2></div><p>Coach-drawn offense and the staff defense live here.</p></div>
       <div class="panel callout" style="margin-bottom:18px">
         <span class="dot"></span>
         <div>
           <strong>Plays · iPad</strong>
-          <span>Now-5 with moving routes. Tonight: 23/26 then 38. The seven letters use the current Unit A or Unit B offense names.</span>
+          <span>Build and save the real routes in Plays. The seven letters use the current Unit A or Unit B offense names.</span>
           <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
             <button class="btn" data-go="plays" type="button">Open Plays</button>
           </div>
@@ -511,93 +521,10 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="subtabs" role="tablist" aria-label="Playbook">
         <button class="on" data-playbook-pane="offense" type="button" role="tab" aria-selected="true">Offense</button>
         <button data-playbook-pane="defense" type="button" role="tab" aria-selected="false">Defense</button>
-        <button data-playbook-pane="builder" type="button" role="tab" aria-selected="false">Builder</button>
       </div>
 
       <div class="playbook-pane on" id="playbook-pane-offense">
-        <div class="binder-note">
-          <b>Taught now</b>
-          <ul class="plain-list">
-            <li>Smash and Overload 50/51 only through the Aug 30 scrimmage.</li>
-            <li>No third play. Chris’s 16 stays parked in the binder.</li>
-            <li>Watch Play, both looks, then Flip. Do not add a third look.</li>
-          </ul>
-        </div>
         <div id="offenseBook"></div>
-
-        <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Later Core 5</h2></div><p>Binder only · do not teach yet</p></div>
-        <div class="play-grid">
-          <article class="play-card">
-            <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Play three decision placeholder diagram">
-              <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-              <circle class="ball" cx="72" cy="91" r="5"/><path class="line" d="M72 91V42"/>
-              <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C138 64 168 56 230 56"/>
-              <circle class="ball" cx="274" cy="91" r="5"/><path class="line" d="M274 91C260 69 245 58 226 48"/>
-              <text x="74" y="24">three levels: short · middle · deep</text>
-            </svg>
-            <div class="play-copy">
-              <div class="play-head"><h3>Play 3 · staff choice</h3><span class="badge parked">Binder</span></div>
-              <ul class="plain-list">
-                <li>Early September: pick 38 Overload first down or the three-level / drag.</li>
-                <li>Teach one, not both. Goal: three plays the kids can name.</li>
-              </ul>
-            </div>
-          </article>
-          <article class="play-card">
-            <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="StarBurst 63 diagram">
-              <path class="line muted" d="M20 95H340"/><circle class="ball" cx="180" cy="110" r="5"/>
-              <circle class="ball" cx="65" cy="91" r="5"/><path class="line" d="M65 91C65 50 87 31 116 18"/>
-              <circle class="ball" cx="118" cy="91" r="5"/><path class="line" d="M118 91C133 62 160 40 194 28"/>
-              <circle class="ball" cx="245" cy="91" r="5"/><path class="line" d="M245 91C232 62 210 45 192 32"/>
-              <circle class="ball" cx="294" cy="91" r="5"/><path class="line" d="M294 91C294 52 276 35 252 22"/>
-              <text x="130" y="164">deep shot · add late September</text>
-            </svg>
-            <div class="play-copy">
-              <div class="play-head"><h3>63 StarBurst</h3><span class="badge parked">Binder</span></div>
-              <ul class="plain-list">
-                <li>Late-September deeper shot.</li>
-                <li>Install only after the first three plays are clean.</li>
-              </ul>
-            </div>
-          </article>
-          <article class="play-card">
-            <svg class="diagram" viewBox="0 0 360 190" role="img" aria-label="Goal Line 5 and 6 diagram">
-              <rect x="20" y="20" width="320" height="68" fill="none" stroke="#777777" stroke-width="2"/><text x="270" y="36">end zone</text>
-              <path class="line muted" d="M20 110H340"/><circle class="ball" cx="180" cy="128" r="5"/>
-              <circle class="ball" cx="105" cy="106" r="5"/><path class="line" d="M105 106C111 83 129 69 151 60"/>
-              <circle class="ball" cx="255" cy="106" r="5"/><path class="line" d="M255 106C248 83 230 69 207 60"/>
-              <text x="105" y="166">5 one way · 6 the flip · inside the 15 only</text>
-            </svg>
-            <div class="play-copy">
-              <div class="play-head"><h3>Goal Line 5/6</h3><span class="badge parked">Binder</span></div>
-              <ul class="plain-list">
-                <li>Short-yardage play inside the 15. 5 one way; 6 flips it.</li>
-                <li>Add late September with StarBurst. Do not call it outside that spot.</li>
-              </ul>
-            </div>
-          </article>
-        </div>
-
-        <div class="section-head"><div><div class="eyebrow">Parked · not this week</div><h2>Chris’s 16</h2></div><p>Binder list · rank + concept</p></div>
-        <div class="binder-note"><b>Binder only.</b> Chris’s starred favorites, parked in this order. Do not teach them this week.</div>
-        <div class="binder-list">
-          <div class="binder-row"><span class="binder-rank">01</span><b>#50 Overload left</b><span class="badge parked">OVERLOAD</span></div>
-          <div class="binder-row"><span class="binder-rank">02</span><b>#26 Post Corner Right</b><span class="badge parked">SMASH</span></div>
-          <div class="binder-row"><span class="binder-rank">03</span><b>#23 Post Corner Right flipped</b><span class="badge parked">SMASH</span></div>
-          <div class="binder-row"><span class="binder-rank">04</span><b>#38 Overload first down</b><span class="badge parked">OVERLOAD</span></div>
-          <div class="binder-row"><span class="binder-rank">05</span><b>#61 Left Drag…</b><span class="badge parked">DRAG</span></div>
-          <div class="binder-row"><span class="binder-rank">06</span><b>#35 XXX post Corner</b><span class="badge parked">SMASH</span></div>
-          <div class="binder-row"><span class="binder-rank">07</span><b>#45 A Drag Right</b><span class="badge parked">DRAG</span></div>
-          <div class="binder-row"><span class="binder-rank">08</span><b>#21 B far left</b><span class="badge parked">B-MOVER</span></div>
-          <div class="binder-row"><span class="binder-rank">09</span><b>#67 Rice play</b><span class="badge parked">DEEP/RICE</span></div>
-          <div class="binder-row"><span class="binder-rank">10</span><b>#19 B Route out flipped</b><span class="badge parked">B-MOVER</span></div>
-          <div class="binder-row"><span class="binder-rank">11</span><b>#68 Rice Touchdown play 1</b><span class="badge parked">DEEP/RICE</span></div>
-          <div class="binder-row"><span class="binder-rank">12</span><b>#66 Rice touchdown 2</b><span class="badge parked">DEEP/RICE</span></div>
-          <div class="binder-row"><span class="binder-rank">13</span><b>#41 CJ stutter and out</b><span class="badge parked">TIMING</span></div>
-          <div class="binder-row"><span class="binder-rank">14</span><b>#42 Y hitch and go…</b><span class="badge parked">TIMING</span></div>
-          <div class="binder-row"><span class="binder-rank">15</span><b>#64 Man on man CJ</b><span class="badge parked">MAN-TAG</span></div>
-          <div class="binder-row"><span class="binder-rank">16</span><b>#65 B Motion Post post wheel</b><span class="badge parked">MOTION</span></div>
-        </div>
       </div>
 
       <div class="playbook-pane" id="playbook-pane-defense">
@@ -721,7 +648,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       </div>
       <div class="panel plays-shell">
         <!-- Loaded only after the field book's coach allowlist check succeeds. -->
-        <iframe id="playsFrame" class="plays-frame" data-src="plays.html?embed=1" title="Commodores coach play animator"></iframe>
+        <iframe id="playsFrame" class="plays-frame" data-src="plays.html?embed=1" title="Commodores coach play animator" allow="fullscreen" allowfullscreen></iframe>
       </div>
     </section>
 
@@ -1243,6 +1170,12 @@ function postPlayLineups(){
   if(!frame||!frame.contentWindow) return;
   frame.contentWindow.postMessage({type:"commodores-lineups",lineups:currentPlayLineups()},location.origin);
 }
+let pendingPlayNumber="";
+function postPlaySelection(){
+  const frame=$("#playsFrame");
+  if(!frame||!frame.contentWindow||!pendingPlayNumber) return;
+  frame.contentWindow.postMessage({type:"commodores-open-play",number:pendingPlayNumber},location.origin);
+}
 function startPlaysFrame(){
   const frame=$("#playsFrame");
   if(!frame) return;
@@ -1254,9 +1187,19 @@ function startPlaysFrame(){
   }
 }
 window.addEventListener("message",event=>{
-  if(event.origin!==location.origin||!event.data||event.data.type!=="commodores-plays-ready") return;
-  postPlayLineups();
   const frame=$("#playsFrame");
+  if(event.origin!==location.origin||!event.data||!frame||event.source!==frame.contentWindow) return;
+  if(event.data.type==="commodores-plays-immersive"){
+    document.body.classList.toggle("plays-immersive",!!event.data.active);
+    return;
+  }
+  if(event.data.type==="commodores-plays-changed"){
+    loadOffenseBook();
+    return;
+  }
+  if(event.data.type!=="commodores-plays-ready") return;
+  postPlayLineups();
+  postPlaySelection();
   const height=Number(event.data.height);
   if(frame&&Number.isFinite(height)) frame.style.height=Math.max(760,Math.min(1800,height))+"px";
 });
@@ -1697,6 +1640,7 @@ async function openApp(){
   renderTeam();
   renderDefenseBook();
   renderOffenseBook();
+  loadOffenseBook();
   pullDefenseLooks().then(ok=>{
     if(ok){
       if(isDefenseDraft()){
@@ -1975,57 +1919,39 @@ function playOffenseLook(play,card){
   };
   offenseAnim.frame=requestAnimationFrame(tick);
 }
-function renderOffenseBook(){
+let savedOffensePlays=[];
+async function loadOffenseBook(){
+  if(!sb||!currentCoach){
+    savedOffensePlays=[];
+    renderOffenseBook();
+    return;
+  }
+  const {data,error}=await sb.from("commodores_plays")
+    .select("number,title,updated_by,updated_at")
+    .order("number",{ascending:true});
+  savedOffensePlays=error||!Array.isArray(data)?[]:data.sort((a,b)=>Number(a.number)-Number(b.number));
+  renderOffenseBook(error&&"Saved plays could not load. Open Plays to keep working.");
+}
+function renderOffenseBook(loadError){
   const book=$("#offenseBook");
   if(!book) return;
   stopOffenseAnim();
-  book.innerHTML=taughtOffensePlays().map(play=>{
-    const view=offenseView[play.id]||(offenseView[play.id]={flipped:false,look:(offenseLookSpec(play).looks[0]||{}).id||""});
-    const spec=offenseLookSpec(play);
-    const looks=spec.looks.map(look=>`<button class="btn ghost${look.id===view.look?" on":""}" data-off-look="${esc(look.id)}" type="button">${esc(look.label)}</button>`).join("");
-    const how=play.id==="smash"
-      ?["Slam is Smash: two-level outs.","If the defender goes back, throw short. If he comes up, throw over the top.","Flip both ways. First throw past the line. 5-second clock."]
-      :play.id==="overload-50-51"
-        ?["Go, slant, or out.","Extra kids on one side so one leftover kid comes free.","50 one way, 51 the flip."]
-        :[play.how];
-    return `<article class="play-card" data-offense="${esc(play.id)}" style="margin-bottom:14px">
-      <div data-offense-picture>${offenseCardSVG(play)}</div>
-      <div class="play-copy">
-        <div class="play-head"><h3>${esc(play.name)}</h3><span class="badge taught">Taught</span></div>
-        <ul class="plain-list">${how.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>
-        <div class="play-react">
-          <div class="react-toggle" role="group" aria-label="${esc(play.name)} looks">${looks}</div>
-          <button class="btn play-now" data-off-play="${esc(play.id)}" type="button">Play</button>
-          <button class="btn flip" data-off-flip="${esc(play.id)}" type="button">Flip</button>
-          <div class="play-cue" data-play-cue>${esc(offenseCue(play,"idle"))}</div>
-        </div>
-      </div>
-    </article>`;
-  }).join("");
-  $$("#offenseBook [data-off-look]").forEach(button=>button.onclick=()=>{
-    const card=button.closest("[data-offense]");
-    const play=taughtOffensePlays().find(item=>item.id===card.dataset.offense);
-    if(!play) return;
-    stopOffenseAnim();
-    offenseView[play.id].look=button.dataset.offLook;
-    const group=button.closest(".react-toggle");
-    [...group.querySelectorAll("[data-off-look]")].forEach(item=>item.classList.toggle("on",item===button));
-    const holder=card.querySelector("[data-offense-picture]");
-    holder.innerHTML=offenseCardSVG(play);
-    card.querySelector("[data-play-cue]").textContent=offenseCue(play,"idle");
-  });
-  $$("#offenseBook [data-off-flip]").forEach(button=>button.onclick=()=>{
-    const play=taughtOffensePlays().find(item=>item.id===button.dataset.offFlip);
-    const card=button.closest("[data-offense]");
-    if(!play||!card) return;
-    stopOffenseAnim();
-    offenseView[play.id].flipped=!offenseView[play.id].flipped;
-    card.querySelector("[data-offense-picture]").innerHTML=offenseCardSVG(play);
-    card.querySelector("[data-play-cue]").textContent=offenseCue(play,"idle");
-  });
-  $$("#offenseBook [data-off-play]").forEach(button=>button.onclick=()=>{
-    const play=taughtOffensePlays().find(item=>item.id===button.dataset.offPlay);
-    playOffenseLook(play,button.closest(".play-card"));
+  if(loadError||!savedOffensePlays.length){
+    book.innerHTML=`<div class="offense-empty">
+      <h3>${loadError?"Could not load the offense book":"No offense plays yet"}</h3>
+      <p>${esc(loadError||"Draw and save the first play in Plays. It will appear here for every coach.")}</p>
+      <button class="btn" data-open-plays type="button">Open Plays</button>
+    </div>`;
+  }else{
+    book.innerHTML=`<div class="saved-play-list">${savedOffensePlays.map(play=>`<article class="saved-play-row">
+      <div><h3>${esc(play.number)} · ${esc(play.title||"Untitled play")}</h3><p>${play.updated_by?`Saved by ${esc(play.updated_by)} · `:""}${esc(commentTime(play.updated_at))}</p></div>
+      <button class="btn ghost" data-open-play="${esc(play.number)}" type="button">Open in Plays</button>
+    </article>`).join("")}</div>`;
+  }
+  $$("[data-open-plays],[data-open-play]").forEach(button=>button.onclick=()=>{
+    pendingPlayNumber=button.dataset.openPlay||"";
+    showPage("plays");
+    postPlaySelection();
   });
 }
 let playDraft=structuredClone(builtPlays[0]);

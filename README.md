@@ -191,12 +191,15 @@ The field book now has a **Plays** tab containing the animator + draw editor:
 **https://personal-dashboard.chrisbailey.workers.dev/plays.html**
 
 Direct access to `plays.html` uses the same coach allowlist gate; unsigned
-visitors cannot open the editor. Play mode: tap a saved play (23 / 26 / 38
-first), then Play / Pause / scrub / Flip / Reset.
+visitors cannot open the editor. The offense book starts empty and lists only
+coach-saved `commodores_plays` rows; no numbered routes are seeded in the page
+or recreated in Supabase. Play mode: tap a saved play, then Play / Pause /
+scrub / Flip / Reset or open the immersive full-screen field.
 Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
-draw its route, Sit for no route, Save with a number and short title. Flip is a
-true left/right mirror of the saved geometry (23↔26 and 2↔19 switch to the
-partner play when that number exists). Same Commodores Supabase project
+draw its route, Sit for no route, Save with a number and short title. Only the
+field captures touch while drawing, so the rest of the phone/iPad page keeps
+normal vertical scrolling. Flip is a true left/right mirror of the saved
+geometry. Same Commodores Supabase project
 (`adjnmtpjoyxvmlogjjpz`) and `storageKey: "commodores-auth"` as the field book,
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply
