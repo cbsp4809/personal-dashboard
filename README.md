@@ -239,7 +239,12 @@ Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
 draw its route, Sit for no route, Save with a number and short title. Only the
 field captures touch while drawing, so the rest of the phone/iPad page keeps
 normal vertical scrolling. Flip is a true left/right mirror of the saved
-geometry. Same Commodores Supabase project
+geometry. New-play dots start slightly behind the line of scrimmage. Route
+lines end with a small arrowhead at the tip. The field shows 10-yard stripes
+as visual markers only. The optional six-areas overlay (no rush) places the
+three short spots about five yards off the LOS, the three deep spots behind
+them, and the rover as a deep-middle helper. Saved snapshot coordinates are
+not rewritten; the kids watch page uses the same field and arrow drawing. Same Commodores Supabase project
 (`adjnmtpjoyxvmlogjjpz`) and `storageKey: "commodores-auth"` as the field book,
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply

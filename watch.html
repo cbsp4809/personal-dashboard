@@ -25,7 +25,7 @@ h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:v
 .picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}.picks small{display:block;margin-top:2px;font-size:11px;opacity:.75}
 .units,.looks{display:flex;gap:8px;margin:0 0 10px}.units button,.looks button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:7px 10px;background:transparent;color:var(--muted);font-weight:800}
 .units button.on,.looks button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
-.field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}
+.field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
 .tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
 .scrub{width:100%;accent-color:var(--gold)}.cue{min-height:38px;margin:9px 0 0;color:var(--soft);font-size:13px}
@@ -87,6 +87,33 @@ function cleanPlay(raw){
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||state.plays[0]}
 function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
+const FIELD_LEFT=12,FIELD_RIGHT=348,LOS_Y=300,YARD=7;
+function routeTip(start,points){
+  const pts=[start,...(points||[])].filter(point=>point&&Number.isFinite(point.x)&&Number.isFinite(point.y));
+  if(pts.length<2)return null;
+  const tip=pts[pts.length-1];
+  let prev=pts[pts.length-2];
+  for(let i=pts.length-2;i>=0;i--){if(Math.hypot(tip.x-pts[i].x,tip.y-pts[i].y)>6){prev=pts[i];break}}
+  const dx=tip.x-prev.x,dy=tip.y-prev.y,len=Math.hypot(dx,dy);
+  if(len<4)return null;
+  return{x:tip.x,y:tip.y,ux:dx/len,uy:dy/len};
+}
+function arrow(start,points,color,size,opacity){
+  const tip=routeTip(start,points);if(!tip)return"";
+  const s=size||8,w=s*.55,bx=tip.x-tip.ux*s,by=tip.y-tip.uy*s,px=-tip.uy*w,py=tip.ux*w;
+  return`<polygon points="${tip.x},${tip.y} ${bx+px},${by+py} ${bx-px},${by-py}" fill="${color}" opacity="${opacity==null?1:opacity}"/>`;
+}
+function route(start,points,on){
+  if(!points||!points.length)return"";
+  const color=on?"#ECB748":"#FFFFFF",width=on?4:2.4,opacity=on?.95:.43;
+  return`<path d="${esc(path(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrow(start,points,color,on?9:7,opacity)}`;
+}
+function yardLines(){
+  const ticks=[];const labels=[];
+  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="22" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
+  const back=LOS_Y+YARD*10;if(back<386)ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
+  return`<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}</g>`;
+}
 function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
 function paint(progress){
   const play=currentPlay();if(!play)return;
@@ -102,9 +129,9 @@ function paint(progress){
   else if(destination){const p=ease((progress-run)/(1-run));ball={x:positions.Q.x+(destination.x-positions.Q.x)*p,y:positions.Q.y+(destination.y-positions.Q.y)*p}}
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
-  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>`<path d="${esc(path(spot,spot.route))}" fill="none" stroke="${highlighted.has(spot.letter)?"#ECB748":"#FFFFFF"}" stroke-width="${highlighted.has(spot.letter)?4:2.4}" stroke-linecap="round" stroke-linejoin="round" opacity="${highlighted.has(spot.letter)?.95:.43}"/>`).join("");
+  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,highlighted.has(spot.letter))).join("");
   const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),width=Math.max(26,Math.min(66,14+name.length*5.6)),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-width/2}" y="${point.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${name.length>8?8:10}">${esc(name)}</text></g>`}).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="360" height="400" fill="#000"/><rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/><path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="360" height="400" fill="#000"/><rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="22" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
 function render(){

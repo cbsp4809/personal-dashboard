@@ -66,6 +66,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .field-wrap.is-drawing{touch-action:none}
 .field{display:block;width:100%;height:auto}
 .field text{font:700 11px var(--sans)}
+.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .letters{margin:10px 0 0;color:var(--muted);font-size:12px;text-align:center}
 .check{display:flex;align-items:center;gap:8px;margin:10px 0 0;color:var(--muted);font-size:13px;font-weight:600}
 .check input{width:20px;height:20px;accent-color:var(--gold)}
@@ -233,15 +234,20 @@ function flipX(x){return 360-x}
 function nowISO(){return new Date().toISOString()}
 function numKey(v){return String(v||"").replace(/\D/g,"").slice(0,4)}
 
+// Field is 360×400. LOS is y=300. Downfield is toward y=10.
+// 7 viewBox units ≈ 1 yard so 10-yard stripes land every 70 units.
+const FIELD_LEFT=12,FIELD_RIGHT=348,LOS_Y=300,YARD=7,OFFENSE_OFF=18;
+
 function defaultSpots(){
+  const line=LOS_Y+OFFENSE_OFF;
   return [
     {letter:"Q",x:180,y:348,sit:false,route:[]},
-    {letter:"C",x:180,y:300,sit:true,route:[]},
-    {letter:"X",x:48,y:298,sit:false,route:[]},
-    {letter:"A",x:110,y:298,sit:false,route:[]},
+    {letter:"C",x:180,y:line,sit:true,route:[]},
+    {letter:"X",x:48,y:line,sit:false,route:[]},
+    {letter:"A",x:110,y:line,sit:false,route:[]},
     {letter:"B",x:220,y:348,sit:false,route:[]},
-    {letter:"Y",x:250,y:298,sit:false,route:[]},
-    {letter:"Z",x:312,y:298,sit:false,route:[]}
+    {letter:"Y",x:250,y:line,sit:false,route:[]},
+    {letter:"Z",x:312,y:line,sit:false,route:[]}
   ];
 }
 function cleanSpot(raw,letter){
@@ -306,6 +312,44 @@ function pointAlong(start,points,t){
 }
 function pathD(start,points){
   return `M${start.x} ${start.y}`+(points||[]).map(p=>`L${p.x} ${p.y}`).join("");
+}
+function routeTip(start,points){
+  const pts=[start,...(points||[])].filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y));
+  if(pts.length<2) return null;
+  const tip=pts[pts.length-1];
+  let prev=pts[pts.length-2];
+  for(let i=pts.length-2;i>=0;i--){
+    if(Math.hypot(tip.x-pts[i].x,tip.y-pts[i].y)>6){prev=pts[i];break}
+  }
+  const dx=tip.x-prev.x,dy=tip.y-prev.y,len=Math.hypot(dx,dy);
+  if(len<4) return null;
+  return {x:tip.x,y:tip.y,ux:dx/len,uy:dy/len};
+}
+function arrowSVG(start,points,color,size,opacity){
+  const tip=routeTip(start,points);
+  if(!tip) return "";
+  const s=size||8,w=s*.55;
+  const bx=tip.x-tip.ux*s,by=tip.y-tip.uy*s;
+  const px=-tip.uy*w,py=tip.ux*w;
+  return `<polygon points="${tip.x},${tip.y} ${bx+px},${by+py} ${bx-px},${by-py}" fill="${color}" opacity="${opacity==null?1:opacity}"/>`;
+}
+function routeSVG(start,points,on,live){
+  if(!points||!points.length) return "";
+  const color=on||live?"#ECB748":"#FFFFFF";
+  const width=on||live?4:2.4;
+  const opacity=live?1:(on?.95:.42);
+  return `<path d="${esc(pathD(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrowSVG(start,points,color,on||live?9:7,opacity)}`;
+}
+function yardLinesSVG(){
+  const ticks=[];
+  const labels=[];
+  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){
+    ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);
+    labels.push(`<text x="22" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`);
+  }
+  const back=LOS_Y+YARD*10;
+  if(back<386) ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
+  return `<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}</g>`;
 }
 
 const STATE={
@@ -523,17 +567,25 @@ function setDraftFromStore(){
 
 function areasSVG(){
   if(!$("#showAreas").checked) return "";
-  const box=[{x:70,y:168,n:"left short"},{x:180,y:168,n:"middle short"},{x:290,y:168,n:"right short"},{x:70,y:72,n:"left deep"},{x:180,y:72,n:"middle deep"},{x:290,y:72,n:"right deep"}];
-  const grass=box.map(a=>`<rect x="${a.x-45}" y="${a.y-27}" width="90" height="54" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${a.y+4}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
-  return `<g opacity=".7">${grass}<polygon points="180,106 191,118 180,130 169,118" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="180" y="148" fill="#ECB748" text-anchor="middle" font-size="8">helper</text><text x="180" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
+  // Front spots sit ~5 yards off the LOS. Deep spots sit behind those.
+  // Rover is a deep-middle free safety, not a front helper. No rush.
+  const shortY=LOS_Y-YARD*10;
+  const deepY=LOS_Y-YARD*22;
+  const roverY=LOS_Y-YARD*36;
+  const shorts=[{x:70,n:"left short"},{x:180,n:"middle short"},{x:290,n:"right short"}];
+  const deeps=[{x:70,n:"left deep"},{x:180,n:"middle deep"},{x:290,n:"right deep"}];
+  const short=shorts.map(a=>`<rect x="${a.x-52}" y="${shortY-33}" width="104" height="66" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${shortY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
+  const deep=deeps.map(a=>`<rect x="${a.x-52}" y="${deepY-38}" width="104" height="76" rx="10" fill="rgba(207,174,112,.1)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${deepY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
+  return `<g opacity=".72">${short}${deep}<polygon points="180,${roverY-13} 192,${roverY} 180,${roverY+13} 168,${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="180" y="${roverY+26}" fill="#ECB748" text-anchor="middle" font-size="8">rover</text><text x="180" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
 }
 function fieldSVG(play,pos,ball,liveRoute){
   const targets=new Set([play.looks[STATE.look]?.target]);
   const routes=play.spots.filter(s=>s.letter!=="Q"&&s.route&&s.route.length).map(s=>{
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
-    return `<path d="${esc(pathD(s,s.route))}" fill="none" stroke="${on?"#ECB748":"#FFFFFF"}" stroke-width="${on?4:2.4}" stroke-linecap="round" stroke-linejoin="round" opacity="${on?.95:.42}"/>`;
+    return routeSVG(s,s.route,on,false);
   }).join("");
-  const live=liveRoute&&liveRoute.length?`<path d="${esc(pathD(play.spots.find(s=>s.letter===STATE.selected)||liveRoute[0],liveRoute))}" fill="none" stroke="#ECB748" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`:"";
+  const liveStart=play.spots.find(s=>s.letter===STATE.selected)||(liveRoute&&liveRoute[0]);
+  const live=liveRoute&&liveRoute.length&&liveStart?routeSVG(liveStart,liveRoute,true,true):"";
   const kids=play.spots.map(s=>{
     const p=pos[s.letter]||s;
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
@@ -542,14 +594,15 @@ function fieldSVG(play,pos,ball,liveRoute){
     const width=Math.max(26,Math.min(62,14+label.length*5.6));
     return `<g data-letter="${s.letter}"><rect x="${p.x-width/2}" y="${p.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${p.x}" y="${p.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${label.length>8?8:10}">${esc(label)}</text></g>`;
   }).join("");
-  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:300};
+  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:LOS_Y+OFFENSE_OFF};
   const endzone=play.number==="6"?`<rect x="16" y="16" width="328" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="300" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
   const title=play.title||`Play ${play.number}`;
   return `<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(title)}">
     <rect width="360" height="400" fill="#000"/>
     <rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
-    <path d="M12 300H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
-    <text x="22" y="292" fill="#E0D5C0" font-size="9">line</text>
+    ${yardLinesSVG()}
+    <path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="22" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>
     ${endzone}${areasSVG()}${routes}${live}
     <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
     ${kids}
