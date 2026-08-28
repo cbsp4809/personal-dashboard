@@ -13,8 +13,9 @@ shared work, persisted in Supabase — without replacing this morning page.
 Pushing to `main` deploys **two** places:
 
 - **GitHub Pages** (`cbsp4809.github.io/personal-dashboard/`) — public morning
-  dashboard + Ops. `deploy.yml` strips `commodores.html`, `plays.html`, and
-  their manifests so the field book and play animator stay off the public site.
+  dashboard + Ops. `deploy.yml` strips `commodores.html`, `plays.html`,
+  `watch.html`, and the coach manifests so the Commodores workflow stays off
+  the public site.
 - **Cloudflare Worker** `personal-dashboard` —
   **https://personal-dashboard.chrisbailey.workers.dev/** — serves the whole
   repo, including Commodores and Plays. Cloudflare Git runs
@@ -28,10 +29,11 @@ Pushing to `main` deploys **two** places:
 index.html                 # morning dashboard — self-contained (HTML + CSS + JS inline)
 ops.html                   # Ops board (Chris & Sydney) — separate page, same GitHub Pages site
 manifest.json              # web app manifest so Ops can be added to an iPhone home screen
-commodores.html            # staff-only Commodores field book (Cloudflare Access + Supabase login; not on GitHub Pages)
+commodores.html            # staff-only Commodores field book (Supabase login; not on GitHub Pages)
 commodores.webmanifest     # separate home-screen app named Commodores / Dores
 plays.html                 # Play animator + coach draw/save editor (letters only; not on GitHub Pages)
 plays.webmanifest          # home-screen app named Dores Plays
+watch.html                 # token-only kids/parents published-play viewer (Worker only)
 wrangler.toml              # Cloudflare Worker `personal-dashboard` static-asset entry (fixes Missing entry-point)
 .assetsignore              # keep Worker deploy to site files (no .git / sql / markdown)
 icons/                     # original Ops mark plus Commodores gold-star icons (not Vanderbilt marks)
@@ -45,6 +47,7 @@ sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
+sql/commodores_play_sharing.sql # Published snapshots + token-only watch RPC (Commodores project only)
 ```
 
 The morning dashboard stays the daily command center. Ops is a second page, not
@@ -183,11 +186,13 @@ on the public GitHub Pages site (`deploy.yml` strips `commodores.html` and
 
 **https://personal-dashboard.chrisbailey.workers.dev/commodores.html**
 
-Play animator + draw editor (letters only, no staff roster or notes):
+The field book now has a **Plays** tab containing the animator + draw editor:
 
 **https://personal-dashboard.chrisbailey.workers.dev/plays.html**
 
-Play mode: tap a saved play (23 / 26 / 38 first), then Play / Flip / Reset.
+Direct access to `plays.html` uses the same coach allowlist gate; unsigned
+visitors cannot open the editor. Play mode: tap a saved play (23 / 26 / 38
+first), then Play / Pause / scrub / Flip / Reset.
 Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
 draw its route, Sit for no route, Save with a number and short title. Flip is a
 true left/right mirror of the saved geometry (23↔26 and 2↔19 switch to the
@@ -195,14 +200,31 @@ partner play when that number exists). Same Commodores Supabase project
 (`adjnmtpjoyxvmlogjjpz`) and `storageKey: "commodores-auth"` as the field book,
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply
-`sql/commodores_plays.sql` on the Commodores project if the table is missing.
+`sql/commodores_plays.sql` on the Commodores project if the table is missing,
+then `sql/commodores_play_sharing.sql` for publishing.
 localStorage keeps an offline draft; the database wins when signed in.
+
+Play labels come from the current offense lineup in this fixed order:
+`Q, C, X, A, B, Y, Z` (Q and Center, then the five receiver spots). Coaches
+choose Unit A or B. Empty spots fall back to the letter.
+
+Each saved play has a Publish toggle. Publishing writes one read-only snapshot
+containing all marked plays and both units' first-name maps, then shows a
+256-bit secret URL:
+
+`https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
+
+The watch page has no login, coach navigation, roster, editor, notes, save, or
+publish controls. Anonymous clients cannot select play/share tables; a narrow
+RPC returns only the published snapshot for the exact token. After lineup or
+route changes, tap **Republish names + plays**. Rotating the link invalidates
+the old URL.
 
 Do not put Cloudflare Access back in front of this Worker. The field book still
 uses Supabase Auth email+password. Roster loads from `commodores_roster` after
 sign-in. First names only.
 
-Primary pages: **Today**, **Playbook**, **Lineup**, **Practice**. Season board
+Primary pages: **Today**, **Playbook**, **Plays**, **Lineup**, **Practice**. Season board
 is a reference link (schedule, milestones, goals). Playbook has Offense /
 Defense sub-tabs. Lineup is two units (A = Q1/Q3, B = Q2/Q4), each with 7
 offense and 7 defense, plus a live play-time rule check (2+2 or one-way).
