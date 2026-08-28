@@ -195,6 +195,8 @@ visitors cannot open the editor. The offense book starts empty and lists only
 coach-saved `commodores_plays` rows; no numbered routes are seeded in the page
 or recreated in Supabase. Play mode: tap a saved play, then Play / Pause /
 scrub / Flip / Reset or open the immersive full-screen field.
+Full-screen Play is a CSS overlay sized from the visual viewport, not the
+browser fullscreen API, so an iPad can rotate between landscape and portrait.
 Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
 draw its route, Sit for no route, Save with a number and short title. Only the
 field captures touch while drawing, so the rest of the phone/iPad page keeps
