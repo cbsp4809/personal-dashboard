@@ -243,8 +243,10 @@ geometry. New-play dots start slightly behind the line of scrimmage. Route
 lines end with a small arrowhead at the tip. The field shows 10-yard stripes
 as visual markers only. The optional six-areas overlay (no rush) places the
 three short spots about five yards off the LOS, the three deep spots behind
-them, and the rover as a deep-middle helper. Saved snapshot coordinates are
-not rewritten; the kids watch page uses the same field and arrow drawing. Same Commodores Supabase project
+them, and the rover as a deep-middle helper. The canvas is 480×400 (was
+360×400) with tighter name pills so a 5-wide can spread without stacking
+labels; legacy 360-wide drawings scale on load. The kids watch page uses the
+same field, arrow, and width drawing. Same Commodores Supabase project
 (`adjnmtpjoyxvmlogjjpz`) and `storageKey: "commodores-auth"` as the field book,
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply

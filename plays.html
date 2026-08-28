@@ -94,7 +94,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .share-row{display:grid;grid-template-columns:1fr auto;gap:8px}
 .share-row input{min-width:0;min-height:44px;padding:8px 10px;border:1px solid var(--strong);border-radius:10px;background:#111;color:var(--soft)}
 .share-row button{min-height:44px;border:0;border-radius:10px;padding:8px 12px;background:var(--gold);color:#1C1C1C;font-weight:800}
-body.embed .wrap{width:100%;padding:12px}
+body.embed .wrap{width:100%;padding:12px 6px}
 body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{display:none}
 body.immersive{overflow:hidden;overscroll-behavior:none;background:#000}
 body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);z-index:100;width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}
@@ -105,21 +105,22 @@ body.immersive .immersive-done{display:block}
 body.immersive .cue{display:none}
 body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0;touch-action:none}
 body.immersive .field-host{display:grid;width:100%;height:100%;place-items:center}
-body.immersive .field{width:min(calc(var(--vvw) - 16px),calc((var(--vvh) - 128px)*.9));height:auto;max-width:calc(var(--vvw) - 16px);max-height:calc(var(--vvh) - 128px);aspect-ratio:9/10}
+body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}
 body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}
 body.immersive .tools button{display:none}
 body.immersive .tools #playBtn{display:block}
 body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 @media(orientation:landscape) and (max-height:780px){
   body.immersive .tools #playBtn{min-height:48px;font-size:16px}
-  body.immersive .field{width:min(calc(var(--vvw) - 16px),calc((var(--vvh) - 116px)*.9));max-height:calc(var(--vvh) - 116px)}
+  body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}
 }
 @media(max-width:420px){
   h1{font-size:26px}
   .tools{grid-template-columns:1fr 1fr}
   .draw-tools{grid-template-columns:1fr 1fr}
   .save-actions{grid-template-columns:1.35fr .65fr}
-  .wrap{padding-left:10px;padding-right:10px}
+  .wrap{padding-left:6px;padding-right:6px}
+  .field-wrap{border-radius:12px}
 }
 </style>
 </head>
@@ -230,42 +231,73 @@ const sb=(!skipAuthClient&&window.supabase&&supabase.createClient)?supabase.crea
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
-function flipX(x){return 360-x}
 function nowISO(){return new Date().toISOString()}
 function numKey(v){return String(v||"").replace(/\D/g,"").slice(0,4)}
 
-// Field is 360×400. LOS is y=300. Downfield is toward y=10.
+// Field is 480×400 (was 360×400). LOS is y=300. Downfield is toward y=10.
+// Wider canvas so a 5-wide + names can spread without stacking pills.
 // 7 viewBox units ≈ 1 yard so 10-yard stripes land every 70 units.
-const FIELD_LEFT=12,FIELD_RIGHT=348,LOS_Y=300,YARD=7,OFFENSE_OFF=18;
+const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400;
+const FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,MID_X=FIELD_W/2,LOS_Y=300,YARD=7,OFFENSE_OFF=18;
+function flipX(x){return FIELD_W-x}
+function scaleX(x,fromW){
+  const src=Number(fromW)||LEGACY_FIELD_W;
+  if(!Number.isFinite(x)||src===FIELD_W) return x;
+  return x*FIELD_W/src;
+}
+function playCoordWidth(raw){
+  const top=Number(raw&&raw.fieldW);
+  if(top===FIELD_W||top===LEGACY_FIELD_W) return top;
+  const marked=(raw&&Array.isArray(raw.spots)?raw.spots:[]).find(s=>Number(s&&s.fieldW)===FIELD_W||Number(s&&s.fieldW)===LEGACY_FIELD_W);
+  if(marked) return Number(marked.fieldW);
+  return LEGACY_FIELD_W;
+}
+function stampSpots(spots){
+  return (spots||[]).map(s=>({letter:s.letter,x:s.x,y:s.y,sit:!!s.sit,route:(s.route||[]).map(p=>({x:p.x,y:p.y})),fieldW:FIELD_W}));
+}
+function pillSize(label){
+  const name=String(label||"");
+  const len=name.length;
+  return {
+    width:Math.max(22,Math.min(48,11+len*4.4)),
+    height:22,
+    font:len>9?7:len>6?8:9
+  };
+}
 
 function defaultSpots(){
   const line=LOS_Y+OFFENSE_OFF;
-  return [
-    {letter:"Q",x:180,y:348,sit:false,route:[]},
-    {letter:"C",x:180,y:line,sit:true,route:[]},
-    {letter:"X",x:48,y:line,sit:false,route:[]},
-    {letter:"A",x:110,y:line,sit:false,route:[]},
-    {letter:"B",x:220,y:348,sit:false,route:[]},
-    {letter:"Y",x:250,y:line,sit:false,route:[]},
-    {letter:"Z",x:312,y:line,sit:false,route:[]}
-  ];
+  return stampSpots([
+    {letter:"Q",x:MID_X,y:348,sit:false,route:[]},
+    {letter:"C",x:MID_X,y:line,sit:true,route:[]},
+    {letter:"X",x:32,y:line,sit:false,route:[]},
+    {letter:"A",x:120,y:line,sit:false,route:[]},
+    {letter:"B",x:300,y:348,sit:false,route:[]},
+    {letter:"Y",x:360,y:line,sit:false,route:[]},
+    {letter:"Z",x:448,y:line,sit:false,route:[]}
+  ]);
 }
-function cleanSpot(raw,letter){
-  const fallback=defaultSpots().find(s=>s.letter===letter)||{letter,x:180,y:300,sit:false,route:[]};
-  const x=Number(raw&&raw.x);
+function cleanSpot(raw,letter,fromW){
+  const fallback=defaultSpots().find(s=>s.letter===letter)||{letter,x:MID_X,y:LOS_Y+OFFENSE_OFF,sit:false,route:[]};
+  const x=scaleX(Number(raw&&raw.x),fromW);
   const y=Number(raw&&raw.y);
-  const route=Array.isArray(raw&&raw.route)?raw.route.map(p=>({x:Number(p.x),y:Number(p.y)})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)): [];
+  const route=Array.isArray(raw&&raw.route)?raw.route.map(p=>{
+    const px=scaleX(Number(p.x),fromW),py=Number(p.y);
+    return Number.isFinite(px)&&Number.isFinite(py)?{x:clamp(px,8,FIELD_W-8),y:clamp(py,8,FIELD_H-8)}:null;
+  }).filter(Boolean):[];
   return {
     letter,
-    x:Number.isFinite(x)?clamp(x,8,352):fallback.x,
-    y:Number.isFinite(y)?clamp(y,8,392):fallback.y,
+    x:Number.isFinite(x)?clamp(x,8,FIELD_W-8):fallback.x,
+    y:Number.isFinite(y)?clamp(y,8,FIELD_H-8):fallback.y,
     sit:!!(raw&&raw.sit)&&!route.length,
-    route
+    route,
+    fieldW:FIELD_W
   };
 }
 function normalizePlay(raw,fallbackNumber){
   const number=numKey(raw&&raw.number)||numKey(fallbackNumber);
-  const spots=LETTERS.map(letter=>cleanSpot((raw&&raw.spots||[]).find(s=>s.letter===letter),letter));
+  const fromW=playCoordWidth(raw);
+  const spots=LETTERS.map(letter=>cleanSpot((raw&&raw.spots||[]).find(s=>s.letter===letter),letter,fromW));
   return {
     number,
     title:String((raw&&raw.title)||"").slice(0,48),
@@ -274,6 +306,7 @@ function normalizePlay(raw,fallbackNumber){
     bullets:Array.isArray(raw&&raw.bullets)?raw.bullets.map(String):[],
     looks:Array.isArray(raw&&raw.looks)?raw.looks:[],
     spots,
+    fieldW:FIELD_W,
     source:raw&&raw.source||"coach",
     updatedBy:raw&&(raw.updatedBy||raw.updated_by)||"",
     updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO(),
@@ -281,7 +314,7 @@ function normalizePlay(raw,fallbackNumber){
   };
 }
 function emptyPlay(number){
-  return normalizePlay({number,title:"",spots:defaultSpots(),source:"new",updatedAt:"1970-01-01T00:00:00.000Z"});
+  return normalizePlay({number,title:"",spots:defaultSpots(),fieldW:FIELD_W,source:"new",updatedAt:"1970-01-01T00:00:00.000Z"});
 }
 function clonePlay(play){return JSON.parse(JSON.stringify(play))}
 function flipPlay(play){
@@ -345,7 +378,7 @@ function yardLinesSVG(){
   const labels=[];
   for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){
     ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);
-    labels.push(`<text x="22" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`);
+    labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`);
   }
   const back=LOS_Y+YARD*10;
   if(back<386) ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
@@ -378,7 +411,7 @@ function loadLocal(){
 function writeLocal(){
   const rows=Object.values(STORE).map(p=>({
     number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
-    bullets:p.bullets,looks:p.looks,spots:p.spots,source:p.source,
+    bullets:p.bullets,looks:p.looks,spots:stampSpots(p.spots),fieldW:FIELD_W,source:p.source,
     updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published
   }));
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows))}catch(_){}
@@ -411,7 +444,7 @@ async function upsertCloud(play){
     number:play.number,
     title:play.title||play.number,
     flip_partner:play.flipPartner||null,
-    spots:play.spots,
+    spots:stampSpots(play.spots),
     looks:play.looks||[],
     family:play.family||"",
     bullets:play.bullets||[],
@@ -487,10 +520,11 @@ function publishedSnapshot(){
     .sort((a,b)=>Number(a.number)-Number(b.number))
     .map(play=>({
       number:play.number,title:play.title,flipPartner:play.flipPartner||"",
-      spots:play.spots,looks:play.looks||[],family:play.family||"",bullets:play.bullets||[]
+      fieldW:FIELD_W,spots:stampSpots(play.spots),looks:play.looks||[],family:play.family||"",bullets:play.bullets||[]
     }));
   return {
     version:1,
+    fieldW:FIELD_W,
     publishedAt:nowISO(),
     lineups:cleanLineups(STATE.lineups),
     plays
@@ -572,11 +606,11 @@ function areasSVG(){
   const shortY=LOS_Y-YARD*10;
   const deepY=LOS_Y-YARD*22;
   const roverY=LOS_Y-YARD*36;
-  const shorts=[{x:70,n:"left short"},{x:180,n:"middle short"},{x:290,n:"right short"}];
-  const deeps=[{x:70,n:"left deep"},{x:180,n:"middle deep"},{x:290,n:"right deep"}];
-  const short=shorts.map(a=>`<rect x="${a.x-52}" y="${shortY-33}" width="104" height="66" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${shortY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
-  const deep=deeps.map(a=>`<rect x="${a.x-52}" y="${deepY-38}" width="104" height="76" rx="10" fill="rgba(207,174,112,.1)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${deepY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
-  return `<g opacity=".72">${short}${deep}<polygon points="180,${roverY-13} 192,${roverY} 180,${roverY+13} 168,${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="180" y="${roverY+26}" fill="#ECB748" text-anchor="middle" font-size="8">rover</text><text x="180" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
+  const shorts=[{x:90,n:"left short"},{x:MID_X,n:"middle short"},{x:390,n:"right short"}];
+  const deeps=[{x:90,n:"left deep"},{x:MID_X,n:"middle deep"},{x:390,n:"right deep"}];
+  const short=shorts.map(a=>`<rect x="${a.x-60}" y="${shortY-33}" width="120" height="66" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${shortY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
+  const deep=deeps.map(a=>`<rect x="${a.x-60}" y="${deepY-38}" width="120" height="76" rx="10" fill="rgba(207,174,112,.1)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${deepY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
+  return `<g opacity=".72">${short}${deep}<polygon points="${MID_X},${roverY-13} ${MID_X+12},${roverY} ${MID_X},${roverY+13} ${MID_X-12},${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+26}" fill="#ECB748" text-anchor="middle" font-size="8">rover</text><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
 }
 function fieldSVG(play,pos,ball,liveRoute){
   const targets=new Set([play.looks[STATE.look]?.target]);
@@ -591,18 +625,18 @@ function fieldSVG(play,pos,ball,liveRoute){
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
     const fill=s.letter==="Q"?"#FFFFFF":(on?"#ECB748":"#CFAE70");
     const label=playLabel(s.letter);
-    const width=Math.max(26,Math.min(62,14+label.length*5.6));
-    return `<g data-letter="${s.letter}"><rect x="${p.x-width/2}" y="${p.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${p.x}" y="${p.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${label.length>8?8:10}">${esc(label)}</text></g>`;
+    const pill=pillSize(label);
+    return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
   }).join("");
-  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:180,y:LOS_Y+OFFENSE_OFF};
-  const endzone=play.number==="6"?`<rect x="16" y="16" width="328" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="300" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
+  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:MID_X,y:LOS_Y+OFFENSE_OFF};
+  const endzone=play.number==="6"?`<rect x="12" y="16" width="${FIELD_W-24}" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="${FIELD_W-60}" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
   const title=play.title||`Play ${play.number}`;
-  return `<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(title)}">
-    <rect width="360" height="400" fill="#000"/>
-    <rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+  return `<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(title)}">
+    <rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/>
+    <rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
     ${yardLinesSVG()}
     <path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
-    <text x="22" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>
+    <text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>
     ${endzone}${areasSVG()}${routes}${live}
     <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
     ${kids}
@@ -854,8 +888,8 @@ function svgPoint(evt){
   const rect=svg.getBoundingClientRect();
   if(!rect.width||!rect.height) return null;
   return {
-    x:clamp((evt.clientX-rect.left)*360/rect.width,8,352),
-    y:clamp((evt.clientY-rect.top)*400/rect.height,8,392)
+    x:clamp((evt.clientX-rect.left)*FIELD_W/rect.width,8,FIELD_W-8),
+    y:clamp((evt.clientY-rect.top)*FIELD_H/rect.height,8,FIELD_H-8)
   };
 }
 function hitLetter(play,pt){

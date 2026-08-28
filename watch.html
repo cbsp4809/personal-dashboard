@@ -30,8 +30,8 @@ h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:v
 .tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
 .scrub{width:100%;accent-color:var(--gold)}.cue{min-height:38px;margin:9px 0 0;color:var(--soft);font-size:13px}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
-body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 16px),calc((var(--vvh) - 128px)*.9));height:auto;max-width:calc(var(--vvw) - 16px);max-height:calc(var(--vvh) - 128px);aspect-ratio:9/10}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 16px),calc((var(--vvh) - 116px)*.9));max-height:calc(var(--vvh) - 116px)}}
-@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.tools{grid-template-columns:1fr 1fr}.tools #full{grid-column:1/-1}}
+body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:6px;padding-right:6px}.tools{grid-template-columns:1fr 1fr}.tools #full{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -77,17 +77,29 @@ function pointAlong(start,points,t){
 }
 function cleanPlay(raw){
   if(!raw||!String(raw.number||"").match(/^\d{1,4}$/)||!Array.isArray(raw.spots))return null;
+  const fromW=playCoordWidth(raw);
   const spots=LETTERS.map(letter=>{
     const source=raw.spots.find(spot=>spot&&spot.letter===letter)||{};
-    const route=Array.isArray(source.route)?source.route.map(point=>({x:Number(point.x),y:Number(point.y)})).filter(point=>Number.isFinite(point.x)&&Number.isFinite(point.y)):[];
-    return{letter,x:Number(source.x)||180,y:Number(source.y)||300,sit:!!source.sit,route};
+    const route=Array.isArray(source.route)?source.route.map(point=>{
+      const x=scaleX(Number(point.x),fromW),y=Number(point.y);
+      return Number.isFinite(x)&&Number.isFinite(y)?{x,y}:null;
+    }).filter(Boolean):[];
+    const x=scaleX(Number(source.x),fromW);
+    return{letter,x:Number.isFinite(x)?x:FIELD_W/2,y:Number(source.y)||300,sit:!!source.sit,route};
   });
-  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],spots};
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots};
 }
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||state.plays[0]}
 function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
-const FIELD_LEFT=12,FIELD_RIGHT=348,LOS_Y=300,YARD=7;
+const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,LOS_Y=300,YARD=7;
+function scaleX(x,fromW){const src=Number(fromW)||LEGACY_FIELD_W;if(!Number.isFinite(x)||src===FIELD_W)return x;return x*FIELD_W/src}
+function playCoordWidth(raw){
+  const top=Number(raw&&raw.fieldW);if(top===FIELD_W||top===LEGACY_FIELD_W)return top;
+  const marked=(raw&&Array.isArray(raw.spots)?raw.spots:[]).find(s=>Number(s&&s.fieldW)===FIELD_W||Number(s&&s.fieldW)===LEGACY_FIELD_W);
+  return marked?Number(marked.fieldW):LEGACY_FIELD_W;
+}
+function pillSize(label){const name=String(label||""),len=name.length;return{width:Math.max(22,Math.min(48,11+len*4.4)),height:22,font:len>9?7:len>6?8:9}}
 function routeTip(start,points){
   const pts=[start,...(points||[])].filter(point=>point&&Number.isFinite(point.x)&&Number.isFinite(point.y));
   if(pts.length<2)return null;
@@ -110,7 +122,7 @@ function route(start,points,on){
 }
 function yardLines(){
   const ticks=[];const labels=[];
-  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="22" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
+  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
   const back=LOS_Y+YARD*10;if(back<386)ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
   return`<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}</g>`;
 }
@@ -130,8 +142,8 @@ function paint(progress){
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
   const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,highlighted.has(spot.letter))).join("");
-  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),width=Math.max(26,Math.min(66,14+name.length*5.6)),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-width/2}" y="${point.y-13}" width="${width}" height="26" rx="13" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3.5}" fill="#1C1C1C" text-anchor="middle" font-size="${name.length>8?8:10}">${esc(name)}</text></g>`}).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 360 400" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="360" height="400" fill="#000"/><rect x="12" y="10" width="336" height="380" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="22" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
+  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
 function render(){
