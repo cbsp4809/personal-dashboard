@@ -1246,7 +1246,7 @@ function postPlayLineups(){
 function startPlaysFrame(){
   const frame=$("#playsFrame");
   if(!frame) return;
-  if(!frame.src){
+  if(!frame.getAttribute("src")){
     frame.src=frame.dataset.src;
     frame.addEventListener("load",postPlayLineups);
   }else{

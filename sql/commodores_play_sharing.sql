@@ -88,7 +88,6 @@ $$;
 revoke all on function public.commodores_watch_plays(text) from public;
 revoke all on function public.commodores_watch_plays(text) from authenticated;
 grant execute on function public.commodores_watch_plays(text) to anon;
-grant execute on function public.commodores_watch_plays(text) to authenticated;
 
 comment on function public.commodores_watch_plays(text) is
   'Returns only the current published watch snapshot for an exact unguessable token.';
