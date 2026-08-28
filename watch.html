@@ -28,9 +28,10 @@ h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:v
 .field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
 .tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}.speed button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .scrub{width:100%;accent-color:var(--gold)}.cue{min-height:38px;margin:9px 0 0;color:var(--soft);font-size:13px}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
-body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}}
+body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}}
 @media(max-width:420px){h1{font-size:28px}.wrap{padding-left:6px;padding-right:6px}.tools{grid-template-columns:1fr 1fr}.tools #full{grid-column:1/-1}}
 </style>
 </head>
@@ -51,6 +52,11 @@ body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fix
       <button class="done" type="button" id="done">Done</button>
       <div class="field-wrap"><div id="field"></div></div>
       <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="reset">Reset</button><button class="ghost" type="button" id="full">Full screen</button></div>
+      <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
+        <button type="button" data-speed="0.5">0.5×</button>
+        <button type="button" data-speed="1">1×</button>
+        <button type="button" data-speed="2">2×</button>
+      </div>
       <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
       <p class="cue" id="cue" aria-live="polite"></p>
     </div>
@@ -64,7 +70,11 @@ const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
 const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-watch",persistSession:false,autoRefreshToken:false}}):null;
 const LETTERS=["Q","C","X","A","B","Y","Z"];
-const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null};
+const SPEED_KEY="commodores-play-speed";
+const SPEEDS=[0.5,1,2];
+function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
+function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
+const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null,speed:loadSpeed()};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function pointAlong(start,points,t){
@@ -157,9 +167,22 @@ function render(){
   $("#cue").textContent=(look&&look.cue)||`${play.family?play.family+" · ":""}${play.title||"Play "+play.number}`;
   paint(0);
 }
+function renderSpeed(){
+  $$("#speedPicks [data-speed]").forEach(button=>{
+    const value=Number(button.dataset.speed);
+    button.classList.toggle("on",value===state.speed);
+    button.setAttribute("aria-pressed",value===state.speed?"true":"false");
+  });
+}
+function setSpeed(speed){
+  const next=SPEEDS.includes(Number(speed))?Number(speed):0.5;
+  state.speed=next;
+  saveSpeed(next);
+  renderSpeed();
+}
 function play(){
   if(state.anim){stop();return}
-  const started=performance.now(),duration=2300;state.anim={frame:0};$("#play").textContent="Pause";
+  const started=performance.now(),duration=2300/(state.speed||0.5);state.anim={frame:0};$("#play").textContent="Pause";
   const tick=now=>{const progress=Math.min(1,(now-started)/duration);paint(progress);if(progress<1){state.anim.frame=requestAnimationFrame(tick);return}state.anim=null;$("#play").textContent="Play"};
   state.anim.frame=requestAnimationFrame(tick);
 }
@@ -203,9 +226,11 @@ function setImmersive(active){
 }
 $("#units").onclick=event=>{const button=event.target.closest("[data-unit]");if(!button)return;state.unit=button.dataset.unit==="B"?"B":"A";render()};
 $("#play").onclick=play;
+$("#speedPicks").onclick=event=>{const button=event.target.closest("[data-speed]");if(!button)return;setSpeed(button.dataset.speed)};
 $("#reset").onclick=render;
 $("#full").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#done").onclick=()=>setImmersive(false);
+renderSpeed();
 document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{})});
 $("#scrub").oninput=()=>{stop();paint(Number($("#scrub").value)/1000)};
 bindViewport();

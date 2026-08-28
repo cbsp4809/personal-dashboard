@@ -56,6 +56,9 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .tools{display:grid;grid-template-columns:1.25fr repeat(3,1fr);gap:8px;margin:10px 0}
 .tools button{min-height:58px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
 .tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft);font-size:15px}
+.speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}
+.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}
+.speed button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .looks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .looks button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-weight:700}
 .looks button.on{border-color:rgba(207,174,112,.45);background:var(--gold-soft);color:var(--ink)}
@@ -109,6 +112,7 @@ body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)
 body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}
 body.immersive .tools button{display:none}
 body.immersive .tools #playBtn{display:block}
+body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}
 body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 @media(orientation:landscape) and (max-height:780px){
   body.immersive .tools #playBtn{min-height:48px;font-size:16px}
@@ -172,6 +176,11 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
       <button class="ghost" type="button" id="fullScreenBtn">Full screen</button>
       <button class="ghost" type="button" id="resetBtn">Reset</button>
     </div>
+    <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
+      <button type="button" data-speed="0.5">0.5×</button>
+      <button type="button" data-speed="1">1×</button>
+      <button type="button" data-speed="2">2×</button>
+    </div>
     <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
   </div>
   <label class="check"><input id="showAreas" type="checkbox"> Show six areas + helper (no rush)</label>
@@ -209,8 +218,17 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const LETTERS=["Q","C","X","A","B","Y","Z"];
 const LOCAL_KEY="commodores-plays-v2";
+const SPEED_KEY="commodores-play-speed";
+const SPEEDS=[0.5,1,2];
 const SHARE_ORIGIN="https://personal-dashboard.chrisbailey.workers.dev";
 const IS_EMBED=new URLSearchParams(location.search).get("embed")==="1";
+function loadSpeed(){
+  const value=Number(localStorage.getItem(SPEED_KEY));
+  return SPEEDS.includes(value)?value:0.5;
+}
+function saveSpeed(speed){
+  try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}
+}
 // The field-book offense array uses this exact stable order: Q, C, then the
 // five receiver spots X, A, B, Y, Z. Never infer names from another roster.
 const OFFENSE_SPOT_ORDER=["Q","C","X","A","B","Y","Z"];
@@ -395,7 +413,8 @@ const STATE={
   coach:null,
   lineupUnit:"A",
   lineups:{A:{},B:{}},
-  shareToken:""
+  shareToken:"",
+  speed:loadSpeed()
 };
 const STORE={};
 let draft=null;
@@ -701,6 +720,7 @@ function renderChrome(){
   }
   setCue(play,"idle");
   renderPublish();
+  renderSpeed();
 }
 function render(liveRoute){
   const play=workingPlay();
@@ -815,6 +835,21 @@ function paintProgress(play,progress){
   $("#scrub").value=String(Math.round(progress*1000));
 }
 
+function renderSpeed(){
+  const picks=$("#speedPicks");
+  if(!picks) return;
+  $$("#speedPicks [data-speed]").forEach(btn=>{
+    const value=Number(btn.dataset.speed);
+    btn.classList.toggle("on",value===STATE.speed);
+    btn.setAttribute("aria-pressed",value===STATE.speed?"true":"false");
+  });
+}
+function setSpeed(speed){
+  const next=SPEEDS.includes(Number(speed))?Number(speed):0.5;
+  STATE.speed=next;
+  saveSpeed(next);
+  renderSpeed();
+}
 function playNow(){
   if(STATE.mode==="draw") return;
   if(anim){stopAnim();$("#playBtn").textContent="Play";return}
@@ -824,7 +859,9 @@ function playNow(){
   setCue(play,"play");
   $("#playBtn").textContent="Pause";
   const start=performance.now();
-  const snap=220, run=1700, throwMs=380, hold=1100;
+  const speed=STATE.speed||0.5;
+  // Base timeline is ~2.3s at 1×. 0.5× is the coaching default so kids can see routes.
+  const snap=220/speed, run=1700/speed, throwMs=380/speed, hold=1100/speed;
   const total=snap+run+throwMs;
   anim={frame:0,timer:0};
   const tick=now=>{
@@ -1103,6 +1140,11 @@ async function onLogin(event){
 $("#modePlay").onclick=()=>setMode("play");
 $("#modeDraw").onclick=()=>setMode("draw");
 $("#playBtn").onclick=playNow;
+$("#speedPicks").onclick=event=>{
+  const button=event.target.closest("[data-speed]");
+  if(!button) return;
+  setSpeed(button.dataset.speed);
+};
 $("#fullScreenBtn").onclick=enterImmersive;
 $("#doneBtn").onclick=exitImmersive;
 document.addEventListener("fullscreenchange",()=>{

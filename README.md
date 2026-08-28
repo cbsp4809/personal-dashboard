@@ -232,7 +232,10 @@ Direct access to `plays.html` uses the same coach allowlist gate; unsigned
 visitors cannot open the editor. The offense book starts empty and lists only
 coach-saved `commodores_plays` rows; no numbered routes are seeded in the page
 or recreated in Supabase. Play mode: tap a saved play, then Play / Pause /
-scrub / Flip / Reset or open the immersive full-screen field.
+scrub / Flip / Reset or open the immersive full-screen field. A small
+**0.5× / 1× / 2×** speed row sits under those controls (default **0.5×** so
+kids can see the routes); the choice is kept in localStorage. The kids
+watch page uses the same speeds.
 Full-screen Play is a CSS overlay sized from the visual viewport, not the
 browser fullscreen API, so an iPad can rotate between landscape and portrait.
 Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
