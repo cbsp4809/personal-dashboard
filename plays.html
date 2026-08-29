@@ -115,21 +115,27 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .save-actions button{min-height:56px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800}
 .save-actions .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
 .status{min-height:20px;margin:8px 0 0;color:var(--highlight);font-size:12.5px}
-.unit-picks,.publish-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
-.unit-picks button,.publish-actions button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:800}
+.unit-picks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.unit-picks button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:800}
 .unit-picks button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .scrub{width:100%;margin:0 0 12px;accent-color:var(--gold)}
-.publish{margin:14px 0 0;padding:0;border:1px solid var(--strong);border-radius:14px;background:#000}
-.publish summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;padding:10px 12px;color:var(--soft);font-weight:800}
-.publish summary::-webkit-details-marker{display:none}
-.publish summary::after{content:"▸";margin-left:auto;color:var(--gold)}
-.publish[open] summary::after{content:"▾"}
-.publish-body{padding:0 12px 12px}
-.publish-copy{margin:0 0 10px;color:var(--muted);font-size:12px}
-.publish-actions .danger{color:var(--muted);border-style:dashed}
-.share-row{display:grid;grid-template-columns:1fr auto;gap:8px}
-.share-row input{min-width:0;min-height:44px;padding:8px 10px;border:1px solid var(--strong);border-radius:10px;background:#111;color:var(--soft)}
-.share-row button{min-height:44px;border:0;border-radius:10px;padding:8px 12px;background:var(--gold);color:#1C1C1C;font-weight:800}
+.kids-link{margin:0 0 10px;padding:8px 10px;border:1px solid var(--strong);border-radius:14px;background:#000;min-width:0;max-width:100%}
+.kids-link-main{display:flex;align-items:center;gap:10px;min-width:0}
+.kids-link-meta{flex:1 1 auto;min-width:0}
+.kids-link-meta b{display:block;margin:0 0 2px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+.kids-link-meta #kidsPushedAt{display:block;color:var(--soft);font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kids-link-main #copyShare{flex:0 0 auto;min-width:64px;min-height:44px;border:0;border-radius:10px;padding:8px 14px;background:var(--gold);color:#1C1C1C;font-weight:800}
+.kids-link-main #copyShare:disabled{opacity:.38}
+.kids-link-more{min-width:0}
+.kids-link-more summary{list-style:none;cursor:pointer;display:flex;align-items:center;min-height:44px;color:var(--muted);font-size:12px;font-weight:700}
+.kids-link-more summary::-webkit-details-marker{display:none}
+.kids-link-more summary::after{content:"▸";margin-left:6px;color:var(--gold)}
+.kids-link-more[open] summary::after{content:"▾"}
+.kids-link-hint{margin:0 0 8px;color:var(--muted);font-size:12px}
+.kids-link-more #rotateShare{min-height:44px;width:100%;max-width:100%;border:1px dashed var(--strong);border-radius:10px;padding:8px 12px;background:transparent;color:var(--muted);font-weight:800}
+.kids-link-more #rotateShare:disabled{opacity:.38}
+.kids-link .status{margin:0;min-height:0}
+.kids-link .status:not(:empty){margin-top:6px;min-height:20px}
 .coach-bar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:100%;overflow-x:hidden;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));border-top:1px solid var(--strong);background:#111;box-shadow:0 -10px 24px rgba(0,0,0,.4)}
 .coach-bar-status{flex:1 1 88px;min-width:88px;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .coach-bar-status.kids{color:var(--gold)}
@@ -196,6 +202,21 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
   </div>
 
   <div id="coachTools" class="hidden">
+  <div class="kids-link" id="kidsLinkStrip">
+    <div class="kids-link-main">
+      <div class="kids-link-meta">
+        <b>Kids link</b>
+        <span id="kidsPushedAt">Not on kids yet</span>
+      </div>
+      <button type="button" id="copyShare">Copy</button>
+    </div>
+    <details class="kids-link-more" id="kidsLinkChange">
+      <summary>Change link</summary>
+      <p class="kids-link-hint">Rotating the secret stops the old kids URL. Copy the new one after you rotate.</p>
+      <button type="button" id="rotateShare">Rotate secret link</button>
+    </details>
+    <p class="status" id="publishStatus" aria-live="polite"></p>
+  </div>
   <div class="modes" role="tablist" aria-label="Mode">
     <button type="button" id="modePlay" class="on">Play</button>
     <button type="button" id="modeDraw">Draw</button>
@@ -257,21 +278,6 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
     </div>
     <p class="status" id="saveStatus" aria-live="polite"></p>
   </div>
-  <details class="publish hidden" id="publishPanel">
-    <summary>Kids link</summary>
-    <div class="publish-body">
-      <p class="publish-copy">Secret watch URL for kids and parents. Republish after roster-tag or jersey changes. Rotate only if the old link should stop working.</p>
-      <div class="share-row">
-        <input id="shareUrl" type="text" readonly placeholder="Publish a saved play to create the secret link" aria-label="Kids watch URL">
-        <button type="button" id="copyShare">Copy</button>
-      </div>
-      <div class="publish-actions">
-        <button type="button" id="publishNow">Republish names + plays</button>
-        <button type="button" class="danger" id="rotateShare">Rotate secret link</button>
-      </div>
-      <p class="status" id="publishStatus" aria-live="polite"></p>
-    </div>
-  </details>
   <p class="letters" id="letterKey">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
   </div>
 </div>
@@ -762,6 +768,26 @@ function rememberSnapshot(snapshot,publishedAt){
 function snapshotPublishedAt(){
   return (STATE.kidsSnapshot&&STATE.kidsSnapshot.publishedAt)||STATE.snapshotPublishedAt||"";
 }
+function formatPushedAt(iso){
+  if(!iso) return "Not on kids yet";
+  const date=new Date(iso);
+  if(Number.isNaN(date.getTime())) return "Not on kids yet";
+  const parts=new Intl.DateTimeFormat("en-US",{
+    timeZone:"America/Chicago",
+    weekday:"short",
+    hour:"numeric",
+    minute:"2-digit",
+    hour12:true
+  }).formatToParts(date);
+  const pick=type=>(parts.find(p=>p.type===type)||{}).value||"";
+  const weekday=pick("weekday");
+  const hour=pick("hour");
+  const minute=pick("minute");
+  const raw=pick("dayPeriod").replace(/\./g,"").toLowerCase();
+  const period=raw.startsWith("a")?"a.m.":"p.m.";
+  if(!weekday||!hour||!minute) return "Not on kids yet";
+  return `Pushed ${weekday} ${hour}:${minute} ${period}`;
+}
 function samePublishedPlay(play,snapPlay){
   if(!play||!snapPlay) return false;
   try{
@@ -873,17 +899,18 @@ async function togglePublished(){
   await publishSnapshot(false);
 }
 function renderPublish(){
-  const panel=$("#publishPanel");
+  const strip=$("#kidsLinkStrip");
   const bar=$("#coachBar");
-  if(panel) panel.classList.toggle("hidden",!STATE.coach);
+  if(strip) strip.classList.toggle("hidden",!STATE.coach);
   if(bar) bar.classList.toggle("hidden",!STATE.coach||document.body.classList.contains("immersive"));
   const play=STORE[STATE.number];
   const saved=!!play;
   const state=selectedPublishState();
   const stale=anyPublishedStale();
-  if($("#shareUrl")) $("#shareUrl").value=shareUrl();
+  if($("#kidsPushedAt")) $("#kidsPushedAt").textContent=formatPushedAt(snapshotPublishedAt());
   if($("#copyShare")) $("#copyShare").disabled=!STATE.shareToken;
   if($("#rotateShare")) $("#rotateShare").disabled=!STATE.shareToken;
+  if($("#kidsLinkChange")) $("#kidsLinkChange").classList.toggle("hidden",!STATE.shareToken);
   const status=$("#coachBarStatus");
   if(status){
     status.textContent=saved?PUBLISH_LABELS[state]:"Coach only";
@@ -1697,20 +1724,31 @@ $("#scrub").oninput=()=>{
 $("#coachBarPublish").onclick=togglePublished;
 $("#coachBarPush").onclick=()=>publishSnapshot(false);
 $("#coachBarSave").onclick=saveDraft;
-$("#publishNow").onclick=()=>publishSnapshot(false);
 $("#rotateShare").onclick=()=>{
   if(confirm("Rotate the secret link? The old kids link will stop working.")) publishSnapshot(true);
 };
 $("#copyShare").onclick=async()=>{
   const value=shareUrl();
   if(!value) return;
+  const status=$("#publishStatus");
   try{
     await navigator.clipboard.writeText(value);
-    $("#publishStatus").textContent="Kids link copied.";
-  }catch(_){
-    $("#shareUrl").focus();
-    $("#shareUrl").select();
-    $("#publishStatus").textContent="Link selected. Copy it from the field.";
+    status.textContent="Kids link copied.";
+    return;
+  }catch(_){}
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=value;
+    ta.setAttribute("readonly","");
+    ta.style.position="fixed";
+    ta.style.left="-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok=document.execCommand("copy");
+    ta.remove();
+    status.textContent=ok?"Kids link copied.":"Could not copy the kids link.";
+  }catch(__){
+    status.textContent="Could not copy the kids link.";
   }
 };
 $("#sitBtn").onclick=sitSelected;
