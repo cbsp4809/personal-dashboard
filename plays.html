@@ -77,9 +77,10 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .check input{width:20px;height:20px;accent-color:var(--gold)}
 .draw-help{margin:0 0 10px;color:var(--soft);font-size:13px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;touch-action:pan-y}
-.chips button{min-width:52px;min-height:52px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
-.chips button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.chips button{min-width:52px;min-height:52px;border:2px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
+.chips button.on{color:#1C1C1C}
 .chips button.sit{opacity:.55}
+.letters .lk{font-weight:800}
 .draw-tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px}
 .draw-tools button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft);font-weight:800}
 .draw-tools button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
@@ -216,13 +217,28 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
     </div>
     <p class="status" id="publishStatus" aria-live="polite"></p>
   </div>
-  <p class="letters">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
+  <p class="letters" id="letterKey">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
   </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const LETTERS=["Q","C","X","A","B","Y","Z"];
+// Offense letter colors — one map for name pills, route lines, and tip arrows.
+// Readable on black turf. Q stays white so the thrower is distinct.
+// Keep these hexes in sync across plays.html, watch.html, and commodores.html.
+const POSITION_COLOR={
+  Q:"#FFFFFF", // thrower
+  C:"#CFAE70", // brand gold — center
+  X:"#5EC8E8", // sky — left out
+  A:"#F4A261", // sand-orange — slot
+  B:"#7ED47A", // mint — inside / H-back
+  Y:"#C9A6F0", // lilac — slot
+  Z:"#FF8B7A"  // salmon — right out
+};
+function positionColor(letter){
+  return POSITION_COLOR[String(letter||"").toUpperCase()]||"#CFAE70";
+}
 const LOCAL_KEY="commodores-plays-v2";
 const SPEED_KEY="commodores-play-speed";
 const SPEEDS=[0.5,1,2];
@@ -404,11 +420,11 @@ function arrowSVG(start,points,color,size,opacity){
   const px=-tip.uy*w,py=tip.ux*w;
   return `<polygon points="${tip.x},${tip.y} ${bx+px},${by+py} ${bx-px},${by-py}" fill="${color}" opacity="${opacity==null?1:opacity}"/>`;
 }
-function routeSVG(start,points,on,live){
+function routeSVG(start,points,letter,on,live){
   if(!points||!points.length) return "";
-  const color=on||live?"#ECB748":"#FFFFFF";
-  const width=on||live?4:2.4;
-  const opacity=live?1:(on?.95:.42);
+  const color=positionColor(letter);
+  const width=on||live?4.2:2.6;
+  const opacity=live?1:(on?1:.82);
   return `<path d="${esc(pathD(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrowSVG(start,points,color,on||live?9:7,opacity)}`;
 }
 function yardLinesSVG(){
@@ -655,17 +671,17 @@ function fieldSVG(play,pos,ball,liveRoute){
   const targets=new Set([play.looks[STATE.look]?.target]);
   const routes=play.spots.filter(s=>s.letter!=="Q"&&s.route&&s.route.length).map(s=>{
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
-    return routeSVG(s,s.route,on,false);
+    return routeSVG(s,s.route,s.letter,on,false);
   }).join("");
   const liveStart=play.spots.find(s=>s.letter===STATE.selected)||(liveRoute&&liveRoute[0]);
-  const live=liveRoute&&liveRoute.length&&liveStart?routeSVG(liveStart,liveRoute,true,true):"";
+  const live=liveRoute&&liveRoute.length&&liveStart?routeSVG(liveStart,liveRoute,STATE.selected,true,true):"";
   const kids=play.spots.map(s=>{
     const p=pos[s.letter]||s;
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
-    const fill=s.letter==="Q"?"#FFFFFF":(on?"#ECB748":"#CFAE70");
+    const fill=positionColor(s.letter);
     const label=playLabel(s.letter);
     const pill=pillSize(label);
-    return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
+    return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(s.letter==="Q"?"#CFAE70":"#FFFFFF"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
   }).join("");
   const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:MID_X,y:LOS_Y+OFFENSE_OFF};
   const endzone=play.number==="6"?`<rect x="12" y="16" width="${FIELD_W-24}" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="${FIELD_W-60}" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
@@ -731,8 +747,16 @@ function renderChrome(){
   $("#fieldWrap").classList.toggle("is-drawing",STATE.mode==="draw");
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
     const spot=play.spots.find(s=>s.letter===letter);
-    return `<button type="button" data-letter="${letter}" class="${letter===STATE.selected?"on":""} ${spot&&spot.sit?"sit":""}">${letter}</button>`;
+    const color=positionColor(letter);
+    const on=letter===STATE.selected;
+    const border=on?(letter==="Q"?"#CFAE70":"#FFFFFF"):color;
+    const style=on
+      ?`background:${color};border-color:${border};color:#1C1C1C`
+      :`background:#000;border-color:${color};color:${color}`;
+    return `<button type="button" data-letter="${letter}" class="${on?"on":""} ${spot&&spot.sit?"sit":""}" style="${style}">${letter}</button>`;
   }).join("");
+  const key=$("#letterKey");
+  if(key) key.innerHTML=`<span class="lk" style="color:${positionColor("Q")}">Q thrower</span> · <span class="lk" style="color:${positionColor("C")}">C center</span> · <span class="lk" style="color:${positionColor("X")}">X left out</span> · <span class="lk" style="color:${positionColor("Z")}">Z right out</span> · <span class="lk" style="color:${positionColor("A")}">A</span> / <span class="lk" style="color:${positionColor("B")}">B</span> / <span class="lk" style="color:${positionColor("Y")}">Y</span> inside. Hip-stay is a drill only.`;
   $$("#letterChips [data-letter]").forEach(btn=>btn.onclick=()=>{STATE.selected=btn.dataset.letter;render();});
   if(STATE.mode==="draw"){
     $("#playNumber").value=draft?draft.number:STATE.number;

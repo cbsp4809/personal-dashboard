@@ -265,7 +265,12 @@ localStorage keeps an offline draft; the database wins when signed in.
 
 Play labels come from the current offense lineup in this fixed order:
 `Q, C, X, A, B, Y, Z` (Q and Center, then the five receiver spots). Coaches
-choose Unit A or B. Empty spots fall back to the letter.
+choose Unit A or B. Empty spots fall back to the letter. Each letter has a
+fixed color used for the name pill, the route line, and the tip arrow
+(`POSITION_COLOR` in `plays.html`, mirrored in `watch.html` and
+`commodores.html`): Q white, C gold, X sky, A sand-orange, B mint, Y lilac,
+Z salmon. Selected / live-drawing strokes get thicker but keep that hue.
+Yard lines, LOS, and the defense overlay stay gold/white as before.
 
 Each saved play has a Publish toggle. Publishing writes one read-only snapshot
 containing all marked plays and both units' first-name maps, then shows a

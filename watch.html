@@ -102,6 +102,21 @@ const SB_URL="https://adjnmtpjoyxvmlogjjpz.supabase.co";
 const SB_KEY="sb_publishable_iNNI1IuOPsOmkDPLZ-k9mw_t4Gxt4TW";
 const sb=(window.supabase&&supabase.createClient)?supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:"commodores-watch",persistSession:false,autoRefreshToken:false}}):null;
 const LETTERS=["Q","C","X","A","B","Y","Z"];
+// Offense letter colors — one map for name pills, route lines, and tip arrows.
+// Readable on black turf. Q stays white so the thrower is distinct.
+// Keep these hexes in sync across plays.html, watch.html, and commodores.html.
+const POSITION_COLOR={
+  Q:"#FFFFFF", // thrower
+  C:"#CFAE70", // brand gold — center
+  X:"#5EC8E8", // sky — left out
+  A:"#F4A261", // sand-orange — slot
+  B:"#7ED47A", // mint — inside / H-back
+  Y:"#C9A6F0", // lilac — slot
+  Z:"#FF8B7A"  // salmon — right out
+};
+function positionColor(letter){
+  return POSITION_COLOR[String(letter||"").toUpperCase()]||"#CFAE70";
+}
 const SPEED_KEY="commodores-play-speed";
 const SPEEDS=[0.5,1,2];
 function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
@@ -174,9 +189,9 @@ function arrow(start,points,color,size,opacity){
   const s=size||8,w=s*.55,bx=tip.x-tip.ux*s,by=tip.y-tip.uy*s,px=-tip.uy*w,py=tip.ux*w;
   return`<polygon points="${tip.x},${tip.y} ${bx+px},${by+py} ${bx-px},${by-py}" fill="${color}" opacity="${opacity==null?1:opacity}"/>`;
 }
-function route(start,points,on){
+function route(start,points,letter,on){
   if(!points||!points.length)return"";
-  const color=on?"#ECB748":"#FFFFFF",width=on?4:2.4,opacity=on?.95:.43;
+  const color=positionColor(letter),width=on?4.2:2.6,opacity=on?1:.82;
   return`<path d="${esc(path(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrow(start,points,color,on?9:7,opacity)}`;
 }
 function yardLines(){
@@ -200,8 +215,8 @@ function paint(progress){
   else if(destination){const p=ease((progress-run)/(1-run));ball={x:positions.Q.x+(destination.x-positions.Q.x)*p,y:positions.Q.y+(destination.y-positions.Q.y)*p}}
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
-  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,highlighted.has(spot.letter))).join("");
-  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
+  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,spot.letter,highlighted.has(spot.letter))).join("");
+  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=positionColor(spot.letter);return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(spot.letter==="Q"?"#CFAE70":"#fff"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
   $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
