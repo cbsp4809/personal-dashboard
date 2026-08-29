@@ -260,9 +260,11 @@ Chris’s relative on-line versus off-line spacing remains intact. Dragging uses
 the inverse display offset, so saves do not accumulate that shift. Route lines
 end with a small arrowhead at the tip. The field marks every five yards from
 **0 / LOS** through the emphasized **45 / TD** goal line without rewriting saved
-starts or route coordinates. The optional six-areas overlay (no rush) places the
-three short spots about five yards off the LOS, the three deep spots behind
-them, and the rover as a deep-middle helper. The canvas is 480×400 (was
+starts or route coordinates. The optional **Defense** overlay (off by default)
+uses the same week-one base picture in coach and watch views: three short
+areas, three deep areas, and a deep-middle rover, all beneath the offense
+routes. It never shows Man-Free or hip-stay, which remain drills only. The
+canvas is 480×400 (was
 360×400) with tighter name pills so a 5-wide can spread without stacking
 labels; legacy 360-wide drawings scale on load. The kids watch page uses the
 same field, arrow, and width drawing. Same Commodores Supabase project
@@ -292,9 +294,11 @@ containing all marked plays and both units' first-name maps, then shows a
 The watch page has no login, coach navigation, roster, editor, notes, save, or
 publish controls. Kids see the published **Playbook** and **Upcoming** sections
 in the exact coach-set order, tap one, then get the play number above the field
-plus Play / full screen / scrub. Full screen shows the play display name the
-same way the coach animator does. Section and order are baked into each
-published snapshot, so an existing link stays consistent with the last publish.
+plus Play / full screen / scrub and one default-off **Defense** toggle. Turning
+it on shows the same six-area + rover base coverage under the offense routes.
+Full screen shows the play display name the same way the coach animator does.
+Section and order are baked into each published snapshot, so an existing link
+stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow
 RPC returns only the published snapshot for the exact token. After lineup or
 route changes, tap **Republish names + plays**. Rotating the link invalidates
