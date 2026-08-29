@@ -246,10 +246,12 @@ A small **0.5× / 1× / 2×** speed row sits under those controls (default
 The kids watch page uses the same speeds.
 Full-screen Play is a CSS overlay sized from the visual viewport, not the
 browser fullscreen API, so an iPad can rotate between landscape and portrait.
-Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
-draw its route, Sit for no route, Save with a number and short title. Only the
-field captures touch while drawing, so the rest of the phone/iPad page keeps
-normal vertical scrolling. Flip is a true left/right mirror of the saved
+Draw mode: drag the seven letter dots to set starts, tap a letter chip, then
+finger-draw its route (start on that letter for a go route). Sit for no route,
+Save with a number and short title. Empty turf stays scroll-safe: a vertical
+pan on the field scrolls the page instead of rewriting a route. The field
+captures touch only after a draw or drag is claimed, not for the whole Draw
+session. Flip is a true left/right mirror of the saved
 geometry. New-play dots start slightly behind the line of scrimmage and default
 to **Upcoming**. Saved plays are grouped into **Playbook** (learned/practiced)
 and **Upcoming** (learn soon); coaches can move a play between them and use
@@ -291,6 +293,13 @@ unchanged path. Each letter has a fixed color used for the name bubble, route li
 Z salmon. Selected / live-drawing strokes get thicker but keep that hue.
 Yard lines, LOS, and the defense overlay stay gold/white as before.
 
+Play chips show **Kids**, **Coach only**, or **Edited** (saved since the last
+kids snapshot). Filter chips above the lists are All / Kids / Not on kids.
+A signed-in sticky bar stays at the bottom of the phone viewport: selected-play
+status, **Publish this play** / **Remove from kids**, **Push to kids** when any
+published play is stale, and **Save play** in Draw. The secret URL, copy, and
+rotate stay in a compact **Kids link** details block.
+
 Each saved play has a Publish toggle. Publishing writes one read-only snapshot
 containing all marked plays plus the 12-player practice roster tags and entered
 jersey numbers, then shows one all-season
@@ -310,9 +319,10 @@ name the same way the coach animator does.
 Section and order are baked into each published snapshot, so an existing link
 stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow
-RPC returns only the published snapshot for the exact token. After roster-tag
-or route changes, tap **Republish names + plays**. Rotating the link invalidates
-the old URL.
+RPC returns only the published snapshot for the exact token. After route edits
+on a published play, tap **Push to kids**. After roster-tag or jersey changes,
+open **Kids link** and tap **Republish names + plays**. Rotating the link
+invalidates the old URL.
 
 Do not put Cloudflare Access back in front of this Worker. The field book still
 uses Supabase Auth email+password. Roster loads from `commodores_roster` after
