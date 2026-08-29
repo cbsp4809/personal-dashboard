@@ -78,8 +78,8 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   <section id="viewer" class="hidden" aria-label="Selected play">
     <button class="back" type="button" id="back">← All plays</button>
     <div class="units hidden" id="units" role="group" aria-label="Lineup unit">
-      <button type="button" data-unit="A" class="on">Unit A</button>
-      <button type="button" data-unit="B">Unit B</button>
+      <button type="button" data-unit="A" class="on">Q1/Q3</button>
+      <button type="button" data-unit="B">Q2/Q4</button>
     </div>
     <div class="play-shell" id="playShell">
       <button class="done" type="button" id="done">Done</button>
@@ -125,7 +125,7 @@ const PLAY_SECTIONS=["playbook","upcoming"];
 const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
 function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
 function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
-const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null,speed:loadSpeed(),defense:false};
+const state={plays:[],lineups:{A:{},B:{}},roster:[],number:"",unit:"A",look:0,anim:null,speed:loadSpeed(),defense:false};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function playDisplayName(play){
@@ -153,6 +153,19 @@ function pointAlong(start,points,t){
   for(const segment of segments){if(distance<=segment.length){const p=segment.length?distance/segment.length:1;return{x:segment.a.x+(segment.b.x-segment.a.x)*p,y:segment.a.y+(segment.b.y-segment.a.y)*p}}distance-=segment.length}
   return pts[pts.length-1];
 }
+function cleanJersey(value){const jersey=String(value==null?"":value).trim();return/^\d{1,2}$/.test(jersey)?jersey:""}
+function cleanRoster(raw){return(Array.isArray(raw)?raw:[]).map(item=>({name:String(item&&item.name||"").trim(),jersey:cleanJersey(item&&item.jersey)})).filter(item=>item.name)}
+function cleanAssignees(raw){
+  const out={A:{},B:{}};
+  ["A","B"].forEach(unit=>LETTERS.forEach(letter=>{
+    const source=raw&&raw[unit]&&raw[unit][letter];
+    if(Array.isArray(source)){
+      const names=[...new Set(source.map(item=>String(typeof item==="string"?item:item&&item.name||"").trim()).filter(Boolean))];
+      if(names.length)out[unit][letter]=names;
+    }
+  }));
+  return out;
+}
 function cleanPlay(raw){
   if(!raw||!String(raw.number||"").match(/^\d{1,4}$/)||!Array.isArray(raw.spots))return null;
   const fromW=playCoordWidth(raw);
@@ -165,10 +178,18 @@ function cleanPlay(raw){
     const x=scaleX(Number(source.x),fromW);
     return{letter,x:Number.isFinite(x)?x:FIELD_W/2,y:Number(source.y)||300,sit:!!source.sit,route};
   });
-  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots,section:raw.section==="upcoming"?"upcoming":"playbook",sortOrder:Number.isInteger(Number(raw.sortOrder))?Number(raw.sortOrder):0};
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots,section:raw.section==="upcoming"?"upcoming":"playbook",sortOrder:Number.isInteger(Number(raw.sortOrder))?Number(raw.sortOrder):0,assignees:cleanAssignees(raw.assignees)};
 }
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||null}
-function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
+function rosterJersey(name){return cleanJersey((state.roster.find(item=>item.name===name)||{}).jersey)}
+function runnerNames(play,letter){
+  const custom=play&&play.assignees&&play.assignees[state.unit]&&play.assignees[state.unit][letter];
+  if(Array.isArray(custom)&&custom.length)return custom;
+  const fallback=(state.lineups[state.unit]||{})[letter];
+  return fallback?[String(fallback)]:[];
+}
+function runnerLabel(name){const jersey=rosterJersey(name);return jersey?`${name} ${jersey}`:name}
+function routeName(play,letter){const names=runnerNames(play,letter).map(runnerLabel);return names.length?names.join(" / "):letter}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
 // Saved routes stay in viewBox coordinates; only yard-marker labels map the
 // existing LOS-to-goal-line depth to the 45-yard field.
@@ -206,6 +227,18 @@ function route(start,points,letter,on){
   const color=positionColor(letter),width=on?4.2:2.6,opacity=on?1:.82;
   return`<path d="${esc(path(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrow(start,points,color,on?9:7,opacity)}`;
 }
+function nameBubble(start,label,letter,on){
+  const parts=String(label||letter).split(" / "),lines=[];
+  parts.forEach(part=>{const last=lines[lines.length-1]||"";if(last&&(last+" / "+part).length<=20)lines[lines.length-1]=last+" / "+part;else lines.push(part)});
+  const longest=Math.max(...lines.map(line=>line.length)),width=Math.max(24,Math.min(118,13+longest*4.7)),height=Math.max(22,8+lines.length*10),top=start.y-height/2,color=positionColor(letter);
+  const text=lines.map((line,index)=>`<tspan x="${start.x}" y="${top+12+index*10}">${esc(line)}</tspan>`).join("");
+  return`<g class="runner-name" data-runner-letter="${letter}"><rect x="${start.x-width/2}" y="${top}" width="${width}" height="${height}" rx="11" fill="${color}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text fill="#1C1C1C" text-anchor="middle" font-size="8">${text}</text></g>`;
+}
+function routeLetter(start,points,letter,on){
+  if(!points||!points.length)return"";
+  const point=pointAlong(start,points,.48),color=positionColor(letter);
+  return`<g class="route-letter" data-route-letter="${letter}"><circle cx="${point.x}" cy="${point.y}" r="${on?9:8}" fill="#000" stroke="${color}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3}" fill="${color}" text-anchor="middle" font-size="8">${letter}</text></g>`;
+}
 function yardLines(){
   const ticks=[];const labels=[];
   const markerYard=(LOS_Y-FIELD_TOP)/FIELD_DEPTH_YARDS;
@@ -238,12 +271,16 @@ function paint(progress){
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
   const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))).join("");
-  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=positionColor(spot.letter);return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(spot.letter==="Q"?"#CFAE70":"#fff"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${areas()}${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
+  const routeLetters=play.spots.map(spot=>routeLetter(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))).join("");
+  const runners=play.spots.filter(spot=>spot.route.length).map(spot=>{const point=positions[spot.letter];return`<circle class="route-runner" data-letter="${spot.letter}" cx="${point.x}" cy="${point.y}" r="6" fill="${positionColor(spot.letter)}" stroke="#1C1C1C" stroke-width="1.5"/>`}).join("");
+  const bubbles=play.spots.map(spot=>nameBubble(formationPoint(spot),routeName(play,spot.letter),spot.letter,highlighted.has(spot.letter))).join("");
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${areas()}${routes}${routeLetters}${runners}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${bubbles}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
-function unitHasNames(unit){
-  return Object.values(state.lineups[unit]||{}).some(name=>String(name||"").trim());
+function unitHasNames(unit,play){
+  const lineup=Object.values(state.lineups[unit]||{}).some(name=>String(name||"").trim());
+  const custom=play&&play.assignees&&play.assignees[unit]&&Object.values(play.assignees[unit]).some(names=>Array.isArray(names)&&names.length);
+  return lineup||custom;
 }
 function showList(){
   stop();
@@ -278,7 +315,10 @@ function renderList(){
 }
 function renderSelected(){
   const play=currentPlay();if(!play){showList();return}
-  const bothUnits=unitHasNames("A")&&unitHasNames("B");
+  const hasA=unitHasNames("A",play),hasB=unitHasNames("B",play);
+  if(state.unit==="A"&&!hasA&&hasB)state.unit="B";
+  if(state.unit==="B"&&!hasB&&hasA)state.unit="A";
+  const bothUnits=hasA&&hasB;
   $("#units").classList.toggle("hidden",!bothUnits);
   $$("#units [data-unit]").forEach(button=>button.classList.toggle("on",button.dataset.unit===state.unit));
   setPlayName(play);
@@ -367,7 +407,7 @@ bindViewport();
     const {data,error}=await sb.rpc("commodores_watch_plays",{p_token:token});
     const plays=data&&Array.isArray(data.plays)?data.plays.map(cleanPlay).filter(Boolean):[];
     if(error||!data||!plays.length)throw new Error("unavailable");
-    state.plays=plays;state.lineups=data.lineups&&typeof data.lineups==="object"?data.lineups:{A:{},B:{}};
+    state.plays=plays;state.lineups=data.lineups&&typeof data.lineups==="object"?data.lineups:{A:{},B:{}};state.roster=cleanRoster(data.roster);
     $("#status").classList.add("hidden");
     $("#list").classList.remove("hidden");
     if(data.publishedAt){const date=new Date(data.publishedAt);if(!Number.isNaN(date.getTime()))$("#stamp").textContent="Playbook updated "+date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}

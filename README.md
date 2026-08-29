@@ -53,6 +53,7 @@ sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
 sql/commodores_play_sections.sql # Playbook/Upcoming grouping + coach-controlled order
+sql/commodores_route_runners.sql # Per-play runner assignments + optional roster jerseys
 sql/commodores_play_sharing.sql # Published snapshots + token-only watch RPC (Commodores project only)
 ```
 
@@ -272,21 +273,27 @@ same field, arrow, and width drawing. Same Commodores Supabase project
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply
 `sql/commodores_plays.sql` on the Commodores project if the table is missing,
-then `sql/commodores_play_sections.sql` for grouping/order and
+then `sql/commodores_play_sections.sql` for grouping/order,
+`sql/commodores_route_runners.sql` for runner/jersey labels, and
 `sql/commodores_play_sharing.sql` for publishing.
 localStorage keeps an offline draft; the database wins when signed in.
 
 Play labels come from the current offense lineup in this fixed order:
 `Q, C, X, A, B, Y, Z` (Q and Center, then the five receiver spots). Coaches
-choose Unit A or B. Empty spots fall back to the letter. Each letter has a
-fixed color used for the name pill, the route line, and the tip arrow
+choose **Q1/Q3** or **Q2/Q4**; those are display labels over internal A/B keys.
+In Draw mode, each route can keep the quarter-lineup default or select multiple
+first-name runners for that play. An optional roster jersey displays only when
+staff entered it. One combined name bubble stays at the route start while a
+small letter chip sits near mid-route and the animation dot travels the unchanged
+path. Each letter has a fixed color used for the name bubble, route line, and tip arrow
 (`POSITION_COLOR` in `plays.html`, mirrored in `watch.html` and
 `commodores.html`): Q white, C gold, X sky, A sand-orange, B mint, Y lilac,
 Z salmon. Selected / live-drawing strokes get thicker but keep that hue.
 Yard lines, LOS, and the defense overlay stay gold/white as before.
 
 Each saved play has a Publish toggle. Publishing writes one read-only snapshot
-containing all marked plays and both units' first-name maps, then shows a
+containing all marked plays, both quarter units, per-play runners, and entered
+jersey numbers, then shows a
 256-bit secret URL:
 
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
@@ -330,11 +337,11 @@ reset. `watch.html` stays token-only — no coach login or reset.
 
 Primary pages: **Today**, **Playbook**, **Plays**, **Lineup**, **Practice**. Season board
 is a reference link (schedule, milestones, goals). Playbook has Offense /
-Defense sub-tabs. Lineup is two units (A = Q1/Q3, B = Q2/Q4), each with 7
+Defense sub-tabs. Lineup is two quarter units (**Q1/Q3** and **Q2/Q4**), each with 7
 offense and 7 defense, plus a live play-time rule check (2+2 or one-way).
 Assignments persist on `commodores_plans` row `staff-lineup` (`skillsByCoach`
-plus `units` and `attendance`; older `offense` / `defense` arrays still mirror
-Unit A). Mark Present / Out for the session first; the rule check uses only the
+plus internal `units.A/B` and `attendance`; older `offense` / `defense` arrays
+still mirror Q1/Q3). Mark Present / Out for the session first; the rule check uses only the
 kids who showed and short-roster both-way math (11→3, 10→4, … 7→all).
 
 Official games are the SBMSA Fall 2026 JV 7on7 Maxwell book

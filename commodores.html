@@ -310,6 +310,9 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .rate-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;gap:8px;margin-top:8px;min-width:0}
 .rate-row.overall{margin-top:0;padding:8px;border-radius:10px;background:var(--gold-soft)}
 .rate-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.jersey-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;gap:8px;margin:10px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.jersey-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.jersey-input{width:100%;min-height:44px;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);color:var(--ink);font-size:18px;font-weight:700;text-align:center}
 .rate-input{width:100%;min-width:0;min-height:56px;margin:0;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);padding:8px 0;color:var(--ink);text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;-webkit-appearance:none;appearance:none;touch-action:manipulation}
 .rate-input:focus{outline:none;border-color:var(--gold)}
 .rate-input.filled{border-color:rgba(207,174,112,.55);background:var(--gold-soft)}
@@ -545,7 +548,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <span class="dot"></span>
         <div>
           <strong>Plays · iPad</strong>
-          <span>Build and save the real routes in Plays. The seven letters use the current Unit A or Unit B offense names.</span>
+          <span>Build and save the real routes in Plays. The seven letters use the current Q1/Q3 or Q2/Q4 offense names.</span>
           <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
             <button class="btn" data-go="plays" type="button">Open Plays</button>
           </div>
@@ -677,7 +680,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <section class="page" id="page-plays">
       <div class="section-head"><div><div class="eyebrow">Draw · animate · publish</div><h2>Plays</h2></div><p>Coach-only editor · current offense lineup names</p></div>
       <div class="binder-note">
-        <b>One play book, one lineup.</b> Q and C map to those lineup spots; X, A, B, Y, Z follow the five receiver spots in that stable order. Choose Unit A or B below. Publishing captures both units’ current first-name labels for the kids page.
+        <b>One play book, one lineup.</b> Q and C map to those lineup spots; X, A, B, Y, Z follow the five receiver spots in that stable order. Choose Q1/Q3 or Q2/Q4 below. Publishing captures both quarter units’ current first-name labels for the kids page.
       </div>
       <div class="panel plays-shell">
         <!-- Loaded only after the field book's coach allowlist check succeeds. -->
@@ -686,13 +689,13 @@ body.team-dragging{overflow:hidden;touch-action:none}
     </section>
 
     <section class="page" id="page-lineup">
-      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup</h2></div><p>Unit A = Q1 and Q3 · Unit B = Q2 and Q4 · 7 O + 7 D each</p></div>
+      <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup</h2></div><p>Q1/Q3 unit · Q2/Q4 unit · 7 O + 7 D each</p></div>
       <div class="binder-note">
         <b>SBMSA Fall 7on7 · how the card has to work</b>
         <ul class="plain-list">
-          <li>Mark who is Present / Out for this practice or game first. Unit A/B only use the kids who showed.</li>
+          <li>Mark who is Present / Out for this practice or game first. Quarter units only use the kids who showed.</li>
           <li>No free substitution. Injury only. Two units of 7 are set before each quarter — no one-for-one mid-quarter swap.</li>
-          <li>Unit A plays Q1 and Q3. Unit B plays Q2 and Q4.</li>
+          <li>Q1/Q3 plays the first and third quarters. Q2/Q4 plays the second and fourth quarters.</li>
           <li>Every present kid starts two full quarters on O and two on D, or plays all four quarters on one side only.</li>
           <li>14 spots a quarter. With fewer than 12 present you need more both-ways (11→3, 10→4, … 7→all both-ways). Need at least 7 to play.</li>
           <li>O letters: Q · C · X · A · B · Y · Z. D: 1 left short · 2 middle short · 3 right short · 4 right deep · 5 middle deep · 6 left deep · 7 rover.</li>
@@ -720,7 +723,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="roster-pool" id="teamPool"></div>
       <div class="team-clear" id="teamClear" data-team-clear="1">Clear spot · tap a placed name, then here</div>
       <div class="unit-block">
-        <h3>Unit A · Q1 and Q3</h3>
+        <h3>Q1/Q3 unit</h3>
         <p class="unit-note">Lock this 7+7 before Q1 and again before Q3. Same seven stay in unless someone is hurt.</p>
         <div class="team-boards">
           <div class="team-board">
@@ -734,7 +737,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         </div>
       </div>
       <div class="unit-block">
-        <h3>Unit B · Q2 and Q4</h3>
+        <h3>Q2/Q4 unit</h3>
         <p class="unit-note">Lock this 7+7 before Q2 and again before Q4. No mid-quarter swaps.</p>
         <div class="team-boards">
           <div class="team-board">
@@ -835,6 +838,7 @@ const STORE_PREFIX="commodores_v1_";
 // Roster is loaded from Supabase after sign-in (RLS-gated to allowlisted
 // coaches) and cached locally. It is intentionally NOT baked into this file.
 let ROSTER=[];
+let ROSTER_META={};
 const LINEUP_ID="staff-lineup";
 const LEAGUE_ID="sbmsa-jv-maxwell";
 const LEAGUE_TZ="America/Chicago";
@@ -846,6 +850,8 @@ const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"
 const RATE_SHORT={speed:"Speed",catching:"Catch",passing:"Pass",agility:"Agility",listening:"Listen",routes:"Routes",coverage:"Cover",overall:"Overall"};
 const UNIT_IDS=["A","B"];
 const UNIT_QUARTERS={A:[1,3],B:[2,4]};
+const UNIT_LABELS={A:"Q1/Q3",B:"Q2/Q4"};
+function unitLabel(unit){return UNIT_LABELS[unit]||UNIT_LABELS.A}
 const ALL_QUARTERS=[1,2,3,4];
 const OFFENSE_SPOTS=[
   {id:"Q",label:"Q",hint:"QB1 · QB2 · QB3"},
@@ -886,6 +892,16 @@ const LEGACY_DEFENSE_TO_NEW=[0,1,2,5,4,3,6];
 function displayName(name){
   // Data may say Michael. Chips and the rule table say Mike. First names only.
   return name==="Michael"?"Mike":name;
+}
+function cleanJersey(value){
+  const jersey=String(value==null?"":value).trim();
+  return /^\d{1,2}$/.test(jersey)?jersey:"";
+}
+function rosterJersey(name){return cleanJersey(ROSTER_META[name]&&ROSTER_META[name].jersey)}
+function rosterLabel(name){
+  const shown=displayName(name);
+  const jersey=rosterJersey(name);
+  return jersey?`${shown} ${jersey}`:shown;
 }
 const STAFF_FIRST=["Peter","Chris","Ben"];
 const DRILL_LIBRARY=[
@@ -951,6 +967,7 @@ function setStore(key,value){
 // Seed roster from the last signed-in load so re-opens paint instantly; the
 // authenticated DB fetch in openApp() refreshes it.
 ROSTER=(getStore("roster",[])||[]).filter(name=>name&&name!=="Brett");
+ROSTER_META=getStore("roster_meta",{})||{};
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 }
@@ -1230,10 +1247,13 @@ function currentPlayLineups(){
   });
   return lineups;
 }
+function currentPlayRoster(){
+  return ROSTER.map(name=>({name:displayName(name),jersey:rosterJersey(name)}));
+}
 function postPlayLineups(){
   const frame=$("#playsFrame");
   if(!frame||!frame.contentWindow) return;
-  frame.contentWindow.postMessage({type:"commodores-lineups",lineups:currentPlayLineups()},location.origin);
+  frame.contentWindow.postMessage({type:"commodores-lineups",lineups:currentPlayLineups(),roster:currentPlayRoster()},location.origin);
 }
 let pendingPlayNumber="";
 function postPlaySelection(){
@@ -1735,10 +1755,12 @@ async function loadLeagueSchedule(){
 async function loadRoster(){
   if(!sb) return;
   try{
-    const {data,error}=await sb.from("commodores_roster").select("first_name,sort").order("sort",{ascending:true});
+    const {data,error}=await sb.from("commodores_roster").select("first_name,sort,jersey").order("sort",{ascending:true});
     if(!error&&Array.isArray(data)&&data.length){
       ROSTER=data.map(row=>row.first_name).filter(name=>name&&name!=="Brett");
+      ROSTER_META=Object.fromEntries(data.filter(row=>row.first_name&&row.first_name!=="Brett").map(row=>[row.first_name,{jersey:cleanJersey(row.jersey)}]));
       setStore("roster",ROSTER);
+      setStore("roster_meta",ROSTER_META);
     }
   }catch(_){}
 }
@@ -2979,7 +3001,7 @@ function clearNameFromUnits(name){
         if(who===name){
           line[index]=null;
           const spot=side==="offense"?(OFFENSE_SPOTS[index]&&OFFENSE_SPOTS[index].label)||side:(DEFENSE_SPOTS[index]&&DEFENSE_SPOTS[index].label)||side;
-          cleared.push(unit+" "+spot);
+          cleared.push(unitLabel(unit)+" "+spot);
         }
       });
     });
@@ -3353,9 +3375,44 @@ function bindRateInputs(root){
     };
   });
 }
+async function saveJersey(name,value,input){
+  if(!ROSTER.includes(name)) return;
+  const jersey=cleanJersey(value);
+  if(input) input.value=jersey;
+  const previous=rosterJersey(name);
+  if(sb){
+    try{
+      const {error}=await sb.from("commodores_roster").update({jersey:jersey||null}).eq("first_name",name);
+      if(error){
+        if(input) input.value=previous;
+        setTeamStatus("Could not save jersey: "+error.message);
+        return;
+      }
+    }catch(_){
+      if(input) input.value=previous;
+      setTeamStatus("Could not save jersey. Check the connection.");
+      return;
+    }
+  }
+  ROSTER_META[name]={...(ROSTER_META[name]||{}),jersey};
+  setStore("roster_meta",ROSTER_META);
+  postPlayLineups();
+  renderTeamRatings();
+  renderAttendance();
+  renderTeamLineup();
+  if(!sb){setTeamStatus("Jersey saved on this device only");return}
+  setTeamStatus(`${displayName(name)} jersey ${jersey||"cleared"}`);
+}
+function bindJerseyInputs(){
+  $$("#teamCards input[data-jersey-name]").forEach(input=>{
+    input.oninput=()=>{input.value=String(input.value||"").replace(/\D/g,"").slice(0,2)};
+    input.onblur=()=>saveJersey(input.dataset.jerseyName,input.value,input);
+    input.onkeydown=event=>{if(event.key==="Enter"){event.preventDefault();input.blur()}};
+  });
+}
 function nameChip(name,unit,side,index){
   const avg=staffAverageText(name);
-  const shown=displayName(name);
+  const shown=rosterLabel(name);
   const out=!side&&!isPresent(name);
   const source=side?` data-unit="${esc(unit)}" data-side="${esc(side)}" data-index="${index}"`:` data-pool="1"`;
   const extra=out?`<span class="chip-out">Out</span>`:(avg==="—"?"":`<span class="chip-avg">${avg}</span>`);
@@ -3367,8 +3424,8 @@ function playerSpotLabels(name){
   UNIT_IDS.forEach(unit=>{
     const unitState=teamState.units&&teamState.units[unit];
     if(!unitState) return;
-    OFFENSE_SPOTS.forEach((spot,index)=>{if(unitState.offense&&unitState.offense[index]===name) labels.push(unit+" "+spot.label)});
-    DEFENSE_SPOTS.forEach((spot,index)=>{if(unitState.defense&&unitState.defense[index]===name) labels.push(unit+" "+spot.label)});
+    OFFENSE_SPOTS.forEach((spot,index)=>{if(unitState.offense&&unitState.offense[index]===name) labels.push(unitLabel(unit)+" "+spot.label)});
+    DEFENSE_SPOTS.forEach((spot,index)=>{if(unitState.defense&&unitState.defense[index]===name) labels.push(unitLabel(unit)+" "+spot.label)});
   });
   return labels;
 }
@@ -3385,9 +3442,10 @@ function renderTeamRatings(){
       const breakdown=coachBreakdown(name);
       const spots=playerSpotLabels(name);
       const isOpen=open.has(name)?" open":"";
-      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(displayName(name))}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
+      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(rosterLabel(name))}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary><div class="jersey-row"><label for="jersey-${esc(name)}">Jersey · optional</label><input class="jersey-input" id="jersey-${esc(name)}" data-jersey-name="${esc(name)}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="${esc(rosterJersey(name))}" placeholder="—" aria-label="${esc(displayName(name))} jersey number"></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
     }).join("");
     bindRateInputs("#teamCards");
+    bindJerseyInputs();
   }
   if(table){
     table.innerHTML="";
@@ -3457,7 +3515,7 @@ function unitFillNote(){
   return UNIT_IDS.map(unit=>{
     const o=lineFilled(unitLine(unit,"offense"));
     const d=lineFilled(unitLine(unit,"defense"));
-    return `Unit ${unit} ${o}/7 O · ${d}/7 D`;
+    return `${unitLabel(unit)} ${o}/7 O · ${d}/7 D`;
   }).join(" · ");
 }
 function shortRosterNote(n,need){
@@ -3483,7 +3541,7 @@ function renderPlayTime(){
   const cardLegal=!!ROSTER.length&&enoughKids&&!short.length&&unitsFull;
   const bothNote=need==null
     ? (n+" present")
-    : (n+" present · need "+need+" both-ways · Unit A has "+hasA+" · Unit B has "+hasB);
+    : (n+" present · need "+need+" both-ways · Q1/Q3 has "+hasA+" · Q2/Q4 has "+hasB);
   banner.className="play-time-banner "+(cardLegal?"ok":"short");
   if(!ROSTER.length){
     banner.innerHTML=`<b>Sign in to load the roster</b><div class="play-time-sub">Rule check waits for first names.</div>`;
@@ -3500,7 +3558,7 @@ function renderPlayTime(){
     banner.innerHTML=`<b>Not legal yet · ${esc(bits.join(" · ")||"keep placing")}</b><div class="play-time-sub">${esc(bothNote)}. ${esc(shortRosterNote(n,need))} ${esc(unitFillNote())}. No free subs. Injury only.</div>`;
   }
   list.innerHTML=rows.map(row=>{
-    const shown=displayName(row.name);
+    const shown=rosterLabel(row.name);
     const meta=row.out
       ? `<div class="play-meta">${esc(row.why)}</div>`
       : `<div class="play-meta">O ${row.o} · D ${row.d} · both-way ${row.both} · sit ${row.sit}</div><div class="play-meta">${esc(row.why)}</div>`;
@@ -3527,7 +3585,7 @@ function renderAttendance(){
   if(!grid) return;
   grid.innerHTML=ROSTER.map(name=>{
     const present=isPresent(name);
-    const shown=displayName(name);
+    const shown=rosterLabel(name);
     return `<div class="kid-row" data-att-name="${esc(name)}"><span>${esc(shown)}</span><div class="att-toggle" role="group" aria-label="${esc(shown)} attendance"><button type="button" data-att="${esc(name)}" data-present="1" class="${present?"on":""}" aria-pressed="${present?"true":"false"}">Present</button><button type="button" data-att="${esc(name)}" data-present="0" class="${present?"":"on"}" aria-pressed="${present?"false":"true"}">Out</button></div></div>`;
   }).join("");
   $$("#attendanceGrid [data-att]").forEach(button=>{

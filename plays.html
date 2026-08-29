@@ -94,6 +94,10 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .chips button{min-width:52px;min-height:52px;border:2px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
 .chips button.on{color:#1C1C1C}
 .chips button.sit{opacity:.55}
+.runner-panel{margin:0 0 10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#000}
+.runner-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}.runner-head b{color:var(--soft);font-size:13px}.runner-head span{color:var(--muted);font-size:11px}
+.runner-choices{display:flex;flex-wrap:wrap;gap:7px}.runner-choices button{min-height:44px;border:1px solid var(--strong);border-radius:999px;padding:7px 11px;background:transparent;color:var(--soft);font-weight:700}.runner-choices button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.runner-default{width:100%;min-height:42px;margin-top:8px;border:0;background:transparent;color:var(--gold);font-weight:700;text-align:left}
 .letters .lk{font-weight:800}
 .draw-tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px}
 .draw-tools button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft);font-weight:800}
@@ -184,12 +188,17 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 
   <div class="looks" id="looks" role="group" aria-label="Looks"></div>
   <div class="unit-picks" id="unitPicks" role="group" aria-label="Offense lineup unit">
-    <button type="button" data-unit="A" class="on">Unit A names</button>
-    <button type="button" data-unit="B">Unit B names</button>
+    <button type="button" data-unit="A" class="on">Q1/Q3 names</button>
+    <button type="button" data-unit="B">Q2/Q4 names</button>
   </div>
   <div id="drawPanel" class="hidden">
     <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter, then draw its route on the field.</p>
     <div class="chips" id="letterChips"></div>
+    <div class="runner-panel">
+      <div class="runner-head"><b id="runnerTitle">Who runs X · Q1/Q3</b><span>Tap every runner</span></div>
+      <div class="runner-choices" id="runnerChoices"></div>
+      <button class="runner-default" type="button" id="runnerDefault">Use quarter-lineup name</button>
+    </div>
     <div class="draw-tools">
       <button type="button" id="sitBtn">Sit / no route</button>
       <button type="button" id="clearBtn">Clear route</button>
@@ -269,6 +278,8 @@ const SPEED_KEY="commodores-play-speed";
 const SPEEDS=[0.5,1,2];
 const PLAY_SECTIONS=["playbook","upcoming"];
 const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
+const UNIT_LABELS={A:"Q1/Q3",B:"Q2/Q4"};
+function unitLabel(unit){return UNIT_LABELS[unit]||UNIT_LABELS.A}
 const SHARE_ORIGIN="https://personal-dashboard.chrisbailey.workers.dev";
 const IS_EMBED=new URLSearchParams(location.search).get("embed")==="1";
 function loadSpeed(){
@@ -306,6 +317,18 @@ function cleanSection(value){return value==="upcoming"?"upcoming":"playbook"}
 function cleanSortOrder(value){
   const order=Number(value);
   return Number.isInteger(order)&&order>=0?order:0;
+}
+function cleanAssignees(raw){
+  const out={A:{},B:{}};
+  ["A","B"].forEach(unit=>{
+    LETTERS.forEach(letter=>{
+      const source=raw&&raw[unit]&&raw[unit][letter];
+      if(!Array.isArray(source)) return;
+      const names=[...new Set(source.map(item=>shownFirstName(typeof item==="string"?item:item&&item.name)).filter(Boolean))];
+      if(names.length) out[unit][letter]=names;
+    });
+  });
+  return out;
 }
 function playDisplayName(play){
   const number=String((play&&play.number)||"").trim();
@@ -415,7 +438,8 @@ function normalizePlay(raw,fallbackNumber){
     updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO(),
     published:!!(raw&&raw.published),
     section:cleanSection(raw&&raw.section),
-    sortOrder:cleanSortOrder(raw&&(raw.sortOrder??raw.sort_order))
+    sortOrder:cleanSortOrder(raw&&(raw.sortOrder??raw.sort_order)),
+    assignees:cleanAssignees(raw&&raw.assignees)
   };
 }
 function emptyPlay(number){
@@ -478,6 +502,27 @@ function routeSVG(start,points,letter,on,live){
   const opacity=live?1:(on?1:.82);
   return `<path d="${esc(pathD(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrowSVG(start,points,color,on||live?9:7,opacity)}`;
 }
+function nameBubbleSVG(start,label,letter,on){
+  const parts=String(label||letter).split(" / "),lines=[];
+  parts.forEach(part=>{
+    const last=lines[lines.length-1]||"";
+    if(last&&(last+" / "+part).length<=20) lines[lines.length-1]=last+" / "+part;
+    else lines.push(part);
+  });
+  const longest=Math.max(...lines.map(line=>line.length));
+  const width=Math.max(24,Math.min(118,13+longest*4.7));
+  const height=Math.max(22,8+lines.length*10);
+  const top=start.y-height/2;
+  const color=positionColor(letter);
+  const text=lines.map((line,index)=>`<tspan x="${start.x}" y="${top+12+index*10}">${esc(line)}</tspan>`).join("");
+  return `<g class="runner-name" data-runner-letter="${letter}"><rect x="${start.x-width/2}" y="${top}" width="${width}" height="${height}" rx="11" fill="${color}" stroke="${on?"#FFFFFF":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text fill="#1C1C1C" text-anchor="middle" font-size="8">${text}</text></g>`;
+}
+function routeLetterSVG(start,points,letter,on){
+  if(!points||!points.length) return "";
+  const point=pointAlong(start,points,.48);
+  const color=positionColor(letter);
+  return `<g class="route-letter" data-route-letter="${letter}"><circle cx="${point.x}" cy="${point.y}" r="${on?9:8}" fill="#000" stroke="${color}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3}" fill="${color}" text-anchor="middle" font-size="8">${letter}</text></g>`;
+}
 function yardLinesSVG(){
   const ticks=[];
   const labels=[];
@@ -500,6 +545,7 @@ const STATE={
   coach:null,
   lineupUnit:"A",
   lineups:{A:{},B:{}},
+  roster:[],
   shareToken:"",
   speed:loadSpeed()
 };
@@ -519,7 +565,7 @@ function writeLocal(){
     number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
     bullets:p.bullets,looks:p.looks,spots:stampSpots(p.spots),fieldW:FIELD_W,source:p.source,
     updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published,
-    section:p.section,sortOrder:p.sortOrder
+    section:p.section,sortOrder:p.sortOrder,assignees:cleanAssignees(p.assignees)
   }));
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows))}catch(_){}
 }
@@ -537,12 +583,12 @@ function rowFromCloud(row){
     number:row.number,title:row.title,flipPartner:row.flip_partner,
     family:row.family,bullets:row.bullets,looks:row.looks,spots:row.spots,
     source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at,published:row.published,
-    section:row.section,sortOrder:row.sort_order
+    section:row.section,sortOrder:row.sort_order,assignees:row.assignees
   });
 }
 async function fetchCloud(){
   if(!sb||!STATE.coach) return [];
-  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published,section,sort_order");
+  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published,section,sort_order,assignees");
   if(error||!data) return [];
   return data.map(rowFromCloud);
 }
@@ -560,7 +606,8 @@ async function upsertCloud(play){
     updated_at:play.updatedAt,
     published:!!play.published,
     section:cleanSection(play.section),
-    sort_order:cleanSortOrder(play.sortOrder)
+    sort_order:cleanSortOrder(play.sortOrder),
+    assignees:cleanAssignees(play.assignees)
   };
   const {error}=await sb.from("commodores_plays").upsert(payload,{onConflict:"number"});
   return {ok:!error,error:error&&error.message};
@@ -586,6 +633,34 @@ async function syncPlays(){
 function shownFirstName(name){
   return name==="Michael"?"Mike":String(name||"");
 }
+function cleanJersey(value){
+  const jersey=String(value==null?"":value).trim();
+  return /^\d{1,2}$/.test(jersey)?jersey:"";
+}
+function cleanRoster(raw){
+  return (Array.isArray(raw)?raw:[]).map(item=>({
+    name:shownFirstName(typeof item==="string"?item:item&&item.name),
+    jersey:cleanJersey(item&&item.jersey)
+  })).filter(item=>item.name);
+}
+function rosterJersey(name){
+  return cleanJersey((STATE.roster.find(item=>item.name===shownFirstName(name))||{}).jersey);
+}
+function runnerNames(play,unit,letter){
+  const custom=play&&play.assignees&&play.assignees[unit]&&play.assignees[unit][letter];
+  if(Array.isArray(custom)&&custom.length) return custom;
+  const fallback=STATE.lineups[unit]&&STATE.lineups[unit][letter];
+  return fallback?[shownFirstName(fallback)]:[];
+}
+function runnerLabel(name){
+  const shown=shownFirstName(name);
+  const jersey=rosterJersey(shown);
+  return jersey?`${shown} ${jersey}`:shown;
+}
+function routeName(play,letter){
+  const names=runnerNames(play,STATE.lineupUnit,letter).map(runnerLabel);
+  return names.length?names.join(" / "):letter;
+}
 function cleanLineups(raw){
   const out={A:{},B:{}};
   ["A","B"].forEach(unit=>{
@@ -608,8 +683,10 @@ async function loadLineups(){
     B:units.B&&units.B.offense
   });
 }
-function playLabel(letter){
-  return (STATE.lineups[STATE.lineupUnit]||{})[letter]||letter;
+async function loadRoster(){
+  if(!sb||!STATE.coach) return;
+  const {data,error}=await sb.from("commodores_roster").select("first_name,jersey,sort").order("sort",{ascending:true});
+  if(!error&&Array.isArray(data)) STATE.roster=cleanRoster(data.map(row=>({name:row.first_name,jersey:row.jersey})));
 }
 function randomToken(){
   const bytes=new Uint8Array(32);
@@ -631,13 +708,18 @@ function publishedSnapshot(){
     .map(play=>({
       number:play.number,title:play.title,flipPartner:play.flipPartner||"",
       fieldW:FIELD_W,spots:stampSpots(play.spots),looks:play.looks||[],family:play.family||"",bullets:play.bullets||[],
-      section:cleanSection(play.section),sortOrder:cleanSortOrder(play.sortOrder)
+      section:cleanSection(play.section),sortOrder:cleanSortOrder(play.sortOrder),assignees:cleanAssignees(play.assignees)
     }));
+  const lineups=plays.length?cleanLineups(STATE.lineups):{A:{},B:{}};
+  const usedNames=new Set();
+  ["A","B"].forEach(unit=>Object.values(lineups[unit]||{}).forEach(name=>{if(name) usedNames.add(name)}));
+  plays.forEach(play=>["A","B"].forEach(unit=>Object.values((play.assignees&&play.assignees[unit])||{}).forEach(names=>(names||[]).forEach(name=>usedNames.add(name)))));
   return {
-    version:2,
+    version:3,
     fieldW:FIELD_W,
     publishedAt:nowISO(),
-    lineups:cleanLineups(STATE.lineups),
+    lineups,
+    roster:cleanRoster(STATE.roster).filter(item=>usedNames.has(item.name)),
     plays
   };
 }
@@ -660,7 +742,7 @@ async function publishSnapshot(rotate){
     return false;
   }
   status.textContent=snapshot.plays.length
-    ?`Published ${snapshot.plays.length} play${snapshot.plays.length===1?"":"s"} with current Unit A/B names.`
+    ?`Published ${snapshot.plays.length} play${snapshot.plays.length===1?"":"s"} with Q1/Q3 and Q2/Q4 runner names.`
     :"Kids page cleared. No plays are currently published.";
   renderPublish();
   return true;
@@ -732,13 +814,19 @@ function fieldSVG(play,pos,ball,liveRoute){
   const selectedStart=play.spots.find(s=>s.letter===STATE.selected);
   const liveStart=selectedStart?formationPoint(selectedStart):(liveRoute&&liveRoute[0]);
   const live=liveRoute&&liveRoute.length&&liveStart?routeSVG(liveStart,liveRoute,STATE.selected,true,true):"";
-  const kids=play.spots.map(s=>{
-    const p=pos[s.letter]||s;
+  const bubbles=play.spots.map(s=>{
+    const start=formationPoint(s);
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
+    return nameBubbleSVG(start,routeName(play,s.letter),s.letter,on);
+  }).join("");
+  const routeLetters=play.spots.map(s=>{
+    const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
+    return routeLetterSVG(formationPoint(s),s.route,s.letter,on);
+  }).join("");
+  const runners=play.spots.filter(s=>s.route&&s.route.length).map(s=>{
+    const p=pos[s.letter]||s;
     const fill=positionColor(s.letter);
-    const label=playLabel(s.letter);
-    const pill=pillSize(label);
-    return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(s.letter==="Q"?"#CFAE70":"#FFFFFF"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
+    return `<circle class="route-runner" data-letter="${s.letter}" cx="${p.x}" cy="${p.y}" r="6" fill="${fill}" stroke="#1C1C1C" stroke-width="1.5"/>`;
   }).join("");
   const center=play.spots.find(s=>s.letter==="C");
   const ballXY=ball||(center&&formationPoint(center))||{x:MID_X,y:LOS_Y+DISPLAY_OFFENSE_OFF};
@@ -750,9 +838,9 @@ function fieldSVG(play,pos,ball,liveRoute){
     ${yardLinesSVG()}
     <path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
     <text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>
-    ${endzone}${areasSVG()}${routes}${live}
+    ${endzone}${areasSVG()}${routes}${live}${routeLetters}${runners}
     <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
-    ${kids}
+    ${bubbles}
   </svg>`;
 }
 
@@ -867,6 +955,38 @@ async function moveSelectedOrder(direction){
   changed.add(play);changed.add(other);
   await persistOrganization(changed,`Moved ${play.number} ${direction<0?"earlier":"later"} in ${SECTION_LABELS[section]}.`);
 }
+function renderRunnerChoices(play){
+  const title=$("#runnerTitle"),choices=$("#runnerChoices"),reset=$("#runnerDefault");
+  if(!title||!choices||!reset) return;
+  const unit=STATE.lineupUnit,letter=STATE.selected;
+  const custom=play&&play.assignees&&play.assignees[unit]&&play.assignees[unit][letter];
+  const selected=new Set(Array.isArray(custom)?custom:[]);
+  const fallback=((STATE.lineups[unit]||{})[letter]||"").trim();
+  title.textContent=`Who runs ${letter} · ${unitLabel(unit)}`;
+  reset.textContent=custom?`Use ${unitLabel(unit)} lineup${fallback?" · "+runnerLabel(fallback):""}`:`Using ${unitLabel(unit)} lineup${fallback?" · "+runnerLabel(fallback):""}`;
+  reset.disabled=!custom;
+  choices.innerHTML=STATE.roster.length?STATE.roster.map(item=>`<button type="button" data-runner="${esc(item.name)}" class="${selected.has(item.name)?"on":""}" aria-pressed="${selected.has(item.name)?"true":"false"}">${esc(runnerLabel(item.name))}</button>`).join(""):`<span class="empty-section">Roster loads after coach sign-in.</span>`;
+  $$("#runnerChoices [data-runner]").forEach(button=>button.onclick=()=>toggleRunner(button.dataset.runner));
+}
+function toggleRunner(name){
+  if(!draft||STATE.mode!=="draw") return;
+  const unit=STATE.lineupUnit,letter=STATE.selected;
+  if(!draft.assignees) draft.assignees=cleanAssignees(null);
+  if(!draft.assignees[unit]) draft.assignees[unit]={};
+  const custom=draft.assignees[unit][letter];
+  const names=new Set(Array.isArray(custom)?custom:runnerNames(draft,unit,letter));
+  if(names.has(name)) names.delete(name); else names.add(name);
+  if(names.size) draft.assignees[unit][letter]=[...names];
+  else delete draft.assignees[unit][letter];
+  markDirty();
+  render();
+}
+function useLineupRunner(){
+  if(!draft||!draft.assignees||!draft.assignees[STATE.lineupUnit]) return;
+  delete draft.assignees[STATE.lineupUnit][STATE.selected];
+  markDirty();
+  render();
+}
 function renderChrome(){
   const play=workingPlay();
   $("#modePlay").classList.toggle("on",STATE.mode==="play");
@@ -891,6 +1011,7 @@ function renderChrome(){
       :`background:#000;border-color:${color};color:${color}`;
     return `<button type="button" data-letter="${letter}" class="${on?"on":""} ${spot&&spot.sit?"sit":""}" style="${style}">${letter}</button>`;
   }).join("");
+  if(STATE.mode==="draw") renderRunnerChoices(play);
   const key=$("#letterKey");
   if(key) key.innerHTML=`<span class="lk" style="color:${positionColor("Q")}">Q thrower</span> · <span class="lk" style="color:${positionColor("C")}">C center</span> · <span class="lk" style="color:${positionColor("X")}">X left out</span> · <span class="lk" style="color:${positionColor("Z")}">Z right out</span> · <span class="lk" style="color:${positionColor("A")}">A</span> / <span class="lk" style="color:${positionColor("B")}">B</span> / <span class="lk" style="color:${positionColor("Y")}">Y</span> inside. Hip-stay is a drill only.`;
   $$("#letterChips [data-letter]").forEach(btn=>btn.onclick=()=>{STATE.selected=btn.dataset.letter;render();});
@@ -1323,7 +1444,7 @@ async function onLogin(event){
     STATE.coach=coach;
     renderAuth();
     await syncPlays();
-    await Promise.all([loadLineups(),loadShare()]);
+    await Promise.all([loadLineups(),loadRoster(),loadShare()]);
     if(STATE.mode==="draw") setDraftFromStore();
     render();
     $("#saveStatus").textContent="Signed in. Saved plays will follow you.";
@@ -1371,6 +1492,7 @@ $("#resetBtn").onclick=()=>{
   render();
 };
 $("#showAreas").onchange=()=>{stopAnim();render()};
+$("#runnerDefault").onclick=useLineupRunner;
 $("#moveSectionBtn").onclick=moveSelectedSection;
 $("#moveEarlierBtn").onclick=()=>moveSelectedOrder(-1);
 $("#moveLaterBtn").onclick=()=>moveSelectedOrder(1);
@@ -1443,6 +1565,7 @@ window.addEventListener("message",event=>{
   if(event.origin!==location.origin||event.source!==window.parent||!event.data) return;
   if(event.data.type==="commodores-lineups"){
     STATE.lineups=cleanLineups(event.data.lineups);
+    if(Array.isArray(event.data.roster)) STATE.roster=cleanRoster(event.data.roster);
     stopAnim();
     render();
     return;
@@ -1468,7 +1591,7 @@ bindViewport();
       STATE.coach=coach;
       renderAuth();
       await syncPlays();
-      await Promise.all([loadLineups(),loadShare()]);
+      await Promise.all([loadLineups(),loadRoster(),loadShare()]);
       applyHash();
       if(STATE.mode==="draw") setDraftFromStore();
       render();
