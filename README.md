@@ -282,10 +282,11 @@ localStorage keeps an offline draft; the database wins when signed in.
 Coach play labels come from the game lineup in this fixed order:
 `Q, C, X, A, B, Y, Z` (Q and Center, then the five receiver spots). Coaches
 choose **Q1/Q3** or **Q2/Q4**; those are display labels over internal A/B keys.
-Practice-watch labels instead come from roster multi-select tags: every kid
-tagged to a letter appears in that route’s one start bubble, and every kid
-tagged D1–D7 appears in that defense area. An optional roster jersey displays
-only when staff entered it. One combined name bubble stays at the route start
+Practice-watch labels come from roster tags. Array order is rank: index 0 is
+the one gold **1** primary, and the rest are unnumbered backups. First tap
+appends a tag (and becomes primary if that side was empty). Tap a backup to
+promote it to 1. Tap the current 1 to clear it. Do not sort tags. An optional
+roster jersey displays only when staff entered it. One combined name bubble stays at the route start
 while a small letter chip sits near mid-route and the animation dot travels the
 unchanged path. Each letter has a fixed color used for the name bubble, route line, and tip arrow
 (`POSITION_COLOR` in `plays.html`, mirrored in `watch.html` and
@@ -308,14 +309,18 @@ jersey numbers, then shows one all-season
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
 
 The watch page has no login, coach navigation, roster, editor, notes, save, or
-publish controls. Kids see the published **Playbook** and **Upcoming** sections
-in the exact coach-set order, tap one, then get the play number above the field
-plus Play / full screen / scrub, a **Watching as** picker, and one default-off
-**Defense** toggle. Choosing a kid puts only that first name on their tagged
-route bubbles, lights those letters and D1–D7 zones, and fades the others. Turning
-Defense on shows D1/D2/D3 across the front (defense-right to defense-left),
-D6/D5/D4 behind them, and D7 deep behind D5. Full screen shows the play display
-name the same way the coach animator does.
+publish controls. A **Play / Defense** switch sits at the top. Kids see the
+published **Playbook** and **Upcoming** sections in the exact coach-set order,
+tap one, then get the play number above the field plus Play / full screen /
+scrub and a **Watching as** picker. Choosing a kid defaults to that kid’s
+primary offense tag (`offense_tags[0]`); the name sits on that one route
+bubble and backups get a small letter switcher. **Defense** is a static six-area
+plus D7 diagram (no moving pieces, no hip-stay / Man-Free). Watching as
+highlights that kid’s primary zone (`defense_tags[0]`, gold, `D5 · Teddy`)
+and quieter backup outlines with the same switcher. Other kids’ names stay
+off the parent view. Full screen shows the play display name the same way
+the coach animator does. After roster-tag changes, published plays show
+**Edited** until **Push to kids**.
 Section and order are baked into each published snapshot, so an existing link
 stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow

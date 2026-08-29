@@ -662,9 +662,20 @@ function cleanRoster(raw){
   return (Array.isArray(raw)?raw:[]).map(item=>({
     name:shownFirstName(typeof item==="string"?item:item&&item.name),
     jersey:cleanJersey(item&&item.jersey),
+    // Array order is rank. Index 0 is the gold primary. Never sort.
     offenseTags:[...new Set((item&&Array.isArray(item.offenseTags)?item.offenseTags:[]).filter(tag=>LETTERS.includes(tag)))],
     defenseTags:[...new Set((item&&Array.isArray(item.defenseTags)?item.defenseTags:[]).filter(tag=>/^D[1-7]$/.test(tag)))]
   })).filter(item=>item.name);
+}
+function rosterFingerprint(roster){
+  return JSON.stringify(cleanRoster(roster).map(item=>({
+    name:item.name,jersey:item.jersey,offenseTags:item.offenseTags,defenseTags:item.defenseTags
+  })).sort((a,b)=>a.name.localeCompare(b.name)));
+}
+function rosterIsStale(){
+  const snap=STATE.kidsSnapshot;
+  if(!snap) return Object.values(STORE).some(play=>play.published);
+  return rosterFingerprint(STATE.roster)!==rosterFingerprint(snap.roster||[]);
 }
 function rosterJersey(name){
   return cleanJersey((STATE.roster.find(item=>item.name===shownFirstName(name))||{}).jersey);
@@ -774,11 +785,12 @@ function playIsStale(play){
   return !samePublishedPlay(play,snapPlay);
 }
 function anyPublishedStale(){
-  return Object.values(STORE).some(playIsStale);
+  const published=Object.values(STORE).some(play=>play.published);
+  return Object.values(STORE).some(playIsStale)||(published&&rosterIsStale());
 }
 function playPublishState(play){
   if(!play||!play.published) return "coach";
-  return playIsStale(play)?"edited":"kids";
+  return playIsStale(play)||rosterIsStale()?"edited":"kids";
 }
 function selectedPublishState(){
   const play=STORE[STATE.number];

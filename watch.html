@@ -28,22 +28,26 @@ h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:v
 .picks button small{display:block;margin-top:6px;color:var(--gold);font-size:14px;font-weight:700}
 .picks button:active{border-color:var(--highlight);background:rgba(207,174,112,.16)}
 .back{display:inline-flex;align-items:center;min-height:44px;margin:0 0 8px;padding:0;border:0;background:none;color:var(--gold);font-weight:800}
+.page-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.page-modes button{min-height:48px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--muted);font-weight:800}.page-modes button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
 .watching{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px;margin:0 0 10px}.watching span{color:var(--gold);font-size:12px;font-weight:800}.watching select{min-height:46px;width:100%;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:700}
+.study-switch{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.study-switch button{min-height:44px;min-width:44px;padding:8px 12px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800}.study-switch button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .play-number{margin:0 0 8px;color:var(--gold);font:600 42px/1 var(--serif);letter-spacing:.02em;text-align:center}
 .play-number small{display:block;margin-top:4px;color:var(--soft);font:600 16px/1.2 var(--sans);letter-spacing:0}
 .play-name{display:none;margin:0 112px 8px 10px;color:var(--soft);font:600 26px/1.1 var(--serif);letter-spacing:.01em}
 .play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
-.tools{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}.tools .ghost.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
+.tools{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}.tools.one{grid-template-columns:1fr}
 .speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}.speed button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .scrub{width:100%;accent-color:var(--gold)}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
 body.immersive{overflow:hidden;background:#000}
 body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}
-body.immersive .wrap> :not(#viewer){display:none!important}
-body.immersive #viewer{display:block!important;height:100%}
-body.immersive #viewer> :not(.play-shell){display:none!important}
+body.immersive .wrap> :not(#viewer):not(#defenseView){display:none!important}
+body.immersive[data-page="play"] .wrap> :not(#viewer){display:none!important}
+body.immersive[data-page="defense"] .wrap> :not(#defenseView){display:none!important}
+body.immersive #viewer,body.immersive #defenseView{display:block!important;height:100%}
+body.immersive #viewer> :not(.play-shell),body.immersive #defenseView> :not(.play-shell){display:none!important}
 body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
 body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}
 body.immersive .play-name{display:block}
@@ -53,6 +57,7 @@ body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 176px)
 body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}
 body.immersive .tools button{display:none}
 body.immersive .tools #play{display:block}
+body.immersive #defenseTools{display:none}
 body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}
 body.immersive .scrub{width:min(560px,100%);margin:auto}
 @media(orientation:landscape) and (max-height:780px){
@@ -60,7 +65,7 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   body.immersive .tools #play{min-height:48px;font-size:16px}
   body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 156px)*1.2));max-height:calc(var(--vvh) - 156px)}
 }
-@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}.tools{grid-template-columns:1fr 1fr}.tools #play{grid-column:1/-1}}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}.tools{grid-template-columns:1fr}.tools #play{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -71,18 +76,25 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
     <p class="sub">Tap a play, then press Play. Full screen shows the play name.</p>
   </div>
   <div class="status" id="status">Loading plays…</div>
+  <div class="page-modes hidden" id="pageModes">
+    <button type="button" id="modePlay" class="on">Play</button>
+    <button type="button" id="modeDefense">Defense</button>
+  </div>
+  <div id="watchBar" class="hidden">
+    <label class="watching"><span>Watching as</span><select id="watchingAs" aria-label="Watching as"><option value="">Choose first name</option></select></label>
+    <div class="study-switch hidden" id="studySwitch" role="group" aria-label="Study letter or zone"></div>
+  </div>
   <section id="list" class="hidden" aria-label="Published plays">
     <div class="play-groups" id="picks"></div>
   </section>
   <section id="viewer" class="hidden" aria-label="Selected play">
     <button class="back" type="button" id="back">← All plays</button>
-    <label class="watching"><span>Watching as</span><select id="watchingAs" aria-label="Watching as"><option value="">Choose first name</option></select></label>
     <div class="play-shell" id="playShell">
       <button class="done" type="button" id="done">Done</button>
       <p class="play-name" id="playName"></p>
       <p class="play-number" id="playNumber"></p>
       <div class="field-wrap"><div id="field"></div></div>
-      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button><button class="ghost" type="button" id="defense" aria-pressed="false">Defense off</button></div>
+      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button></div>
       <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
         <button type="button" data-speed="0.5">0.5×</button>
         <button type="button" data-speed="1">1×</button>
@@ -90,8 +102,16 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
       </div>
       <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
     </div>
-    <p class="stamp" id="stamp"></p>
   </section>
+  <section id="defenseView" class="hidden" aria-label="Defense zones">
+    <div class="play-shell" id="defenseShell">
+      <button class="done" type="button" id="defenseDone">Done</button>
+      <p class="play-name" id="defenseName"><small>Defense</small>Six areas + helper</p>
+      <div class="field-wrap"><div id="defenseField"></div></div>
+      <div class="tools one" id="defenseTools"><button class="ghost" type="button" id="defenseFull">Full screen</button></div>
+    </div>
+  </section>
+  <p class="stamp" id="stamp"></p>
 </main>
 <script>
 const $=selector=>document.querySelector(selector);
@@ -122,7 +142,7 @@ const PLAY_SECTIONS=["playbook","upcoming"];
 const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
 function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
 function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
-const state={plays:[],roster:[],number:"",watchingAs:localStorage.getItem(WATCHING_KEY)||"",look:0,anim:null,speed:loadSpeed(),defense:false};
+const state={plays:[],roster:[],number:"",watchingAs:localStorage.getItem(WATCHING_KEY)||"",studyLetter:"",studyZone:"",page:"play",look:0,anim:null,speed:loadSpeed()};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function playDisplayName(play){
@@ -154,9 +174,16 @@ function cleanJersey(value){const jersey=String(value==null?"":value).trim();ret
 function cleanRoster(raw){return(Array.isArray(raw)?raw:[]).map(item=>({
   name:String(item&&item.name||"").trim(),
   jersey:cleanJersey(item&&item.jersey),
+  // Array order is rank. Index 0 is the gold primary. Never sort.
   offenseTags:[...new Set((item&&Array.isArray(item.offenseTags)?item.offenseTags:[]).filter(tag=>LETTERS.includes(tag)))],
   defenseTags:[...new Set((item&&Array.isArray(item.defenseTags)?item.defenseTags:[]).filter(tag=>/^D[1-7]$/.test(tag)))]
 })).filter(item=>item.name)}
+function primaryOffense(player){return player&&player.offenseTags&&player.offenseTags[0]||""}
+function backupOffense(player){return player&&Array.isArray(player.offenseTags)?player.offenseTags.slice(1):[]}
+function primaryDefense(player){return player&&player.defenseTags&&player.defenseTags[0]||""}
+function backupDefense(player){return player&&Array.isArray(player.defenseTags)?player.defenseTags.slice(1):[]}
+function studyLetter(){const player=watchingPlayer();return state.studyLetter||primaryOffense(player)}
+function studyZone(){const player=watchingPlayer();return state.studyZone||primaryDefense(player)}
 function cleanPlay(raw){
   if(!raw||!String(raw.number||"").match(/^\d{1,4}$/)||!Array.isArray(raw.spots))return null;
   const fromW=playCoordWidth(raw);
@@ -175,7 +202,7 @@ function currentPlay(){return state.plays.find(play=>play.number===state.number)
 function rosterJersey(name){return cleanJersey((state.roster.find(item=>item.name===name)||{}).jersey)}
 function runnerNames(play,letter){
   const player=watchingPlayer();
-  return player&&player.offenseTags.includes(letter)?[player.name]:[];
+  return player&&studyLetter()===letter?[player.name]:[];
 }
 function runnerLabel(name){const jersey=rosterJersey(name);return jersey?`${name} ${jersey}`:name}
 function routeName(play,letter){const names=runnerNames(play,letter).map(runnerLabel);return names.length?names.join(" / "):letter}
@@ -185,8 +212,12 @@ function packedLines(parts,maxLength){
   return lines;
 }
 function watchingPlayer(){return state.roster.find(item=>item.name===state.watchingAs)||null}
-function letterFocused(letter){const player=watchingPlayer();return !player||player.offenseTags.includes(letter)}
-function zoneFocused(zone){const player=watchingPlayer();return !player||player.defenseTags.includes("D"+zone)}
+function letterFocused(letter){
+  const player=watchingPlayer();
+  if(!player) return true;
+  const study=studyLetter();
+  return !study||study===letter;
+}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
 // Saved routes stay in viewBox coordinates; only yard-marker labels map the
 // existing LOS-to-goal-line depth to the 45-yard field.
@@ -242,25 +273,41 @@ function yardLines(){
   for(let yards=5;yards<FIELD_DEPTH_YARDS;yards+=5){const y=LOS_Y-markerYard*yards;ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
   return`<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}<path d="M${FIELD_LEFT} ${FIELD_TOP}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="3"/><text x="18" y="${FIELD_TOP+14}" fill="#ECB748" font-size="10">45 / TD</text></g>`;
 }
-function areas(){
-  if(!state.defense)return"";
-  // Facing the football: D1 is defense-right (screen-left), D3 defense-left.
-  // D4 is behind D3, D5 behind D2, D6 behind D1; D7 is deep behind D5.
+function defenseZonesSVG(){
+  // Facing the football / offense at the bottom: D1 is defense-right
+  // (screen-left), D3 defense-left. Second level is D6 / D5 / D4 behind
+  // those, listed defense-left to defense-right as D4, D5, D6. D7 sits
+  // deep behind D5. Static outlines only — no moving pieces.
   const shortY=LOS_Y-YARD*10,deepY=LOS_Y-YARD*22,roverY=LOS_Y-YARD*36;
-  const names=zone=>{
-    const player=watchingPlayer();
-    return player&&player.defenseTags.includes("D"+zone)?[runnerLabel(player.name)]:[];
+  const player=watchingPlayer();
+  const study=player?studyZone():"";
+  const backups=player?backupDefense(player):[];
+  const box=(area,y,height)=>{
+    const tag="D"+area.zone;
+    const isStudy=!!study&&study===tag;
+    const isBackup=!!study&&backups.includes(tag);
+    const opacity=!study?0.88:(isStudy?1:isBackup?0.42:0.16);
+    const fill=isStudy?"rgba(236,183,72,.28)":"rgba(207,174,112,.1)";
+    const stroke=isStudy?"#ECB748":"#CFAE70";
+    const width=isStudy?3:1.6;
+    const label=isStudy&&player?`${tag} · ${player.name}`:tag;
+    return`<g opacity="${opacity}"><rect x="${area.x-68}" y="${y-height/2}" width="136" height="${height}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="${width}"/><text x="${area.x}" y="${y+4}" fill="${isStudy?"#ECB748":"#E0D5C0"}" text-anchor="middle" font-size="${isStudy?11:10}">${esc(label)}</text></g>`;
   };
-  const box=(area,y,height,fill)=>{
-    const lines=packedLines(names(area.zone),22),opacity=zoneFocused(area.zone)?0.72:0.16;
-    const labels=lines.map(line=>`<tspan x="${area.x}" dy="9">${esc(line)}</tspan>`).join("");
-    return`<g opacity="${opacity}"><rect x="${area.x-60}" y="${y-height/2}" width="120" height="${height}" rx="10" fill="${fill}" stroke="#CFAE70" stroke-width="1.4"/><text x="${area.x}" y="${y-lines.length*4}" fill="#E0D5C0" text-anchor="middle" font-size="7"><tspan x="${area.x}">D${area.zone}</tspan>${labels}</text></g>`;
-  };
-  const front=[{x:90,zone:1},{x:MID_X,zone:2},{x:390,zone:3}].map(area=>box(area,shortY,66,"rgba(207,174,112,.12)")).join("");
-  const second=[{x:90,zone:6},{x:MID_X,zone:5},{x:390,zone:4}].map(area=>box(area,deepY,76,"rgba(207,174,112,.1)")).join("");
-  const safety=packedLines(names(7),25),safetyOpacity=zoneFocused(7)?0.72:0.16;
-  const safetyLabels=safety.map(line=>`<tspan x="${MID_X}" dy="9">${esc(line)}</tspan>`).join("");
-  return`${front}${second}<g opacity="${safetyOpacity}"><polygon points="${MID_X},${roverY-13} ${MID_X+12},${roverY} ${MID_X},${roverY+13} ${MID_X-12},${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+25}" fill="#ECB748" text-anchor="middle" font-size="7"><tspan x="${MID_X}">D7</tspan>${safetyLabels}</text></g><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text>`;
+  const front=[{x:90,zone:1},{x:MID_X,zone:2},{x:390,zone:3}].map(area=>box(area,shortY,78)).join("");
+  const second=[{x:90,zone:6},{x:MID_X,zone:5},{x:390,zone:4}].map(area=>box(area,deepY,86)).join("");
+  const tag="D7";
+  const isStudy=!!study&&study===tag;
+  const isBackup=!!study&&backups.includes(tag);
+  const safetyOpacity=!study?0.88:(isStudy?1:isBackup?0.42:0.16);
+  const safetyLabel=isStudy&&player?`D7 · ${player.name}`:"D7";
+  return`${front}${second}<g opacity="${safetyOpacity}"><polygon points="${MID_X},${roverY-16} ${MID_X+15},${roverY} ${MID_X},${roverY+16} ${MID_X-15},${roverY}" fill="${isStudy?"#ECB748":"#CFAE70"}" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+32}" fill="#ECB748" text-anchor="middle" font-size="11">${esc(safetyLabel)}</text></g><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text>`;
+}
+function paintDefense(){
+  const player=watchingPlayer();
+  const title=player?`${player.name} · defense`:"Six areas + helper";
+  $("#defenseField").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(title)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${defenseZonesSVG()}</svg>`;
+  const name=$("#defenseName");
+  if(name) name.innerHTML=player?`<small>Defense</small>${esc(player.name)}`:`<small>Defense</small>Six areas + helper`;
 }
 function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
 function paint(progress){
@@ -281,27 +328,62 @@ function paint(progress){
   const routeLetters=play.spots.map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${routeLetter(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))}</g>`).join("");
   const runners=play.spots.filter(spot=>spot.route.length).map(spot=>{const point=positions[spot.letter];return`<circle class="route-runner" data-letter="${spot.letter}" cx="${point.x}" cy="${point.y}" r="6" fill="${positionColor(spot.letter)}" stroke="#1C1C1C" stroke-width="1.5" opacity="${letterFocused(spot.letter)?1:.18}"/>`}).join("");
   const bubbles=play.spots.map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${nameBubble(formationPoint(spot),routeName(play,spot.letter),spot.letter,highlighted.has(spot.letter))}</g>`).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${areas()}${routes}${routeLetters}${runners}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${bubbles}</svg>`;
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${routes}${routeLetters}${runners}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${bubbles}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
 function showList(){
   stop();
   setImmersive(false);
   state.number="";
-  $("#list").classList.remove("hidden");
-  $("#viewer").classList.add("hidden");
-  $("#intro").classList.remove("hidden");
+  renderPage();
 }
 function selectPlay(number){
   const play=state.plays.find(item=>item.number===String(number));
   if(!play)return;
   stop();
+  state.page="play";
   state.number=play.number;
   state.look=0;
-  $("#intro").classList.add("hidden");
-  $("#list").classList.add("hidden");
-  $("#viewer").classList.remove("hidden");
-  renderSelected();
+  renderPage();
+}
+function setPage(page){
+  state.page=page==="defense"?"defense":"play";
+  if(state.page==="defense"){stop();setImmersive(false)}
+  renderPage();
+}
+function syncWatching(){
+  if(state.watchingAs&&!state.roster.some(item=>item.name===state.watchingAs)) state.watchingAs="";
+  const player=watchingPlayer();
+  if(player){
+    if(!player.offenseTags.includes(state.studyLetter)) state.studyLetter=primaryOffense(player);
+    if(!player.defenseTags.includes(state.studyZone)) state.studyZone=primaryDefense(player);
+  }else{
+    state.studyLetter="";
+    state.studyZone="";
+  }
+  $("#watchingAs").innerHTML=`<option value="">Choose first name</option>`+state.roster.map(item=>`<option value="${esc(item.name)}">${esc(runnerLabel(item.name))}</option>`).join("");
+  $("#watchingAs").value=state.watchingAs;
+}
+function renderStudySwitch(){
+  const root=$("#studySwitch");
+  if(!root) return;
+  const player=watchingPlayer();
+  const tags=state.page==="defense"
+    ?(player?player.defenseTags:[])
+    :(player?player.offenseTags:[]);
+  if(!player||tags.length<2){
+    root.classList.add("hidden");
+    root.innerHTML="";
+    return;
+  }
+  const current=state.page==="defense"?studyZone():studyLetter();
+  root.classList.remove("hidden");
+  root.innerHTML=tags.map(tag=>`<button type="button" data-study="${esc(tag)}" class="${tag===current?"on":""}">${esc(tag)}</button>`).join("");
+  $$("#studySwitch [data-study]").forEach(button=>button.onclick=()=>{
+    if(state.page==="defense") state.studyZone=button.dataset.study;
+    else state.studyLetter=button.dataset.study;
+    renderPage();
+  });
 }
 function renderList(){
   $("#picks").innerHTML=PLAY_SECTIONS.map(section=>{
@@ -315,21 +397,39 @@ function renderList(){
   }).join("");
   $$("#picks [data-play]").forEach(button=>button.onclick=()=>selectPlay(button.dataset.play));
 }
-function renderSelected(){
-  const play=currentPlay();if(!play){showList();return}
-  if(state.watchingAs&&!state.roster.some(item=>item.name===state.watchingAs)) state.watchingAs="";
-  $("#watchingAs").innerHTML=`<option value="">Choose first name</option>`+state.roster.map(item=>`<option value="${esc(item.name)}">${esc(runnerLabel(item.name))}</option>`).join("");
-  $("#watchingAs").value=state.watchingAs;
+function renderPage(){
+  const loaded=!!state.plays.length;
+  $("#pageModes").classList.toggle("hidden",!loaded);
+  $("#watchBar").classList.toggle("hidden",!loaded);
+  $("#modePlay").classList.toggle("on",state.page==="play");
+  $("#modeDefense").classList.toggle("on",state.page==="defense");
+  document.body.dataset.page=state.page;
+  syncWatching();
+  renderStudySwitch();
+  if(state.page==="defense"){
+    $("#intro").classList.add("hidden");
+    $("#list").classList.add("hidden");
+    $("#viewer").classList.add("hidden");
+    $("#defenseView").classList.remove("hidden");
+    paintDefense();
+    syncViewport();
+    return;
+  }
+  $("#defenseView").classList.add("hidden");
+  const play=currentPlay();
+  if(!play){
+    $("#intro").classList.remove("hidden");
+    $("#list").classList.remove("hidden");
+    $("#viewer").classList.add("hidden");
+    syncViewport();
+    return;
+  }
+  $("#intro").classList.add("hidden");
+  $("#list").classList.add("hidden");
+  $("#viewer").classList.remove("hidden");
   setPlayName(play);
-  renderDefense();
   paint(0);
   syncViewport();
-}
-function renderDefense(){
-  const button=$("#defense");
-  button.textContent=state.defense?"Defense on":"Defense off";
-  button.classList.toggle("on",state.defense);
-  button.setAttribute("aria-pressed",state.defense?"true":"false");
 }
 function renderSpeed(){
   $$("#speedPicks [data-speed]").forEach(button=>{
@@ -388,12 +488,22 @@ function setImmersive(active){
   if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   syncViewport();
 }
-$("#watchingAs").onchange=()=>{state.watchingAs=$("#watchingAs").value;try{localStorage.setItem(WATCHING_KEY,state.watchingAs)}catch(_){}stop();renderSelected()};
+$("#watchingAs").onchange=()=>{
+  state.watchingAs=$("#watchingAs").value;
+  state.studyLetter="";
+  state.studyZone="";
+  try{localStorage.setItem(WATCHING_KEY,state.watchingAs)}catch(_){}
+  stop();
+  renderPage();
+};
+$("#modePlay").onclick=()=>setPage("play");
+$("#modeDefense").onclick=()=>setPage("defense");
 $("#play").onclick=play;
-$("#defense").onclick=()=>{stop();state.defense=!state.defense;renderSelected()};
 $("#speedPicks").onclick=event=>{const button=event.target.closest("[data-speed]");if(!button)return;setSpeed(button.dataset.speed)};
 $("#full").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#done").onclick=()=>setImmersive(false);
+$("#defenseFull").onclick=()=>{unlockOrientation();setImmersive(true)};
+$("#defenseDone").onclick=()=>setImmersive(false);
 $("#back").onclick=showList;
 renderSpeed();
 document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{})});
@@ -408,9 +518,9 @@ bindViewport();
     if(error||!data||!plays.length)throw new Error("unavailable");
     state.plays=plays;state.roster=cleanRoster(data.roster);
     $("#status").classList.add("hidden");
-    $("#list").classList.remove("hidden");
     if(data.publishedAt){const date=new Date(data.publishedAt);if(!Number.isNaN(date.getTime()))$("#stamp").textContent="Playbook updated "+date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
     renderList();
+    renderPage();
   }catch(_){$("#status").textContent="This play link is not available."}
 })();
 </script>
