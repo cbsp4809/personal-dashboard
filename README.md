@@ -302,8 +302,8 @@ The watch page has no login, coach navigation, roster, editor, notes, save, or
 publish controls. Kids see the published **Playbook** and **Upcoming** sections
 in the exact coach-set order, tap one, then get the play number above the field
 plus Play / full screen / scrub, a **Watching as** picker, and one default-off
-**Defense** toggle. Choosing a kid keeps all tagged names visible but lights up
-that kid’s route letters and D1–D7 zones while fading the others. Turning
+**Defense** toggle. Choosing a kid puts only that first name on their tagged
+route bubbles, lights those letters and D1–D7 zones, and fades the others. Turning
 Defense on shows D1/D2/D3 across the front (defense-right to defense-left),
 D6/D5/D4 behind them, and D7 deep behind D5. Full screen shows the play display
 name the same way the coach animator does.

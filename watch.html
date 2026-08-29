@@ -76,7 +76,7 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   </section>
   <section id="viewer" class="hidden" aria-label="Selected play">
     <button class="back" type="button" id="back">← All plays</button>
-    <label class="watching"><span>Watching as</span><select id="watchingAs" aria-label="Watching as"><option value="">Everyone</option></select></label>
+    <label class="watching"><span>Watching as</span><select id="watchingAs" aria-label="Watching as"><option value="">Choose first name</option></select></label>
     <div class="play-shell" id="playShell">
       <button class="done" type="button" id="done">Done</button>
       <p class="play-name" id="playName"></p>
@@ -174,7 +174,8 @@ function cleanPlay(raw){
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||null}
 function rosterJersey(name){return cleanJersey((state.roster.find(item=>item.name===name)||{}).jersey)}
 function runnerNames(play,letter){
-  return state.roster.filter(item=>item.offenseTags.includes(letter)).map(item=>item.name);
+  const player=watchingPlayer();
+  return player&&player.offenseTags.includes(letter)?[player.name]:[];
 }
 function runnerLabel(name){const jersey=rosterJersey(name);return jersey?`${name} ${jersey}`:name}
 function routeName(play,letter){const names=runnerNames(play,letter).map(runnerLabel);return names.length?names.join(" / "):letter}
@@ -246,7 +247,10 @@ function areas(){
   // Facing the football: D1 is defense-right (screen-left), D3 defense-left.
   // D4 is behind D3, D5 behind D2, D6 behind D1; D7 is deep behind D5.
   const shortY=LOS_Y-YARD*10,deepY=LOS_Y-YARD*22,roverY=LOS_Y-YARD*36;
-  const names=zone=>state.roster.filter(item=>item.defenseTags.includes("D"+zone)).map(item=>runnerLabel(item.name));
+  const names=zone=>{
+    const player=watchingPlayer();
+    return player&&player.defenseTags.includes("D"+zone)?[runnerLabel(player.name)]:[];
+  };
   const box=(area,y,height,fill)=>{
     const lines=packedLines(names(area.zone),22),opacity=zoneFocused(area.zone)?0.72:0.16;
     const labels=lines.map(line=>`<tspan x="${area.x}" dy="9">${esc(line)}</tspan>`).join("");
@@ -314,7 +318,7 @@ function renderList(){
 function renderSelected(){
   const play=currentPlay();if(!play){showList();return}
   if(state.watchingAs&&!state.roster.some(item=>item.name===state.watchingAs)) state.watchingAs="";
-  $("#watchingAs").innerHTML=`<option value="">Everyone</option>`+state.roster.map(item=>`<option value="${esc(item.name)}">${esc(runnerLabel(item.name))}</option>`).join("");
+  $("#watchingAs").innerHTML=`<option value="">Choose first name</option>`+state.roster.map(item=>`<option value="${esc(item.name)}">${esc(runnerLabel(item.name))}</option>`).join("");
   $("#watchingAs").value=state.watchingAs;
   setPlayName(play);
   renderDefense();

@@ -315,6 +315,7 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .jersey-input{width:100%;min-height:44px;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);color:var(--ink);font-size:18px;font-weight:700;text-align:center}
 .roster-tags{margin:8px 0 12px}.roster-tags b{display:block;margin:8px 0 6px;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
 .roster-tag-chips{display:flex;flex-wrap:wrap;gap:6px}.roster-tag-chips button{min-width:44px;min-height:42px;border:1px solid var(--strong);border-radius:999px;background:var(--bg-2);color:var(--soft);font-weight:700}.roster-tag-chips button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.tag-summary{margin-top:12px}.tag-summary h3{margin:0 0 4px}.tag-summary p{margin:0 0 10px;color:var(--muted);font-size:12px}.tag-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tag-summary-row{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:var(--bg-2);font-size:12px}.tag-summary-row b{color:var(--gold)}.tag-summary-row span{color:var(--soft);overflow-wrap:anywhere}
 .rate-input{width:100%;min-width:0;min-height:56px;margin:0;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);padding:8px 0;color:var(--ink);text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;-webkit-appearance:none;appearance:none;touch-action:manipulation}
 .rate-input:focus{outline:none;border-color:var(--gold)}
 .rate-input.filled{border-color:rgba(207,174,112,.55);background:var(--gold-soft)}
@@ -408,6 +409,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
   .author-row .field{min-width:0}
   .comment-compose .btn{width:100%}
   .saved-play-row{grid-template-columns:1fr}.saved-play-row .btn{width:100%}
+  .tag-summary-grid{grid-template-columns:1fr}
 }
 .gate-card input{width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-size:16px;margin:4px 0 12px}
 .gate-card input:focus{outline:2px solid rgba(207,174,112,.55);outline-offset:1px}
@@ -541,6 +543,11 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <button class="btn ghost" id="sortTeamRanks" type="button">Sort by staff avg</button>
       </div>
       <div class="team-cards" id="teamCards"></div>
+      <div class="panel tag-summary">
+        <h3>Practice tags by letter</h3>
+        <p>Roster view · assign with the chips inside each player card.</p>
+        <div class="tag-summary-grid" id="tagSummary"></div>
+      </div>
       <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
     </section>
 
@@ -3510,6 +3517,18 @@ function rosterTagButtons(name,kind,allowed){
   const selected=new Set(cleanTags(ROSTER_META[name]&&ROSTER_META[name][kind+"Tags"],allowed));
   return allowed.map(tag=>`<button type="button" data-roster-name="${esc(name)}" data-roster-kind="${kind}" data-roster-tag="${tag}" class="${selected.has(tag)?"on":""}" aria-pressed="${selected.has(tag)?"true":"false"}">${tag}</button>`).join("");
 }
+function renderTagSummary(){
+  const root=$("#tagSummary");
+  if(!root) return;
+  const rows=[
+    ...OFFENSE_TAGS.map(tag=>({tag,key:"offenseTags"})),
+    ...DEFENSE_TAGS.map(tag=>({tag,key:"defenseTags"}))
+  ];
+  root.innerHTML=rows.map(row=>{
+    const names=ROSTER.filter(name=>cleanTags(ROSTER_META[name]&&ROSTER_META[name][row.key],row.key==="offenseTags"?OFFENSE_TAGS:DEFENSE_TAGS).includes(row.tag)).map(rosterLabel);
+    return `<div class="tag-summary-row"><b>${row.tag}</b><span>${esc(names.length?names.join(", "):"—")}</span></div>`;
+  }).join("");
+}
 function renderTeamRatings(){
   if(scoringInputFocused()) return;
   const order=teamDisplayOrder();
@@ -3528,6 +3547,7 @@ function renderTeamRatings(){
     bindRateInputs("#teamCards");
     bindJerseyInputs();
   }
+  renderTagSummary();
   if(table){
     table.innerHTML="";
   }
