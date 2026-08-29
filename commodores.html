@@ -856,6 +856,21 @@ const OFFENSE_SPOTS=[
   {id:"Y",label:"Y"},
   {id:"Z",label:"Z"}
 ];
+// Offense letter colors — one map for name pills, route lines, and tip arrows.
+// Readable on black turf. Q stays white so the thrower is distinct.
+// Keep these hexes in sync across plays.html, watch.html, and commodores.html.
+const POSITION_COLOR={
+  Q:"#FFFFFF", // thrower
+  C:"#CFAE70", // brand gold — center
+  X:"#5EC8E8", // sky — left out
+  A:"#F4A261", // sand-orange — slot
+  B:"#7ED47A", // mint — inside / H-back
+  Y:"#C9A6F0", // lilac — slot
+  Z:"#FF8B7A"  // salmon — right out
+};
+function positionColor(letter){
+  return POSITION_COLOR[String(letter||"").toUpperCase()]||"#CFAE70";
+}
 const DEFENSE_SPOTS=[
   {id:"1",label:"1 left short"},
   {id:"2",label:"2 middle short"},
@@ -3391,7 +3406,9 @@ function renderUnitBoard(unit,side,spots){
   board.innerHTML=spots.map((spot,index)=>{
     const name=line[index];
     const hint=spot.hint?`<div>${esc(spot.hint)}</div>`:"";
-    return `<div class="line-spot" data-drop-unit="${unit}" data-drop-side="${side}" data-drop-index="${index}"><div class="spot-label">${esc(spot.label)}${hint}</div><div class="spot-slot">${name?nameChip(name,unit,side,index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
+    const labelColor=side==="offense"?positionColor(spot.id):"";
+    const labelStyle=labelColor?` style="color:${labelColor}"`:"";
+    return `<div class="line-spot" data-drop-unit="${unit}" data-drop-side="${side}" data-drop-index="${index}"><div class="spot-label"${labelStyle}>${esc(spot.label)}${hint}</div><div class="spot-slot">${name?nameChip(name,unit,side,index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
   }).join("");
 }
 function playTimeRow(name){
