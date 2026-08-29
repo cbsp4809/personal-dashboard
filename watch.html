@@ -230,7 +230,7 @@ function selectPlay(number){
 function renderList(){
   $("#picks").innerHTML=state.plays.map(item=>{
     const shown=playDisplayName(item);
-    return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Play")}</small></button>`;
+    return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
   }).join("");
   $$("#picks [data-play]").forEach(button=>button.onclick=()=>selectPlay(button.dataset.play));
 }
