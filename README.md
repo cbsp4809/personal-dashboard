@@ -53,7 +53,7 @@ sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
 sql/commodores_play_sections.sql # Playbook/Upcoming grouping + coach-controlled order
-sql/commodores_route_runners.sql # Per-play runner assignments + optional roster jerseys
+sql/commodores_route_runners.sql # Practice Q/C/X/A/B/Y/Z + D1-D7 tags and optional jerseys
 sql/commodores_play_sharing.sql # Published snapshots + token-only watch RPC (Commodores project only)
 ```
 
@@ -262,9 +262,8 @@ the inverse display offset, so saves do not accumulate that shift. Route lines
 end with a small arrowhead at the tip. The field marks every five yards from
 **0 / LOS** through the emphasized **45 / TD** goal line without rewriting saved
 starts or route coordinates. The optional **Defense** overlay (off by default)
-uses the same week-one base picture in coach and watch views: three short
-areas, three deep areas, and a deep-middle rover, all beneath the offense
-routes. It never shows Man-Free or hip-stay, which remain drills only. The
+uses the same week-one D1–D7 picture in coach and watch views beneath the
+offense routes. It never shows Man-Free or hip-stay, which remain drills only. The
 canvas is 480×400 (was
 360×400) with tighter name pills so a 5-wide can spread without stacking
 labels; legacy 360-wide drawings scale on load. The kids watch page uses the
@@ -278,22 +277,23 @@ then `sql/commodores_play_sections.sql` for grouping/order,
 `sql/commodores_play_sharing.sql` for publishing.
 localStorage keeps an offline draft; the database wins when signed in.
 
-Play labels come from the current offense lineup in this fixed order:
+Coach play labels come from the game lineup in this fixed order:
 `Q, C, X, A, B, Y, Z` (Q and Center, then the five receiver spots). Coaches
 choose **Q1/Q3** or **Q2/Q4**; those are display labels over internal A/B keys.
-In Draw mode, each route can keep the quarter-lineup default or select multiple
-first-name runners for that play. An optional roster jersey displays only when
-staff entered it. One combined name bubble stays at the route start while a
-small letter chip sits near mid-route and the animation dot travels the unchanged
-path. Each letter has a fixed color used for the name bubble, route line, and tip arrow
+Practice-watch labels instead come from roster multi-select tags: every kid
+tagged to a letter appears in that route’s one start bubble, and every kid
+tagged D1–D7 appears in that defense area. An optional roster jersey displays
+only when staff entered it. One combined name bubble stays at the route start
+while a small letter chip sits near mid-route and the animation dot travels the
+unchanged path. Each letter has a fixed color used for the name bubble, route line, and tip arrow
 (`POSITION_COLOR` in `plays.html`, mirrored in `watch.html` and
 `commodores.html`): Q white, C gold, X sky, A sand-orange, B mint, Y lilac,
 Z salmon. Selected / live-drawing strokes get thicker but keep that hue.
 Yard lines, LOS, and the defense overlay stay gold/white as before.
 
 Each saved play has a Publish toggle. Publishing writes one read-only snapshot
-containing all marked plays, both quarter units, per-play runners, and entered
-jersey numbers, then shows a
+containing all marked plays plus the 12-player practice roster tags and entered
+jersey numbers, then shows one all-season
 256-bit secret URL:
 
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
@@ -301,14 +301,17 @@ jersey numbers, then shows a
 The watch page has no login, coach navigation, roster, editor, notes, save, or
 publish controls. Kids see the published **Playbook** and **Upcoming** sections
 in the exact coach-set order, tap one, then get the play number above the field
-plus Play / full screen / scrub and one default-off **Defense** toggle. Turning
-it on shows the same six-area + rover base coverage under the offense routes.
-Full screen shows the play display name the same way the coach animator does.
+plus Play / full screen / scrub, a **Watching as** picker, and one default-off
+**Defense** toggle. Choosing a kid keeps all tagged names visible but lights up
+that kid’s route letters and D1–D7 zones while fading the others. Turning
+Defense on shows D1/D2/D3 across the front (defense-right to defense-left),
+D6/D5/D4 behind them, and D7 deep behind D5. Full screen shows the play display
+name the same way the coach animator does.
 Section and order are baked into each published snapshot, so an existing link
 stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow
-RPC returns only the published snapshot for the exact token. After lineup or
-route changes, tap **Republish names + plays**. Rotating the link invalidates
+RPC returns only the published snapshot for the exact token. After roster-tag
+or route changes, tap **Republish names + plays**. Rotating the link invalidates
 the old URL.
 
 Do not put Cloudflare Access back in front of this Worker. The field book still

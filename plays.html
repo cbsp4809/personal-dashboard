@@ -94,10 +94,6 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .chips button{min-width:52px;min-height:52px;border:2px solid var(--strong);border-radius:999px;background:#000;color:var(--soft);font-weight:800}
 .chips button.on{color:#1C1C1C}
 .chips button.sit{opacity:.55}
-.runner-panel{margin:0 0 10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#000}
-.runner-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}.runner-head b{color:var(--soft);font-size:13px}.runner-head span{color:var(--muted);font-size:11px}
-.runner-choices{display:flex;flex-wrap:wrap;gap:7px}.runner-choices button{min-height:44px;border:1px solid var(--strong);border-radius:999px;padding:7px 11px;background:transparent;color:var(--soft);font-weight:700}.runner-choices button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
-.runner-default{width:100%;min-height:42px;margin-top:8px;border:0;background:transparent;color:var(--gold);font-weight:700;text-align:left}
 .letters .lk{font-weight:800}
 .draw-tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 10px}
 .draw-tools button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft);font-weight:800}
@@ -194,11 +190,6 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
   <div id="drawPanel" class="hidden">
     <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter, then draw its route on the field.</p>
     <div class="chips" id="letterChips"></div>
-    <div class="runner-panel">
-      <div class="runner-head"><b id="runnerTitle">Who runs X · Q1/Q3</b><span>Tap every runner</span></div>
-      <div class="runner-choices" id="runnerChoices"></div>
-      <button class="runner-default" type="button" id="runnerDefault">Use quarter-lineup name</button>
-    </div>
     <div class="draw-tools">
       <button type="button" id="sitBtn">Sit / no route</button>
       <button type="button" id="clearBtn">Clear route</button>
@@ -239,7 +230,7 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
   </div>
   <div class="publish hidden" id="publishPanel">
     <strong>Kids / parents watch page</strong>
-    <p class="publish-copy">Mark saved plays for the watch page, then republish whenever routes or lineup names change.</p>
+    <p class="publish-copy">Mark saved plays for the practice watch page, then republish whenever routes, roster tags, or jerseys change.</p>
     <div class="publish-actions">
       <button type="button" id="publishToggle">Publish this play</button>
       <button type="button" id="publishNow">Republish names + plays</button>
@@ -317,18 +308,6 @@ function cleanSection(value){return value==="upcoming"?"upcoming":"playbook"}
 function cleanSortOrder(value){
   const order=Number(value);
   return Number.isInteger(order)&&order>=0?order:0;
-}
-function cleanAssignees(raw){
-  const out={A:{},B:{}};
-  ["A","B"].forEach(unit=>{
-    LETTERS.forEach(letter=>{
-      const source=raw&&raw[unit]&&raw[unit][letter];
-      if(!Array.isArray(source)) return;
-      const names=[...new Set(source.map(item=>shownFirstName(typeof item==="string"?item:item&&item.name)).filter(Boolean))];
-      if(names.length) out[unit][letter]=names;
-    });
-  });
-  return out;
 }
 function playDisplayName(play){
   const number=String((play&&play.number)||"").trim();
@@ -438,8 +417,7 @@ function normalizePlay(raw,fallbackNumber){
     updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO(),
     published:!!(raw&&raw.published),
     section:cleanSection(raw&&raw.section),
-    sortOrder:cleanSortOrder(raw&&(raw.sortOrder??raw.sort_order)),
-    assignees:cleanAssignees(raw&&raw.assignees)
+    sortOrder:cleanSortOrder(raw&&(raw.sortOrder??raw.sort_order))
   };
 }
 function emptyPlay(number){
@@ -545,6 +523,7 @@ const STATE={
   coach:null,
   lineupUnit:"A",
   lineups:{A:{},B:{}},
+  defenseLineups:{A:{},B:{}},
   roster:[],
   shareToken:"",
   speed:loadSpeed()
@@ -565,7 +544,7 @@ function writeLocal(){
     number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
     bullets:p.bullets,looks:p.looks,spots:stampSpots(p.spots),fieldW:FIELD_W,source:p.source,
     updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published,
-    section:p.section,sortOrder:p.sortOrder,assignees:cleanAssignees(p.assignees)
+    section:p.section,sortOrder:p.sortOrder
   }));
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows))}catch(_){}
 }
@@ -583,12 +562,12 @@ function rowFromCloud(row){
     number:row.number,title:row.title,flipPartner:row.flip_partner,
     family:row.family,bullets:row.bullets,looks:row.looks,spots:row.spots,
     source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at,published:row.published,
-    section:row.section,sortOrder:row.sort_order,assignees:row.assignees
+    section:row.section,sortOrder:row.sort_order
   });
 }
 async function fetchCloud(){
   if(!sb||!STATE.coach) return [];
-  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published,section,sort_order,assignees");
+  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published,section,sort_order");
   if(error||!data) return [];
   return data.map(rowFromCloud);
 }
@@ -606,8 +585,7 @@ async function upsertCloud(play){
     updated_at:play.updatedAt,
     published:!!play.published,
     section:cleanSection(play.section),
-    sort_order:cleanSortOrder(play.sortOrder),
-    assignees:cleanAssignees(play.assignees)
+    sort_order:cleanSortOrder(play.sortOrder)
   };
   const {error}=await sb.from("commodores_plays").upsert(payload,{onConflict:"number"});
   return {ok:!error,error:error&&error.message};
@@ -640,15 +618,15 @@ function cleanJersey(value){
 function cleanRoster(raw){
   return (Array.isArray(raw)?raw:[]).map(item=>({
     name:shownFirstName(typeof item==="string"?item:item&&item.name),
-    jersey:cleanJersey(item&&item.jersey)
+    jersey:cleanJersey(item&&item.jersey),
+    offenseTags:[...new Set((item&&Array.isArray(item.offenseTags)?item.offenseTags:[]).filter(tag=>LETTERS.includes(tag)))],
+    defenseTags:[...new Set((item&&Array.isArray(item.defenseTags)?item.defenseTags:[]).filter(tag=>/^D[1-7]$/.test(tag)))]
   })).filter(item=>item.name);
 }
 function rosterJersey(name){
   return cleanJersey((STATE.roster.find(item=>item.name===shownFirstName(name))||{}).jersey);
 }
 function runnerNames(play,unit,letter){
-  const custom=play&&play.assignees&&play.assignees[unit]&&play.assignees[unit][letter];
-  if(Array.isArray(custom)&&custom.length) return custom;
   const fallback=STATE.lineups[unit]&&STATE.lineups[unit][letter];
   return fallback?[shownFirstName(fallback)]:[];
 }
@@ -673,6 +651,14 @@ function cleanLineups(raw){
   });
   return out;
 }
+function cleanDefenseLineups(raw){
+  const out={A:{},B:{}};
+  ["A","B"].forEach(unit=>{
+    const source=raw&&raw[unit];
+    for(let zone=1;zone<=7;zone++) out[unit]["D"+zone]=shownFirstName(Array.isArray(source)?source[zone-1]:source&&source["D"+zone]);
+  });
+  return out;
+}
 async function loadLineups(){
   if(!sb||!STATE.coach) return;
   const {data,error}=await sb.from("commodores_plans").select("payload").eq("id","staff-lineup").maybeSingle();
@@ -682,11 +668,23 @@ async function loadLineups(){
     A:units.A&&units.A.offense,
     B:units.B&&units.B.offense
   });
+  STATE.defenseLineups=cleanDefenseLineups({
+    A:units.A&&units.A.defense,
+    B:units.B&&units.B.defense
+  });
 }
 async function loadRoster(){
   if(!sb||!STATE.coach) return;
-  const {data,error}=await sb.from("commodores_roster").select("first_name,jersey,sort").order("sort",{ascending:true});
-  if(!error&&Array.isArray(data)) STATE.roster=cleanRoster(data.map(row=>({name:row.first_name,jersey:row.jersey})));
+  let {data,error}=await sb.from("commodores_roster").select("first_name,jersey,offense_tags,defense_tags,sort").order("sort",{ascending:true});
+  if(error){
+    const jerseyOnly=await sb.from("commodores_roster").select("first_name,jersey,sort").order("sort",{ascending:true});
+    data=jerseyOnly.data;error=jerseyOnly.error;
+  }
+  if(error){
+    const namesOnly=await sb.from("commodores_roster").select("first_name,sort").order("sort",{ascending:true});
+    data=namesOnly.data;error=namesOnly.error;
+  }
+  if(!error&&Array.isArray(data)) STATE.roster=cleanRoster(data.map(row=>({name:row.first_name,jersey:row.jersey,offenseTags:row.offense_tags,defenseTags:row.defense_tags})));
 }
 function randomToken(){
   const bytes=new Uint8Array(32);
@@ -706,20 +704,15 @@ function publishedSnapshot(){
     .filter(play=>play.published)
     .sort(comparePlays)
     .map(play=>({
-      number:play.number,title:play.title,flipPartner:play.flipPartner||"",
-      fieldW:FIELD_W,spots:stampSpots(play.spots),looks:play.looks||[],family:play.family||"",bullets:play.bullets||[],
-      section:cleanSection(play.section),sortOrder:cleanSortOrder(play.sortOrder),assignees:cleanAssignees(play.assignees)
+      number:play.number,title:play.title,
+      fieldW:FIELD_W,spots:stampSpots(play.spots),looks:play.looks||[],
+      section:cleanSection(play.section),sortOrder:cleanSortOrder(play.sortOrder)
     }));
-  const lineups=plays.length?cleanLineups(STATE.lineups):{A:{},B:{}};
-  const usedNames=new Set();
-  ["A","B"].forEach(unit=>Object.values(lineups[unit]||{}).forEach(name=>{if(name) usedNames.add(name)}));
-  plays.forEach(play=>["A","B"].forEach(unit=>Object.values((play.assignees&&play.assignees[unit])||{}).forEach(names=>(names||[]).forEach(name=>usedNames.add(name)))));
   return {
-    version:3,
+    version:4,
     fieldW:FIELD_W,
     publishedAt:nowISO(),
-    lineups,
-    roster:cleanRoster(STATE.roster).filter(item=>usedNames.has(item.name)),
+    roster:plays.length?cleanRoster(STATE.roster):[],
     plays
   };
 }
@@ -742,7 +735,7 @@ async function publishSnapshot(rotate){
     return false;
   }
   status.textContent=snapshot.plays.length
-    ?`Published ${snapshot.plays.length} play${snapshot.plays.length===1?"":"s"} with Q1/Q3 and Q2/Q4 runner names.`
+    ?`Published ${snapshot.plays.length} play${snapshot.plays.length===1?"":"s"} with practice roster tags.`
     :"Kids page cleared. No plays are currently published.";
   renderPublish();
   return true;
@@ -794,16 +787,23 @@ function setDraftFromStore(){
 
 function areasSVG(){
   if(!$("#showAreas").checked) return "";
-  // Front spots sit ~5 yards off the LOS. Deep spots sit behind those.
-  // Rover is a deep-middle free safety, not a front helper. No rush.
+  // Facing the football: D1 is defense-right (screen-left), D3 defense-left.
+  // D4 sits behind D3, D5 behind D2, D6 behind D1; D7 is deep behind D5.
   const shortY=LOS_Y-YARD*10;
   const deepY=LOS_Y-YARD*22;
   const roverY=LOS_Y-YARD*36;
-  const shorts=[{x:90,n:"left short"},{x:MID_X,n:"middle short"},{x:390,n:"right short"}];
-  const deeps=[{x:90,n:"left deep"},{x:MID_X,n:"middle deep"},{x:390,n:"right deep"}];
-  const short=shorts.map(a=>`<rect x="${a.x-60}" y="${shortY-33}" width="120" height="66" rx="10" fill="rgba(207,174,112,.12)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${shortY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
-  const deep=deeps.map(a=>`<rect x="${a.x-60}" y="${deepY-38}" width="120" height="76" rx="10" fill="rgba(207,174,112,.1)" stroke="#CFAE70" stroke-width="1.4"/><text x="${a.x}" y="${deepY+3}" fill="#E0D5C0" text-anchor="middle" font-size="8">${esc(a.n)}</text>`).join("");
-  return `<g opacity=".72">${short}${deep}<polygon points="${MID_X},${roverY-13} ${MID_X+12},${roverY} ${MID_X},${roverY+13} ${MID_X-12},${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+26}" fill="#ECB748" text-anchor="middle" font-size="8">rover</text><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
+  const name=zone=>{
+    const player=STATE.defenseLineups[STATE.lineupUnit]&&STATE.defenseLineups[STATE.lineupUnit]["D"+zone];
+    return player?runnerLabel(player):"";
+  };
+  const box=(area,y,height,fill)=>{
+    const player=name(area.zone);
+    return `<rect x="${area.x-60}" y="${y-height/2}" width="120" height="${height}" rx="10" fill="${fill}" stroke="#CFAE70" stroke-width="1.4"/><text x="${area.x}" y="${y-3}" fill="#E0D5C0" text-anchor="middle" font-size="8"><tspan x="${area.x}">D${area.zone}</tspan>${player?`<tspan x="${area.x}" dy="11">${esc(player)}</tspan>`:""}</text>`;
+  };
+  const front=[{x:90,zone:1},{x:MID_X,zone:2},{x:390,zone:3}].map(area=>box(area,shortY,66,"rgba(207,174,112,.12)")).join("");
+  const second=[{x:90,zone:6},{x:MID_X,zone:5},{x:390,zone:4}].map(area=>box(area,deepY,76,"rgba(207,174,112,.1)")).join("");
+  const safety=name(7);
+  return `<g opacity=".72">${front}${second}<polygon points="${MID_X},${roverY-13} ${MID_X+12},${roverY} ${MID_X},${roverY+13} ${MID_X-12},${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+26}" fill="#ECB748" text-anchor="middle" font-size="8">D7${safety?" · "+esc(safety):""}</text><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
 }
 function fieldSVG(play,pos,ball,liveRoute){
   const targets=new Set([play.looks[STATE.look]?.target]);
@@ -955,38 +955,6 @@ async function moveSelectedOrder(direction){
   changed.add(play);changed.add(other);
   await persistOrganization(changed,`Moved ${play.number} ${direction<0?"earlier":"later"} in ${SECTION_LABELS[section]}.`);
 }
-function renderRunnerChoices(play){
-  const title=$("#runnerTitle"),choices=$("#runnerChoices"),reset=$("#runnerDefault");
-  if(!title||!choices||!reset) return;
-  const unit=STATE.lineupUnit,letter=STATE.selected;
-  const custom=play&&play.assignees&&play.assignees[unit]&&play.assignees[unit][letter];
-  const selected=new Set(Array.isArray(custom)?custom:[]);
-  const fallback=((STATE.lineups[unit]||{})[letter]||"").trim();
-  title.textContent=`Who runs ${letter} · ${unitLabel(unit)}`;
-  reset.textContent=custom?`Use ${unitLabel(unit)} lineup${fallback?" · "+runnerLabel(fallback):""}`:`Using ${unitLabel(unit)} lineup${fallback?" · "+runnerLabel(fallback):""}`;
-  reset.disabled=!custom;
-  choices.innerHTML=STATE.roster.length?STATE.roster.map(item=>`<button type="button" data-runner="${esc(item.name)}" class="${selected.has(item.name)?"on":""}" aria-pressed="${selected.has(item.name)?"true":"false"}">${esc(runnerLabel(item.name))}</button>`).join(""):`<span class="empty-section">Roster loads after coach sign-in.</span>`;
-  $$("#runnerChoices [data-runner]").forEach(button=>button.onclick=()=>toggleRunner(button.dataset.runner));
-}
-function toggleRunner(name){
-  if(!draft||STATE.mode!=="draw") return;
-  const unit=STATE.lineupUnit,letter=STATE.selected;
-  if(!draft.assignees) draft.assignees=cleanAssignees(null);
-  if(!draft.assignees[unit]) draft.assignees[unit]={};
-  const custom=draft.assignees[unit][letter];
-  const names=new Set(Array.isArray(custom)?custom:runnerNames(draft,unit,letter));
-  if(names.has(name)) names.delete(name); else names.add(name);
-  if(names.size) draft.assignees[unit][letter]=[...names];
-  else delete draft.assignees[unit][letter];
-  markDirty();
-  render();
-}
-function useLineupRunner(){
-  if(!draft||!draft.assignees||!draft.assignees[STATE.lineupUnit]) return;
-  delete draft.assignees[STATE.lineupUnit][STATE.selected];
-  markDirty();
-  render();
-}
 function renderChrome(){
   const play=workingPlay();
   $("#modePlay").classList.toggle("on",STATE.mode==="play");
@@ -1011,7 +979,6 @@ function renderChrome(){
       :`background:#000;border-color:${color};color:${color}`;
     return `<button type="button" data-letter="${letter}" class="${on?"on":""} ${spot&&spot.sit?"sit":""}" style="${style}">${letter}</button>`;
   }).join("");
-  if(STATE.mode==="draw") renderRunnerChoices(play);
   const key=$("#letterKey");
   if(key) key.innerHTML=`<span class="lk" style="color:${positionColor("Q")}">Q thrower</span> · <span class="lk" style="color:${positionColor("C")}">C center</span> · <span class="lk" style="color:${positionColor("X")}">X left out</span> · <span class="lk" style="color:${positionColor("Z")}">Z right out</span> · <span class="lk" style="color:${positionColor("A")}">A</span> / <span class="lk" style="color:${positionColor("B")}">B</span> / <span class="lk" style="color:${positionColor("Y")}">Y</span> inside. Hip-stay is a drill only.`;
   $$("#letterChips [data-letter]").forEach(btn=>btn.onclick=()=>{STATE.selected=btn.dataset.letter;render();});
@@ -1492,7 +1459,6 @@ $("#resetBtn").onclick=()=>{
   render();
 };
 $("#showAreas").onchange=()=>{stopAnim();render()};
-$("#runnerDefault").onclick=useLineupRunner;
 $("#moveSectionBtn").onclick=moveSelectedSection;
 $("#moveEarlierBtn").onclick=()=>moveSelectedOrder(-1);
 $("#moveLaterBtn").onclick=()=>moveSelectedOrder(1);
@@ -1565,6 +1531,7 @@ window.addEventListener("message",event=>{
   if(event.origin!==location.origin||event.source!==window.parent||!event.data) return;
   if(event.data.type==="commodores-lineups"){
     STATE.lineups=cleanLineups(event.data.lineups);
+    STATE.defenseLineups=cleanDefenseLineups(event.data.defenseLineups);
     if(Array.isArray(event.data.roster)) STATE.roster=cleanRoster(event.data.roster);
     stopAnim();
     render();

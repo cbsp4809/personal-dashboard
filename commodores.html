@@ -313,6 +313,8 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .jersey-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;gap:8px;margin:10px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .jersey-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .jersey-input{width:100%;min-height:44px;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);color:var(--ink);font-size:18px;font-weight:700;text-align:center}
+.roster-tags{margin:8px 0 12px}.roster-tags b{display:block;margin:8px 0 6px;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.roster-tag-chips{display:flex;flex-wrap:wrap;gap:6px}.roster-tag-chips button{min-width:44px;min-height:42px;border:1px solid var(--strong);border-radius:999px;background:var(--bg-2);color:var(--soft);font-weight:700}.roster-tag-chips button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .rate-input{width:100%;min-width:0;min-height:56px;margin:0;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);padding:8px 0;color:var(--ink);text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;-webkit-appearance:none;appearance:none;touch-action:manipulation}
 .rate-input:focus{outline:none;border-color:var(--gold)}
 .rate-input.filled{border-color:rgba(207,174,112,.55);background:var(--gold-soft)}
@@ -680,7 +682,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <section class="page" id="page-plays">
       <div class="section-head"><div><div class="eyebrow">Draw · animate · publish</div><h2>Plays</h2></div><p>Coach-only editor · current offense lineup names</p></div>
       <div class="binder-note">
-        <b>One play book, one lineup.</b> Q and C map to those lineup spots; X, A, B, Y, Z follow the five receiver spots in that stable order. Choose Q1/Q3 or Q2/Q4 below. Publishing captures both quarter units’ current first-name labels for the kids page.
+        <b>Same drawings, locked name sources.</b> Coach Plays uses the selected Q1/Q3 or Q2/Q4 game lineup. The one kids practice link uses each roster player’s Q/C/X/A/B/Y/Z and D1–D7 tags. Publishing captures those practice tags and optional jerseys.
       </div>
       <div class="panel plays-shell">
         <!-- Loaded only after the field book's coach allowlist check succeeds. -->
@@ -698,7 +700,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <li>Q1/Q3 plays the first and third quarters. Q2/Q4 plays the second and fourth quarters.</li>
           <li>Every present kid starts two full quarters on O and two on D, or plays all four quarters on one side only.</li>
           <li>14 spots a quarter. With fewer than 12 present you need more both-ways (11→3, 10→4, … 7→all both-ways). Need at least 7 to play.</li>
-          <li>O letters: Q · C · X · A · B · Y · Z. D: 1 left short · 2 middle short · 3 right short · 4 right deep · 5 middle deep · 6 left deep · 7 rover.</li>
+          <li>O letters: Q · C · X · A · B · Y · Z. Facing the ball, D1/D2/D3 are front defense-right to defense-left; D4 is behind D3, D5 behind D2, D6 behind D1, and D7 is the deep safety.</li>
           <li>On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot.</li>
         </ul>
       </div>
@@ -878,13 +880,13 @@ function positionColor(letter){
   return POSITION_COLOR[String(letter||"").toUpperCase()]||"#CFAE70";
 }
 const DEFENSE_SPOTS=[
-  {id:"1",label:"1 left short"},
-  {id:"2",label:"2 middle short"},
-  {id:"3",label:"3 right short"},
-  {id:"4",label:"4 right deep"},
-  {id:"5",label:"5 middle deep"},
-  {id:"6",label:"6 left deep"},
-  {id:"7",label:"7 rover"}
+  {id:"1",label:"D1",hint:"front · defense right"},
+  {id:"2",label:"D2",hint:"front · middle"},
+  {id:"3",label:"D3",hint:"front · defense left"},
+  {id:"4",label:"D4",hint:"second · behind D3"},
+  {id:"5",label:"D5",hint:"second · behind D2"},
+  {id:"6",label:"D6",hint:"second · behind D1"},
+  {id:"7",label:"D7",hint:"deep safety · behind D5"}
 ];
 // Old single-board defense was left/middle/right short, left/middle/right deep, helper.
 // New order puts right deep before middle/left deep. Remap once on the old 7.
@@ -896,6 +898,11 @@ function displayName(name){
 function cleanJersey(value){
   const jersey=String(value==null?"":value).trim();
   return /^\d{1,2}$/.test(jersey)?jersey:"";
+}
+const OFFENSE_TAGS=["Q","C","X","A","B","Y","Z"];
+const DEFENSE_TAGS=["D1","D2","D3","D4","D5","D6","D7"];
+function cleanTags(values,allowed){
+  return [...new Set((Array.isArray(values)?values:[]).map(String).filter(value=>allowed.includes(value)))];
 }
 function rosterJersey(name){return cleanJersey(ROSTER_META[name]&&ROSTER_META[name].jersey)}
 function rosterLabel(name){
@@ -971,28 +978,40 @@ ROSTER_META=getStore("roster_meta",{})||{};
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 }
-const AREA_NAMES=["left short","middle short","right short","left deep","middle deep","right deep"];
+const AREA_NAMES=["D1","D2","D3","D4","D5","D6"];
 const STAFF_SYNC_URL="https://dashboard-assistant.chrisbailey.workers.dev/sync";
 const STAFF_SYNC_KEY="commodores-defense-695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
-const DEFENSE_HOW="Stand in your named grass. Don’t chase a kid who leaves it. If the ball comes to you, catch it. Tag with a one-hand touch below the neck. The helper has no spot — he roams to extra people (Overload). Do not rush the thrower.";
+const DEFENSE_HOW="Face the football. D1/D2/D3 are the front from defense-right to defense-left. D4 is behind D3, D5 behind D2, D6 behind D1. D7 is the deep safety behind D5. Stay in your grass. Do not rush.";
 function seedDefenseLooks(){
   return [{
     id:"game-defense",kind:"defense",name:"Six spots + one helper",status:"taught",how:DEFENSE_HOW,spotSize:"normal",updatedAt:0,
     thrower:{x:180,y:258,label:"thrower"},
     spots:[
-      {id:"ds-ls",name:"left short",kind:"area",x:70,y:168},
-      {id:"ds-ms",name:"middle short",kind:"area",x:180,y:168},
-      {id:"ds-rs",name:"right short",kind:"area",x:290,y:168},
-      {id:"ds-ld",name:"left deep",kind:"area",x:70,y:72},
-      {id:"ds-md",name:"middle deep",kind:"area",x:180,y:72},
-      {id:"ds-rd",name:"right deep",kind:"area",x:290,y:72},
-      {id:"ds-help",name:"helper",kind:"helper",x:180,y:118}
+      {id:"ds-1",name:"D1",kind:"area",x:70,y:168},
+      {id:"ds-2",name:"D2",kind:"area",x:180,y:168},
+      {id:"ds-3",name:"D3",kind:"area",x:290,y:168},
+      {id:"ds-6",name:"D6",kind:"area",x:70,y:82},
+      {id:"ds-5",name:"D5",kind:"area",x:180,y:82},
+      {id:"ds-4",name:"D4",kind:"area",x:290,y:82},
+      {id:"ds-7",name:"D7",kind:"helper",x:180,y:34}
     ],
-    paths:[{id:"help-path",from:"ds-help",points:[{x:232,y:132},{x:286,y:162}]}]
+    paths:[]
   }];
 }
 function validDefenseLook(look){
   return look&&look.kind==="defense"&&typeof look.id==="string"&&typeof look.name==="string"&&Array.isArray(look.spots)&&Array.isArray(look.paths)&&look.thrower;
+}
+function lockDefenseGeometry(look){
+  if(!validDefenseLook(look)) return look;
+  const layout=[
+    {name:"D1",x:70,y:168},{name:"D2",x:180,y:168},{name:"D3",x:290,y:168},
+    {name:"D4",x:290,y:82},{name:"D5",x:180,y:82},{name:"D6",x:70,y:82}
+  ];
+  const areas=look.spots.filter(spot=>spot.kind==="area");
+  const safety=look.spots.find(spot=>spot.kind==="helper");
+  const spots=layout.map((home,index)=>({...areas[index],id:(areas[index]&&areas[index].id)||"ds-"+home.name.slice(1),kind:"area",...home}));
+  spots.push({...safety,id:(safety&&safety.id)||"ds-7",name:"D7",kind:"helper",x:180,y:34});
+  return {...look,how:DEFENSE_HOW,spots};
 }
 function grassSize(look){
   return look.spotSize==="big"?{w:128,h:80,r:11}:{w:90,h:54,r:9};
@@ -1009,7 +1028,7 @@ function defensePictureInner(look){
   const box=grassSize(look);
   const kids=look.spots.map(spot=>{
     if(spot.kind==="helper"){
-      return `<g class="builder-spot helper-mark" data-spot-id="${esc(spot.id)}" data-helper-mark="1" data-home-x="${spot.x}" data-home-y="${spot.y}"><polygon class="helper" points="${helperPoints(spot.x,spot.y)}"></polygon><text class="spot-name" x="${spot.x}" y="${spot.y+24}">helper · no spot</text></g>`;
+      return `<g class="builder-spot helper-mark" data-spot-id="${esc(spot.id)}" data-helper-mark="1" data-home-x="${spot.x}" data-home-y="${spot.y}"><polygon class="helper" points="${helperPoints(spot.x,spot.y)}"></polygon><text class="spot-name" x="${spot.x}" y="${spot.y+24}">${esc(spot.name||"D7")} · deep safety</text></g>`;
     }
     return `<g class="builder-spot" data-spot-id="${esc(spot.id)}"><rect class="grass" x="${spot.x-box.w/2}" y="${spot.y-box.h/2}" width="${box.w}" height="${box.h}" rx="10"></rect><circle class="kid" cx="${spot.x}" cy="${spot.y}" r="${look.spotSize==="big"?12:9}"></circle><text class="spot-name" x="${spot.x}" y="${spot.y+box.h/2-8}">${esc(spot.name)}</text></g>`;
   }).join("");
@@ -1018,7 +1037,7 @@ function defensePictureInner(look){
   return `${paths}<g class="play-extras"></g>${kids}${thrower}`;
 }
 function defenseCardSVG(look){
-  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(look.name)}: left short, middle short, right short, left deep, middle deep, right deep, plus a helper. Thrower shown. No rush.">
+  return `<svg class="diagram" viewBox="0 0 360 300" role="img" aria-label="${esc(look.name)}: D1 through D3 front, D4 through D6 second level, D7 deep safety. Thrower shown. No rush.">
     <rect width="360" height="300" fill="#000000"></rect>
     <rect x="12" y="10" width="336" height="280" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"></rect>
     <path d="M12 220H348" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"></path>
@@ -1027,7 +1046,7 @@ function defenseCardSVG(look){
   </svg>`;
 }
 function helperHome(look){
-  return look.spots.find(spot=>spot.kind==="helper")||{x:180,y:118};
+  return look.spots.find(spot=>spot.kind==="helper")||{x:180,y:34};
 }
 function pilePoint(look){
   const helper=helperHome(look);
@@ -1067,8 +1086,8 @@ function playDefenseLook(look,reaction,card){
     +(reaction==="middle"?`<path class="pile-hint" d="M${home.x} ${home.y} L${pile.x} ${pile.y}"></path>`:"");
   const dest=reaction==="pile"?pile:home;
   cue.textContent=reaction==="pile"
-    ?"Play: helper runs to the pile. The six do not chase."
-    :"Play: helper stays in the middle. The six do not chase.";
+    ?"Play: D7 helps the pile. D1–D6 do not chase."
+    :"Play: D7 stays deep behind D5. D1–D6 do not chase.";
   const start=performance.now();
   const hold=reaction==="pile"?1600:900;
   defenseAnim={frame:0,timer:0};
@@ -1082,7 +1101,7 @@ function playDefenseLook(look,reaction,card){
     defenseAnim.timer=setTimeout(()=>{
       mark.removeAttribute("transform");
       extras.innerHTML="";
-      cue.textContent="Watch the helper. The six stay in their grass. They do not chase.";
+      cue.textContent="Watch D7. D1–D6 stay in their grass. They do not chase.";
       defenseAnim=null;
     },1100);
   };
@@ -1119,16 +1138,16 @@ function renderDefenseBook(){
       <ul class="plain-list">
         <li>Stand in your named grass. Don’t chase a kid who leaves it.</li>
         <li>If the ball comes to you, catch it. Tag with a one-hand touch below the neck.</li>
-        <li>The helper has no spot — he roams to extra people (Overload).</li>
+        <li>D7 starts deep behind D5, then helps toward extra people (Overload).</li>
         <li>Do not rush the thrower. Hip-stay is never drawn here.</li>
       </ul>
       <div class="play-react">
-        <div class="react-toggle" role="group" aria-label="Helper reaction">
-          <button class="btn ghost on" data-react="pile" type="button">Helper to the pile</button>
-          <button class="btn ghost" data-react="middle" type="button">Helper stays middle</button>
+        <div class="react-toggle" role="group" aria-label="D7 reaction">
+          <button class="btn ghost on" data-react="pile" type="button">D7 helps the pile</button>
+          <button class="btn ghost" data-react="middle" type="button">D7 stays deep</button>
         </div>
         <button class="btn play-now" data-play="${esc(look.id)}" type="button">Play</button>
-        <div class="play-cue" data-play-cue>Watch the helper. The six stay in their grass. They do not chase.</div>
+        <div class="play-cue" data-play-cue>Watch D7. D1–D6 stay in their grass. They do not chase.</div>
       </div>
       <div class="when" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
         <button class="btn ghost" data-bigger="${esc(look.id)}" type="button">${look.spotSize==="big"?"Spots are big · tap to shrink":"Kids look lost · make spots bigger"}</button>
@@ -1160,8 +1179,8 @@ function renderDefenseBook(){
     group.dataset.reaction=button.dataset.react;
     const cue=button.closest(".play-react").querySelector("[data-play-cue]");
     cue.textContent=button.dataset.react==="pile"
-      ?"Helper runs to the extra kids. The six stay in their grass."
-      :"Helper stays in the middle. The six stay in their grass.";
+      ?"D7 helps toward the extra kids. D1–D6 stay in their grass."
+      :"D7 stays deep behind D5. D1–D6 stay in their grass.";
   });
   $$("#defenseBook [data-play]").forEach(button=>button.onclick=()=>{
     const look=defenseLooks.find(item=>item.id===button.dataset.play);
@@ -1187,7 +1206,7 @@ async function pullDefenseLooks(){
     const payload=await response.json();
     const looks=payload&&payload.data&&payload.data.looks;
     if(Array.isArray(looks)&&looks.every(validDefenseLook)&&looks.length){
-      defenseLooks=looks;
+      defenseLooks=looks.map(lockDefenseGeometry);
       setStore("defense_looks",defenseLooks);
       return true;
     }
@@ -1199,7 +1218,7 @@ let defenseLooks=seedDefenseLooks();
 function applyCachedDefense(){
   const saved=getStore("defense_looks",null);
   if(Array.isArray(saved)&&saved.every(validDefenseLook)&&saved.length&&saved.some(look=>Number(look.updatedAt)>0)){
-    defenseLooks=saved;
+    defenseLooks=saved.map(lockDefenseGeometry);
   }
 }
 const PAGE_ALIASES={team:"today",offense:"playbook",defense:"playbook",builder:"playbook",milestones:"season",attendance:"today",handoff:"practice"};
@@ -1248,12 +1267,25 @@ function currentPlayLineups(){
   return lineups;
 }
 function currentPlayRoster(){
-  return ROSTER.map(name=>({name:displayName(name),jersey:rosterJersey(name)}));
+  return ROSTER.map(name=>({
+    name:displayName(name),
+    jersey:rosterJersey(name),
+    offenseTags:cleanTags(ROSTER_META[name]&&ROSTER_META[name].offenseTags,OFFENSE_TAGS),
+    defenseTags:cleanTags(ROSTER_META[name]&&ROSTER_META[name].defenseTags,DEFENSE_TAGS)
+  }));
+}
+function currentPlayDefenseLineups(){
+  const lineups={};
+  UNIT_IDS.forEach(unit=>{
+    const line=(teamState&&teamState.units&&teamState.units[unit]&&teamState.units[unit].defense)||[];
+    lineups[unit]=Object.fromEntries(DEFENSE_SPOTS.map((spot,index)=>["D"+spot.id,line[index]?displayName(line[index]):""]));
+  });
+  return lineups;
 }
 function postPlayLineups(){
   const frame=$("#playsFrame");
   if(!frame||!frame.contentWindow) return;
-  frame.contentWindow.postMessage({type:"commodores-lineups",lineups:currentPlayLineups(),roster:currentPlayRoster()},location.origin);
+  frame.contentWindow.postMessage({type:"commodores-lineups",lineups:currentPlayLineups(),defenseLineups:currentPlayDefenseLineups(),roster:currentPlayRoster()},location.origin);
 }
 let pendingPlayNumber="";
 function postPlaySelection(){
@@ -1755,10 +1787,22 @@ async function loadLeagueSchedule(){
 async function loadRoster(){
   if(!sb) return;
   try{
-    const {data,error}=await sb.from("commodores_roster").select("first_name,sort,jersey").order("sort",{ascending:true});
+    let {data,error}=await sb.from("commodores_roster").select("first_name,sort,jersey,offense_tags,defense_tags").order("sort",{ascending:true});
+    if(error){
+      const jerseyOnly=await sb.from("commodores_roster").select("first_name,sort,jersey").order("sort",{ascending:true});
+      data=jerseyOnly.data;error=jerseyOnly.error;
+    }
+    if(error){
+      const namesOnly=await sb.from("commodores_roster").select("first_name,sort").order("sort",{ascending:true});
+      data=namesOnly.data;error=namesOnly.error;
+    }
     if(!error&&Array.isArray(data)&&data.length){
       ROSTER=data.map(row=>row.first_name).filter(name=>name&&name!=="Brett");
-      ROSTER_META=Object.fromEntries(data.filter(row=>row.first_name&&row.first_name!=="Brett").map(row=>[row.first_name,{jersey:cleanJersey(row.jersey)}]));
+      ROSTER_META=Object.fromEntries(data.filter(row=>row.first_name&&row.first_name!=="Brett").map(row=>[row.first_name,{
+        jersey:cleanJersey(row.jersey),
+        offenseTags:cleanTags(row.offense_tags,OFFENSE_TAGS),
+        defenseTags:cleanTags(row.defense_tags,DEFENSE_TAGS)
+      }]));
       setStore("roster",ROSTER);
       setStore("roster_meta",ROSTER_META);
     }
@@ -3375,39 +3419,72 @@ function bindRateInputs(root){
     };
   });
 }
-async function saveJersey(name,value,input){
-  if(!ROSTER.includes(name)) return;
-  const jersey=cleanJersey(value);
-  if(input) input.value=jersey;
-  const previous=rosterJersey(name);
+async function saveRosterMeta(name,changes,message,input,previousInput){
+  if(!ROSTER.includes(name)) return false;
+  const clean={};
+  const payload={};
+  if(Object.prototype.hasOwnProperty.call(changes,"jersey")){
+    clean.jersey=cleanJersey(changes.jersey);
+    payload.jersey=clean.jersey||null;
+  }
+  if(Object.prototype.hasOwnProperty.call(changes,"offenseTags")){
+    clean.offenseTags=cleanTags(changes.offenseTags,OFFENSE_TAGS);
+    payload.offense_tags=clean.offenseTags;
+  }
+  if(Object.prototype.hasOwnProperty.call(changes,"defenseTags")){
+    clean.defenseTags=cleanTags(changes.defenseTags,DEFENSE_TAGS);
+    payload.defense_tags=clean.defenseTags;
+  }
   if(sb){
     try{
-      const {error}=await sb.from("commodores_roster").update({jersey:jersey||null}).eq("first_name",name);
+      const {error}=await sb.from("commodores_roster").update(payload).eq("first_name",name);
       if(error){
-        if(input) input.value=previous;
-        setTeamStatus("Could not save jersey: "+error.message);
-        return;
+        if(input) input.value=previousInput||"";
+        setTeamStatus("Could not save roster tags: "+error.message);
+        return false;
       }
     }catch(_){
-      if(input) input.value=previous;
-      setTeamStatus("Could not save jersey. Check the connection.");
-      return;
+      if(input) input.value=previousInput||"";
+      setTeamStatus("Could not save roster tags. Check the connection.");
+      return false;
     }
   }
-  ROSTER_META[name]={...(ROSTER_META[name]||{}),jersey};
+  ROSTER_META[name]={...(ROSTER_META[name]||{}),...clean};
   setStore("roster_meta",ROSTER_META);
   postPlayLineups();
   renderTeamRatings();
   renderAttendance();
   renderTeamLineup();
-  if(!sb){setTeamStatus("Jersey saved on this device only");return}
-  setTeamStatus(`${displayName(name)} jersey ${jersey||"cleared"}`);
+  setTeamStatus(sb?message:message+" · this device only");
+  return true;
+}
+async function saveJersey(name,value,input){
+  const previous=rosterJersey(name);
+  const jersey=cleanJersey(value);
+  if(input) input.value=jersey;
+  await saveRosterMeta(name,{jersey},`${displayName(name)} jersey ${jersey||"cleared"}`,input,previous);
+}
+async function toggleRosterTag(name,kind,tag){
+  const allowed=kind==="offense"?OFFENSE_TAGS:DEFENSE_TAGS;
+  if(!allowed.includes(tag)) return;
+  const key=kind+"Tags";
+  const current=ROSTER_META[name]||{};
+  const tags=new Set(cleanTags(current[key],allowed));
+  if(tags.has(tag)) tags.delete(tag); else tags.add(tag);
+  const next={[key]:[...tags]};
+  const buttons=$$(`#teamCards [data-roster-name="${name}"]`);
+  buttons.forEach(button=>{button.disabled=true});
+  const saved=await saveRosterMeta(name,next,`${displayName(name)} practice tags saved`);
+  if(!saved) buttons.forEach(button=>{button.disabled=false});
 }
 function bindJerseyInputs(){
   $$("#teamCards input[data-jersey-name]").forEach(input=>{
     input.oninput=()=>{input.value=String(input.value||"").replace(/\D/g,"").slice(0,2)};
     input.onblur=()=>saveJersey(input.dataset.jerseyName,input.value,input);
     input.onkeydown=event=>{if(event.key==="Enter"){event.preventDefault();input.blur()}};
+  });
+  $$("#teamCards [data-roster-tag]").forEach(button=>{
+    button.onclick=()=>toggleRosterTag(button.dataset.rosterName,button.dataset.rosterKind,button.dataset.rosterTag);
   });
 }
 function nameChip(name,unit,side,index){
@@ -3429,6 +3506,10 @@ function playerSpotLabels(name){
   });
   return labels;
 }
+function rosterTagButtons(name,kind,allowed){
+  const selected=new Set(cleanTags(ROSTER_META[name]&&ROSTER_META[name][kind+"Tags"],allowed));
+  return allowed.map(tag=>`<button type="button" data-roster-name="${esc(name)}" data-roster-kind="${kind}" data-roster-tag="${tag}" class="${selected.has(tag)?"on":""}" aria-pressed="${selected.has(tag)?"true":"false"}">${tag}</button>`).join("");
+}
 function renderTeamRatings(){
   if(scoringInputFocused()) return;
   const order=teamDisplayOrder();
@@ -3442,7 +3523,7 @@ function renderTeamRatings(){
       const breakdown=coachBreakdown(name);
       const spots=playerSpotLabels(name);
       const isOpen=open.has(name)?" open":"";
-      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(rosterLabel(name))}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary><div class="jersey-row"><label for="jersey-${esc(name)}">Jersey · optional</label><input class="jersey-input" id="jersey-${esc(name)}" data-jersey-name="${esc(name)}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="${esc(rosterJersey(name))}" placeholder="—" aria-label="${esc(displayName(name))} jersey number"></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
+      return `<details class="team-card" data-player="${esc(name)}"${isOpen}><summary><div><b>${esc(rosterLabel(name))}</b><div class="player-spots">${esc(spots.length?spots.join(" · "):"No lineup spots yet")}</div></div><div class="team-avg"><span>Staff avg</span>${staffAverageText(name)}</div></summary><div class="jersey-row"><label for="jersey-${esc(name)}">Jersey · optional</label><input class="jersey-input" id="jersey-${esc(name)}" data-jersey-name="${esc(name)}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="${esc(rosterJersey(name))}" placeholder="—" aria-label="${esc(displayName(name))} jersey number"></div><div class="roster-tags"><b>Practice offense tags</b><div class="roster-tag-chips">${rosterTagButtons(name,"offense",OFFENSE_TAGS)}</div><b>Practice defense zones</b><div class="roster-tag-chips">${rosterTagButtons(name,"defense",DEFENSE_TAGS)}</div></div>${breakdown?`<div class="coach-breakdown">${esc(breakdown)}</div>`:""}${rows}</details>`;
     }).join("");
     bindRateInputs("#teamCards");
     bindJerseyInputs();
