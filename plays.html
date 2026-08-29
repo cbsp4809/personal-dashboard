@@ -300,7 +300,9 @@ function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
 function nowISO(){return new Date().toISOString()}
 function numKey(v){return String(v||"").replace(/\D/g,"").slice(0,4)}
-function cleanSection(value){return value==="playbook"?"playbook":"upcoming"}
+// Legacy saved plays predate sections and are already learned, so they enter
+// Playbook. emptyPlay() explicitly marks only new drawings as Upcoming.
+function cleanSection(value){return value==="upcoming"?"upcoming":"playbook"}
 function cleanSortOrder(value){
   const order=Number(value);
   return Number.isInteger(order)&&order>=0?order:0;

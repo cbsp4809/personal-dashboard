@@ -165,7 +165,7 @@ function cleanPlay(raw){
     const x=scaleX(Number(source.x),fromW);
     return{letter,x:Number.isFinite(x)?x:FIELD_W/2,y:Number(source.y)||300,sit:!!source.sit,route};
   });
-  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots,section:raw.section==="playbook"?"playbook":"upcoming",sortOrder:Number.isInteger(Number(raw.sortOrder))?Number(raw.sortOrder):0};
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots,section:raw.section==="upcoming"?"upcoming":"playbook",sortOrder:Number.isInteger(Number(raw.sortOrder))?Number(raw.sortOrder):0};
 }
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||null}
 function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}

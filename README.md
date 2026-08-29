@@ -252,10 +252,12 @@ normal vertical scrolling. Flip is a true left/right mirror of the saved
 geometry. New-play dots start slightly behind the line of scrimmage and default
 to **Upcoming**. Saved plays are grouped into **Playbook** (learned/practiced)
 and **Upcoming** (learn soon); coaches can move a play between them and use
-Earlier / Later to set the order within either section. Route lines end with a
-small arrowhead at the tip. The field marks every five yards from **0 / LOS**
-through the emphasized **45 / TD** goal line without rewriting saved route
-coordinates. The optional six-areas overlay (no rush) places the
+Earlier / Later to set the order within either section. Pre-section drawings
+start in Playbook in their prior numeric sequence. Saved starting coordinates
+stay untouched, preserving Chris’s on-line versus off-line placements. Route
+lines end with a small arrowhead at the tip. The field marks every five yards
+from **0 / LOS** through the emphasized **45 / TD** goal line without rewriting
+saved starts or route coordinates. The optional six-areas overlay (no rush) places the
 three short spots about five yards off the LOS, the three deep spots behind
 them, and the rover as a deep-middle helper. The canvas is 480×400 (was
 360×400) with tighter name pills so a 5-wide can spread without stacking
