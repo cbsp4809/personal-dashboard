@@ -50,8 +50,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
 .btn.danger{color:var(--oak)}
 .gate-msg{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12.5px;text-align:center}
 .gate-foot{margin-top:20px;color:var(--muted);font-size:11px;text-align:center}
-.gate-foot a{color:var(--gold);font-weight:700}
+.gate-foot a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 8px;color:var(--gold);font-weight:700}
 .mast-actions{display:flex;align-items:center;gap:8px;flex:none}
+.mast-actions .btn{min-height:44px;min-width:44px}
 .gate-link{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:4px;border:0;background:none;color:var(--gold);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .gate-card .btn{width:100%}
 #app{display:none;min-height:100vh;padding-bottom:calc(50px + env(safe-area-inset-bottom,0px))}
@@ -428,7 +429,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <button class="btn" type="submit" style="margin-top:4px">Sign in</button>
     <button class="gate-link" type="button" id="forgotBtn">Forgot password?</button>
     <div class="gate-msg" id="gateMsg" aria-live="polite"></div>
-    <div class="gate-foot"><a href="coach-manual.html">Coach user manual</a><br>FWE JV Vanderbilt Commodores · Fall 2026</div>
+    <div class="gate-foot"><a href="coach-manual.html">Help</a> · <a href="coach-manual.html">Coach user manual</a><br>FWE JV Vanderbilt Commodores · Fall 2026</div>
   </form>
   <form class="gate-card hidden" id="forgotForm">
     <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
@@ -439,7 +440,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
     <button class="btn" type="submit">Send reset link</button>
     <button class="gate-link" type="button" id="backToLogin">Back to sign in</button>
     <div class="gate-msg" id="forgotMsg" aria-live="polite"></div>
-    <div class="gate-foot">FWE JV Vanderbilt Commodores · Fall 2026</div>
+    <div class="gate-foot"><a href="coach-manual.html">Help</a> · <a href="coach-manual.html">Coach user manual</a><br>FWE JV Vanderbilt Commodores · Fall 2026</div>
   </form>
   <form class="gate-card hidden" id="resetForm">
     <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Staff only · Commodores</div>
@@ -464,7 +465,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <h1>Commodores <em>Fall ’26</em></h1>
       </div>
       <div class="mast-actions">
-        <a class="btn ghost" href="coach-manual.html">Help</a>
+        <a class="btn ghost" href="coach-manual.html">Help / Manual</a>
         <button class="btn ghost" id="lockBtn" type="button" aria-label="Lock this phone" title="Lock this phone">Lock</button>
       </div>
     </div>
