@@ -65,6 +65,8 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .cue{min-height:42px;margin:0 0 10px;color:var(--soft);font-size:14px}
 .immersive-shell{position:relative}
 .immersive-done{display:none;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;padding:10px 18px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}
+.play-name{display:none;margin:0 112px 8px 10px;color:var(--soft);font:600 26px/1.1 var(--serif);letter-spacing:.01em}
+.play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .field-wrap.is-drawing{touch-action:none}
 .field{display:block;width:100%;height:auto}
@@ -105,10 +107,11 @@ body.immersive .wrap> :not(#coachTools),body.immersive #coachTools> :not(.immers
 body.immersive #coachTools{display:block!important;height:100%}
 body.immersive .immersive-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
 body.immersive .immersive-done{display:block}
+body.immersive .play-name{display:block}
 body.immersive .cue{display:none}
 body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0;touch-action:none}
 body.immersive .field-host{display:grid;width:100%;height:100%;place-items:center}
-body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}
+body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 176px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 176px);aspect-ratio:480/400}
 body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}
 body.immersive .tools button{display:none}
 body.immersive .tools #playBtn{display:block}
@@ -116,7 +119,8 @@ body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}
 body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 @media(orientation:landscape) and (max-height:780px){
   body.immersive .tools #playBtn{min-height:48px;font-size:16px}
-  body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}
+  body.immersive .play-name{font-size:22px;margin-bottom:4px}
+  body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 156px)*1.2));max-height:calc(var(--vvh) - 156px)}
 }
 @media(max-width:420px){
   h1{font-size:26px}
@@ -125,6 +129,7 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
   .save-actions{grid-template-columns:1.35fr .65fr}
   .wrap{padding-left:6px;padding-right:6px}
   .field-wrap{border-radius:12px}
+  .play-name{font-size:22px}
 }
 </style>
 </head>
@@ -168,6 +173,7 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 
   <div class="immersive-shell" id="immersiveShell">
     <button class="immersive-done" type="button" id="doneBtn">Done</button>
+    <p class="play-name" id="playName" aria-live="polite"></p>
     <p class="cue" id="cue" aria-live="polite"></p>
     <div class="field-wrap" id="fieldWrap"><div class="field-host" id="fieldHost"></div></div>
     <div class="tools" id="playTools">
@@ -251,6 +257,20 @@ function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
 function nowISO(){return new Date().toISOString()}
 function numKey(v){return String(v||"").replace(/\D/g,"").slice(0,4)}
+function playDisplayName(play){
+  const number=String((play&&play.number)||"").trim();
+  const stripped=String((play&&play.title)||"").replace(/^\d+\s*/,"").trim();
+  const title=stripped&&stripped!==number?stripped:"";
+  return {number,title,line:title||(number?"Play "+number:"Play")};
+}
+function setPlayName(play){
+  const el=$("#playName");
+  if(!el) return;
+  const shown=playDisplayName(play);
+  el.innerHTML=shown.title&&shown.number
+    ?`<small>Play ${esc(shown.number)}</small>${esc(shown.title)}`
+    :esc(shown.line);
+}
 
 // Field is 480×400 (was 360×400). LOS is y=300. Downfield is toward y=10.
 // Wider canvas so a 5-wide + names can spread without stacking pills.
@@ -719,6 +739,7 @@ function renderChrome(){
     $("#playTitle").value=draft?draft.title:play.title;
   }
   setCue(play,"idle");
+  setPlayName(play);
   renderPublish();
   renderSpeed();
 }

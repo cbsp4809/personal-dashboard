@@ -14,51 +14,83 @@
 <style>
 :root{color-scheme:dark;--bg:#1C1C1C;--ink:#fff;--soft:#E0D5C0;--muted:#8d8d8d;--line:rgba(207,174,112,.18);--strong:rgba(207,174,112,.36);--gold:#CFAE70;--highlight:#ECB748;--sans:"Figtree","Helvetica Neue",Arial,sans-serif;--serif:"Newsreader",Georgia,serif;--vvw:100vw;--vvh:100dvh;--vvx:0px;--vvy:0px}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
-button,input{font:inherit}.hidden{display:none!important}
+html,body{margin:0;width:100%;min-height:100%;max-width:100%;overflow-x:hidden;background:var(--bg);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}button{cursor:pointer;touch-action:manipulation}.hidden{display:none!important}
 .wrap{width:min(720px,100%);margin:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .kicker{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.17em;text-transform:uppercase}.star{width:14px;height:14px;fill:var(--gold)}
 h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
 .status{padding:18px;border:1px solid var(--line);border-radius:15px;background:#000;color:var(--soft)}
-.picks{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 10px;scroll-snap-type:x proximity}
-.picks button{min-width:100px;min-height:58px;scroll-snap-align:start;border:1px solid var(--strong);border-radius:13px;padding:9px 11px;background:#000;color:var(--soft);text-align:left;font-weight:800}
-.picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}.picks small{display:block;margin-top:2px;font-size:11px;opacity:.75}
-.units,.looks{display:flex;gap:8px;margin:0 0 10px}.units button,.looks button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:7px 10px;background:transparent;color:var(--muted);font-weight:800}
-.units button.on,.looks button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
+.picks{display:grid;gap:10px;margin:0 0 8px}
+.picks button{display:block;width:100%;min-height:72px;border:1px solid var(--strong);border-radius:16px;padding:14px 16px;background:#000;color:var(--soft);text-align:left;font-weight:800}
+.picks button b{display:block;color:var(--ink);font:600 28px/1 var(--serif)}
+.picks button small{display:block;margin-top:6px;color:var(--gold);font-size:14px;font-weight:700}
+.picks button:active{border-color:var(--highlight);background:rgba(207,174,112,.16)}
+.back{display:inline-flex;align-items:center;min-height:44px;margin:0 0 8px;padding:0;border:0;background:none;color:var(--gold);font-weight:800}
+.units{display:flex;gap:8px;margin:0 0 10px}.units button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:7px 10px;background:transparent;color:var(--muted);font-weight:800}
+.units button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
+.play-number{margin:0 0 8px;color:var(--gold);font:600 42px/1 var(--serif);letter-spacing:.02em;text-align:center}
+.play-number small{display:block;margin-top:4px;color:var(--soft);font:600 16px/1.2 var(--sans);letter-spacing:0}
+.play-name{display:none;margin:0 112px 8px 10px;color:var(--soft);font:600 26px/1.1 var(--serif);letter-spacing:.01em}
+.play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
-.tools{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.tools{display:grid;grid-template-columns:1.4fr .9fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
 .speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}.speed button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
-.scrub{width:100%;accent-color:var(--gold)}.cue{min-height:38px;margin:9px 0 0;color:var(--soft);font-size:13px}
+.scrub{width:100%;accent-color:var(--gold)}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
-body.immersive{overflow:hidden;background:#000}body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}body.immersive .wrap> :not(#viewer){display:none!important}body.immersive #viewer{display:block!important;height:100%}body.immersive #viewer> :not(.play-shell){display:none!important}body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 128px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 128px);aspect-ratio:480/400}body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}body.immersive .tools button{display:none}body.immersive .tools #play{display:block}body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}body.immersive .scrub{width:min(560px,100%);margin:auto}body.immersive .cue{display:none}@media(orientation:landscape) and (max-height:780px){body.immersive .tools #play{min-height:48px;font-size:16px}body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 116px)*1.2));max-height:calc(var(--vvh) - 116px)}}
-@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:6px;padding-right:6px}.tools{grid-template-columns:1fr 1fr}.tools #full{grid-column:1/-1}}
+body.immersive{overflow:hidden;background:#000}
+body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}
+body.immersive .wrap> :not(#viewer){display:none!important}
+body.immersive #viewer{display:block!important;height:100%}
+body.immersive #viewer> :not(.play-shell){display:none!important}
+body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+body.immersive .done{display:block;position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));z-index:1000;min-width:92px;min-height:52px;border:0;border-radius:999px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}
+body.immersive .play-name{display:block}
+body.immersive .play-number{display:none}
+body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0}
+body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 176px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 176px);aspect-ratio:480/400}
+body.immersive .tools{grid-template-columns:1fr;margin:8px auto;width:min(440px,100%)}
+body.immersive .tools button{display:none}
+body.immersive .tools #play{display:block}
+body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}
+body.immersive .scrub{width:min(560px,100%);margin:auto}
+@media(orientation:landscape) and (max-height:780px){
+  body.immersive .play-name{font-size:22px;margin-bottom:4px}
+  body.immersive .tools #play{min-height:48px;font-size:16px}
+  body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 156px)*1.2));max-height:calc(var(--vvh) - 156px)}
+}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}}
 </style>
 </head>
 <body>
 <main class="wrap">
-  <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Vanderbilt · Fall ’26</div>
-  <h1>Commodores Plays</h1>
-  <p class="sub">Tap a play, choose your unit, and watch your route.</p>
+  <div id="intro">
+    <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Vanderbilt · Fall ’26</div>
+    <h1>Commodores Plays</h1>
+    <p class="sub">Tap a play, then press Play. Full screen shows the play name.</p>
+  </div>
   <div class="status" id="status">Loading plays…</div>
-  <section id="viewer" class="hidden" aria-label="Published Commodores plays">
+  <section id="list" class="hidden" aria-label="Published plays">
     <div class="picks" id="picks"></div>
-    <div class="units" id="units" role="group" aria-label="Lineup unit">
+  </section>
+  <section id="viewer" class="hidden" aria-label="Selected play">
+    <button class="back" type="button" id="back">← All plays</button>
+    <div class="units hidden" id="units" role="group" aria-label="Lineup unit">
       <button type="button" data-unit="A" class="on">Unit A</button>
       <button type="button" data-unit="B">Unit B</button>
     </div>
-    <div class="looks" id="looks"></div>
     <div class="play-shell" id="playShell">
       <button class="done" type="button" id="done">Done</button>
+      <p class="play-name" id="playName"></p>
+      <p class="play-number" id="playNumber"></p>
       <div class="field-wrap"><div id="field"></div></div>
-      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="reset">Reset</button><button class="ghost" type="button" id="full">Full screen</button></div>
+      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button></div>
       <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
         <button type="button" data-speed="0.5">0.5×</button>
         <button type="button" data-speed="1">1×</button>
         <button type="button" data-speed="2">2×</button>
       </div>
       <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Animation position">
-      <p class="cue" id="cue" aria-live="polite"></p>
     </div>
     <p class="stamp" id="stamp"></p>
   </section>
@@ -77,6 +109,23 @@ function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catc
 const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null,speed:loadSpeed()};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function playDisplayName(play){
+  const number=String((play&&play.number)||"").trim();
+  const stripped=String((play&&play.title)||"").replace(/^\d+\s*/,"").trim();
+  const title=stripped&&stripped!==number?stripped:"";
+  return {number,title,line:title||(number?"Play "+number:"Play")};
+}
+function setPlayName(play){
+  const shown=playDisplayName(play);
+  const nameEl=$("#playName");
+  const numberEl=$("#playNumber");
+  if(nameEl) nameEl.innerHTML=shown.title&&shown.number
+    ?`<small>Play ${esc(shown.number)}</small>${esc(shown.title)}`
+    :esc(shown.line);
+  if(numberEl) numberEl.innerHTML=shown.number
+    ?(shown.title?`${esc(shown.number)}<small>${esc(shown.title)}</small>`:esc(shown.number))
+    :esc(shown.line);
+}
 function pointAlong(start,points,t){
   const pts=[start,...(points||[])],segments=[];let total=0;
   for(let i=1;i<pts.length;i++){const length=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);segments.push({a:pts[i-1],b:pts[i],length});total+=length}
@@ -99,7 +148,7 @@ function cleanPlay(raw){
   });
   return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots};
 }
-function currentPlay(){return state.plays.find(play=>play.number===state.number)||state.plays[0]}
+function currentPlay(){return state.plays.find(play=>play.number===state.number)||null}
 function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
 const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,LOS_Y=300,YARD=7;
@@ -153,19 +202,46 @@ function paint(progress){
   const highlighted=new Set([targetLetter]);
   const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,highlighted.has(spot.letter))).join("");
   const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=spot.letter==="Q"?"#fff":on?"#ECB748":"#CFAE70";return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(play.title||"Play "+play.number)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
-function render(){
-  stop();const play=currentPlay();if(!play)return;
-  $("#picks").innerHTML=state.plays.map(item=>`<button type="button" data-play="${esc(item.number)}" class="${item.number===play.number?"on":""}"><b>${esc(item.number)}</b><small>${esc((item.title||"Play").replace(/^\d+\s*/,""))}</small></button>`).join("");
-  $$("#picks [data-play]").forEach(button=>button.onclick=()=>{state.number=button.dataset.play;state.look=0;render()});
+function unitHasNames(unit){
+  return Object.values(state.lineups[unit]||{}).some(name=>String(name||"").trim());
+}
+function showList(){
+  stop();
+  setImmersive(false);
+  state.number="";
+  $("#list").classList.remove("hidden");
+  $("#viewer").classList.add("hidden");
+  $("#intro").classList.remove("hidden");
+}
+function selectPlay(number){
+  const play=state.plays.find(item=>item.number===String(number));
+  if(!play)return;
+  stop();
+  state.number=play.number;
+  state.look=0;
+  $("#intro").classList.add("hidden");
+  $("#list").classList.add("hidden");
+  $("#viewer").classList.remove("hidden");
+  renderSelected();
+}
+function renderList(){
+  $("#picks").innerHTML=state.plays.map(item=>{
+    const shown=playDisplayName(item);
+    return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
+  }).join("");
+  $$("#picks [data-play]").forEach(button=>button.onclick=()=>selectPlay(button.dataset.play));
+}
+function renderSelected(){
+  const play=currentPlay();if(!play){showList();return}
+  const bothUnits=unitHasNames("A")&&unitHasNames("B");
+  $("#units").classList.toggle("hidden",!bothUnits);
   $$("#units [data-unit]").forEach(button=>button.classList.toggle("on",button.dataset.unit===state.unit));
-  $("#looks").innerHTML=(play.looks||[]).map((look,index)=>`<button type="button" data-look="${index}" class="${index===state.look?"on":""}">${esc(look.label||"Look "+(index+1))}</button>`).join("");
-  $$("#looks [data-look]").forEach(button=>button.onclick=()=>{state.look=Number(button.dataset.look);render()});
-  const look=play.looks[state.look];
-  $("#cue").textContent=(look&&look.cue)||`${play.family?play.family+" · ":""}${play.title||"Play "+play.number}`;
+  setPlayName(play);
   paint(0);
+  syncViewport();
 }
 function renderSpeed(){
   $$("#speedPicks [data-speed]").forEach(button=>{
@@ -224,12 +300,12 @@ function setImmersive(active){
   if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   syncViewport();
 }
-$("#units").onclick=event=>{const button=event.target.closest("[data-unit]");if(!button)return;state.unit=button.dataset.unit==="B"?"B":"A";render()};
+$("#units").onclick=event=>{const button=event.target.closest("[data-unit]");if(!button)return;state.unit=button.dataset.unit==="B"?"B":"A";renderSelected()};
 $("#play").onclick=play;
 $("#speedPicks").onclick=event=>{const button=event.target.closest("[data-speed]");if(!button)return;setSpeed(button.dataset.speed)};
-$("#reset").onclick=render;
 $("#full").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#done").onclick=()=>setImmersive(false);
+$("#back").onclick=showList;
 renderSpeed();
 document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{})});
 $("#scrub").oninput=()=>{stop();paint(Number($("#scrub").value)/1000)};
@@ -241,10 +317,11 @@ bindViewport();
     const {data,error}=await sb.rpc("commodores_watch_plays",{p_token:token});
     const plays=data&&Array.isArray(data.plays)?data.plays.map(cleanPlay).filter(Boolean):[];
     if(error||!data||!plays.length)throw new Error("unavailable");
-    state.plays=plays;state.lineups=data.lineups&&typeof data.lineups==="object"?data.lineups:{A:{},B:{}};state.number=plays[0].number;
-    $("#status").classList.add("hidden");$("#viewer").classList.remove("hidden");
+    state.plays=plays;state.lineups=data.lineups&&typeof data.lineups==="object"?data.lineups:{A:{},B:{}};
+    $("#status").classList.add("hidden");
+    $("#list").classList.remove("hidden");
     if(data.publishedAt){const date=new Date(data.publishedAt);if(!Number.isNaN(date.getTime()))$("#stamp").textContent="Playbook updated "+date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
-    render();
+    renderList();
   }catch(_){$("#status").textContent="This play link is not available."}
 })();
 </script>

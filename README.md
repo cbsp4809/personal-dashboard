@@ -236,10 +236,12 @@ Direct access to `plays.html` uses the same coach allowlist gate; unsigned
 visitors cannot open the editor. The offense book starts empty and lists only
 coach-saved `commodores_plays` rows; no numbered routes are seeded in the page
 or recreated in Supabase. Play mode: tap a saved play, then Play / Pause /
-scrub / Flip / Reset or open the immersive full-screen field. A small
-**0.5× / 1× / 2×** speed row sits under those controls (default **0.5×** so
-kids can see the routes); the choice is kept in localStorage. The kids
-watch page uses the same speeds.
+scrub / Flip / Reset or open the immersive full-screen field. Full-screen
+Play keeps Done / Play / the speed row / scrubber, and shows the play name
+in gold/soft type (the title, or **Play 12** when there is only a number).
+A small **0.5× / 1× / 2×** speed row sits under those controls (default
+**0.5×** so kids can see the routes); the choice is kept in localStorage.
+The kids watch page uses the same speeds.
 Full-screen Play is a CSS overlay sized from the visual viewport, not the
 browser fullscreen API, so an iPad can rotate between landscape and portrait.
 Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
@@ -272,7 +274,10 @@ containing all marked plays and both units' first-name maps, then shows a
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
 
 The watch page has no login, coach navigation, roster, editor, notes, save, or
-publish controls. Anonymous clients cannot select play/share tables; a narrow
+publish controls. Kids see a stacked list of published plays, tap one, then
+get the play number above the field plus Play / full screen / scrub. Full
+screen shows the play display name the same way the coach animator does.
+Anonymous clients cannot select play/share tables; a narrow
 RPC returns only the published snapshot for the exact token. After lineup or
 route changes, tap **Republish names + plays**. Rotating the link invalidates
 the old URL.
