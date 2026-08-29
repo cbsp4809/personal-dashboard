@@ -27,7 +27,7 @@ create table if not exists public.commodores_play_shares (
 comment on table public.commodores_play_shares is
   'Coach-owned bearer token and read-only published play snapshot. Never grant anon table SELECT.';
 comment on column public.commodores_play_shares.snapshot is
-  'Published plays plus Unit A/B letter-to-first-name maps captured at publish time.';
+  'Published plays plus first-name practice offense/defense tags and optional jerseys captured at publish time.';
 
 alter table public.commodores_play_shares enable row level security;
 

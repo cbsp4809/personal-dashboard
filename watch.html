@@ -20,21 +20,22 @@ button,input{font:inherit;color:inherit}button{cursor:pointer;touch-action:manip
 .kicker{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.17em;text-transform:uppercase}.star{width:14px;height:14px;fill:var(--gold)}
 h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
 .status{padding:18px;border:1px solid var(--line);border-radius:15px;background:#000;color:var(--soft)}
+.play-groups{display:grid;gap:2px}.play-group{margin:0 0 22px}.play-group h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 9px;color:var(--soft);font:600 23px/1.1 var(--serif)}
+.play-group h2 span{color:var(--muted);font:700 11px/1 var(--sans)}
 .picks{display:grid;gap:10px;margin:0 0 8px}
 .picks button{display:block;width:100%;min-height:72px;border:1px solid var(--strong);border-radius:16px;padding:14px 16px;background:#000;color:var(--soft);text-align:left;font-weight:800}
 .picks button b{display:block;color:var(--ink);font:600 28px/1 var(--serif)}
 .picks button small{display:block;margin-top:6px;color:var(--gold);font-size:14px;font-weight:700}
 .picks button:active{border-color:var(--highlight);background:rgba(207,174,112,.16)}
 .back{display:inline-flex;align-items:center;min-height:44px;margin:0 0 8px;padding:0;border:0;background:none;color:var(--gold);font-weight:800}
-.units{display:flex;gap:8px;margin:0 0 10px}.units button{min-height:44px;flex:1;border:1px solid var(--strong);border-radius:999px;padding:7px 10px;background:transparent;color:var(--muted);font-weight:800}
-.units button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
+.watching{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px;margin:0 0 10px}.watching span{color:var(--gold);font-size:12px;font-weight:800}.watching select{min-height:46px;width:100%;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:700}
 .play-number{margin:0 0 8px;color:var(--gold);font:600 42px/1 var(--serif);letter-spacing:.02em;text-align:center}
 .play-number small{display:block;margin-top:4px;color:var(--soft);font:600 16px/1.2 var(--sans);letter-spacing:0}
 .play-name{display:none;margin:0 112px 8px 10px;color:var(--soft);font:600 26px/1.1 var(--serif);letter-spacing:.01em}
 .play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
-.tools{display:grid;grid-template-columns:1.4fr .9fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.tools{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}.tools .ghost.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}.speed button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .scrub{width:100%;accent-color:var(--gold)}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
@@ -59,7 +60,7 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   body.immersive .tools #play{min-height:48px;font-size:16px}
   body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 156px)*1.2));max-height:calc(var(--vvh) - 156px)}
 }
-@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}.tools{grid-template-columns:1fr 1fr}.tools #play{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -71,20 +72,17 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   </div>
   <div class="status" id="status">Loading plays…</div>
   <section id="list" class="hidden" aria-label="Published plays">
-    <div class="picks" id="picks"></div>
+    <div class="play-groups" id="picks"></div>
   </section>
   <section id="viewer" class="hidden" aria-label="Selected play">
     <button class="back" type="button" id="back">← All plays</button>
-    <div class="units hidden" id="units" role="group" aria-label="Lineup unit">
-      <button type="button" data-unit="A" class="on">Unit A</button>
-      <button type="button" data-unit="B">Unit B</button>
-    </div>
+    <label class="watching"><span>Watching as</span><select id="watchingAs" aria-label="Watching as"><option value="">Choose first name</option></select></label>
     <div class="play-shell" id="playShell">
       <button class="done" type="button" id="done">Done</button>
       <p class="play-name" id="playName"></p>
       <p class="play-number" id="playNumber"></p>
       <div class="field-wrap"><div id="field"></div></div>
-      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button></div>
+      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button><button class="ghost" type="button" id="defense" aria-pressed="false">Defense off</button></div>
       <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
         <button type="button" data-speed="0.5">0.5×</button>
         <button type="button" data-speed="1">1×</button>
@@ -118,10 +116,13 @@ function positionColor(letter){
   return POSITION_COLOR[String(letter||"").toUpperCase()]||"#CFAE70";
 }
 const SPEED_KEY="commodores-play-speed";
+const WATCHING_KEY="commodores-watching-as";
 const SPEEDS=[0.5,1,2];
+const PLAY_SECTIONS=["playbook","upcoming"];
+const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
 function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
 function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
-const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null,speed:loadSpeed()};
+const state={plays:[],roster:[],number:"",watchingAs:localStorage.getItem(WATCHING_KEY)||"",look:0,anim:null,speed:loadSpeed(),defense:false};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function playDisplayName(play){
@@ -149,6 +150,13 @@ function pointAlong(start,points,t){
   for(const segment of segments){if(distance<=segment.length){const p=segment.length?distance/segment.length:1;return{x:segment.a.x+(segment.b.x-segment.a.x)*p,y:segment.a.y+(segment.b.y-segment.a.y)*p}}distance-=segment.length}
   return pts[pts.length-1];
 }
+function cleanJersey(value){const jersey=String(value==null?"":value).trim();return/^\d{1,2}$/.test(jersey)?jersey:""}
+function cleanRoster(raw){return(Array.isArray(raw)?raw:[]).map(item=>({
+  name:String(item&&item.name||"").trim(),
+  jersey:cleanJersey(item&&item.jersey),
+  offenseTags:[...new Set((item&&Array.isArray(item.offenseTags)?item.offenseTags:[]).filter(tag=>LETTERS.includes(tag)))],
+  defenseTags:[...new Set((item&&Array.isArray(item.defenseTags)?item.defenseTags:[]).filter(tag=>/^D[1-7]$/.test(tag)))]
+})).filter(item=>item.name)}
 function cleanPlay(raw){
   if(!raw||!String(raw.number||"").match(/^\d{1,4}$/)||!Array.isArray(raw.spots))return null;
   const fromW=playCoordWidth(raw);
@@ -161,12 +169,30 @@ function cleanPlay(raw){
     const x=scaleX(Number(source.x),fromW);
     return{letter,x:Number.isFinite(x)?x:FIELD_W/2,y:Number(source.y)||300,sit:!!source.sit,route};
   });
-  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots};
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots,section:raw.section==="upcoming"?"upcoming":"playbook",sortOrder:Number.isInteger(Number(raw.sortOrder))?Number(raw.sortOrder):0};
 }
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||null}
-function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
+function rosterJersey(name){return cleanJersey((state.roster.find(item=>item.name===name)||{}).jersey)}
+function runnerNames(play,letter){
+  const player=watchingPlayer();
+  return player&&player.offenseTags.includes(letter)?[player.name]:[];
+}
+function runnerLabel(name){const jersey=rosterJersey(name);return jersey?`${name} ${jersey}`:name}
+function routeName(play,letter){const names=runnerNames(play,letter).map(runnerLabel);return names.length?names.join(" / "):letter}
+function packedLines(parts,maxLength){
+  const lines=[];
+  parts.forEach(part=>{const last=lines[lines.length-1]||"";if(last&&(last+" / "+part).length<=maxLength)lines[lines.length-1]=last+" / "+part;else lines.push(part)});
+  return lines;
+}
+function watchingPlayer(){return state.roster.find(item=>item.name===state.watchingAs)||null}
+function letterFocused(letter){const player=watchingPlayer();return !player||player.offenseTags.includes(letter)}
+function zoneFocused(zone){const player=watchingPlayer();return !player||player.defenseTags.includes("D"+zone)}
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
-const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,LOS_Y=300,YARD=7;
+// Saved routes stay in viewBox coordinates; only yard-marker labels map the
+// existing LOS-to-goal-line depth to the 45-yard field.
+// Formation starts render six units closer to the LOS without changing the
+// snapshot coordinates or the relative on-line/off-line spacing.
+const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,FIELD_TOP=10,MID_X=FIELD_W/2,LOS_Y=300,YARD=7,FIELD_DEPTH_YARDS=45,DISPLAY_OFFENSE_OFF=12,START_DISPLAY_SHIFT=6;
 function scaleX(x,fromW){const src=Number(fromW)||LEGACY_FIELD_W;if(!Number.isFinite(x)||src===FIELD_W)return x;return x*FIELD_W/src}
 function playCoordWidth(raw){
   const top=Number(raw&&raw.fieldW);if(top===FIELD_W||top===LEGACY_FIELD_W)return top;
@@ -174,6 +200,10 @@ function playCoordWidth(raw){
   return marked?Number(marked.fieldW):LEGACY_FIELD_W;
 }
 function pillSize(label){const name=String(label||""),len=name.length;return{width:Math.max(22,Math.min(48,11+len*4.4)),height:22,font:len>9?7:len>6?8:9}}
+function formationPoint(spot){
+  const y=Number(spot&&spot.y);
+  return{x:Number(spot&&spot.x),y:Number.isFinite(y)&&y>=LOS_Y?Math.max(LOS_Y+DISPLAY_OFFENSE_OFF,y-START_DISPLAY_SHIFT):y};
+}
 function routeTip(start,points){
   const pts=[start,...(points||[])].filter(point=>point&&Number.isFinite(point.x)&&Number.isFinite(point.y));
   if(pts.length<2)return null;
@@ -194,34 +224,65 @@ function route(start,points,letter,on){
   const color=positionColor(letter),width=on?4.2:2.6,opacity=on?1:.82;
   return`<path d="${esc(path(start,points))}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>${arrow(start,points,color,on?9:7,opacity)}`;
 }
+function nameBubble(start,label,letter,on){
+  const parts=String(label||letter).split(" / "),lines=[];
+  parts.forEach(part=>{const last=lines[lines.length-1]||"";if(last&&(last+" / "+part).length<=20)lines[lines.length-1]=last+" / "+part;else lines.push(part)});
+  const longest=Math.max(...lines.map(line=>line.length)),width=Math.max(24,Math.min(118,13+longest*4.7)),height=Math.max(22,8+lines.length*10),top=start.y-height/2,color=positionColor(letter);
+  const text=lines.map((line,index)=>`<tspan x="${start.x}" y="${top+12+index*10}">${esc(line)}</tspan>`).join("");
+  return`<g class="runner-name" data-runner-letter="${letter}"><rect x="${start.x-width/2}" y="${top}" width="${width}" height="${height}" rx="11" fill="${color}" stroke="${on?"#fff":"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text fill="#1C1C1C" text-anchor="middle" font-size="8">${text}</text></g>`;
+}
+function routeLetter(start,points,letter,on){
+  if(!points||!points.length)return"";
+  const point=pointAlong(start,points,.48),color=positionColor(letter);
+  return`<g class="route-letter" data-route-letter="${letter}"><circle cx="${point.x}" cy="${point.y}" r="${on?9:8}" fill="#000" stroke="${color}" stroke-width="${on?3:2}"/><text x="${point.x}" y="${point.y+3}" fill="${color}" text-anchor="middle" font-size="8">${letter}</text></g>`;
+}
 function yardLines(){
   const ticks=[];const labels=[];
-  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
-  const back=LOS_Y+YARD*10;if(back<386)ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
-  return`<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}</g>`;
+  const markerYard=(LOS_Y-FIELD_TOP)/FIELD_DEPTH_YARDS;
+  for(let yards=5;yards<FIELD_DEPTH_YARDS;yards+=5){const y=LOS_Y-markerYard*yards;ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`)}
+  return`<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}<path d="M${FIELD_LEFT} ${FIELD_TOP}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="3"/><text x="18" y="${FIELD_TOP+14}" fill="#ECB748" font-size="10">45 / TD</text></g>`;
+}
+function areas(){
+  if(!state.defense)return"";
+  // Facing the football: D1 is defense-right (screen-left), D3 defense-left.
+  // D4 is behind D3, D5 behind D2, D6 behind D1; D7 is deep behind D5.
+  const shortY=LOS_Y-YARD*10,deepY=LOS_Y-YARD*22,roverY=LOS_Y-YARD*36;
+  const names=zone=>{
+    const player=watchingPlayer();
+    return player&&player.defenseTags.includes("D"+zone)?[runnerLabel(player.name)]:[];
+  };
+  const box=(area,y,height,fill)=>{
+    const lines=packedLines(names(area.zone),22),opacity=zoneFocused(area.zone)?0.72:0.16;
+    const labels=lines.map(line=>`<tspan x="${area.x}" dy="9">${esc(line)}</tspan>`).join("");
+    return`<g opacity="${opacity}"><rect x="${area.x-60}" y="${y-height/2}" width="120" height="${height}" rx="10" fill="${fill}" stroke="#CFAE70" stroke-width="1.4"/><text x="${area.x}" y="${y-lines.length*4}" fill="#E0D5C0" text-anchor="middle" font-size="7"><tspan x="${area.x}">D${area.zone}</tspan>${labels}</text></g>`;
+  };
+  const front=[{x:90,zone:1},{x:MID_X,zone:2},{x:390,zone:3}].map(area=>box(area,shortY,66,"rgba(207,174,112,.12)")).join("");
+  const second=[{x:90,zone:6},{x:MID_X,zone:5},{x:390,zone:4}].map(area=>box(area,deepY,76,"rgba(207,174,112,.1)")).join("");
+  const safety=packedLines(names(7),25),safetyOpacity=zoneFocused(7)?0.72:0.16;
+  const safetyLabels=safety.map(line=>`<tspan x="${MID_X}" dy="9">${esc(line)}</tspan>`).join("");
+  return`${front}${second}<g opacity="${safetyOpacity}"><polygon points="${MID_X},${roverY-13} ${MID_X+12},${roverY} ${MID_X},${roverY+13} ${MID_X-12},${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+25}" fill="#ECB748" text-anchor="middle" font-size="7"><tspan x="${MID_X}">D7</tspan>${safetyLabels}</text></g><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text>`;
 }
 function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
 function paint(progress){
   const play=currentPlay();if(!play)return;
-  const q=play.spots.find(spot=>spot.letter==="Q"),c=play.spots.find(spot=>spot.letter==="C");
+  const q=formationPoint(play.spots.find(spot=>spot.letter==="Q")),c=formationPoint(play.spots.find(spot=>spot.letter==="C"));
   const targetLetter=play.looks[state.look]&&play.looks[state.look].target;
   const target=play.spots.find(spot=>spot.letter===targetLetter);
-  const destination=target&&!target.sit?pointAlong(target,target.route,1):null;
+  const destination=target&&!target.sit?pointAlong(formationPoint(target),target.route,1):null;
   const snap=.096,run=.835,positions={};
-  play.spots.forEach(spot=>{positions[spot.letter]=progress<snap||spot.sit||!spot.route.length?{x:spot.x,y:spot.y}:pointAlong(spot,spot.route,ease(Math.min(1,(progress-snap)/(run-snap))))});
+  play.spots.forEach(spot=>{const start=formationPoint(spot);positions[spot.letter]=progress<snap||spot.sit||!spot.route.length?start:pointAlong(start,spot.route,ease(Math.min(1,(progress-snap)/(run-snap))))});
   let ball={x:c.x,y:c.y};
   if(progress<snap){const p=ease(progress/snap);ball={x:c.x+(q.x-c.x)*p,y:c.y+(q.y-c.y)*p}}
   else if(progress<run){ball={x:positions.Q.x,y:positions.Q.y+10}}
   else if(destination){const p=ease((progress-run)/(1-run));ball={x:positions.Q.x+(destination.x-positions.Q.x)*p,y:positions.Q.y+(destination.y-positions.Q.y)*p}}
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
-  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,spot.letter,highlighted.has(spot.letter))).join("");
-  const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=positionColor(spot.letter);return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(spot.letter==="Q"?"#CFAE70":"#fff"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
+  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${route(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))}</g>`).join("");
+  const routeLetters=play.spots.map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${routeLetter(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))}</g>`).join("");
+  const runners=play.spots.filter(spot=>spot.route.length).map(spot=>{const point=positions[spot.letter];return`<circle class="route-runner" data-letter="${spot.letter}" cx="${point.x}" cy="${point.y}" r="6" fill="${positionColor(spot.letter)}" stroke="#1C1C1C" stroke-width="1.5" opacity="${letterFocused(spot.letter)?1:.18}"/>`}).join("");
+  const bubbles=play.spots.map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${nameBubble(formationPoint(spot),routeName(play,spot.letter),spot.letter,highlighted.has(spot.letter))}</g>`).join("");
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${areas()}${routes}${routeLetters}${runners}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${bubbles}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
-}
-function unitHasNames(unit){
-  return Object.values(state.lineups[unit]||{}).some(name=>String(name||"").trim());
 }
 function showList(){
   stop();
@@ -243,20 +304,32 @@ function selectPlay(number){
   renderSelected();
 }
 function renderList(){
-  $("#picks").innerHTML=state.plays.map(item=>{
-    const shown=playDisplayName(item);
-    return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
+  $("#picks").innerHTML=PLAY_SECTIONS.map(section=>{
+    const plays=state.plays.filter(item=>item.section===section);
+    if(!plays.length)return"";
+    const buttons=plays.map(item=>{
+      const shown=playDisplayName(item);
+      return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
+    }).join("");
+    return `<section class="play-group" aria-labelledby="${section}Heading"><h2 id="${section}Heading">${SECTION_LABELS[section]} <span>${plays.length} play${plays.length===1?"":"s"}</span></h2><div class="picks">${buttons}</div></section>`;
   }).join("");
   $$("#picks [data-play]").forEach(button=>button.onclick=()=>selectPlay(button.dataset.play));
 }
 function renderSelected(){
   const play=currentPlay();if(!play){showList();return}
-  const bothUnits=unitHasNames("A")&&unitHasNames("B");
-  $("#units").classList.toggle("hidden",!bothUnits);
-  $$("#units [data-unit]").forEach(button=>button.classList.toggle("on",button.dataset.unit===state.unit));
+  if(state.watchingAs&&!state.roster.some(item=>item.name===state.watchingAs)) state.watchingAs="";
+  $("#watchingAs").innerHTML=`<option value="">Choose first name</option>`+state.roster.map(item=>`<option value="${esc(item.name)}">${esc(runnerLabel(item.name))}</option>`).join("");
+  $("#watchingAs").value=state.watchingAs;
   setPlayName(play);
+  renderDefense();
   paint(0);
   syncViewport();
+}
+function renderDefense(){
+  const button=$("#defense");
+  button.textContent=state.defense?"Defense on":"Defense off";
+  button.classList.toggle("on",state.defense);
+  button.setAttribute("aria-pressed",state.defense?"true":"false");
 }
 function renderSpeed(){
   $$("#speedPicks [data-speed]").forEach(button=>{
@@ -315,8 +388,9 @@ function setImmersive(active){
   if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   syncViewport();
 }
-$("#units").onclick=event=>{const button=event.target.closest("[data-unit]");if(!button)return;state.unit=button.dataset.unit==="B"?"B":"A";renderSelected()};
+$("#watchingAs").onchange=()=>{state.watchingAs=$("#watchingAs").value;try{localStorage.setItem(WATCHING_KEY,state.watchingAs)}catch(_){}stop();renderSelected()};
 $("#play").onclick=play;
+$("#defense").onclick=()=>{stop();state.defense=!state.defense;renderSelected()};
 $("#speedPicks").onclick=event=>{const button=event.target.closest("[data-speed]");if(!button)return;setSpeed(button.dataset.speed)};
 $("#full").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#done").onclick=()=>setImmersive(false);
@@ -332,7 +406,7 @@ bindViewport();
     const {data,error}=await sb.rpc("commodores_watch_plays",{p_token:token});
     const plays=data&&Array.isArray(data.plays)?data.plays.map(cleanPlay).filter(Boolean):[];
     if(error||!data||!plays.length)throw new Error("unavailable");
-    state.plays=plays;state.lineups=data.lineups&&typeof data.lineups==="object"?data.lineups:{A:{},B:{}};
+    state.plays=plays;state.roster=cleanRoster(data.roster);
     $("#status").classList.add("hidden");
     $("#list").classList.remove("hidden");
     if(data.publishedAt){const date=new Date(data.publishedAt);if(!Number.isNaN(date.getTime()))$("#stamp").textContent="Playbook updated "+date.toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
