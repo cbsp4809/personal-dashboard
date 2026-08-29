@@ -681,8 +681,7 @@ function fieldSVG(play,pos,ball,liveRoute){
     const fill=positionColor(s.letter);
     const label=playLabel(s.letter);
     const pill=pillSize(label);
-    const ink=s.letter==="Q"?"#1C1C1C":"#1C1C1C";
-    return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(s.letter==="Q"?"#CFAE70":"#FFFFFF"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="${ink}" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
+    return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(s.letter==="Q"?"#CFAE70":"#FFFFFF"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
   }).join("");
   const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:MID_X,y:LOS_Y+OFFENSE_OFF};
   const endzone=play.number==="6"?`<rect x="12" y="16" width="${FIELD_W-24}" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="${FIELD_W-60}" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
