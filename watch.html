@@ -20,32 +20,33 @@ button,input{font:inherit;color:inherit}button{cursor:pointer;touch-action:manip
 .kicker{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.17em;text-transform:uppercase}.star{width:14px;height:14px;fill:var(--gold)}
 h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
 .status{padding:18px;border:1px solid var(--line);border-radius:15px;background:#000;color:var(--soft)}
-.play-groups{display:grid;gap:2px}.play-group{margin:0 0 22px}.play-group h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 9px;color:var(--soft);font:600 23px/1.1 var(--serif)}
-.play-group h2 span{color:var(--muted);font:700 11px/1 var(--sans)}
+.watch-sticky{position:sticky;top:max(0px,env(safe-area-inset-top,0px));z-index:40;margin:0 0 14px;padding:8px 0 10px;background:rgba(28,28,28,.96);border-bottom:1px solid var(--line)}
+.home-section{margin:0 0 26px}.home-section>h2{margin:0 0 10px;color:var(--gold);font:700 12px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
+.play-groups{display:grid;gap:2px}.play-group{margin:0 0 18px}.play-group h3{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 9px;color:var(--soft);font:600 22px/1.1 var(--serif)}
+.play-group h3 span{color:var(--muted);font:700 11px/1 var(--sans)}
 .picks{display:grid;gap:10px;margin:0 0 8px}
 .picks button{display:block;width:100%;min-height:72px;border:1px solid var(--strong);border-radius:16px;padding:14px 16px;background:#000;color:var(--soft);text-align:left;font-weight:800}
 .picks button b{display:block;color:var(--ink);font:600 28px/1 var(--serif)}
 .picks button small{display:block;margin-top:6px;color:var(--gold);font-size:14px;font-weight:700}
 .picks button:active{border-color:var(--highlight);background:rgba(207,174,112,.16)}
 .back{display:inline-flex;align-items:center;min-height:44px;margin:0 0 8px;padding:0;border:0;background:none;color:var(--gold);font-weight:800}
-.page-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.page-modes button{min-height:48px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--muted);font-weight:800}.page-modes button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
-.watching{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px;margin:0 0 10px}.watching span{color:var(--gold);font-size:12px;font-weight:800}.watching select{min-height:46px;width:100%;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:700}
-.study-switch{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.study-switch button{min-height:44px;min-width:44px;padding:8px 12px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800}.study-switch button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.watching{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px;margin:0}.watching span{color:var(--gold);font-size:12px;font-weight:800}.watching select{min-height:46px;width:100%;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:700}
+.study-switch{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}.study-switch button{min-height:44px;min-width:44px;padding:8px 12px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800}.study-switch button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .play-number{margin:0 0 8px;color:var(--gold);font:600 42px/1 var(--serif);letter-spacing:.02em;text-align:center}
 .play-number small{display:block;margin-top:4px;color:var(--soft);font:600 16px/1.2 var(--sans);letter-spacing:0}
 .play-name{display:none;margin:0 112px 8px 10px;color:var(--soft);font:600 26px/1.1 var(--serif);letter-spacing:.01em}
 .play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{overflow:hidden;border:1px solid var(--strong);border-radius:16px;background:#000}.field{display:block;width:100%;height:auto}.field text{font-family:var(--sans);font-weight:700}.field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
 .play-shell{position:relative}.done{display:none}
-.tools{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}.tools.one{grid-template-columns:1fr}
+.tools{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px;margin:10px 0 8px}.tools button{min-height:54px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:17px}.tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}.tools .ghost.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}.tools.one{grid-template-columns:1fr}
 .speed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 8px}.speed button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:15px}.speed button.on{border-color:var(--highlight);background:rgba(207,174,112,.16);color:var(--ink)}
 .scrub{width:100%;accent-color:var(--gold)}
 .stamp{margin:18px 0 0;color:var(--muted);font-size:11px;text-align:center}
 body.immersive{overflow:hidden;background:#000}
 body.immersive .wrap{position:fixed;top:var(--vvy,0px);left:var(--vvx,0px);width:var(--vvw,100vw);height:var(--vvh,100dvh);max-width:none;padding:0;background:#000}
-body.immersive .wrap> :not(#viewer):not(#defenseView){display:none!important}
-body.immersive[data-page="play"] .wrap> :not(#viewer){display:none!important}
-body.immersive[data-page="defense"] .wrap> :not(#defenseView){display:none!important}
+body.immersive .watch-sticky{display:none!important}
+body.immersive[data-view="play"] .wrap> :not(#viewer){display:none!important}
+body.immersive[data-view="defense"] .wrap> :not(#defenseView){display:none!important}
 body.immersive #viewer,body.immersive #defenseView{display:block!important;height:100%}
 body.immersive #viewer> :not(.play-shell),body.immersive #defenseView> :not(.play-shell){display:none!important}
 body.immersive .play-shell{display:flex;flex-direction:column;height:100%;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
@@ -65,7 +66,7 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   body.immersive .tools #play{min-height:48px;font-size:16px}
   body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 156px)*1.2));max-height:calc(var(--vvh) - 156px)}
 }
-@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}.tools{grid-template-columns:1fr}.tools #play{grid-column:1/-1}}
+@media(max-width:420px){h1{font-size:28px}.wrap{padding-left:12px;padding-right:12px}.play-number{font-size:36px}.play-name{font-size:22px}.tools{grid-template-columns:1fr 1fr}.tools #play{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -73,28 +74,24 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   <div id="intro">
     <div class="kicker"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 14.7 8.7 21.8 8.7 16.1 12.8 18.3 19.8 12 15.8 5.7 19.8 7.9 12.8 2.2 8.7 9.3 8.7 Z"/></svg>Vanderbilt · Fall ’26</div>
     <h1>Commodores Plays</h1>
-    <p class="sub">Tap a play, then press Play. Full screen shows the play name.</p>
+    <p class="sub">Pick who you’re watching as, then tap an offense play or Base zone.</p>
   </div>
   <div class="status" id="status">Loading plays…</div>
-  <div class="page-modes hidden" id="pageModes">
-    <button type="button" id="modePlay" class="on">Play</button>
-    <button type="button" id="modeDefense">Defense</button>
-  </div>
-  <div id="watchBar" class="hidden">
+  <div id="watchBar" class="watch-sticky hidden">
     <label class="watching"><span>Watching as</span><select id="watchingAs" aria-label="Watching as"><option value="">Choose first name</option></select></label>
     <div class="study-switch hidden" id="studySwitch" role="group" aria-label="Study letter or zone"></div>
   </div>
   <section id="list" class="hidden" aria-label="Published plays">
-    <div class="play-groups" id="picks"></div>
+    <div id="picks"></div>
   </section>
   <section id="viewer" class="hidden" aria-label="Selected play">
-    <button class="back" type="button" id="back">← All plays</button>
+    <button class="back" type="button" id="back">← Home</button>
     <div class="play-shell" id="playShell">
       <button class="done" type="button" id="done">Done</button>
       <p class="play-name" id="playName"></p>
       <p class="play-number" id="playNumber"></p>
       <div class="field-wrap"><div id="field"></div></div>
-      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button></div>
+      <div class="tools"><button type="button" id="play">Play</button><button class="ghost" type="button" id="full">Full screen</button><button class="ghost" type="button" id="defense" aria-pressed="false">Defense off</button></div>
       <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
         <button type="button" data-speed="0.5">0.5×</button>
         <button type="button" data-speed="1">1×</button>
@@ -104,9 +101,10 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
     </div>
   </section>
   <section id="defenseView" class="hidden" aria-label="Defense zones">
+    <button class="back" type="button" id="defenseBack">← Home</button>
     <div class="play-shell" id="defenseShell">
       <button class="done" type="button" id="defenseDone">Done</button>
-      <p class="play-name" id="defenseName"><small>Defense</small>Six areas + helper</p>
+      <p class="play-name" id="defenseName"><small>Defense</small>Base zone</p>
       <div class="field-wrap"><div id="defenseField"></div></div>
       <div class="tools one" id="defenseTools"><button class="ghost" type="button" id="defenseFull">Full screen</button></div>
     </div>
@@ -142,7 +140,7 @@ const PLAY_SECTIONS=["playbook","upcoming"];
 const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
 function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
 function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
-const state={plays:[],roster:[],number:"",watchingAs:localStorage.getItem(WATCHING_KEY)||"",studyLetter:"",studyZone:"",page:"play",look:0,anim:null,speed:loadSpeed()};
+const state={plays:[],roster:[],number:"",watchingAs:localStorage.getItem(WATCHING_KEY)||"",studyLetter:"",studyZone:"",view:"home",defenseOverlay:false,look:0,anim:null,speed:loadSpeed()};
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function playDisplayName(play){
@@ -307,7 +305,7 @@ function paintDefense(){
   const title=player?`${player.name} · defense`:"Six areas + helper";
   $("#defenseField").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(title)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${defenseZonesSVG()}</svg>`;
   const name=$("#defenseName");
-  if(name) name.innerHTML=player?`<small>Defense</small>${esc(player.name)}`:`<small>Defense</small>Six areas + helper`;
+  if(name) name.innerHTML=player?`<small>Base zone</small>${esc(player.name)}`:`<small>Defense</small>Base zone`;
 }
 function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
 function paint(progress){
@@ -328,27 +326,32 @@ function paint(progress){
   const routeLetters=play.spots.map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${routeLetter(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))}</g>`).join("");
   const runners=play.spots.filter(spot=>spot.route.length).map(spot=>{const point=positions[spot.letter];return`<circle class="route-runner" data-letter="${spot.letter}" cx="${point.x}" cy="${point.y}" r="6" fill="${positionColor(spot.letter)}" stroke="#1C1C1C" stroke-width="1.5" opacity="${letterFocused(spot.letter)?1:.18}"/>`}).join("");
   const bubbles=play.spots.map(spot=>`<g opacity="${letterFocused(spot.letter)?1:.18}">${nameBubble(formationPoint(spot),routeName(play,spot.letter),spot.letter,highlighted.has(spot.letter))}</g>`).join("");
-  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${routes}${routeLetters}${runners}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${bubbles}</svg>`;
+  const overlay=state.defenseOverlay?`<g class="defense-overlay" opacity=".55">${defenseZonesSVG()}</g>`:"";
+  $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${overlay}${routes}${routeLetters}${runners}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${bubbles}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));
 }
-function showList(){
+function showHome(){
   stop();
   setImmersive(false);
   state.number="";
+  state.view="home";
+  state.defenseOverlay=false;
   renderPage();
 }
 function selectPlay(number){
   const play=state.plays.find(item=>item.number===String(number));
   if(!play)return;
   stop();
-  state.page="play";
+  state.view="play";
   state.number=play.number;
   state.look=0;
   renderPage();
 }
-function setPage(page){
-  state.page=page==="defense"?"defense":"play";
-  if(state.page==="defense"){stop();setImmersive(false)}
+function selectBaseZone(){
+  stop();
+  setImmersive(false);
+  state.view="defense";
+  state.number="";
   renderPage();
 }
 function syncWatching(){
@@ -368,45 +371,62 @@ function renderStudySwitch(){
   const root=$("#studySwitch");
   if(!root) return;
   const player=watchingPlayer();
-  const tags=state.page==="defense"
+  const onDetail=state.view==="play"||state.view==="defense";
+  const tags=state.view==="defense"
     ?(player?player.defenseTags:[])
     :(player?player.offenseTags:[]);
-  if(!player||tags.length<2){
+  if(!onDetail||!player||tags.length<2){
     root.classList.add("hidden");
     root.innerHTML="";
     return;
   }
-  const current=state.page==="defense"?studyZone():studyLetter();
+  const current=state.view==="defense"?studyZone():studyLetter();
   root.classList.remove("hidden");
   root.innerHTML=tags.map(tag=>`<button type="button" data-study="${esc(tag)}" class="${tag===current?"on":""}">${esc(tag)}</button>`).join("");
   $$("#studySwitch [data-study]").forEach(button=>button.onclick=()=>{
-    if(state.page==="defense") state.studyZone=button.dataset.study;
+    if(state.view==="defense") state.studyZone=button.dataset.study;
     else state.studyLetter=button.dataset.study;
     renderPage();
   });
 }
+function renderDefenseToggle(){
+  const button=$("#defense");
+  if(!button) return;
+  button.textContent=state.defenseOverlay?"Defense on":"Defense off";
+  button.classList.toggle("on",state.defenseOverlay);
+  button.setAttribute("aria-pressed",state.defenseOverlay?"true":"false");
+}
 function renderList(){
-  $("#picks").innerHTML=PLAY_SECTIONS.map(section=>{
+  const offense=PLAY_SECTIONS.map(section=>{
     const plays=state.plays.filter(item=>item.section===section);
     if(!plays.length)return"";
     const buttons=plays.map(item=>{
       const shown=playDisplayName(item);
       return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
     }).join("");
-    return `<section class="play-group" aria-labelledby="${section}Heading"><h2 id="${section}Heading">${SECTION_LABELS[section]} <span>${plays.length} play${plays.length===1?"":"s"}</span></h2><div class="picks">${buttons}</div></section>`;
+    return `<section class="play-group" aria-labelledby="${section}Heading"><h3 id="${section}Heading">${SECTION_LABELS[section]} <span>${plays.length} play${plays.length===1?"":"s"}</span></h3><div class="picks">${buttons}</div></section>`;
   }).join("");
+  $("#picks").innerHTML=`
+    <section class="home-section" aria-labelledby="offenseHeading">
+      <h2 id="offenseHeading">Offense</h2>
+      <div class="play-groups">${offense||`<p class="sub">No published offense plays yet.</p>`}</div>
+    </section>
+    <section class="home-section" aria-labelledby="defenseHeading">
+      <h2 id="defenseHeading">Defense</h2>
+      <div class="picks"><button type="button" id="baseZoneCard"><b>Base zone</b><small>Six areas + helper · no rush</small></button></div>
+    </section>`;
   $$("#picks [data-play]").forEach(button=>button.onclick=()=>selectPlay(button.dataset.play));
+  const base=$("#baseZoneCard");
+  if(base) base.onclick=selectBaseZone;
 }
 function renderPage(){
   const loaded=!!state.plays.length;
-  $("#pageModes").classList.toggle("hidden",!loaded);
   $("#watchBar").classList.toggle("hidden",!loaded);
-  $("#modePlay").classList.toggle("on",state.page==="play");
-  $("#modeDefense").classList.toggle("on",state.page==="defense");
-  document.body.dataset.page=state.page;
+  document.body.dataset.view=state.view;
   syncWatching();
   renderStudySwitch();
-  if(state.page==="defense"){
+  renderDefenseToggle();
+  if(state.view==="defense"){
     $("#intro").classList.add("hidden");
     $("#list").classList.add("hidden");
     $("#viewer").classList.add("hidden");
@@ -416,19 +436,24 @@ function renderPage(){
     return;
   }
   $("#defenseView").classList.add("hidden");
-  const play=currentPlay();
-  if(!play){
-    $("#intro").classList.remove("hidden");
-    $("#list").classList.remove("hidden");
-    $("#viewer").classList.add("hidden");
-    syncViewport();
-    return;
+  if(state.view==="play"){
+    const play=currentPlay();
+    if(!play){state.view="home"}
+    else{
+      $("#intro").classList.add("hidden");
+      $("#list").classList.add("hidden");
+      $("#viewer").classList.remove("hidden");
+      setPlayName(play);
+      paint(0);
+      syncViewport();
+      return;
+    }
   }
-  $("#intro").classList.add("hidden");
-  $("#list").classList.add("hidden");
-  $("#viewer").classList.remove("hidden");
-  setPlayName(play);
-  paint(0);
+  state.view="home";
+  document.body.dataset.view="home";
+  $("#intro").classList.remove("hidden");
+  $("#list").classList.remove("hidden");
+  $("#viewer").classList.add("hidden");
   syncViewport();
 }
 function renderSpeed(){
@@ -496,15 +521,15 @@ $("#watchingAs").onchange=()=>{
   stop();
   renderPage();
 };
-$("#modePlay").onclick=()=>setPage("play");
-$("#modeDefense").onclick=()=>setPage("defense");
 $("#play").onclick=play;
+$("#defense").onclick=()=>{stop();state.defenseOverlay=!state.defenseOverlay;renderPage()};
 $("#speedPicks").onclick=event=>{const button=event.target.closest("[data-speed]");if(!button)return;setSpeed(button.dataset.speed)};
 $("#full").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#done").onclick=()=>setImmersive(false);
 $("#defenseFull").onclick=()=>{unlockOrientation();setImmersive(true)};
 $("#defenseDone").onclick=()=>setImmersive(false);
-$("#back").onclick=showList;
+$("#back").onclick=showHome;
+$("#defenseBack").onclick=showHome;
 renderSpeed();
 document.addEventListener("fullscreenchange",()=>{if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{})});
 $("#scrub").oninput=()=>{stop();paint(Number($("#scrub").value)/1000)};

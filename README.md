@@ -309,16 +309,16 @@ jersey numbers, then shows one all-season
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
 
 The watch page has no login, coach navigation, roster, editor, notes, save, or
-publish controls. A **Play / Defense** switch sits at the top. Kids see the
-published **Playbook** and **Upcoming** sections in the exact coach-set order,
-tap one, then get the play number above the field plus Play / full screen /
-scrub and a **Watching as** picker. Choosing a kid defaults to that kid’s
-primary offense tag (`offense_tags[0]`); the name sits on that one route
-bubble and backups get a small letter switcher. **Defense** is a static six-area
-plus D7 diagram (no moving pieces, no hip-stay / Man-Free). Watching as
-highlights that kid’s primary zone (`defense_tags[0]`, gold, `D5 · Teddy`)
-and quieter backup outlines with the same switcher. Other kids’ names stay
-off the parent view. Full screen shows the play display name the same way
+publish controls. Home is one scrolling list: sticky **Watching as** at the
+top, then **Offense** (published Playbook / Upcoming cards in coach order),
+then **Defense** with one **Base zone** card. Choosing a kid once drives both
+sides and defaults to that kid’s primary offense tag (`offense_tags[0]`); the
+name sits on that one route bubble and backups get a small letter switcher.
+**Base zone** opens a static six-area plus D7 diagram (no moving pieces, no
+hip-stay / Man-Free), highlighting `defense_tags[0]` as `D5 · Teddy` with
+quieter backup outlines and the same switcher. Other kids’ names stay off the
+parent view. Offense plays keep an optional **Defense** overlay toggle of the
+same static outlines. Full screen shows the play display name the same way
 the coach animator does. After roster-tag changes, published plays show
 **Edited** until **Push to kids**.
 Section and order are baked into each published snapshot, so an existing link
