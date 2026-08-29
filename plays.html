@@ -290,9 +290,10 @@ function setPlayName(play){
 
 // Field is 480×400 (was 360×400). LOS is y=300. Downfield is toward y=10.
 // Wider canvas so a 5-wide + names can spread without stacking pills.
-// 7 viewBox units ≈ 1 yard so 10-yard stripes land every 70 units.
+// Saved routes stay in viewBox coordinates; only yard-marker labels map that
+// existing LOS-to-goal-line depth to the 45-yard field.
 const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400;
-const FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,MID_X=FIELD_W/2,LOS_Y=300,YARD=7,OFFENSE_OFF=18;
+const FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,FIELD_TOP=10,MID_X=FIELD_W/2,LOS_Y=300,YARD=7,FIELD_DEPTH_YARDS=45,OFFENSE_OFF=18;
 function flipX(x){return FIELD_W-x}
 function scaleX(x,fromW){
   const src=Number(fromW)||LEGACY_FIELD_W;
@@ -430,13 +431,13 @@ function routeSVG(start,points,letter,on,live){
 function yardLinesSVG(){
   const ticks=[];
   const labels=[];
-  for(let yards=10,y=LOS_Y-YARD*10;y>14;yards+=10,y-=YARD*10){
+  const markerYard=(LOS_Y-FIELD_TOP)/FIELD_DEPTH_YARDS;
+  for(let yards=5;yards<FIELD_DEPTH_YARDS;yards+=5){
+    const y=LOS_Y-markerYard*yards;
     ticks.push(`M${FIELD_LEFT} ${y}H${FIELD_RIGHT}`);
     labels.push(`<text x="18" y="${y-4}" fill="rgba(224,213,192,.55)" font-size="8">${yards}</text>`);
   }
-  const back=LOS_Y+YARD*10;
-  if(back<386) ticks.push(`M${FIELD_LEFT} ${back}H${FIELD_RIGHT}`);
-  return `<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}</g>`;
+  return `<g class="yards"><path class="yard" d="${ticks.join("")}" fill="none"/>${labels.join("")}<path d="M${FIELD_LEFT} ${FIELD_TOP}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="3"/><text x="18" y="${FIELD_TOP+14}" fill="#ECB748" font-size="10">45 / TD</text></g>`;
 }
 
 const STATE={
@@ -691,7 +692,7 @@ function fieldSVG(play,pos,ball,liveRoute){
     <rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
     ${yardLinesSVG()}
     <path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
-    <text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">line</text>
+    <text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>
     ${endzone}${areasSVG()}${routes}${live}
     <circle cx="${ballXY.x}" cy="${ballXY.y}" r="5" fill="#CFAE70"/>
     ${kids}
