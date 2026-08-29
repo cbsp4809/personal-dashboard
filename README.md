@@ -52,6 +52,7 @@ sql/ops_content.sql            # LinkedIn Content tab queue + ops-content-photos
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
+sql/commodores_play_sections.sql # Playbook/Upcoming grouping + coach-controlled order
 sql/commodores_play_sharing.sql # Published snapshots + token-only watch RPC (Commodores project only)
 ```
 
@@ -248,9 +249,13 @@ Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
 draw its route, Sit for no route, Save with a number and short title. Only the
 field captures touch while drawing, so the rest of the phone/iPad page keeps
 normal vertical scrolling. Flip is a true left/right mirror of the saved
-geometry. New-play dots start slightly behind the line of scrimmage. Route
-lines end with a small arrowhead at the tip. The field shows 10-yard stripes
-as visual markers only. The optional six-areas overlay (no rush) places the
+geometry. New-play dots start slightly behind the line of scrimmage and default
+to **Upcoming**. Saved plays are grouped into **Playbook** (learned/practiced)
+and **Upcoming** (learn soon); coaches can move a play between them and use
+Earlier / Later to set the order within either section. Route lines end with a
+small arrowhead at the tip. The field marks every five yards from **0 / LOS**
+through the emphasized **45 / TD** goal line without rewriting saved route
+coordinates. The optional six-areas overlay (no rush) places the
 three short spots about five yards off the LOS, the three deep spots behind
 them, and the rover as a deep-middle helper. The canvas is 480×400 (was
 360×400) with tighter name pills so a 5-wide can spread without stacking
@@ -260,7 +265,8 @@ same field, arrow, and width drawing. Same Commodores Supabase project
 so a coach already signed in there is signed in here. Saved plays live in
 `commodores_plays` (RLS: allowlisted coaches only). Apply
 `sql/commodores_plays.sql` on the Commodores project if the table is missing,
-then `sql/commodores_play_sharing.sql` for publishing.
+then `sql/commodores_play_sections.sql` for grouping/order and
+`sql/commodores_play_sharing.sql` for publishing.
 localStorage keeps an offline draft; the database wins when signed in.
 
 Play labels come from the current offense lineup in this fixed order:
@@ -279,9 +285,11 @@ containing all marked plays and both units' first-name maps, then shows a
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
 
 The watch page has no login, coach navigation, roster, editor, notes, save, or
-publish controls. Kids see a stacked list of published plays, tap one, then
-get the play number above the field plus Play / full screen / scrub. Full
-screen shows the play display name the same way the coach animator does.
+publish controls. Kids see the published **Playbook** and **Upcoming** sections
+in the exact coach-set order, tap one, then get the play number above the field
+plus Play / full screen / scrub. Full screen shows the play display name the
+same way the coach animator does. Section and order are baked into each
+published snapshot, so an existing link stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow
 RPC returns only the published snapshot for the exact token. After lineup or
 route changes, tap **Republish names + plays**. Rotating the link invalidates

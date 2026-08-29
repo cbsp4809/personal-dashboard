@@ -20,6 +20,8 @@ button,input{font:inherit;color:inherit}button{cursor:pointer;touch-action:manip
 .kicker{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.17em;text-transform:uppercase}.star{width:14px;height:14px;fill:var(--gold)}
 h1{margin:4px 0 4px;font:400 32px/1.05 var(--serif)}.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
 .status{padding:18px;border:1px solid var(--line);border-radius:15px;background:#000;color:var(--soft)}
+.play-groups{display:grid;gap:2px}.play-group{margin:0 0 22px}.play-group h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 9px;color:var(--soft);font:600 23px/1.1 var(--serif)}
+.play-group h2 span{color:var(--muted);font:700 11px/1 var(--sans)}
 .picks{display:grid;gap:10px;margin:0 0 8px}
 .picks button{display:block;width:100%;min-height:72px;border:1px solid var(--strong);border-radius:16px;padding:14px 16px;background:#000;color:var(--soft);text-align:left;font-weight:800}
 .picks button b{display:block;color:var(--ink);font:600 28px/1 var(--serif)}
@@ -71,7 +73,7 @@ body.immersive .scrub{width:min(560px,100%);margin:auto}
   </div>
   <div class="status" id="status">Loading plays…</div>
   <section id="list" class="hidden" aria-label="Published plays">
-    <div class="picks" id="picks"></div>
+    <div class="play-groups" id="picks"></div>
   </section>
   <section id="viewer" class="hidden" aria-label="Selected play">
     <button class="back" type="button" id="back">← All plays</button>
@@ -119,6 +121,8 @@ function positionColor(letter){
 }
 const SPEED_KEY="commodores-play-speed";
 const SPEEDS=[0.5,1,2];
+const PLAY_SECTIONS=["playbook","upcoming"];
+const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
 function loadSpeed(){const value=Number(localStorage.getItem(SPEED_KEY));return SPEEDS.includes(value)?value:0.5}
 function saveSpeed(speed){try{localStorage.setItem(SPEED_KEY,String(speed))}catch(_){}}
 const state={plays:[],lineups:{A:{},B:{}},number:"",unit:"A",look:0,anim:null,speed:loadSpeed()};
@@ -161,7 +165,7 @@ function cleanPlay(raw){
     const x=scaleX(Number(source.x),fromW);
     return{letter,x:Number.isFinite(x)?x:FIELD_W/2,y:Number(source.y)||300,sit:!!source.sit,route};
   });
-  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots};
+  return{number:String(raw.number),title:String(raw.title||"").slice(0,48),family:String(raw.family||""),looks:Array.isArray(raw.looks)?raw.looks:[],fieldW:FIELD_W,spots,section:raw.section==="playbook"?"playbook":"upcoming",sortOrder:Number.isInteger(Number(raw.sortOrder))?Number(raw.sortOrder):0};
 }
 function currentPlay(){return state.plays.find(play=>play.number===state.number)||null}
 function label(letter){return String((state.lineups[state.unit]||{})[letter]||letter).slice(0,12)}
@@ -245,9 +249,14 @@ function selectPlay(number){
   renderSelected();
 }
 function renderList(){
-  $("#picks").innerHTML=state.plays.map(item=>{
-    const shown=playDisplayName(item);
-    return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
+  $("#picks").innerHTML=PLAY_SECTIONS.map(section=>{
+    const plays=state.plays.filter(item=>item.section===section);
+    if(!plays.length)return"";
+    const buttons=plays.map(item=>{
+      const shown=playDisplayName(item);
+      return `<button type="button" data-play="${esc(item.number)}"><b>${esc(shown.number||shown.line)}</b><small>${esc(shown.title||"Watch")}</small></button>`;
+    }).join("");
+    return `<section class="play-group" aria-labelledby="${section}Heading"><h2 id="${section}Heading">${SECTION_LABELS[section]} <span>${plays.length} play${plays.length===1?"":"s"}</span></h2><div class="picks">${buttons}</div></section>`;
   }).join("");
   $$("#picks [data-play]").forEach(button=>button.onclick=()=>selectPlay(button.dataset.play));
 }

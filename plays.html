@@ -49,10 +49,24 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .tonight{margin:0 0 12px;padding:12px 14px;border:1px solid rgba(207,174,112,.32);border-radius:14px;background:var(--gold-soft)}
 .tonight b{display:block;margin-bottom:2px;color:var(--highlight)}
 .tonight span{color:var(--soft);font-size:13px}
-.picks{display:flex;gap:8px;overflow-x:auto;margin:0 0 10px;padding:1px 1px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.play-sections{display:grid;gap:10px;margin:0 0 12px}
+.play-section{min-width:0;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.38)}
+.play-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 8px}
+.play-section-head h2{margin:0;color:var(--soft);font:600 18px/1.1 var(--serif)}
+.play-section-head span,.empty-section{color:var(--muted);font-size:11px;font-weight:700}
+.empty-section{margin:3px 2px 7px}
+.picks{display:flex;gap:8px;overflow-x:auto;margin:0;padding:1px 1px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 .picks button{min-height:60px;min-width:104px;flex:0 0 auto;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left;font-weight:800;scroll-snap-align:start}
 .picks button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
 .picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.new-play{width:100%;min-height:48px;border:1px dashed var(--strong);border-radius:12px;background:#000;color:var(--gold);font-weight:800}
+.organize{margin:0 0 12px;padding:11px 12px;border:1px solid var(--strong);border-radius:14px;background:#000}
+.organize-copy{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.organize-copy b{color:var(--soft);font-size:14px}.organize-copy span{color:var(--muted);font-size:11px}
+.organize-actions{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:7px}
+.organize-actions button{min-height:48px;border:1px solid var(--strong);border-radius:11px;padding:7px 8px;background:transparent;color:var(--soft);font-weight:800}
+.organize-actions button:first-child{background:var(--gold-soft);color:var(--ink)}
+.organize-actions button:disabled{opacity:.38}
 .tools{display:grid;grid-template-columns:1.25fr repeat(3,1fr);gap:8px;margin:10px 0}
 .tools button{min-height:58px;border:0;border-radius:12px;background:var(--gold);color:#1C1C1C;font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
 .tools .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft);font-size:15px}
@@ -128,6 +142,8 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
   .tools{grid-template-columns:1fr 1fr}
   .draw-tools{grid-template-columns:1fr 1fr}
   .save-actions{grid-template-columns:1.35fr .65fr}
+  .organize-actions{grid-template-columns:1fr 1fr}
+  .organize-actions button:first-child{grid-column:1/-1}
   .wrap{padding-left:6px;padding-right:6px}
   .field-wrap{border-radius:12px}
   .play-name{font-size:22px}
@@ -155,7 +171,16 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
     <button type="button" id="modePlay" class="on">Play</button>
     <button type="button" id="modeDraw">Draw</button>
   </div>
-  <div class="picks" id="playPicks" role="group" aria-label="Saved plays"></div>
+  <div class="play-sections" id="playPicks" aria-label="Saved plays"></div>
+  <div class="organize hidden" id="organizePanel">
+    <div class="organize-copy"><b id="organizeSection">Upcoming</b><span>Coach order · kids see the same sequence</span></div>
+    <div class="organize-actions">
+      <button type="button" id="moveSectionBtn">Move to Playbook</button>
+      <button type="button" id="moveEarlierBtn">↑ Earlier</button>
+      <button type="button" id="moveLaterBtn">↓ Later</button>
+    </div>
+    <p class="status" id="orderStatus" aria-live="polite"></p>
+  </div>
 
   <div class="looks" id="looks" role="group" aria-label="Looks"></div>
   <div class="unit-picks" id="unitPicks" role="group" aria-label="Offense lineup unit">
@@ -242,6 +267,8 @@ function positionColor(letter){
 const LOCAL_KEY="commodores-plays-v2";
 const SPEED_KEY="commodores-play-speed";
 const SPEEDS=[0.5,1,2];
+const PLAY_SECTIONS=["playbook","upcoming"];
+const SECTION_LABELS={playbook:"Playbook",upcoming:"Upcoming"};
 const SHARE_ORIGIN="https://personal-dashboard.chrisbailey.workers.dev";
 const IS_EMBED=new URLSearchParams(location.search).get("embed")==="1";
 function loadSpeed(){
@@ -273,6 +300,11 @@ function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
 function nowISO(){return new Date().toISOString()}
 function numKey(v){return String(v||"").replace(/\D/g,"").slice(0,4)}
+function cleanSection(value){return value==="playbook"?"playbook":"upcoming"}
+function cleanSortOrder(value){
+  const order=Number(value);
+  return Number.isInteger(order)&&order>=0?order:0;
+}
 function playDisplayName(play){
   const number=String((play&&play.number)||"").trim();
   const stripped=String((play&&play.title)||"").replace(/^\d+\s*/,"").trim();
@@ -365,11 +397,13 @@ function normalizePlay(raw,fallbackNumber){
     source:raw&&raw.source||"coach",
     updatedBy:raw&&(raw.updatedBy||raw.updated_by)||"",
     updatedAt:raw&&(raw.updatedAt||raw.updated_at)||nowISO(),
-    published:!!(raw&&raw.published)
+    published:!!(raw&&raw.published),
+    section:cleanSection(raw&&raw.section),
+    sortOrder:cleanSortOrder(raw&&(raw.sortOrder??raw.sort_order))
   };
 }
 function emptyPlay(number){
-  return normalizePlay({number,title:"",spots:defaultSpots(),fieldW:FIELD_W,source:"new",updatedAt:"1970-01-01T00:00:00.000Z"});
+  return normalizePlay({number,title:"",spots:defaultSpots(),fieldW:FIELD_W,source:"new",section:"upcoming",sortOrder:0,updatedAt:"1970-01-01T00:00:00.000Z"});
 }
 function clonePlay(play){return JSON.parse(JSON.stringify(play))}
 function flipPlay(play){
@@ -468,7 +502,8 @@ function writeLocal(){
   const rows=Object.values(STORE).map(p=>({
     number:p.number,title:p.title,flipPartner:p.flipPartner,family:p.family,
     bullets:p.bullets,looks:p.looks,spots:stampSpots(p.spots),fieldW:FIELD_W,source:p.source,
-    updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published
+    updatedBy:p.updatedBy,updatedAt:p.updatedAt,published:p.published,
+    section:p.section,sortOrder:p.sortOrder
   }));
   try{localStorage.setItem(LOCAL_KEY,JSON.stringify(rows))}catch(_){}
 }
@@ -485,12 +520,13 @@ function rowFromCloud(row){
   return normalizePlay({
     number:row.number,title:row.title,flipPartner:row.flip_partner,
     family:row.family,bullets:row.bullets,looks:row.looks,spots:row.spots,
-    source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at,published:row.published
+    source:"coach",updatedBy:row.updated_by,updatedAt:row.updated_at,published:row.published,
+    section:row.section,sortOrder:row.sort_order
   });
 }
 async function fetchCloud(){
   if(!sb||!STATE.coach) return [];
-  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published");
+  const {data,error}=await sb.from("commodores_plays").select("number,title,flip_partner,spots,looks,family,bullets,updated_by,updated_at,published,section,sort_order");
   if(error||!data) return [];
   return data.map(rowFromCloud);
 }
@@ -506,7 +542,9 @@ async function upsertCloud(play){
     bullets:play.bullets||[],
     updated_by:STATE.coach.first_name,
     updated_at:play.updatedAt,
-    published:!!play.published
+    published:!!play.published,
+    section:cleanSection(play.section),
+    sort_order:cleanSortOrder(play.sortOrder)
   };
   const {error}=await sb.from("commodores_plays").upsert(payload,{onConflict:"number"});
   return {ok:!error,error:error&&error.message};
@@ -573,13 +611,14 @@ async function loadShare(){
 function publishedSnapshot(){
   const plays=Object.values(STORE)
     .filter(play=>play.published)
-    .sort((a,b)=>Number(a.number)-Number(b.number))
+    .sort(comparePlays)
     .map(play=>({
       number:play.number,title:play.title,flipPartner:play.flipPartner||"",
-      fieldW:FIELD_W,spots:stampSpots(play.spots),looks:play.looks||[],family:play.family||"",bullets:play.bullets||[]
+      fieldW:FIELD_W,spots:stampSpots(play.spots),looks:play.looks||[],family:play.family||"",bullets:play.bullets||[],
+      section:cleanSection(play.section),sortOrder:cleanSortOrder(play.sortOrder)
     }));
   return {
-    version:1,
+    version:2,
     fieldW:FIELD_W,
     publishedAt:nowISO(),
     lineups:cleanLineups(STATE.lineups),
@@ -720,18 +759,95 @@ function setCue(play,mode){
   const flipped=STATE.generatedFlip?"True left/right flip of the saved drawing. ":"";
   $("#cue").textContent=flipped+(mode==="play"&&look?look.cue:`${play.family?play.family+" · ":""}${play.title||(play.number?"Play "+play.number:"Blank play")}. ${look?look.cue:""}`.trim());
 }
+function comparePlays(a,b){
+  const sectionDiff=PLAY_SECTIONS.indexOf(cleanSection(a.section))-PLAY_SECTIONS.indexOf(cleanSection(b.section));
+  return sectionDiff||cleanSortOrder(a.sortOrder)-cleanSortOrder(b.sortOrder)||Number(a.number)-Number(b.number);
+}
+function sectionPlays(section){
+  return Object.values(STORE).filter(play=>cleanSection(play.section)===section).sort(comparePlays);
+}
 function orderedNumbers(){
-  return Object.keys(STORE).sort((a,b)=>Number(a)-Number(b));
+  return Object.values(STORE).sort(comparePlays).map(play=>play.number);
+}
+function nextSortOrder(section){
+  const plays=sectionPlays(section);
+  return plays.length?Math.max(...plays.map(play=>cleanSortOrder(play.sortOrder)))+10:10;
 }
 function renderPicks(){
-  const numbers=orderedNumbers();
-  const btn=n=>{
-    const play=STORE[n];
-    return `<button type="button" data-play="${esc(n)}" class="${n===STATE.number?"on":""}"><b>${esc(n)}</b><small>${esc((play&&play.title||"").replace(/^\d+\s*/,"" )||"Saved play")}</small></button>`;
+  const btn=play=>{
+    const number=play.number;
+    return `<button type="button" data-play="${esc(number)}" class="${number===STATE.number?"on":""}"><b>${esc(number)}</b><small>${esc((play.title||"").replace(/^\d+\s*/,"" )||"Saved play")}</small></button>`;
   };
-  $("#playPicks").innerHTML=numbers.map(btn).join("")+`<button type="button" id="addPlayChip"><b>+ New</b><small>Blank formation</small></button>`;
-  $$("[data-play]").forEach(el=>el.onclick=()=>selectPlay(el.dataset.play));
+  $("#playPicks").innerHTML=PLAY_SECTIONS.map(section=>{
+    const plays=sectionPlays(section);
+    const count=`${plays.length} play${plays.length===1?"":"s"}`;
+    const list=plays.length?plays.map(btn).join(""):`<p class="empty-section">No plays here yet.</p>`;
+    return `<section class="play-section" aria-labelledby="${section}Heading"><div class="play-section-head"><h2 id="${section}Heading">${SECTION_LABELS[section]}</h2><span>${count}</span></div><div class="picks">${list}</div></section>`;
+  }).join("")+`<button type="button" class="new-play" id="addPlayChip">+ New upcoming play</button>`;
+  $$("#playPicks [data-play]").forEach(el=>el.onclick=()=>selectPlay(el.dataset.play));
   $("#addPlayChip").onclick=startNewPlay;
+}
+function renderOrganize(){
+  const panel=$("#organizePanel");
+  const play=STORE[STATE.number];
+  const visible=!!(STATE.coach&&play);
+  panel.classList.toggle("hidden",!visible);
+  if(!visible) return;
+  const section=cleanSection(play.section);
+  const ordered=sectionPlays(section);
+  const index=ordered.findIndex(item=>item.number===play.number);
+  $("#organizeSection").textContent=SECTION_LABELS[section];
+  $("#moveSectionBtn").textContent=section==="upcoming"?"Move to Playbook":"Move to Upcoming";
+  $("#moveEarlierBtn").disabled=index<=0;
+  $("#moveLaterBtn").disabled=index<0||index>=ordered.length-1;
+}
+async function persistOrganization(changed,message){
+  const plays=[...changed];
+  const updatedAt=nowISO();
+  plays.forEach(play=>{play.updatedAt=updatedAt;play.updatedBy=STATE.coach?STATE.coach.first_name:"local"});
+  writeLocal();
+  render();
+  const results=[];
+  for(const play of plays) results.push(await upsertCloud(play));
+  const failed=results.find(result=>!result.ok);
+  $("#orderStatus").textContent=failed?`${message} Saved on this device. Cloud: ${failed.error}`:message;
+  notifyParent("commodores-plays-changed");
+  if(!failed&&STATE.shareToken&&plays.some(play=>play.published)) await publishSnapshot(false);
+}
+function normalizeSectionOrder(section,changed){
+  sectionPlays(section).forEach((play,index)=>{
+    const order=(index+1)*10;
+    if(play.sortOrder!==order){play.sortOrder=order;changed.add(play)}
+  });
+}
+async function moveSelectedSection(){
+  const play=STORE[STATE.number];
+  if(!play) return;
+  const from=cleanSection(play.section);
+  const to=from==="upcoming"?"playbook":"upcoming";
+  const changed=new Set();
+  normalizeSectionOrder(from,changed);
+  normalizeSectionOrder(to,changed);
+  play.section=to;
+  play.sortOrder=nextSortOrder(to);
+  changed.add(play);
+  await persistOrganization(changed,`Moved ${play.number} to ${SECTION_LABELS[to]}.`);
+}
+async function moveSelectedOrder(direction){
+  const play=STORE[STATE.number];
+  if(!play) return;
+  const section=cleanSection(play.section);
+  const changed=new Set();
+  normalizeSectionOrder(section,changed);
+  const ordered=sectionPlays(section);
+  const index=ordered.findIndex(item=>item.number===play.number);
+  const other=ordered[index+direction];
+  if(!other) return;
+  const order=play.sortOrder;
+  play.sortOrder=other.sortOrder;
+  other.sortOrder=order;
+  changed.add(play);changed.add(other);
+  await persistOrganization(changed,`Moved ${play.number} ${direction<0?"earlier":"later"} in ${SECTION_LABELS[section]}.`);
 }
 function renderChrome(){
   const play=workingPlay();
@@ -741,6 +857,7 @@ function renderChrome(){
   $("#savePanel").classList.toggle("hidden",STATE.mode!=="draw");
   $("#scrub").disabled=STATE.mode==="draw";
   renderPicks();
+  renderOrganize();
   $("#looks").innerHTML=(STATE.mode==="play"?play.looks:[]).map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
   $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
   $$("#unitPicks [data-unit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.unit===STATE.lineupUnit));
@@ -1082,6 +1199,14 @@ async function saveDraft(){
   draft.bullets=[];
   draft.family="";
   draft.source="coach";
+  if(existing){
+    draft.section=cleanSection(existing.section);
+    draft.sortOrder=cleanSortOrder(existing.sortOrder);
+    draft.published=!!existing.published;
+  }else{
+    draft.section="upcoming";
+    draft.sortOrder=nextSortOrder("upcoming");
+  }
   draft.updatedBy=STATE.coach?STATE.coach.first_name:"local";
   draft.updatedAt=nowISO();
   STORE[number]=clonePlay(draft);
@@ -1224,6 +1349,9 @@ $("#resetBtn").onclick=()=>{
   render();
 };
 $("#showAreas").onchange=()=>{stopAnim();render()};
+$("#moveSectionBtn").onclick=moveSelectedSection;
+$("#moveEarlierBtn").onclick=()=>moveSelectedOrder(-1);
+$("#moveLaterBtn").onclick=()=>moveSelectedOrder(1);
 $("#unitPicks").onclick=event=>{
   const button=event.target.closest("[data-unit]");
   if(!button) return;
