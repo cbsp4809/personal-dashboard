@@ -254,10 +254,13 @@ to **Upcoming**. Saved plays are grouped into **Playbook** (learned/practiced)
 and **Upcoming** (learn soon); coaches can move a play between them and use
 Earlier / Later to set the order within either section. Pre-section drawings
 start in Playbook in their prior numeric sequence. Saved starting coordinates
-stay untouched, preserving Chris’s on-line versus off-line placements. Route
-lines end with a small arrowhead at the tip. The field marks every five yards
-from **0 / LOS** through the emphasized **45 / TD** goal line without rewriting
-saved starts or route coordinates. The optional six-areas overlay (no rush) places the
+stay untouched. At display time, every formation start shifts the same six
+viewBox units toward the LOS: on-ball pills sit a hair behind the stripe while
+Chris’s relative on-line versus off-line spacing remains intact. Dragging uses
+the inverse display offset, so saves do not accumulate that shift. Route lines
+end with a small arrowhead at the tip. The field marks every five yards from
+**0 / LOS** through the emphasized **45 / TD** goal line without rewriting saved
+starts or route coordinates. The optional six-areas overlay (no rush) places the
 three short spots about five yards off the LOS, the three deep spots behind
 them, and the rover as a deep-middle helper. The canvas is 480×400 (was
 360×400) with tighter name pills so a 5-wide can spread without stacking

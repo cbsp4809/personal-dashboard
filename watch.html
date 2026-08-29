@@ -172,7 +172,9 @@ function label(letter){return String((state.lineups[state.unit]||{})[letter]||le
 function path(start,points){return`M${start.x} ${start.y}`+(points||[]).map(point=>`L${point.x} ${point.y}`).join("")}
 // Saved routes stay in viewBox coordinates; only yard-marker labels map the
 // existing LOS-to-goal-line depth to the 45-yard field.
-const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,FIELD_TOP=10,LOS_Y=300,FIELD_DEPTH_YARDS=45;
+// Formation starts render six units closer to the LOS without changing the
+// snapshot coordinates or the relative on-line/off-line spacing.
+const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400,FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,FIELD_TOP=10,LOS_Y=300,FIELD_DEPTH_YARDS=45,DISPLAY_OFFENSE_OFF=12,START_DISPLAY_SHIFT=6;
 function scaleX(x,fromW){const src=Number(fromW)||LEGACY_FIELD_W;if(!Number.isFinite(x)||src===FIELD_W)return x;return x*FIELD_W/src}
 function playCoordWidth(raw){
   const top=Number(raw&&raw.fieldW);if(top===FIELD_W||top===LEGACY_FIELD_W)return top;
@@ -180,6 +182,10 @@ function playCoordWidth(raw){
   return marked?Number(marked.fieldW):LEGACY_FIELD_W;
 }
 function pillSize(label){const name=String(label||""),len=name.length;return{width:Math.max(22,Math.min(48,11+len*4.4)),height:22,font:len>9?7:len>6?8:9}}
+function formationPoint(spot){
+  const y=Number(spot&&spot.y);
+  return{x:Number(spot&&spot.x),y:Number.isFinite(y)&&y>=LOS_Y?Math.max(LOS_Y+DISPLAY_OFFENSE_OFF,y-START_DISPLAY_SHIFT):y};
+}
 function routeTip(start,points){
   const pts=[start,...(points||[])].filter(point=>point&&Number.isFinite(point.x)&&Number.isFinite(point.y));
   if(pts.length<2)return null;
@@ -209,19 +215,19 @@ function yardLines(){
 function stop(){if(!state.anim)return;if(state.anim.frame)cancelAnimationFrame(state.anim.frame);state.anim=null;$("#play").textContent="Play"}
 function paint(progress){
   const play=currentPlay();if(!play)return;
-  const q=play.spots.find(spot=>spot.letter==="Q"),c=play.spots.find(spot=>spot.letter==="C");
+  const q=formationPoint(play.spots.find(spot=>spot.letter==="Q")),c=formationPoint(play.spots.find(spot=>spot.letter==="C"));
   const targetLetter=play.looks[state.look]&&play.looks[state.look].target;
   const target=play.spots.find(spot=>spot.letter===targetLetter);
-  const destination=target&&!target.sit?pointAlong(target,target.route,1):null;
+  const destination=target&&!target.sit?pointAlong(formationPoint(target),target.route,1):null;
   const snap=.096,run=.835,positions={};
-  play.spots.forEach(spot=>{positions[spot.letter]=progress<snap||spot.sit||!spot.route.length?{x:spot.x,y:spot.y}:pointAlong(spot,spot.route,ease(Math.min(1,(progress-snap)/(run-snap))))});
+  play.spots.forEach(spot=>{const start=formationPoint(spot);positions[spot.letter]=progress<snap||spot.sit||!spot.route.length?start:pointAlong(start,spot.route,ease(Math.min(1,(progress-snap)/(run-snap))))});
   let ball={x:c.x,y:c.y};
   if(progress<snap){const p=ease(progress/snap);ball={x:c.x+(q.x-c.x)*p,y:c.y+(q.y-c.y)*p}}
   else if(progress<run){ball={x:positions.Q.x,y:positions.Q.y+10}}
   else if(destination){const p=ease((progress-run)/(1-run));ball={x:positions.Q.x+(destination.x-positions.Q.x)*p,y:positions.Q.y+(destination.y-positions.Q.y)*p}}
   else ball=positions.Q;
   const highlighted=new Set([targetLetter]);
-  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(spot,spot.route,spot.letter,highlighted.has(spot.letter))).join("");
+  const routes=play.spots.filter(spot=>spot.letter!=="Q"&&spot.route.length).map(spot=>route(formationPoint(spot),spot.route,spot.letter,highlighted.has(spot.letter))).join("");
   const markers=play.spots.map(spot=>{const point=positions[spot.letter],name=label(spot.letter),pill=pillSize(name),on=highlighted.has(spot.letter),fill=positionColor(spot.letter);return`<g><rect x="${point.x-pill.width/2}" y="${point.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(spot.letter==="Q"?"#CFAE70":"#fff"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${point.x}" y="${point.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(name)}</text></g>`}).join("");
   $("#field").innerHTML=`<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(playDisplayName(play).line)}"><rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/><rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>${yardLines()}<path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/><text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>${routes}<circle cx="${ball.x}" cy="${ball.y}" r="5" fill="#CFAE70"/>${markers}</svg>`;
   $("#scrub").value=String(Math.round(progress*1000));

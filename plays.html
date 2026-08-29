@@ -327,7 +327,10 @@ function setPlayName(play){
 // Saved routes stay in viewBox coordinates; only yard-marker labels map that
 // existing LOS-to-goal-line depth to the 45-yard field.
 const LEGACY_FIELD_W=360,FIELD_W=480,FIELD_H=400;
-const FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,FIELD_TOP=10,MID_X=FIELD_W/2,LOS_Y=300,YARD=7,FIELD_DEPTH_YARDS=45,OFFENSE_OFF=18;
+const FIELD_LEFT=8,FIELD_RIGHT=FIELD_W-8,FIELD_TOP=10,MID_X=FIELD_W/2,LOS_Y=300,YARD=7,FIELD_DEPTH_YARDS=45;
+// Stored drawings used an 18-unit line offset. Render every formation start six
+// units closer so on-ball pills touch the LOS while all relative depths remain.
+const STORED_OFFENSE_OFF=18,DISPLAY_OFFENSE_OFF=12,START_DISPLAY_SHIFT=STORED_OFFENSE_OFF-DISPLAY_OFFENSE_OFF;
 function flipX(x){return FIELD_W-x}
 function scaleX(x,fromW){
   const src=Number(fromW)||LEGACY_FIELD_W;
@@ -344,6 +347,17 @@ function playCoordWidth(raw){
 function stampSpots(spots){
   return (spots||[]).map(s=>({letter:s.letter,x:s.x,y:s.y,sit:!!s.sit,route:(s.route||[]).map(p=>({x:p.x,y:p.y})),fieldW:FIELD_W}));
 }
+function formationPoint(spot){
+  const y=Number(spot&&spot.y);
+  return {
+    x:Number(spot&&spot.x),
+    y:Number.isFinite(y)&&y>=LOS_Y?Math.max(LOS_Y+DISPLAY_OFFENSE_OFF,y-START_DISPLAY_SHIFT):y
+  };
+}
+function storedFormationY(displayY){
+  const y=Math.max(LOS_Y+DISPLAY_OFFENSE_OFF,Number(displayY)||LOS_Y+DISPLAY_OFFENSE_OFF);
+  return clamp(y+START_DISPLAY_SHIFT,8,FIELD_H-8);
+}
 function pillSize(label){
   const name=String(label||"");
   const len=name.length;
@@ -355,7 +369,7 @@ function pillSize(label){
 }
 
 function defaultSpots(){
-  const line=LOS_Y+OFFENSE_OFF;
+  const line=LOS_Y+STORED_OFFENSE_OFF;
   return stampSpots([
     {letter:"Q",x:MID_X,y:348,sit:false,route:[]},
     {letter:"C",x:MID_X,y:line,sit:true,route:[]},
@@ -367,7 +381,7 @@ function defaultSpots(){
   ]);
 }
 function cleanSpot(raw,letter,fromW){
-  const fallback=defaultSpots().find(s=>s.letter===letter)||{letter,x:MID_X,y:LOS_Y+OFFENSE_OFF,sit:false,route:[]};
+  const fallback=defaultSpots().find(s=>s.letter===letter)||{letter,x:MID_X,y:LOS_Y+STORED_OFFENSE_OFF,sit:false,route:[]};
   const x=scaleX(Number(raw&&raw.x),fromW);
   const y=Number(raw&&raw.y);
   const route=Array.isArray(raw&&raw.route)?raw.route.map(p=>{
@@ -713,9 +727,10 @@ function fieldSVG(play,pos,ball,liveRoute){
   const targets=new Set([play.looks[STATE.look]?.target]);
   const routes=play.spots.filter(s=>s.letter!=="Q"&&s.route&&s.route.length).map(s=>{
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
-    return routeSVG(s,s.route,s.letter,on,false);
+    return routeSVG(formationPoint(s),s.route,s.letter,on,false);
   }).join("");
-  const liveStart=play.spots.find(s=>s.letter===STATE.selected)||(liveRoute&&liveRoute[0]);
+  const selectedStart=play.spots.find(s=>s.letter===STATE.selected);
+  const liveStart=selectedStart?formationPoint(selectedStart):(liveRoute&&liveRoute[0]);
   const live=liveRoute&&liveRoute.length&&liveStart?routeSVG(liveStart,liveRoute,STATE.selected,true,true):"";
   const kids=play.spots.map(s=>{
     const p=pos[s.letter]||s;
@@ -725,7 +740,8 @@ function fieldSVG(play,pos,ball,liveRoute){
     const pill=pillSize(label);
     return `<g data-letter="${s.letter}"><rect x="${p.x-pill.width/2}" y="${p.y-pill.height/2}" width="${pill.width}" height="${pill.height}" rx="${pill.height/2}" fill="${fill}" stroke="${on?(s.letter==="Q"?"#CFAE70":"#FFFFFF"):"#1C1C1C"}" stroke-width="${on?2.5:1.8}"/><text x="${p.x}" y="${p.y+3}" fill="#1C1C1C" text-anchor="middle" font-size="${pill.font}">${esc(label)}</text></g>`;
   }).join("");
-  const ballXY=ball||play.spots.find(s=>s.letter==="C")||{x:MID_X,y:LOS_Y+OFFENSE_OFF};
+  const center=play.spots.find(s=>s.letter==="C");
+  const ballXY=ball||(center&&formationPoint(center))||{x:MID_X,y:LOS_Y+DISPLAY_OFFENSE_OFF};
   const endzone=play.number==="6"?`<rect x="12" y="16" width="${FIELD_W-24}" height="70" fill="none" stroke="#777" stroke-width="2"/><text x="${FIELD_W-60}" y="34" fill="#E0D5C0" font-size="9">end zone</text>`:"";
   const title=play.title||`Play ${play.number}`;
   return `<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(title)}">
@@ -891,8 +907,9 @@ function render(liveRoute){
   const play=workingPlay();
   renderChrome();
   const pos={};
-  play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
-  paint(play,pos,play.spots.find(s=>s.letter==="C"),liveRoute);
+  play.spots.forEach(s=>pos[s.letter]=formationPoint(s));
+  const center=play.spots.find(s=>s.letter==="C");
+  paint(play,pos,center&&formationPoint(center),liveRoute);
 }
 function notifyParent(type,detail){
   if(window.parent===window) return;
@@ -971,16 +988,17 @@ function exitImmersive(){
   setImmersive(false);
 }
 function paintProgress(play,progress){
-  const q=play.spots.find(s=>s.letter==="Q");
-  const c=play.spots.find(s=>s.letter==="C");
+  const q=formationPoint(play.spots.find(s=>s.letter==="Q"));
+  const c=formationPoint(play.spots.find(s=>s.letter==="C"));
   const targetLetter=play.looks[STATE.look]?.target;
   const target=play.spots.find(s=>s.letter===targetLetter);
-  const dest=target&&!target.sit?pointAlong(target,target.route,1):null;
+  const dest=target&&!target.sit?pointAlong(formationPoint(target),target.route,1):null;
   const snap=.096, run=.835, throwEnd=1;
   const pos={};
   play.spots.forEach(s=>{
-    if(progress<snap||s.sit||!s.route.length){pos[s.letter]={x:s.x,y:s.y};return}
-    pos[s.letter]=pointAlong(s,s.route,ease(Math.min(1,(progress-snap)/(run-snap))));
+    const start=formationPoint(s);
+    if(progress<snap||s.sit||!s.route.length){pos[s.letter]=start;return}
+    pos[s.letter]=pointAlong(start,s.route,ease(Math.min(1,(progress-snap)/(run-snap))));
   });
   let ball={x:c.x,y:c.y};
   if(progress<snap){
@@ -1035,8 +1053,8 @@ function playNow(){
     if(t<total){anim.frame=requestAnimationFrame(tick);return}
     anim.timer=setTimeout(()=>{
       const pos={};
-      play.spots.forEach(s=>pos[s.letter]={x:s.x,y:s.y});
-      paint(play,pos,c);
+      play.spots.forEach(s=>pos[s.letter]=formationPoint(s));
+      paint(play,pos,formationPoint(c));
       $("#scrub").value="0";
       $("#playBtn").textContent="Play";
       setCue(play,"idle");
@@ -1097,7 +1115,8 @@ function svgPoint(evt){
 function hitLetter(play,pt){
   let best=null,bestD=22;
   play.spots.forEach(s=>{
-    const d=Math.hypot(s.x-pt.x,s.y-pt.y);
+    const start=formationPoint(s);
+    const d=Math.hypot(start.x-pt.x,start.y-pt.y);
     if(d<bestD){best=s.letter;bestD=d}
   });
   return best;
@@ -1137,9 +1156,10 @@ function onFieldPointerMove(evt){
   if(pointer.kind==="drag"){
     const spot=draft.spots.find(s=>s.letter===pointer.letter);
     if(!spot) return;
-    if(Math.hypot(pt.x-spot.x,pt.y-spot.y)>3) pointer.moved=true;
+    const start=formationPoint(spot);
+    if(Math.hypot(pt.x-start.x,pt.y-start.y)>3) pointer.moved=true;
     spot.x=pt.x;
-    spot.y=pt.y;
+    spot.y=storedFormationY(pt.y);
     markDirty();
     render();
     return;
