@@ -246,10 +246,12 @@ A small **0.5× / 1× / 2×** speed row sits under those controls (default
 The kids watch page uses the same speeds.
 Full-screen Play is a CSS overlay sized from the visual viewport, not the
 browser fullscreen API, so an iPad can rotate between landscape and portrait.
-Draw mode: drag the seven letter dots to set starts, tap a letter and finger-
-draw its route, Sit for no route, Save with a number and short title. Only the
-field captures touch while drawing, so the rest of the phone/iPad page keeps
-normal vertical scrolling. Flip is a true left/right mirror of the saved
+Draw mode: drag the seven letter dots to set starts, tap a letter chip, then
+finger-draw its route (start on that letter for a go route). Sit for no route,
+Save with a number and short title. Empty turf stays scroll-safe: a vertical
+pan on the field scrolls the page instead of rewriting a route. The field
+captures touch only after a draw or drag is claimed, not for the whole Draw
+session. Flip is a true left/right mirror of the saved
 geometry. New-play dots start slightly behind the line of scrimmage and default
 to **Upcoming**. Saved plays are grouped into **Playbook** (learned/practiced)
 and **Upcoming** (learn soon); coaches can move a play between them and use
@@ -280,16 +282,24 @@ localStorage keeps an offline draft; the database wins when signed in.
 Coach play labels come from the game lineup in this fixed order:
 `Q, C, X, A, B, Y, Z` (Q and Center, then the five receiver spots). Coaches
 choose **Q1/Q3** or **Q2/Q4**; those are display labels over internal A/B keys.
-Practice-watch labels instead come from roster multi-select tags: every kid
-tagged to a letter appears in that route’s one start bubble, and every kid
-tagged D1–D7 appears in that defense area. An optional roster jersey displays
-only when staff entered it. One combined name bubble stays at the route start
+Practice-watch labels come from roster tags. Array order is rank: index 0 is
+the one gold **1** primary, and the rest are unnumbered backups. First tap
+appends a tag (and becomes primary if that side was empty). Tap a backup to
+promote it to 1. Tap the current 1 to clear it. Do not sort tags. An optional
+roster jersey displays only when staff entered it. One combined name bubble stays at the route start
 while a small letter chip sits near mid-route and the animation dot travels the
 unchanged path. Each letter has a fixed color used for the name bubble, route line, and tip arrow
 (`POSITION_COLOR` in `plays.html`, mirrored in `watch.html` and
 `commodores.html`): Q white, C gold, X sky, A sand-orange, B mint, Y lilac,
 Z salmon. Selected / live-drawing strokes get thicker but keep that hue.
 Yard lines, LOS, and the defense overlay stay gold/white as before.
+
+Play chips show **Kids**, **Coach only**, or **Edited** (saved since the last
+kids snapshot). Filter chips above the lists are All / Kids / Not on kids.
+A signed-in sticky bar stays at the bottom of the phone viewport: selected-play
+status, **Publish this play** / **Remove from kids**, **Push to kids** when any
+published play is stale, and **Save play** in Draw. The secret URL, copy, and
+rotate stay in a compact **Kids link** details block.
 
 Each saved play has a Publish toggle. Publishing writes one read-only snapshot
 containing all marked plays plus the 12-player practice roster tags and entered
@@ -299,20 +309,25 @@ jersey numbers, then shows one all-season
 `https://personal-dashboard.chrisbailey.workers.dev/watch.html?t=<secret>`
 
 The watch page has no login, coach navigation, roster, editor, notes, save, or
-publish controls. Kids see the published **Playbook** and **Upcoming** sections
-in the exact coach-set order, tap one, then get the play number above the field
-plus Play / full screen / scrub, a **Watching as** picker, and one default-off
-**Defense** toggle. Choosing a kid puts only that first name on their tagged
-route bubbles, lights those letters and D1–D7 zones, and fades the others. Turning
-Defense on shows D1/D2/D3 across the front (defense-right to defense-left),
-D6/D5/D4 behind them, and D7 deep behind D5. Full screen shows the play display
-name the same way the coach animator does.
+publish controls. Home is one scrolling list: sticky **Watching as** at the
+top, then **Offense** (published Playbook / Upcoming cards in coach order),
+then **Defense** with one **Base zone** card. Choosing a kid once drives both
+sides and defaults to that kid’s primary offense tag (`offense_tags[0]`); the
+name sits on that one route bubble and backups get a small letter switcher.
+**Base zone** opens a static six-area plus D7 diagram (no moving pieces, no
+hip-stay / Man-Free), highlighting `defense_tags[0]` as `D5 · Teddy` with
+quieter backup outlines and the same switcher. Other kids’ names stay off the
+parent view. Offense plays keep an optional **Defense** overlay toggle of the
+same static outlines. Full screen shows the play display name the same way
+the coach animator does. After roster-tag changes, published plays show
+**Edited** until **Push to kids**.
 Section and order are baked into each published snapshot, so an existing link
 stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow
-RPC returns only the published snapshot for the exact token. After roster-tag
-or route changes, tap **Republish names + plays**. Rotating the link invalidates
-the old URL.
+RPC returns only the published snapshot for the exact token. After route edits
+on a published play, tap **Push to kids**. After roster-tag or jersey changes,
+open **Kids link** and tap **Republish names + plays**. Rotating the link
+invalidates the old URL.
 
 Do not put Cloudflare Access back in front of this Worker. The field book still
 uses Supabase Auth email+password. Roster loads from `commodores_roster` after

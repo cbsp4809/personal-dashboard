@@ -314,7 +314,7 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .jersey-row label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .jersey-input{width:100%;min-height:44px;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);color:var(--ink);font-size:18px;font-weight:700;text-align:center}
 .roster-tags{margin:8px 0 12px}.roster-tags b{display:block;margin:8px 0 6px;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
-.roster-tag-chips{display:flex;flex-wrap:wrap;gap:6px}.roster-tag-chips button{min-width:44px;min-height:42px;border:1px solid var(--strong);border-radius:999px;background:var(--bg-2);color:var(--soft);font-weight:700}.roster-tag-chips button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.roster-tag-chips{display:flex;flex-wrap:wrap;gap:6px}.roster-tag-chips button{position:relative;min-width:44px;min-height:44px;border:1px solid var(--strong);border-radius:999px;background:var(--bg-2);color:var(--soft);font-weight:700}.roster-tag-chips button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}.roster-tag-chips .tag-primary{position:absolute;top:-5px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--gold);color:#1C1C1C;font-size:10px;font-weight:800;line-height:16px}
 .tag-summary{margin-top:12px}.tag-summary h3{margin:0 0 4px}.tag-summary p{margin:0 0 10px;color:var(--muted);font-size:12px}.tag-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tag-summary-row{display:grid;grid-template-columns:38px minmax(0,1fr);gap:8px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:var(--bg-2);font-size:12px}.tag-summary-row b{color:var(--gold)}.tag-summary-row span{color:var(--soft);overflow-wrap:anywhere}
 .rate-input{width:100%;min-width:0;min-height:56px;margin:0;border:1px solid var(--strong);border-radius:10px;background:var(--bg-2);padding:8px 0;color:var(--ink);text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;-webkit-appearance:none;appearance:none;touch-action:manipulation}
 .rate-input:focus{outline:none;border-color:var(--gold)}
@@ -545,7 +545,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="team-cards" id="teamCards"></div>
       <div class="panel tag-summary">
         <h3>Practice tags by letter</h3>
-        <p>Roster view · assign with the chips inside each player card.</p>
+        <p>Roster view · first tap adds a tag, gold 1 is primary, tap a backup to make it 1, tap the 1 to clear it.</p>
         <div class="tag-summary-grid" id="tagSummary"></div>
       </div>
       <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
@@ -909,6 +909,7 @@ function cleanJersey(value){
 const OFFENSE_TAGS=["Q","C","X","A","B","Y","Z"];
 const DEFENSE_TAGS=["D1","D2","D3","D4","D5","D6","D7"];
 function cleanTags(values,allowed){
+  // Array order is rank. Index 0 is the one gold primary. Never sort.
   return [...new Set((Array.isArray(values)?values:[]).map(String).filter(value=>allowed.includes(value)))];
 }
 function rosterJersey(name){return cleanJersey(ROSTER_META[name]&&ROSTER_META[name].jersey)}
@@ -3476,9 +3477,13 @@ async function toggleRosterTag(name,kind,tag){
   if(!allowed.includes(tag)) return;
   const key=kind+"Tags";
   const current=ROSTER_META[name]||{};
-  const tags=new Set(cleanTags(current[key],allowed));
-  if(tags.has(tag)) tags.delete(tag); else tags.add(tag);
-  const next={[key]:[...tags]};
+  const tags=cleanTags(current[key],allowed);
+  const index=tags.indexOf(tag);
+  let nextTags;
+  if(index<0) nextTags=tags.concat(tag);
+  else if(index===0) nextTags=tags.slice(1);
+  else nextTags=[tag].concat(tags.filter(item=>item!==tag));
+  const next={[key]:nextTags};
   const buttons=$$(`#teamCards [data-roster-name="${name}"]`);
   buttons.forEach(button=>{button.disabled=true});
   const saved=await saveRosterMeta(name,next,`${displayName(name)} practice tags saved`);
@@ -3514,8 +3519,13 @@ function playerSpotLabels(name){
   return labels;
 }
 function rosterTagButtons(name,kind,allowed){
-  const selected=new Set(cleanTags(ROSTER_META[name]&&ROSTER_META[name][kind+"Tags"],allowed));
-  return allowed.map(tag=>`<button type="button" data-roster-name="${esc(name)}" data-roster-kind="${kind}" data-roster-tag="${tag}" class="${selected.has(tag)?"on":""}" aria-pressed="${selected.has(tag)?"true":"false"}">${tag}</button>`).join("");
+  const tags=cleanTags(ROSTER_META[name]&&ROSTER_META[name][kind+"Tags"],allowed);
+  const primary=tags[0]||"";
+  return allowed.map(tag=>{
+    const on=tags.includes(tag);
+    const isPrimary=!!primary&&tag===primary;
+    return `<button type="button" data-roster-name="${esc(name)}" data-roster-kind="${kind}" data-roster-tag="${tag}" class="${on?"on":""}${isPrimary?" primary":""}" aria-pressed="${on?"true":"false"}">${esc(tag)}${isPrimary?`<span class="tag-primary">1</span>`:""}</button>`;
+  }).join("");
 }
 function renderTagSummary(){
   const root=$("#tagSummary");
@@ -3525,7 +3535,12 @@ function renderTagSummary(){
     ...DEFENSE_TAGS.map(tag=>({tag,key:"defenseTags"}))
   ];
   root.innerHTML=rows.map(row=>{
-    const names=ROSTER.filter(name=>cleanTags(ROSTER_META[name]&&ROSTER_META[name][row.key],row.key==="offenseTags"?OFFENSE_TAGS:DEFENSE_TAGS).includes(row.tag)).map(rosterLabel);
+    const allowed=row.key==="offenseTags"?OFFENSE_TAGS:DEFENSE_TAGS;
+    const names=ROSTER.filter(name=>cleanTags(ROSTER_META[name]&&ROSTER_META[name][row.key],allowed).includes(row.tag)).map(name=>{
+      const tags=cleanTags(ROSTER_META[name]&&ROSTER_META[name][row.key],allowed);
+      const label=rosterLabel(name);
+      return tags[0]===row.tag?`${label} · 1`:label;
+    });
     return `<div class="tag-summary-row"><b>${row.tag}</b><span>${esc(names.length?names.join(", "):"—")}</span></div>`;
   }).join("");
 }

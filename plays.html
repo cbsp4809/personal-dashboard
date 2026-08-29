@@ -32,6 +32,7 @@ button,input{font:inherit;color:inherit}
 button{cursor:pointer;touch-action:manipulation}
 .hidden{display:none!important}
 .wrap{width:min(720px,100%);margin:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body.has-coach-bar .wrap{padding-bottom:calc(var(--coach-bar-h,72px) + 16px)}
 .kicker{display:flex;align-items:center;gap:8px;margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
 .star{width:13px;height:13px;fill:var(--gold);flex:none}
 h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
@@ -49,6 +50,9 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .tonight{margin:0 0 12px;padding:12px 14px;border:1px solid rgba(207,174,112,.32);border-radius:14px;background:var(--gold-soft)}
 .tonight b{display:block;margin-bottom:2px;color:var(--highlight)}
 .tonight span{color:var(--soft);font-size:13px}
+.play-filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.play-filters button{min-height:44px;padding:8px 12px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800}
+.play-filters button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .play-sections{display:grid;gap:10px;margin:0 0 12px}
 .play-section{min-width:0;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.38)}
 .play-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 8px}
@@ -58,7 +62,14 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .picks{display:flex;gap:8px;overflow-x:auto;margin:0;padding:1px 1px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 .picks button{min-height:60px;min-width:104px;flex:0 0 auto;padding:10px 12px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--soft);text-align:left;font-weight:800;scroll-snap-align:start}
 .picks button small{display:block;margin-top:3px;font-size:11px;font-weight:600;opacity:.75}
+.picks button .pub{display:block;margin-top:4px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.picks button.kids{border-color:rgba(207,174,112,.55);background:rgba(207,174,112,.12)}
+.picks button.kids .pub{color:var(--gold)}
+.picks button.edited{border-color:rgba(236,183,72,.7);background:rgba(236,183,72,.1)}
+.picks button.edited .pub{color:var(--highlight)}
+.picks button.coach .pub{color:var(--muted)}
 .picks button.on{border-color:var(--highlight);background:var(--gold);color:#1C1C1C}
+.picks button.on .pub{color:#1C1C1C;opacity:.85}
 .new-play{width:100%;min-height:48px;border:1px dashed var(--strong);border-radius:12px;background:#000;color:var(--gold);font-weight:800}
 .organize{margin:0 0 12px;padding:11px 12px;border:1px solid var(--strong);border-radius:14px;background:#000}
 .organize-copy{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -82,7 +93,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .play-name{display:none;margin:0 112px 8px 10px;color:var(--soft);font:600 26px/1.1 var(--serif);letter-spacing:.01em}
 .play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:pan-y;-webkit-user-select:none;user-select:none}
-.field-wrap.is-drawing{touch-action:none}
+.field-wrap.is-drawing{touch-action:none;overscroll-behavior:none}
 .field{display:block;width:100%;height:auto}
 .field text{font:700 11px var(--sans)}
 .field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
@@ -108,12 +119,26 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .unit-picks button,.publish-actions button{min-height:48px;flex:1;border:1px solid var(--strong);border-radius:11px;padding:8px 10px;background:#000;color:var(--soft);font-weight:800}
 .unit-picks button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .scrub{width:100%;margin:0 0 12px;accent-color:var(--gold)}
-.publish{margin:14px 0 0;padding:12px;border:1px solid var(--strong);border-radius:14px;background:#000}
-.publish strong{display:block;margin-bottom:3px;color:var(--soft)}
+.publish{margin:14px 0 0;padding:0;border:1px solid var(--strong);border-radius:14px;background:#000}
+.publish summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center;padding:10px 12px;color:var(--soft);font-weight:800}
+.publish summary::-webkit-details-marker{display:none}
+.publish summary::after{content:"▸";margin-left:auto;color:var(--gold)}
+.publish[open] summary::after{content:"▾"}
+.publish-body{padding:0 12px 12px}
 .publish-copy{margin:0 0 10px;color:var(--muted);font-size:12px}
+.publish-actions .danger{color:var(--muted);border-style:dashed}
 .share-row{display:grid;grid-template-columns:1fr auto;gap:8px}
 .share-row input{min-width:0;min-height:44px;padding:8px 10px;border:1px solid var(--strong);border-radius:10px;background:#111;color:var(--soft)}
 .share-row button{min-height:44px;border:0;border-radius:10px;padding:8px 12px;background:var(--gold);color:#1C1C1C;font-weight:800}
+.coach-bar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:100%;overflow-x:hidden;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));border-top:1px solid var(--strong);background:#111;box-shadow:0 -10px 24px rgba(0,0,0,.4)}
+.coach-bar-status{flex:1 1 88px;min-width:88px;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.coach-bar-status.kids{color:var(--gold)}
+.coach-bar-status.edited{color:var(--highlight)}
+.coach-bar-actions{display:flex;flex-wrap:wrap;gap:8px;flex:2 1 220px;justify-content:flex-end}
+.coach-bar-actions button{min-height:44px;min-width:44px;padding:8px 12px;border-radius:11px;font-weight:800}
+.coach-bar-actions .primary{border:0;background:var(--gold);color:#1C1C1C}
+.coach-bar-actions .ghost{border:1px solid var(--strong);background:transparent;color:var(--soft)}
+.coach-bar-actions button:disabled{opacity:.38}
 body.embed .wrap{width:100%;padding:12px 6px}
 body.embed .kicker,body.embed h1,body.embed>.wrap>.sub,body.embed #authBar{display:none}
 body.immersive{overflow:hidden;overscroll-behavior:none;background:#000}
@@ -124,6 +149,7 @@ body.immersive .immersive-shell{display:flex;flex-direction:column;height:100%;p
 body.immersive .immersive-done{display:block}
 body.immersive .play-name{display:block}
 body.immersive .cue{display:none}
+body.immersive .coach-bar{display:none!important}
 body.immersive .field-wrap{display:grid;flex:1;min-height:0;place-items:center;border:0;border-radius:0;touch-action:none}
 body.immersive .field-host{display:grid;width:100%;height:100%;place-items:center}
 body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 176px)*1.2));height:auto;max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 176px);aspect-ratio:480/400}
@@ -147,6 +173,9 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
   .wrap{padding-left:6px;padding-right:6px}
   .field-wrap{border-radius:12px}
   .play-name{font-size:22px}
+  .coach-bar-status{flex:1 1 100%}
+  .coach-bar-actions{flex:1 1 100%;justify-content:stretch}
+  .coach-bar-actions button{flex:1 1 0;min-width:0;padding:8px 10px;font-size:14px}
 }
 </style>
 </head>
@@ -188,7 +217,7 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
     <button type="button" data-unit="B">Q2/Q4 names</button>
   </div>
   <div id="drawPanel" class="hidden">
-    <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter, then draw its route on the field.</p>
+    <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter chip, then draw from that letter. A straight up/down swipe on empty turf scrolls the page.</p>
     <div class="chips" id="letterChips"></div>
     <div class="draw-tools">
       <button type="button" id="sitBtn">Sit / no route</button>
@@ -228,21 +257,30 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
     </div>
     <p class="status" id="saveStatus" aria-live="polite"></p>
   </div>
-  <div class="publish hidden" id="publishPanel">
-    <strong>Kids / parents watch page</strong>
-    <p class="publish-copy">Mark saved plays for the practice watch page, then republish whenever routes, roster tags, or jerseys change.</p>
-    <div class="publish-actions">
-      <button type="button" id="publishToggle">Publish this play</button>
-      <button type="button" id="publishNow">Republish names + plays</button>
-      <button type="button" id="rotateShare">Rotate secret link</button>
+  <details class="publish hidden" id="publishPanel">
+    <summary>Kids link</summary>
+    <div class="publish-body">
+      <p class="publish-copy">Secret watch URL for kids and parents. Republish after roster-tag or jersey changes. Rotate only if the old link should stop working.</p>
+      <div class="share-row">
+        <input id="shareUrl" type="text" readonly placeholder="Publish a saved play to create the secret link" aria-label="Kids watch URL">
+        <button type="button" id="copyShare">Copy</button>
+      </div>
+      <div class="publish-actions">
+        <button type="button" id="publishNow">Republish names + plays</button>
+        <button type="button" class="danger" id="rotateShare">Rotate secret link</button>
+      </div>
+      <p class="status" id="publishStatus" aria-live="polite"></p>
     </div>
-    <div class="share-row">
-      <input id="shareUrl" type="text" readonly placeholder="Publish a saved play to create the secret link" aria-label="Kids watch URL">
-      <button type="button" id="copyShare">Copy</button>
-    </div>
-    <p class="status" id="publishStatus" aria-live="polite"></p>
-  </div>
+  </details>
   <p class="letters" id="letterKey">Q thrower · C center · X left out · Z right out · A / B / Y inside. Hip-stay is a drill only.</p>
+  </div>
+</div>
+<div class="coach-bar hidden" id="coachBar">
+  <div class="coach-bar-status" id="coachBarStatus">Coach only</div>
+  <div class="coach-bar-actions">
+    <button type="button" class="primary" id="coachBarPublish">Publish this play</button>
+    <button type="button" class="ghost hidden" id="coachBarPush">Push to kids</button>
+    <button type="button" class="ghost hidden" id="coachBarSave">Save play</button>
   </div>
 </div>
 <script>
@@ -518,7 +556,7 @@ const STATE={
   number:"",
   generatedFlip:false,
   look:0,
-  selected:"X",
+  selected:"",
   dirty:false,
   coach:null,
   lineupUnit:"A",
@@ -526,8 +564,13 @@ const STATE={
   defenseLineups:{A:{},B:{}},
   roster:[],
   shareToken:"",
+  kidsSnapshot:null,
+  snapshotPublishedAt:"",
+  playFilter:"all",
   speed:loadSpeed()
 };
+const PUBLISH_LABELS={coach:"Coach only",kids:"Kids",edited:"Edited"};
+const POINTER_SLOP_PX=10;
 const STORE={};
 let draft=null;
 let anim=null;
@@ -619,9 +662,20 @@ function cleanRoster(raw){
   return (Array.isArray(raw)?raw:[]).map(item=>({
     name:shownFirstName(typeof item==="string"?item:item&&item.name),
     jersey:cleanJersey(item&&item.jersey),
+    // Array order is rank. Index 0 is the gold primary. Never sort.
     offenseTags:[...new Set((item&&Array.isArray(item.offenseTags)?item.offenseTags:[]).filter(tag=>LETTERS.includes(tag)))],
     defenseTags:[...new Set((item&&Array.isArray(item.defenseTags)?item.defenseTags:[]).filter(tag=>/^D[1-7]$/.test(tag)))]
   })).filter(item=>item.name);
+}
+function rosterFingerprint(roster){
+  return JSON.stringify(cleanRoster(roster).map(item=>({
+    name:item.name,jersey:item.jersey,offenseTags:item.offenseTags,defenseTags:item.defenseTags
+  })).sort((a,b)=>a.name.localeCompare(b.name)));
+}
+function rosterIsStale(){
+  const snap=STATE.kidsSnapshot;
+  if(!snap) return Object.values(STORE).some(play=>play.published);
+  return rosterFingerprint(STATE.roster)!==rosterFingerprint(snap.roster||[]);
 }
 function rosterJersey(name){
   return cleanJersey((STATE.roster.find(item=>item.name===shownFirstName(name))||{}).jersey);
@@ -696,8 +750,65 @@ function shareUrl(){
 }
 async function loadShare(){
   if(!sb||!STATE.coach) return;
-  const {data,error}=await sb.from("commodores_play_shares").select("token").eq("id","current").maybeSingle();
-  if(!error&&data&&data.token) STATE.shareToken=data.token;
+  const {data,error}=await sb.from("commodores_play_shares").select("token,snapshot,published_at").eq("id","current").maybeSingle();
+  if(error||!data) return;
+  if(data.token) STATE.shareToken=data.token;
+  rememberSnapshot(data.snapshot,data.published_at);
+}
+function rememberSnapshot(snapshot,publishedAt){
+  STATE.kidsSnapshot=snapshot&&typeof snapshot==="object"?snapshot:null;
+  STATE.snapshotPublishedAt=publishedAt||(STATE.kidsSnapshot&&STATE.kidsSnapshot.publishedAt)||"";
+}
+function snapshotPublishedAt(){
+  return (STATE.kidsSnapshot&&STATE.kidsSnapshot.publishedAt)||STATE.snapshotPublishedAt||"";
+}
+function samePublishedPlay(play,snapPlay){
+  if(!play||!snapPlay) return false;
+  try{
+    const pack=item=>JSON.stringify({
+      title:String(item.title||""),
+      section:cleanSection(item.section),
+      sortOrder:cleanSortOrder(item.sortOrder??item.sort_order),
+      spots:stampSpots(item.spots)
+    });
+    return pack(play)===pack(snapPlay);
+  }catch(_){return false}
+}
+function playIsStale(play){
+  if(!play||!play.published) return false;
+  const snap=STATE.kidsSnapshot;
+  if(!snap||!Array.isArray(snap.plays)) return true;
+  const snapPlay=snap.plays.find(item=>String(item.number)===String(play.number));
+  if(!snapPlay) return true;
+  const publishedAt=snapshotPublishedAt();
+  if(play.updatedAt&&publishedAt&&String(play.updatedAt)>String(publishedAt)) return true;
+  return !samePublishedPlay(play,snapPlay);
+}
+function anyPublishedStale(){
+  const published=Object.values(STORE).some(play=>play.published);
+  return Object.values(STORE).some(playIsStale)||(published&&rosterIsStale());
+}
+function playPublishState(play){
+  if(!play||!play.published) return "coach";
+  return playIsStale(play)||rosterIsStale()?"edited":"kids";
+}
+function selectedPublishState(){
+  const play=STORE[STATE.number];
+  if(!play) return "coach";
+  if(STATE.mode==="draw"&&STATE.dirty&&play.published) return "edited";
+  return playPublishState(play);
+}
+function playMatchesFilter(play){
+  if(STATE.playFilter==="kids") return !!play.published;
+  if(STATE.playFilter==="coach") return !play.published;
+  return true;
+}
+function syncCoachBarHeight(){
+  const bar=$("#coachBar");
+  const visible=!!(bar&&STATE.coach&&!document.body.classList.contains("immersive"));
+  const height=visible?bar.offsetHeight:0;
+  document.documentElement.style.setProperty("--coach-bar-h",height+"px");
+  document.body.classList.toggle("has-coach-bar",height>0);
 }
 function publishedSnapshot(){
   const plays=Object.values(STORE)
@@ -734,10 +845,12 @@ async function publishSnapshot(rotate){
     status.textContent="Could not publish: "+error.message;
     return false;
   }
+  rememberSnapshot(snapshot,snapshot.publishedAt);
   status.textContent=snapshot.plays.length
     ?`Published ${snapshot.plays.length} play${snapshot.plays.length===1?"":"s"} with practice roster tags.`
     :"Kids page cleared. No plays are currently published.";
   renderPublish();
+  renderPicks();
   return true;
 }
 async function togglePublished(){
@@ -761,15 +874,34 @@ async function togglePublished(){
 }
 function renderPublish(){
   const panel=$("#publishPanel");
-  if(!panel) return;
-  panel.classList.toggle("hidden",!STATE.coach);
+  const bar=$("#coachBar");
+  if(panel) panel.classList.toggle("hidden",!STATE.coach);
+  if(bar) bar.classList.toggle("hidden",!STATE.coach||document.body.classList.contains("immersive"));
   const play=STORE[STATE.number];
   const saved=!!play;
-  $("#publishToggle").disabled=!saved;
-  $("#publishToggle").textContent=saved&&play.published?"Published · remove":"Publish this play";
-  $("#shareUrl").value=shareUrl();
-  $("#copyShare").disabled=!STATE.shareToken;
-  $("#rotateShare").disabled=!STATE.shareToken;
+  const state=selectedPublishState();
+  const stale=anyPublishedStale();
+  if($("#shareUrl")) $("#shareUrl").value=shareUrl();
+  if($("#copyShare")) $("#copyShare").disabled=!STATE.shareToken;
+  if($("#rotateShare")) $("#rotateShare").disabled=!STATE.shareToken;
+  const status=$("#coachBarStatus");
+  if(status){
+    status.textContent=saved?PUBLISH_LABELS[state]:"Coach only";
+    status.className="coach-bar-status "+(saved?state:"coach");
+  }
+  const publishBtn=$("#coachBarPublish");
+  if(publishBtn){
+    publishBtn.disabled=!saved;
+    publishBtn.textContent=saved&&play.published?"Remove from kids":"Publish this play";
+  }
+  const pushBtn=$("#coachBarPush");
+  if(pushBtn){
+    pushBtn.classList.toggle("hidden",!stale);
+    pushBtn.disabled=!stale;
+  }
+  const saveBtn=$("#coachBarSave");
+  if(saveBtn) saveBtn.classList.toggle("hidden",STATE.mode!=="draw");
+  syncCoachBarHeight();
 }
 
 function storedPlay(number){return STORE[number]||emptyPlay(number)}
@@ -782,7 +914,7 @@ function setDraftFromStore(){
   draft=clonePlay(storedPlay(STATE.number));
   STATE.generatedFlip=false;
   STATE.dirty=false;
-  STATE.selected="X";
+  STATE.selected="";
 }
 
 function areasSVG(){
@@ -857,6 +989,10 @@ function paint(play,pos,ball,liveRoute){
 function setCue(play,mode){
   const look=play.looks[STATE.look];
   if(STATE.mode==="draw"){
+    if(!STATE.selected){
+      $("#cue").textContent="Tap a letter chip to draw. Drag letters to place them. Swipe empty turf to scroll.";
+      return;
+    }
     const spot=play.spots.find(s=>s.letter===STATE.selected);
     const routeNote=spot&&spot.sit?"Sit. Stays put.":(spot&&spot.route.length?`${spot.route.length} point route.`:"No route yet.");
     $("#cue").textContent=`Draw ${STATE.selected}. ${routeNote}`;
@@ -880,17 +1016,30 @@ function nextSortOrder(section){
   return plays.length?Math.max(...plays.map(play=>cleanSortOrder(play.sortOrder)))+10:10;
 }
 function renderPicks(){
+  const filters=[["all","All"],["kids","Kids"],["coach","Not on kids"]];
+  const filterRow=`<div class="play-filters" role="group" aria-label="Show plays">${filters.map(([id,label])=>`<button type="button" data-filter="${id}" class="${STATE.playFilter===id?"on":""}">${label}</button>`).join("")}</div>`;
   const btn=play=>{
     const number=play.number;
-    return `<button type="button" data-play="${esc(number)}" class="${number===STATE.number?"on":""}"><b>${esc(number)}</b><small>${esc((play.title||"").replace(/^\d+\s*/,"" )||"Saved play")}</small></button>`;
+    const state=playPublishState(play);
+    return `<button type="button" data-play="${esc(number)}" class="${number===STATE.number?"on":""} ${state}"><b>${esc(number)}</b><small>${esc((play.title||"").replace(/^\d+\s*/,"" )||"Saved play")}</small><span class="pub">${PUBLISH_LABELS[state]}</span></button>`;
   };
-  $("#playPicks").innerHTML=PLAY_SECTIONS.map(section=>{
+  const emptyCopy=STATE.playFilter==="kids"?"No Kids plays here.":STATE.playFilter==="coach"?"No coach-only plays here.":"No plays here yet.";
+  $("#playPicks").innerHTML=filterRow+PLAY_SECTIONS.map(section=>{
     const plays=sectionPlays(section);
-    const count=`${plays.length} play${plays.length===1?"":"s"}`;
-    const list=plays.length?plays.map(btn).join(""):`<p class="empty-section">No plays here yet.</p>`;
+    const shown=plays.filter(playMatchesFilter);
+    const count=STATE.playFilter==="all"
+      ?`${plays.length} play${plays.length===1?"":"s"}`
+      :`${shown.length} of ${plays.length}`;
+    const list=shown.length?shown.map(btn).join(""):`<p class="empty-section">${emptyCopy}</p>`;
     return `<section class="play-section" aria-labelledby="${section}Heading"><div class="play-section-head"><h2 id="${section}Heading">${SECTION_LABELS[section]}</h2><span>${count}</span></div><div class="picks">${list}</div></section>`;
   }).join("")+`<button type="button" class="new-play" id="addPlayChip">+ New upcoming play</button>`;
   $$("#playPicks [data-play]").forEach(el=>el.onclick=()=>selectPlay(el.dataset.play));
+  $$("#playPicks [data-filter]").forEach(el=>el.onclick=()=>{
+    const next=el.dataset.filter;
+    if(next===STATE.playFilter) return;
+    STATE.playFilter=next;
+    renderPicks();
+  });
   $("#addPlayChip").onclick=startNewPlay;
 }
 function renderOrganize(){
@@ -968,7 +1117,7 @@ function renderChrome(){
   $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
   $$("#unitPicks [data-unit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.unit===STATE.lineupUnit));
   $("#flipBtn").textContent="Flip";
-  $("#fieldWrap").classList.toggle("is-drawing",STATE.mode==="draw");
+  if(!pointer||(pointer.kind!=="draw"&&pointer.kind!=="drag")) $("#fieldWrap").classList.remove("is-drawing");
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
     const spot=play.spots.find(s=>s.letter===letter);
     const color=positionColor(letter);
@@ -1034,6 +1183,7 @@ function syncViewport(){
   const field=document.querySelector(".field");
   if(field) void field.getBoundingClientRect();
   if(!document.body.classList.contains("immersive")) postEmbedHeight();
+  syncCoachBarHeight();
 }
 function bindViewport(){
   const kick=()=>{
@@ -1059,6 +1209,7 @@ function setImmersive(active){
   document.body.classList.toggle("immersive",active);
   $("#fullScreenBtn").setAttribute("aria-pressed",active?"true":"false");
   notifyParent("commodores-plays-immersive",{active});
+  renderPublish();
   syncViewport();
 }
 function enterImmersive(){
@@ -1168,7 +1319,7 @@ function startNewPlay(){
   STATE.number="";
   STATE.generatedFlip=false;
   STATE.dirty=true;
-  STATE.selected="X";
+  STATE.selected="";
   $("#playNumber").value="";
   $("#playTitle").value="";
   $("#saveStatus").textContent="Blank formation. Place letters, draw routes, give it a number, Save.";
@@ -1215,33 +1366,64 @@ function selectedSpot(){
 }
 function markDirty(){STATE.dirty=true;$("#saveStatus").textContent="Not saved yet."}
 
-function onFieldPointerDown(evt){
-  if(STATE.mode!=="draw"||!draft) return;
-  const pt=svgPoint(evt);
-  if(!pt) return;
-  evt.preventDefault();
+function setFieldDrawing(active){
+  $("#fieldWrap").classList.toggle("is-drawing",!!active);
+}
+function claimFieldPointer(evt,next){
+  pointer=next;
+  if(evt&&evt.preventDefault) evt.preventDefault();
   try{$("#fieldHost").setPointerCapture(evt.pointerId)}catch(_){}
-  const hit=hitLetter(draft,pt);
-  if(hit){
-    STATE.selected=hit;
-    pointer={kind:"drag",letter:hit,moved:false,id:evt.pointerId};
-    render();
-    return;
+  setFieldDrawing(true);
+}
+function releaseFieldPointer(pointerId){
+  try{
+    const host=$("#fieldHost");
+    if(host&&pointerId!=null&&host.hasPointerCapture(pointerId)) host.releasePointerCapture(pointerId);
+  }catch(_){}
+  setFieldDrawing(false);
+}
+function startLetterDrag(evt,letter,pt){
+  claimFieldPointer(evt,{kind:"drag",letter,moved:true,id:evt.pointerId});
+  const spot=draft.spots.find(s=>s.letter===letter);
+  if(spot&&pt){
+    spot.x=pt.x;
+    spot.y=storedFormationY(pt.y);
+    markDirty();
   }
+  render();
+}
+function startRouteDraw(evt,pt){
   const spot=selectedSpot();
-  if(!spot) return;
+  if(!spot){pointer=null;return}
   spot.sit=false;
   spot.route=[];
-  pointer={kind:"draw",points:[pt],id:evt.pointerId};
+  const start=pt||(pointer&&pointer.start);
+  claimFieldPointer(evt,{kind:"draw",points:start?[start]:[],id:evt.pointerId});
   markDirty();
   render(pointer.points);
 }
-function onFieldPointerMove(evt){
-  if(!pointer||STATE.mode!=="draw"||!draft) return;
+
+function onFieldPointerDown(evt){
+  if(STATE.mode!=="draw"||!draft) return;
+  if(evt.isPrimary===false) return;
   const pt=svgPoint(evt);
   if(!pt) return;
-  evt.preventDefault();
+  pointer={
+    kind:"pending",
+    id:evt.pointerId,
+    start:pt,
+    clientX:evt.clientX,
+    clientY:evt.clientY,
+    hit:hitLetter(draft,pt)
+  };
+}
+function onFieldPointerMove(evt){
+  if(!pointer||STATE.mode!=="draw"||!draft) return;
+  if(pointer.id!=null&&evt.pointerId!==pointer.id) return;
+  const pt=svgPoint(evt);
   if(pointer.kind==="drag"){
+    if(!pt) return;
+    evt.preventDefault();
     const spot=draft.spots.find(s=>s.letter===pointer.letter);
     if(!spot) return;
     const start=formationPoint(spot);
@@ -1252,13 +1434,43 @@ function onFieldPointerMove(evt){
     render();
     return;
   }
-  const last=pointer.points[pointer.points.length-1];
-  if(!last||Math.hypot(pt.x-last.x,pt.y-last.y)>=5) pointer.points.push(pt);
-  render(pointer.points);
+  if(pointer.kind==="draw"){
+    if(!pt) return;
+    evt.preventDefault();
+    const last=pointer.points[pointer.points.length-1];
+    if(!last||Math.hypot(pt.x-last.x,pt.y-last.y)>=5) pointer.points.push(pt);
+    render(pointer.points);
+    return;
+  }
+  if(pointer.kind!=="pending") return;
+  const dx=evt.clientX-pointer.clientX;
+  const dy=evt.clientY-pointer.clientY;
+  if(Math.hypot(dx,dy)<POINTER_SLOP_PX) return;
+  const hit=pointer.hit;
+  if(hit&&hit!==STATE.selected){
+    startLetterDrag(evt,hit,pt);
+    return;
+  }
+  if(hit&&hit===STATE.selected){
+    startRouteDraw(evt,pt||pointer.start);
+    return;
+  }
+  if(!STATE.selected||!selectedSpot()){
+    pointer=null;
+    return;
+  }
+  if(Math.abs(dy)>=Math.abs(dx)*1.15){
+    pointer=null;
+    return;
+  }
+  startRouteDraw(evt,pt||pointer.start);
 }
 function onFieldPointerUp(evt){
-  if(!pointer||!draft){pointer=null;return}
+  if(!pointer) return;
+  if(pointer.id!=null&&evt&&evt.pointerId!==pointer.id) return;
   const pointerId=pointer.id;
+  const pending=pointer.kind==="pending";
+  const hit=pointer.hit;
   if(pointer.kind==="draw"){
     const spot=selectedSpot();
     if(spot){
@@ -1268,7 +1480,8 @@ function onFieldPointerUp(evt){
     }
   }
   pointer=null;
-  try{if($("#fieldHost").hasPointerCapture(pointerId)) $("#fieldHost").releasePointerCapture(pointerId)}catch(_){}
+  releaseFieldPointer(pointerId);
+  if(pending&&hit) STATE.selected=hit;
   render();
 }
 
@@ -1377,6 +1590,11 @@ async function onForgot(event){
 }
 function renderAuth(){
   $("#coachTools").classList.toggle("hidden",!STATE.coach);
+  if(!STATE.coach){
+    const bar=$("#coachBar");
+    if(bar) bar.classList.add("hidden");
+    syncCoachBarHeight();
+  }
   if(STATE.coach){
     $("#authBar").innerHTML=`<b>Signed in as ${esc(STATE.coach.first_name)}</b><span>Saves go to every coach iPad.</span><button class="ghost" type="button" id="lockBtn">Lock</button>`;
     $("#lockBtn").onclick=async()=>{try{if(sb) await sb.auth.signOut()}catch(_){}STATE.coach=null;location.reload()};
@@ -1476,7 +1694,9 @@ $("#scrub").oninput=()=>{
   paintProgress(play,Number($("#scrub").value)/1000);
   setCue(play,"play");
 };
-$("#publishToggle").onclick=togglePublished;
+$("#coachBarPublish").onclick=togglePublished;
+$("#coachBarPush").onclick=()=>publishSnapshot(false);
+$("#coachBarSave").onclick=saveDraft;
 $("#publishNow").onclick=()=>publishSnapshot(false);
 $("#rotateShare").onclick=()=>{
   if(confirm("Rotate the secret link? The old kids link will stop working.")) publishSnapshot(true);
@@ -1499,7 +1719,7 @@ $("#newPlayBtn").onclick=startNewPlay;
 $("#saveBtn").onclick=saveDraft;
 $("#deleteBtn").onclick=deleteDraft;
 const host=$("#fieldHost");
-host.addEventListener("pointerdown",onFieldPointerDown);
+host.addEventListener("pointerdown",onFieldPointerDown,{passive:true});
 window.addEventListener("pointermove",onFieldPointerMove,{passive:false});
 window.addEventListener("pointerup",onFieldPointerUp);
 window.addEventListener("pointercancel",onFieldPointerUp);
