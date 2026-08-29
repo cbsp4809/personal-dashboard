@@ -298,8 +298,11 @@ Play chips show **Kids**, **Coach only**, or **Edited** (saved since the last
 kids snapshot). Filter chips above the lists are All / Kids / Not on kids.
 A signed-in sticky bar stays at the bottom of the phone viewport: selected-play
 status, **Publish this play** / **Remove from kids**, **Push to kids** when any
-published play is stale, and **Save play** in Draw. The secret URL, copy, and
-rotate stay in a compact **Kids link** details block.
+published play is stale, and **Save play** in Draw. A slim **Kids link** strip
+sits at the top of the coach tools (above Play/Draw): last-pushed time in
+America/Chicago (`Pushed Sat 4:01 p.m.`, or `Not on kids yet`) and **Copy** for
+the secret watch URL. **Change link** tucks rotate. Copy is not on the bottom
+bar.
 
 Each saved play has a Publish toggle. Publishing writes one read-only snapshot
 containing all marked plays plus the 12-player practice roster tags and entered
@@ -326,8 +329,8 @@ stays consistent with the last publish.
 Anonymous clients cannot select play/share tables; a narrow
 RPC returns only the published snapshot for the exact token. After route edits
 on a published play, tap **Push to kids**. After roster-tag or jersey changes,
-open **Kids link** and tap **Republish names + plays**. Rotating the link
-invalidates the old URL.
+tap **Push to kids**. **Change link** → **Rotate secret link** invalidates the
+old URL.
 
 Do not put Cloudflare Access back in front of this Worker. The field book still
 uses Supabase Auth email+password. Roster loads from `commodores_roster` after
