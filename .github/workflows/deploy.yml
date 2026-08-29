@@ -27,12 +27,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # The Commodores coach app, animator, password reset page, and secret-link
-      # watch page are NOT served on this public GitHub Pages site. They live
-      # on the Cloudflare Worker; coach data is protected by Supabase Auth/RLS,
-      # with Access off.
+      # The Commodores coach app, animator, password reset page, secret-link
+      # watch page, and living manuals are NOT served on this public GitHub
+      # Pages site. They live on the Cloudflare Worker; coach data is
+      # protected by Supabase Auth/RLS, with Access off.
       - name: Exclude staff field book from the public site
-        run: rm -f commodores.html commodores.webmanifest plays.html plays.webmanifest watch.html reset.html
+        run: rm -f commodores.html commodores.webmanifest plays.html plays.webmanifest watch.html reset.html coach-manual.html parent-guide.html
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

@@ -14,12 +14,13 @@ Pushing to `main` deploys **two** places:
 
 - **GitHub Pages** (`cbsp4809.github.io/personal-dashboard/`) — public morning
   dashboard + Ops. `deploy.yml` strips `commodores.html`, `plays.html`,
-  `watch.html`, `reset.html`, and the coach manifests so the Commodores
-  workflow stays off the public site.
+  `watch.html`, `reset.html`, `coach-manual.html`, `parent-guide.html`, and
+  the coach manifests so the Commodores workflow stays off the public site.
 - **Cloudflare Worker** `personal-dashboard` —
   **https://personal-dashboard.chrisbailey.workers.dev/** — serves the whole
-  repo, including Commodores, Plays, and the living coach manual at
-  `/coach-manual.html`. Cloudflare Git runs
+  repo, including Commodores, Plays, the living coach manual at
+  `/coach-manual.html`, and the parent/kids guide at `/parent-guide.html`.
+  Cloudflare Git runs
   `npx wrangler versions upload` from the repo root. The root `wrangler.toml`
   (static `[assets]`, no Worker `main`) is what stops the
   **Missing entry-point** build failure. Do not add Cloudflare Access back.
@@ -37,6 +38,7 @@ plays.webmanifest          # home-screen app named Dores Plays
 reset.html                 # coach password reset / set-new-password (Worker only)
 watch.html                 # token-only kids/parents published-play viewer (Worker only)
 coach-manual.html          # living staff user manual (Worker: /coach-manual.html)
+parent-guide.html          # parent/kids how-to (Worker: /parent-guide.html; linked from watch)
 wrangler.toml              # Cloudflare Worker `personal-dashboard` static-asset entry (fixes Missing entry-point)
 .assetsignore              # keep Worker deploy to site files (no .git / sql / markdown)
 icons/                     # CB Ops wordmark plus Commodores gold-star icons (not Vanderbilt marks)
@@ -230,9 +232,18 @@ Staff user manual (same Worker origin):
 
 **https://personal-dashboard.chrisbailey.workers.dev/coach-manual.html**
 
-The field-book login and a post-login Help control open that page. It is staff
-only: install, sign-in, the five tabs, play publish, and troubleshooting. No
-passwords.
+The field-book login (Help + Coach user manual), the post-login **Help / Manual**
+control, and Plays coach chrome open that page. It is staff only: install,
+Worker `reset.html` password reset, Team / Today through Practice, gold-1
+practice tags, sticky Publish / Push / Save, the top Kids link strip, Base
+zone on the kids home, and troubleshooting. No passwords. Last updated stamp
+is in the page.
+
+Parent / kids guide (no coach URLs):
+
+**https://personal-dashboard.chrisbailey.workers.dev/parent-guide.html**
+
+The kids watch page **Help / How to use** link opens that page. No login.
 
 Direct access to `plays.html` uses the same coach allowlist gate; unsigned
 visitors cannot open the editor. The offense book starts empty and lists only

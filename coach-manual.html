@@ -32,10 +32,11 @@ a{color:var(--gold)}
 .kicker{display:flex;align-items:center;gap:8px;margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
 .star{width:13px;height:13px;flex:none;fill:var(--gold)}
 .mast h1{margin:0;font:400 26px/1.05 var(--serif);letter-spacing:-.02em}
-.btn{min-height:42px;border:1px solid var(--strong);border-radius:10px;padding:8px 13px;background:transparent;color:var(--soft);font:700 13px var(--sans);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.btn{min-height:44px;min-width:44px;border:1px solid var(--strong);border-radius:10px;padding:8px 13px;background:transparent;color:var(--soft);font:700 13px var(--sans);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
 .btn.gold{border:0;background:var(--gold);color:#1C1C1C}
 main{width:min(760px,100%);margin:auto;padding:22px 20px calc(48px + env(safe-area-inset-bottom,0px))}
-.lede{margin:0 0 18px;color:var(--soft);font:400 19px/1.4 var(--serif)}
+.lede{margin:0 0 10px;color:var(--soft);font:400 19px/1.4 var(--serif)}
+.updated{margin:0 0 18px;padding:10px 12px;border:1px solid rgba(207,174,112,.32);border-radius:12px;background:var(--gold-soft);color:var(--ink);font-weight:800}
 .toc{display:grid;gap:8px;margin:0 0 28px;padding:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px}
 .toc a{min-height:44px;display:flex;align-items:center;padding:8px 10px;border-radius:10px;color:var(--ink);font-weight:700;text-decoration:none}
 .toc a:hover,.toc a:focus{background:var(--gold-soft);outline:none}
@@ -49,7 +50,7 @@ li+li{margin-top:8px}
 .panel.gold{background:var(--gold-soft);border-color:rgba(207,174,112,.32)}
 .panel strong{display:block;margin-bottom:4px;color:var(--ink)}
 .urls{display:grid;gap:10px;margin:0 0 16px}
-.urls a{display:block;padding:14px 15px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-weight:700;text-decoration:none;overflow-wrap:anywhere}
+.urls a{display:block;padding:14px 15px;border:1px solid var(--strong);border-radius:12px;background:var(--bg-2);color:var(--ink);font-weight:700;text-decoration:none;overflow-wrap:anywhere;min-height:44px}
 .urls a span{display:block;margin-top:3px;color:var(--muted);font-size:12.5px;font-weight:600}
 .letters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
 .letters b{min-width:40px;min-height:40px;display:grid;place-items:center;border-radius:10px;background:var(--gold);color:#1C1C1C;font-size:15px}
@@ -79,16 +80,20 @@ code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highli
 </header>
 
 <main>
-  <p class="lede">Living staff guide for the Commodores field book. Open it anytime from this Worker page. No passwords live here.</p>
+  <p class="lede">Living staff guide for the Commodores field book. Open it from Help in the app. No Google Doc. No passwords here.</p>
+  <p class="updated">Last updated: Aug 29, 2026</p>
 
   <nav class="toc" aria-label="Manual sections">
     <a href="#what">1. What this app is</a>
     <a href="#install">2. Install on iPhone / iPad</a>
-    <a href="#signin">3. Sign in</a>
+    <a href="#signin">3. Sign in and reset password</a>
     <a href="#tabs">4. The five tabs</a>
-    <a href="#plays">5. Play builder and kids links</a>
-    <a href="#trace">6. Chris traces plays — send feedback</a>
-    <a href="#fix">7. Troubleshooting</a>
+    <a href="#tags">5. Practice tags and the gold 1</a>
+    <a href="#lineup">6. Practice tags vs game lineup</a>
+    <a href="#plays">7. Play builder and kids link</a>
+    <a href="#kids">8. What kids see</a>
+    <a href="#comms">9. Names and parents</a>
+    <a href="#fix">10. Troubleshooting</a>
   </nav>
 
   <section id="what">
@@ -99,9 +104,9 @@ code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highli
       Coaches use this book. Parents stay on GameChanger. Kids only get a secret watch link when staff publishes plays — they never sign in here.
     </div>
     <ul>
-      <li><b>Staff</b> — schedule, playbook, lineups, practice notes, ratings, and the play builder.</li>
+      <li><b>Staff</b> — Team / Today, playbook, lineups, practice notes, ratings, and the play builder.</li>
       <li><b>Parents</b> — GameChanger for team comms, games, and family updates. Do not send them this login page.</li>
-      <li><b>Kids</b> — a read-only watch page with a secret <code>watch.html?t=</code> link. No coach email. No roster. No editor.</li>
+      <li><b>Kids</b> — a read-only watch page with a secret <code>watch.html?t=</code> link. No coach email. No roster editor. No save.</li>
     </ul>
     <p>The book lives on the Cloudflare Worker, not the public GitHub Pages site. Cloudflare Access is off. Sign-in is the coach email and password only.</p>
     <div class="urls">
@@ -127,7 +132,7 @@ code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highli
   </section>
 
   <section id="signin">
-    <h2>Sign in</h2>
+    <h2>Sign in and reset password</h2>
     <p>Use the coach email Chris invited, plus the password you set. That is Supabase Auth. There is no Cloudflare Access screen and no PIN.</p>
     <ul>
       <li>The phone or iPad stays signed in until you tap <b>Lock</b>.</li>
@@ -135,7 +140,13 @@ code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highli
       <li>Only allowlisted coaches see roster, ratings, notes, and plays.</li>
       <li>First names only after you are in.</li>
     </ul>
-    <p class="muted">Forgot the password or your email is refused? Text Chris. Do not share passwords in this manual, in texts to parents, or on GameChanger.</p>
+    <h3>Forgot password</h3>
+    <p>Tap <b>Forgot password?</b> on the field-book login or on Plays. Enter your coach email. The reset email opens the Worker page <code>reset.html</code> — not the Supabase dashboard.</p>
+    <div class="urls">
+      <a href="https://personal-dashboard.chrisbailey.workers.dev/reset.html">Password reset<span>personal-dashboard.chrisbailey.workers.dev/reset.html</span></a>
+    </div>
+    <p>Set the new password twice on that page. After it saves, you are signed in. If the link is expired or already used, request a new one from Forgot password. Do not reset from the Supabase website.</p>
+    <p class="muted">Email refused or the reset never arrives? Text Chris. Do not share passwords in this manual, in texts to parents, or on GameChanger.</p>
   </section>
 
   <section id="tabs">
@@ -143,52 +154,109 @@ code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highli
     <p>Primary pages across the top: <b>Team / Today</b>, <b>Playbook</b>, <b>Plays</b>, <b>Lineup</b>, <b>Practice</b>. Season board is a reference link under the tabs — schedule, milestones, goals. It is not a sixth working page.</p>
 
     <h3>Team / Today</h3>
-    <p>Home screen after sign-in. Next practice, the official SBMSA slate, the two-play / one-defense reminder, and the shared roster with staff ratings. Score as yourself. Order stays frozen while you rate.</p>
+    <p>Home screen after sign-in. Next practice, the official SBMSA slate, the two-play / one-defense reminder, and the shared roster with staff ratings. Score as yourself. Order stays frozen while you rate. Practice tags live on each kid’s roster card.</p>
 
     <h3>Playbook</h3>
     <p>The staff book kids get taught from. Offense and Defense sub-tabs. Offense lists the saved drawings. Defense is still six areas + one helper, no rush. Hip-stay / pick-a-guy is a drill only — never the game look.</p>
 
+    <h3>Plays</h3>
+    <p>Coach-only animator and draw editor. Build the real routes here, save them, then teach from Playbook. Same page also lives at the Plays URL if you want it on its own Home Screen icon.</p>
+
     <h3>Lineup</h3>
     <p>Two quarter units: <b>Q1/Q3</b> and <b>Q2/Q4</b>. Each has 7 offense and 7 defense. Mark Present / Out first. The play-time rule check uses only the kids who showed (2+2 or one-way; short-roster both-way math if we are short). No mid-quarter swapping.</p>
-    <p>Offense letters: Q · C · X · A · B · Y · Z. Those names are what the play builder uses.</p>
+    <div class="panel gold">
+      <strong>Say Q1/Q3 and Q2/Q4 to parents</strong>
+      Those are the names on the boards. Never call the units A/B in front of parents or kids.
+    </div>
 
     <h3>Practice</h3>
     <p>Thursday 5:00 p.m. and Sunday 1:00 p.m. at Frostwood through Dec 6. Date list, drill picker, and the last-practice → next-practice notes staff share. Write Thursday’s plan before you leave Sunday.</p>
+  </section>
 
-    <h3>Plays</h3>
-    <p>Coach-only animator and draw editor. Build the real routes here, save them, then teach from Playbook. Same page also lives at the Plays URL if you want it on its own Home Screen icon.</p>
+  <section id="tags">
+    <h2>Practice tags and the gold 1</h2>
+    <p>On Team / Today, open a kid’s roster card. Offense chips are <b>Q C X A B Y Z</b>. Defense chips are <b>D1–D7</b>.</p>
+    <ul>
+      <li>First tap on an empty side adds that tag. It becomes the primary if that side had none.</li>
+      <li><b>One gold 1 per side</b> — one primary offense letter, one primary defense zone.</li>
+      <li>Tap a tagged backup chip to promote it to the gold 1.</li>
+      <li>Tap the current gold 1 to clear that primary (the rest stay in order).</li>
+      <li>Array order is rank. Index 0 is the primary. <b>Never sort tags.</b></li>
+    </ul>
+    <p>Kids learn more than one spot over the year. The gold 1 is “open this first.” Extra tags stay on the card so the watch page can offer a toggle.</p>
+  </section>
+
+  <section id="lineup">
+    <h2>Practice tags vs game-day lineup</h2>
+    <p>These are two different name sources. Do not mix them up.</p>
+    <ul>
+      <li><b>Practice / kids watch</b> uses roster practice tags (and optional jerseys). After a kid picks Watching as, the gold-1 letter or zone lights first.</li>
+      <li><b>Game animator</b> can use the Q1/Q3 or Q2/Q4 lineup. Coach Plays has a Q1/Q3 names / Q2/Q4 names switch for that.</li>
+    </ul>
+    <p>Publishing captures the practice tags, not the quarter lineup. If a kids name looks wrong, fix the roster tags, then Push to kids. If a coach Play name looks wrong, fix the Q1/Q3 or Q2/Q4 board.</p>
   </section>
 
   <section id="plays">
-    <h2>Play builder and kids links</h2>
-    <p>Open <b>Plays</b> in the field book, or go straight to the animator. Draw the seven spots. Labels come from the current lineup in this fixed order:</p>
+    <h2>Play builder and kids link</h2>
+    <p>Open <b>Plays</b> in the field book, or go straight to the animator. Draw the seven spots. Coach labels come from the selected Q1/Q3 or Q2/Q4 lineup in this fixed order:</p>
     <div class="letters" aria-label="Offense letters">
-      <b style="background:#FFFFFF">Q</b><b style="background:#CFAE70">C</b><b style="background:#5EC8E8">X</b><b style="background:#F4A261">A</b><b style="background:#7ED47A">B</b><b style="background:#C9A6F0">Y</b><b style="background:#FF8B7A">Z</b>
+      <b style="background:#FFFFFF;color:#1C1C1C">Q</b><b style="background:#CFAE70">C</b><b style="background:#5EC8E8">X</b><b style="background:#F4A261">A</b><b style="background:#7ED47A">B</b><b style="background:#C9A6F0">Y</b><b style="background:#FF8B7A">Z</b>
     </div>
-    <p>Q is the thrower (white). C is the center (gold). X left out (sky), Z right out (salmon), A / B / Y inside (orange / mint / lilac). That same color is the name bubble, route, and arrow. Coach Plays uses the selected Q1/Q3 or Q2/Q4 game lineup. The all-season kids link uses roster practice tags instead: after a kid chooses Watching as, only that first name labels their tagged route bubbles while other routes fade. Optional jersey numbers appear only when staff has entered them. The route letter stays visible on the path.</p>
+    <p>Q is the thrower (white). C is the center (gold). X left out (sky), Z right out (salmon), A / B / Y inside (orange / mint / lilac).</p>
+
+    <h3>Draw is scroll-safe</h3>
     <ul>
-      <li><b>Draw</b> — drag a letter to place it. Tap a letter, then finger-draw its route. Sit = no route.</li>
-      <li><b>Save</b> — give it a number and a short title. That is the staff drawing, not a guessed card.</li>
-      <li><b>Play</b> — Play / Pause, scrub, Flip, Reset, or full-screen on the iPad (rotate either way). Full screen keeps the play name visible.</li>
+      <li>A straight swipe on <b>empty turf</b> scrolls the page. It does not start a route.</li>
+      <li>Drag a letter to place it.</li>
+      <li>Tap a letter chip to arm it, then draw from that letter. Sit = no route.</li>
+      <li>The field only captures a draw after a letter is armed — not for the whole Draw session.</li>
+    </ul>
+
+    <h3>Sticky bottom bar</h3>
+    <p>Publish, Push, and Save live in the sticky bar at the bottom of the phone. You do not have to scroll to the end of the page to publish.</p>
+    <ul>
+      <li><b>Publish this play</b> / <b>Remove from kids</b> — mark the selected play for the kids snapshot.</li>
+      <li><b>Push to kids</b> — appears when any published play is stale (routes, tags, or jerseys changed).</li>
+      <li><b>Save play</b> — shows in Draw.</li>
+    </ul>
+
+    <h3>Play chips and filters</h3>
+    <p>Each saved play chip shows <b>Kids</b>, <b>Coach only</b>, or <b>Edited</b> (saved since the last kids snapshot). Filters above the lists: <b>All</b> / <b>Kids</b> / <b>Not on kids</b>.</p>
+
+    <h3>Kids link strip — at the top</h3>
+    <p>Above Play / Draw: last-pushed time (Chicago, like <code>Pushed Sat 4:01 p.m.</code>, or <b>Not on kids yet</b>) and <b>Copy</b>.</p>
+    <ul>
+      <li>Copy the one secret practice link. It looks like <code>watch.html?t=</code> plus a long token.</li>
+      <li><b>Change link</b> is tucked behind a tap. <b>Rotate secret link</b> asks for confirm, then kills the old URL. Use that only if a link leaked.</li>
     </ul>
     <div class="panel gold">
-      <strong>Publishing to kids is a different door</strong>
-      Kids never use the coach login. Mark <b>Publish this play</b>, then <b>Republish names + plays</b>. Copy the one secret practice link. It looks like <code>watch.html?t=</code> plus a long token. Kids pick their first name under <b>Watching as</b>; their tagged route letters and D1–D7 zones light up while the rest fade. No lineup, editor, or save controls appear.
+      <strong>Kids never use the coach login</strong>
+      Send kids only that watch link — not commodores.html, not plays.html, not this manual. After you change routes, practice tags, or jersey numbers, tap <b>Push to kids</b> or the watch page stays stale.
     </div>
-    <ul>
-      <li>Send kids only that watch link — not commodores.html, not plays.html, not this manual.</li>
-      <li>After you change routes, practice tags, or jersey numbers, tap <b>Republish names + plays</b> or the watch page stays stale.</li>
-      <li><b>Rotate secret link</b> kills the old URL. Make a new one only if a link leaked.</li>
-    </ul>
   </section>
 
-  <section id="trace">
-    <h2>Chris traces plays into the playbook</h2>
-    <p>Chris will trace the real routes into the playbook so 23/26, 38, and the rest are the lines we actually teach — not guessed cards. If a drawing looks wrong, say so.</p>
-    <div class="panel">
-      <strong>Ask for feedback</strong>
-      If a route, a name on a letter, or a kids-link snapshot is off, tell Chris. The book stays living. Better a one-line correction than a kid learning the wrong stem.
-    </div>
+  <section id="kids">
+    <h2>What kids see</h2>
+    <p>The watch home is: <b>Watching as</b>, then <b>Offense</b> plays, then <b>Defense</b> with one <b>Base zone</b> card. Goal line is later — it is not shown.</p>
+    <ul>
+      <li>Pick a first name under Watching as. That choice drives both sides.</li>
+      <li>The primary letter or zone loads first. Extra tags toggle at the top of each play.</li>
+      <li>Kids learn multiple positions over the year. Some have a main spot; extras stay available.</li>
+      <li>Base zone is static: six areas + D7 deep behind D5. Nothing on defense moves. No rush.</li>
+      <li>Offense plays have an optional <b>Defense</b> overlay of those same static zones.</li>
+      <li>0.5× is the default play speed so they can see the routes.</li>
+    </ul>
+    <p>Parents have their own short guide on the watch page Help link. Do not send them this coach manual.</p>
+  </section>
+
+  <section id="comms">
+    <h2>Names and parents</h2>
+    <ul>
+      <li>First names only in the book, on plays, and in the kids watch page.</li>
+      <li>Never email the whole team without Chris.</li>
+      <li>Parents stay on GameChanger. Do not send coach login, Plays, or this manual.</li>
+      <li>Kids get the secret watch link only.</li>
+    </ul>
   </section>
 
   <section id="fix">
@@ -197,19 +265,23 @@ code{padding:1px 5px;border-radius:6px;background:var(--bg-2);color:var(--highli
     <p>Delete the icon and add it again from Safari on the Worker URL. Old github.io icons are dead.</p>
     <h3>I do not see Add to Home Screen</h3>
     <p>You are probably in Chrome or a Facebook/Messages in-app browser. Open the link in Safari, then Share.</p>
+    <h3>Forgot password sent me somewhere that is not reset.html</h3>
+    <p>Stop. The reset must open the Worker <code>reset.html</code> page. Do not use the Supabase dashboard. Request a new link from Forgot password, or text Chris.</p>
     <h3>Sign-in says the account is not on the staff list</h3>
     <p>The email is not on the coach allowlist, or you typed a different address than the invite. Check with Chris. Do not create a new account on your own.</p>
     <h3>I am signed in but roster or plays are empty</h3>
     <p>Check the network, pull to refresh, or Lock and sign in again. If it is still empty, Chris needs to look at the shared staff row — do not rebuild the roster in the page.</p>
     <h3>Kids say the watch link does nothing</h3>
-    <p>The link must include <code>?t=</code> and the full token. A rotated link is dead. After roster-tag or route edits, republish. Kids should not be sent the coach pages.</p>
+    <p>The link must include <code>?t=</code> and the full token. A rotated link is dead. After roster-tag or route edits, Push to kids. Kids should not be sent the coach pages.</p>
     <h3>Play names do not match who is in that spot</h3>
-    <p>For coach Plays, fix the Q1/Q3 or Q2/Q4 lineup. For the kids practice link, fix that player’s Q/C/X/A/B/Y/Z roster tags. Then republish; the app never invents names or jersey numbers.</p>
+    <p>For coach Plays, fix the Q1/Q3 or Q2/Q4 lineup. For the kids practice link, fix that player’s Q/C/X/A/B/Y/Z or D1–D7 tags and the gold 1. Then Push to kids. The app never invents names or jersey numbers.</p>
+    <h3>I cannot find Publish</h3>
+    <p>It sits in the sticky bar at the bottom of Plays: Publish / Push / Save. The Kids link Copy is at the top.</p>
     <h3>I got a Cloudflare email-code screen</h3>
     <p>That should not appear. Access is off. You want the gold field-book sign-in card only. If a code screen shows up, stop and tell Chris — do not put Access back.</p>
   </section>
 
-  <p class="foot">FWE JV Vanderbilt Commodores · Fall 2026 · Updated 28 Aug 2026 · Staff only. Parents: GameChanger. Kids: secret watch link only.</p>
+  <p class="foot">FWE JV Vanderbilt Commodores · Fall 2026 · Last updated Aug 29, 2026 · Staff only. Parents: GameChanger. Kids: secret watch link only.</p>
 </main>
 </body>
 </html>
