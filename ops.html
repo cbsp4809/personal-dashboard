@@ -200,8 +200,8 @@ a{color:var(--brass)}
 .content-help-sheet ol{margin:0 0 10px;padding:0 0 0 1.15em;}
 .content-help-sheet li{padding-left:2px;}
 .content-help-sheet li:last-child{margin-bottom:10px;}
-#app.content-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
-#app.content-view .composer{display:none;}
+#app.content-view,#app.email-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
+#app.content-view .composer,#app.email-view .composer{display:none;}
 .modal .box.content-box{max-width:560px;}
 .modal textarea{display:block;width:100%;min-height:140px;resize:vertical;padding:11px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;margin-bottom:12px;}
 .modal textarea:focus{outline:none;border-color:var(--brass);}
@@ -280,10 +280,27 @@ a{color:var(--brass)}
 .cancel-queue{flex-shrink:0;}
 .email-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);}
 .email-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 10px;}
+.email-sheet-top{display:flex;min-width:0;align-items:center;order:2;}
+.email-segment{order:1;}
+.email-sheet-id{display:none;min-width:0;flex:1;}
+.email-sheet-from{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:14px;font-weight:700;}
+.email-sheet-subject{display:-webkit-box;min-width:0;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px;color:var(--soft);font-size:15px;font-weight:500;overflow-wrap:anywhere;}
+.email-sheet-close{width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--line-strong);border-radius:12px;background:transparent;color:var(--soft);font-size:24px;line-height:1;}
+.email-sheet-close:hover,.email-sheet-close:focus-visible{border-color:var(--brass);color:var(--ink);outline:none;}
 .email-segment{display:inline-flex;min-width:0;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:999px;padding:2px;}
 .email-segment button{min-width:92px;min-height:40px;padding:8px 15px;background:transparent;border:0;border-radius:999px;color:var(--muted);font-size:13px;font-weight:600;}
 .email-segment button.on{background:var(--brass-soft);color:var(--ink);}
 .email-detail-scroll{min-width:0;max-height:min(420px,50dvh);overflow-y:auto;padding:2px 16px 16px;overscroll-behavior:contain;}
+.email-more{min-width:0;max-width:100%;margin:16px 0 0;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
+.email-more-toggle{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:10px 14px;cursor:pointer;list-style:none;color:var(--soft);font-size:13px;font-weight:600;overflow-wrap:anywhere;}
+.email-more-toggle::-webkit-details-marker{display:none;}
+.email-more-toggle::after{content:"▾";color:var(--muted);font-size:12px;}
+.email-more[open] .email-more-toggle::after{content:"▴";}
+.email-more-body{min-width:0;max-width:100%;padding:0 14px 14px;}
+.email-notes{min-width:0;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line);}
+.email-notes-title{margin-bottom:6px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.email-notes-body{color:var(--soft);font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere;}
+.email-notes.sydney .email-notes-title{color:var(--sydney);}
 .email-incoming-head{padding:8px 0 12px;border-bottom:1px solid var(--line);}
 .email-incoming-head .email-attachments{margin-top:12px;}
 .email-incoming-from{font-weight:700;overflow-wrap:anywhere;}
@@ -380,7 +397,7 @@ a{color:var(--brass)}
   .content-photo-preview{width:100%;height:160px;}
   .content-actions .btn{flex:1 1 calc(50% - 4px);min-height:44px;}
   .content-caption{min-height:200px;}
-  #app.content-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
+  #app.content-view,#app.email-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
   .email-commandbar{align-items:stretch;flex-direction:column;}
   .email-command-copy,.email-command-sub,.email-mail-line{width:100%;max-width:100%;}
   .send-now{width:100%;min-height:44px;}
@@ -389,19 +406,23 @@ a{color:var(--brass)}
   .email-card-toggle{min-height:78px;padding-right:12px;}
   .email-queued-row{gap:8px;padding:10px 12px;}
   .cancel-queue{min-width:70px;}
-  .email-detail-head{padding:12px;}
+  .email-detail-head{flex-direction:column;align-items:stretch;gap:10px;padding:12px;}
+  .email-sheet-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;order:0;}
+  .email-segment{order:0;}
+  .email-sheet-id{display:block;}
   .email-segment{width:100%;}
   .email-segment button{flex:1;min-width:0;min-height:44px;}
-  .email-detail-scroll{max-height:48dvh;padding:2px 12px 12px;}
+  .email-detail-scroll{max-height:none;overflow:visible;padding:2px 12px 12px;}
+  .email-incoming-body{margin-top:0;font-size:16px;line-height:1.5;}
   .email-participant-row{grid-template-columns:36px minmax(0,1fr);}
   .email-participant{align-items:flex-start;flex-wrap:wrap;}
   .email-participant-add{margin-left:44px;}
   .email-reply-mode{align-items:flex-start;flex-direction:column;}
   .email-reply-mode-buttons{display:flex;width:100%;}
-  .email-reply-mode-buttons button{flex:1;min-width:0;min-height:40px;}
+  .email-reply-mode-buttons button{flex:1;min-width:0;min-height:44px;}
   .email-recipient-row{grid-template-columns:28px minmax(0,1fr);gap:6px;}
   .email-recipient-hint{margin-left:34px;}
-  .email-reply{min-height:180px;}
+  .email-reply{min-height:36dvh;font-size:16px;}
   .email-attach-item{flex-direction:column;}
   .email-attach-actions{width:100%;}
   .email-attach-actions .btn{flex:1;min-height:44px;}
@@ -411,6 +432,20 @@ a{color:var(--brass)}
   .email-actions .btn{min-height:44px;}
   .email-actions .copy-draft{min-width:44px;}
   .email-actions .queue-send{flex:1;max-width:190px;}
+  body.email-sheet-open{overflow:hidden;overscroll-behavior:none;}
+  body.email-sheet-open #app{overflow:hidden;}
+  .email-card.open{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;width:100%;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:0;border:0;border-radius:0;background:var(--panel);box-shadow:none;overflow:hidden;}
+  .email-card.open:hover{background:var(--panel);}
+  .email-card.open .email-card-row{display:none;}
+  .email-card.open .email-detail{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;border-top:0;background:var(--panel);}
+  .email-card.open .email-detail-head{flex-shrink:0;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);}
+  .email-card.open .email-detail-scroll{flex:1;min-width:0;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px));}
+  .email-card.open .email-attach-dock{flex-shrink:0;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));}
+  .email-card.open .email-attach-dock .email-attachments-title,.email-card.open .email-attach-dock .email-attach-empty,.email-card.open .email-attach-dock .email-attach-hint{display:none;}
+  .email-card.open .email-attach-dock .email-attach-list{gap:6px;}
+  .email-card.open .email-attach-dock .email-attach-item{padding:8px 10px;}
+  .email-card.open .email-attach-btn{margin-top:8px;}
+  .email-card.open .email-actions{flex-shrink:0;padding:10px max(16px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));}
   .login-card{padding:28px 20px 22px;}
   .login-card h1{font-size:30px;}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
@@ -1117,6 +1152,8 @@ function syncActorUI(){
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
   $("#doneBtn").classList.toggle("hidden", showingContent);
   $("#app").classList.toggle("content-view", showingContent);
+  $("#app").classList.toggle("email-view", showingEmails);
+  syncEmailSheetClass();
   $(".viewbar-label").textContent = showingEmails || showingDigest || showingContent ? "View" : "Whose board?";
   const input = $("#composerInput");
   if(input) input.placeholder = actor==="sydney"
@@ -1294,7 +1331,7 @@ async function loadCards(){
     return;
   }
   setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
-  if(shouldPreserveOpenEmailReply()){
+  if(shouldPreserveOpenEmail()){
     $("#doneCount").textContent = String(doneCards().length);
     refreshEmailWaitChips();
     syncEmailCommandBar();
@@ -1433,6 +1470,7 @@ function refreshEmailSendNowView(){
     syncEmailCommandBar();
     return;
   }
+  if(shouldPreserveOpenEmail()) return;
   renderBoard();
 }
 
@@ -1683,17 +1721,44 @@ async function persistDetectedEmailKinds(){
   }));
 }
 
+function refreshEmailKindUI(card){
+  const el = document.querySelector(`.email-card[data-id="${CSS.escape(card.id)}"]`);
+  if(!el) return;
+  const kind = resolvedEmailKind(card);
+  el.querySelectorAll("[data-email-kind-set]").forEach(button => {
+    const on = button.dataset.emailKindSet===kind;
+    button.classList.toggle("on", on);
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  const row = el.querySelector(".email-from-row");
+  if(!row) return;
+  const badge = row.querySelector(".email-kind");
+  const html = emailKindBadgeHTML(card);
+  if(badge && html) badge.outerHTML = html;
+  else if(badge && !html) badge.remove();
+  else if(!badge && html) row.insertAdjacentHTML("afterbegin", html);
+}
+
 async function setEmailKind(card, kind){
   if(!card || !["sales","lead","other"].includes(kind)) return;
   card.email_kind = kind;
   card._emailKindNeedsPersist = false;
+  const hideFromFilter = !!emailKindFilter && !isSalesLeadEmail(card);
+  if(hideFromFilter && openEmailCardId===card.id){
+    if(!(await finishOpenEmailDraft())) return;
+    openEmailCardId = null;
+  }
   if(!emailKindColumnAvailable){
-    renderBoard();
+    if(hideFromFilter) renderBoard();
+    else refreshEmailKindUI(card);
     setStatus("Sales/lead flag is local until sql/ops_email_kind.sql is applied.");
     return;
   }
-  const saved = await patchCard(card.id, { email_kind:kind });
-  if(saved) setStatus(kind==="other" ? "Marked as not sales." : `Marked as ${kind}.`);
+  const saved = await patchCard(card.id, { email_kind:kind }, { render:false });
+  if(!saved) return;
+  setStatus(kind==="other" ? "Marked as not sales." : `Marked as ${kind}.`);
+  if(hideFromFilter) renderBoard();
+  else refreshEmailKindUI(card);
 }
 
 function receivedAt(card){
@@ -2016,10 +2081,38 @@ function discardEmailDraft(cardId){
   emailDrafts.delete(cardId);
 }
 
-function shouldPreserveOpenEmailReply(){
-  if(actor!=="emails" || openEmailPanel!=="reply" || !openEmailCardId || !emailDrafts.has(openEmailCardId)) return false;
-  const reply = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-reply`);
-  return !!(reply && !reply.readOnly);
+function isPhoneEmailLayout(){
+  return window.matchMedia("(max-width: 700px)").matches;
+}
+
+function syncEmailSheetClass(){
+  const open = actor==="emails" && !!openEmailCardId && isPhoneEmailLayout();
+  document.body.classList.toggle("email-sheet-open", open);
+}
+
+function openEmailDetailEl(){
+  if(!openEmailCardId) return null;
+  return document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-detail`);
+}
+
+function shouldPreserveOpenEmail(){
+  if(actor!=="emails" || !openEmailCardId) return false;
+  return !!openEmailDetailEl();
+}
+
+function captureOpenEmailScroll(){
+  const card = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId||"")}"]`);
+  const scroller = card && card.querySelector(".email-detail-scroll");
+  if(!scroller) return null;
+  const panel = card.querySelector(".email-incoming") ? "incoming" : "reply";
+  if(panel!==openEmailPanel) return null;
+  return { id:openEmailCardId, panel, top:scroller.scrollTop };
+}
+
+function restoreOpenEmailScroll(saved){
+  if(!saved || saved.id!==openEmailCardId || saved.panel!==openEmailPanel) return;
+  const scroller = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-detail-scroll`);
+  if(scroller) scroller.scrollTop = saved.top;
 }
 
 function participantsHTML(card, allowAdd){
@@ -2521,13 +2614,53 @@ async function requestSendNow(){
   refreshEmailSendNowView();
 }
 
+function emailCoachNotesHTML(card){
+  const notes = String(card.notes||"").trim();
+  const sydney = String(card.sydney_notes||"").trim();
+  if(!notes && !sydney) return "";
+  return `${notes ? `<div class="email-notes"><div class="email-notes-title">Chris note</div><div class="email-notes-body">${esc(notes)}</div></div>` : ""}${sydney ? `<div class="email-notes sydney"><div class="email-notes-title">Sydney</div><div class="email-notes-body">${readableNotesHTML(sydney)}</div></div>` : ""}`;
+}
+
+function emailKindEditorHTML(card){
+  const kind = resolvedEmailKind(card);
+  return `<div class="email-kind-bar">
+    <span class="email-kind-bar-label">Sales / lead</span>
+    <div class="email-kind-buttons" role="group" aria-label="Mark as sales, lead, or other">
+      <button type="button" class="sales${kind==="sales"?" on":""}" data-email-kind-set="sales" aria-pressed="${kind==="sales"}">Sales</button>
+      <button type="button" class="lead${kind==="lead"?" on":""}" data-email-kind-set="lead" aria-pressed="${kind==="lead"}">Lead</button>
+      <button type="button" class="${kind==="other"?" on":""}" data-email-kind-set="other" aria-pressed="${kind==="other"}">Other</button>
+    </div>
+  </div>`;
+}
+
+function emailMoreHTML(card, replyDraft){
+  const reply = openEmailPanel==="reply";
+  const inboundFiles = parseAttachments(card.inbound_attachments).length;
+  const replyFiles = parseAttachments(card.reply_attachments).length;
+  const parts = [
+    reply && replyDraft ? `<div class="email-recipients">${recipientControlsHTML(card, replyDraft)}</div>` : "",
+    participantsHTML(card, reply),
+    emailKindEditorHTML(card),
+    openEmailPanel==="incoming" ? emailAttachmentsHTML(card, "inbound") : "",
+    emailCoachNotesHTML(card)
+  ].filter(Boolean);
+  const countBits = [
+    inboundFiles ? attachmentCountLabel(inboundFiles, inboundFiles===1?"file":"files") : "",
+    replyFiles ? attachmentCountLabel(replyFiles, "to send") : ""
+  ].filter(Boolean);
+  const label = countBits.length ? `Who / files · ${countBits.join(" · ")}` : "Who / files";
+  return `<details class="email-more"${isPhoneEmailLayout()?"":" open"}>
+    <summary class="email-more-toggle">${esc(label)}</summary>
+    <div class="email-more-body">${parts.join("")}</div>
+  </details>`;
+}
+
 function emailCardHTML(c){
   const inbox = projectKey(c.project);
   const localDraft = emailDrafts.get(c.id);
   const draft = localDraft ? localDraft.value : (c.snippet || "");
   const from = c.inbound_from || "Sender unavailable";
   const subject = c.inbound_subject || c.title || "(no subject)";
-  const kind = resolvedEmailKind(c);
   const queued = !!c.send_requested_at;
   if(queued){
     return `<article class="card email-card queued" data-id="${esc(c.id)}">
@@ -2546,39 +2679,34 @@ function emailCardHTML(c){
   const open = c.id===openEmailCardId;
   const queueDisabled = !emailQueueColumnsAvailable || !emailRecipientColumnsAvailable;
   const replyDraft = open && openEmailPanel==="reply" ? emailDraftFor(c) : null;
+  const more = open ? emailMoreHTML(c, replyDraft) : "";
   const detail = open ? `
     <section class="email-detail" aria-label="Email details">
       <div class="email-detail-head">
+        <div class="email-sheet-top">
+          <div class="email-sheet-id">
+            <div class="email-sheet-from">${esc(from)}</div>
+            <div class="email-sheet-subject">${esc(subject)}</div>
+          </div>
+          <button type="button" class="email-sheet-close" aria-label="Close email">×</button>
+        </div>
         <div class="email-segment" role="group" aria-label="Choose incoming email or reply draft">
           <button type="button" class="email-panel-btn${openEmailPanel==="incoming"?" on":""}" data-panel="incoming" aria-pressed="${openEmailPanel==="incoming"}">Incoming</button>
           <button type="button" class="email-panel-btn${openEmailPanel==="reply"?" on":""}" data-panel="reply" aria-pressed="${openEmailPanel==="reply"}">Reply</button>
         </div>
       </div>
-      <div class="email-kind-bar">
-        <span class="email-kind-bar-label">Sales / lead</span>
-        <div class="email-kind-buttons" role="group" aria-label="Mark as sales, lead, or other">
-          <button type="button" class="sales${kind==="sales"?" on":""}" data-email-kind-set="sales" aria-pressed="${kind==="sales"}">Sales</button>
-          <button type="button" class="lead${kind==="lead"?" on":""}" data-email-kind-set="lead" aria-pressed="${kind==="lead"}">Lead</button>
-          <button type="button" class="${kind==="other"?" on":""}" data-email-kind-set="other" aria-pressed="${kind==="other"}">Other</button>
-        </div>
-      </div>
       <div class="email-detail-scroll">
         ${openEmailPanel==="incoming" ? `
           <div class="email-incoming">
-            <div class="email-incoming-head">
-              ${participantsHTML(c, false)}
-              <div class="email-incoming-subject">${esc(subject)}</div>
-              ${emailAttachmentsHTML(c, "inbound")}
-            </div>
+            ${isPhoneEmailLayout() ? "" : more}
             <div class="email-incoming-body">${esc(c.inbound_body||"Received message body unavailable.")}</div>
+            ${isPhoneEmailLayout() ? more : ""}
           </div>
         ` : `
-          ${participantsHTML(c, true)}
-          <div class="email-recipients">
-            ${recipientControlsHTML(c, replyDraft)}
-          </div>
+          ${isPhoneEmailLayout() ? "" : more}
           <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
-          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…">${esc(draft)}</textarea>
+          <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…" autocomplete="off">${esc(draft)}</textarea>
+          ${isPhoneEmailLayout() ? more : ""}
         `}
       </div>
       ${openEmailPanel==="reply" ? `<div class="email-attach-dock">${emailAttachmentsHTML(c, "reply")}</div>` : ""}
@@ -2628,6 +2756,7 @@ function renderEmails(root){
     : `<div class="empty email-empty">No email replies waiting${emailKindFilter ? " that are sales or leads" : ""}${emailProjectFilter ? " in this inbox" : ""}.</div>`);
   bindSendNowControl(root);
   bindEmailCards();
+  syncEmailSheetClass();
 }
 
 function cardsInColumn(columnKey, exceptId){
@@ -3245,6 +3374,7 @@ function openContentCreateModal(){
 }
 
 function renderBoard(){
+  const savedEmailScroll = captureOpenEmailScroll();
   tick();
   const root = $("#board");
   $("#doneCount").textContent = String(doneCards().length);
@@ -3252,6 +3382,7 @@ function renderBoard(){
     root.classList.remove("digest-board");
     root.classList.remove("content-board");
     renderEmails(root);
+    restoreOpenEmailScroll(savedEmailScroll);
     return;
   }
   if(actor==="content"){
@@ -3780,6 +3911,13 @@ function bindRecipientControls(el, card, draft){
   });
 }
 
+async function closeOpenEmail(){
+  if(!(await finishOpenEmailDraft())) return false;
+  openEmailCardId = null;
+  renderBoard();
+  return true;
+}
+
 function bindEmailCards(){
   $$(".email-card").forEach(el => {
     const card = cards.find(c => c.id===el.dataset.id);
@@ -3816,6 +3954,8 @@ function bindEmailCards(){
       }
       renderBoard();
     };
+    const closeBtn = el.querySelector(".email-sheet-close");
+    if(closeBtn) closeBtn.onclick = () => closeOpenEmail();
     el.querySelectorAll(".email-panel-btn").forEach(button => {
       button.onclick = async () => {
         if(openEmailPanel==="reply" && !(await finishOpenEmailDraft())) return;
@@ -3864,6 +4004,8 @@ function bindEmailCards(){
       const draft = emailDraftFor(card);
       if(!draft.recipients.to.length){
         setStatus("Add at least one To recipient before queueing.", true);
+        const more = el.querySelector(".email-more");
+        if(more) more.open = true;
         const toInput = el.querySelector('.email-recipient-input[data-recipient-kind="to"]');
         if(toInput) toInput.focus();
         return;
@@ -4430,11 +4572,71 @@ function hideInstallHintsIfStandalone(){
   if(standalone) $$(".install-hint").forEach(el => el.classList.add("hidden"));
 }
 
+function previewOpsEmailsIfRequested(){
+  if(!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return false;
+  if(new URLSearchParams(location.search).get("preview")!=="emails") return false;
+  currentUser = { email:"preview@local" };
+  actor = "emails";
+  cards = [{
+    id:"preview-1",
+    title:"Studio Pod quote for the Houston install",
+    snippet:"Thanks for the note — I will send the quote today.",
+    project:"studio-pod",
+    column_key:"needs-you",
+    owner:"chris",
+    source:"email",
+    inbound_from:"Jordan Hale <jordan@example.com>",
+    inbound_subject:"Re: Studio Pod quote for the Houston install",
+    inbound_body:"Chris,\n\nWe are ready to move if the quote is still good. The crew can start the week of the 14th if we lock the number this week.\n\n"+("The floor plan is attached. Please confirm finish dates and whether the second camera wall is still in scope.\n\n".repeat(12))+"Jordan\nStudio Ops",
+    inbound_to:["chris@cbaileyphotography.com"],
+    inbound_cc:["sydney@example.com"],
+    inbound_account:"studio-pod",
+    reply_all:true,
+    reply_to:["jordan@example.com"],
+    reply_cc:["sydney@example.com"],
+    reply_bcc:[],
+    inbound_attachments:[{id:"a1",name:"floor-plan.pdf",mime:"application/pdf",size:12000}],
+    reply_attachments:[],
+    email_kind:"sales",
+    received_at:new Date(Date.now()-2*86400000).toISOString(),
+    created_at:new Date().toISOString(),
+    updated_at:new Date().toISOString(),
+    done_at:null,
+    notes:"",
+    sydney_notes:"Asked for the quote Friday."
+  },{
+    id:"preview-2",
+    title:"Saturday pickup",
+    snippet:"Saturday at 10 works on our side.",
+    project:"personal",
+    column_key:"today",
+    owner:"chris",
+    source:"email",
+    inbound_from:"Pat Lee <pat@example.com>",
+    inbound_subject:"Saturday pickup",
+    inbound_body:"Can you do Saturday at 10?",
+    inbound_to:["chris@cbaileyphotography.com"],
+    reply_all:false,
+    reply_to:["pat@example.com"],
+    reply_cc:[],
+    reply_bcc:[],
+    email_kind:"other",
+    received_at:new Date().toISOString(),
+    created_at:new Date().toISOString(),
+    done_at:null
+  }];
+  showApp();
+  syncActorUI();
+  renderBoard();
+  return true;
+}
+
 async function boot(){
   hideInstallHintsIfStandalone();
   setupSpeech();
   registerServiceWorker();
   renderAlerts();
+  if(previewOpsEmailsIfRequested()) return;
   if(!sb){
     $("#boot").textContent = "Could not load the Supabase library.";
     return;
@@ -4443,6 +4645,23 @@ async function boot(){
   sb.auth.onAuthStateChange((_e, s) => { if(s && !currentUser) onSignedIn(s); });
   if(session) onSignedIn(session); else showLogin();
 }
+let lastPhoneEmailLayout = isPhoneEmailLayout();
+window.addEventListener("resize", () => {
+  const phone = isPhoneEmailLayout();
+  if(actor==="emails" && phone!==lastPhoneEmailLayout && openEmailCardId){
+    lastPhoneEmailLayout = phone;
+    renderBoard();
+    return;
+  }
+  lastPhoneEmailLayout = phone;
+  if(actor==="emails") syncEmailSheetClass();
+});
+document.addEventListener("keydown", event => {
+  if(event.key!=="Escape" || actor!=="emails" || !openEmailCardId) return;
+  if(document.querySelector(".card-detail, .modal")) return;
+  event.preventDefault();
+  closeOpenEmail();
+});
 document.addEventListener("visibilitychange", () => {
   if(!document.hidden && currentUser){
     loadCards();
