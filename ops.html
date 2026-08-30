@@ -4572,11 +4572,71 @@ function hideInstallHintsIfStandalone(){
   if(standalone) $$(".install-hint").forEach(el => el.classList.add("hidden"));
 }
 
+function previewOpsEmailsIfRequested(){
+  if(!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return false;
+  if(new URLSearchParams(location.search).get("preview")!=="emails") return false;
+  currentUser = { email:"preview@local" };
+  actor = "emails";
+  cards = [{
+    id:"preview-1",
+    title:"Studio Pod quote for the Houston install",
+    snippet:"Thanks for the note — I will send the quote today.",
+    project:"studio-pod",
+    column_key:"needs-you",
+    owner:"chris",
+    source:"email",
+    inbound_from:"Jordan Hale <jordan@example.com>",
+    inbound_subject:"Re: Studio Pod quote for the Houston install",
+    inbound_body:"Chris,\n\nWe are ready to move if the quote is still good. The crew can start the week of the 14th if we lock the number this week.\n\n"+("The floor plan is attached. Please confirm finish dates and whether the second camera wall is still in scope.\n\n".repeat(12))+"Jordan\nStudio Ops",
+    inbound_to:["chris@cbaileyphotography.com"],
+    inbound_cc:["sydney@example.com"],
+    inbound_account:"studio-pod",
+    reply_all:true,
+    reply_to:["jordan@example.com"],
+    reply_cc:["sydney@example.com"],
+    reply_bcc:[],
+    inbound_attachments:[{id:"a1",name:"floor-plan.pdf",mime:"application/pdf",size:12000}],
+    reply_attachments:[],
+    email_kind:"sales",
+    received_at:new Date(Date.now()-2*86400000).toISOString(),
+    created_at:new Date().toISOString(),
+    updated_at:new Date().toISOString(),
+    done_at:null,
+    notes:"",
+    sydney_notes:"Asked for the quote Friday."
+  },{
+    id:"preview-2",
+    title:"Saturday pickup",
+    snippet:"Saturday at 10 works on our side.",
+    project:"personal",
+    column_key:"today",
+    owner:"chris",
+    source:"email",
+    inbound_from:"Pat Lee <pat@example.com>",
+    inbound_subject:"Saturday pickup",
+    inbound_body:"Can you do Saturday at 10?",
+    inbound_to:["chris@cbaileyphotography.com"],
+    reply_all:false,
+    reply_to:["pat@example.com"],
+    reply_cc:[],
+    reply_bcc:[],
+    email_kind:"other",
+    received_at:new Date().toISOString(),
+    created_at:new Date().toISOString(),
+    done_at:null
+  }];
+  showApp();
+  syncActorUI();
+  renderBoard();
+  return true;
+}
+
 async function boot(){
   hideInstallHintsIfStandalone();
   setupSpeech();
   registerServiceWorker();
   renderAlerts();
+  if(previewOpsEmailsIfRequested()) return;
   if(!sb){
     $("#boot").textContent = "Could not load the Supabase library.";
     return;
