@@ -135,6 +135,13 @@ and queued cards about every 20 seconds, the same cadence as the live alert
 badge, so the status clears without a reload. The dashboard does not send
 Gmail. A unique partial index keeps only one flush request pending at a time.
 
+On iPhone, opening an Emails card is a full-screen sheet: from and subject in
+the header, Incoming | Reply, and the message or reply box first. Recipients,
+sales/lead, original participants, and files sit behind **Who / files**.
+Background polls update wait chips and Send now in place and do not remount an
+open card, so the message does not jump back to the top. The closed list stays
+a compact scannable row. Desktop still opens in place.
+
 If those email columns have not been applied yet, Ops retries its legacy
 `ops_cards` select so the page still loads. Sending remains disabled until the
 queue columns exist. Attach and inbound-file open stay disabled until the
