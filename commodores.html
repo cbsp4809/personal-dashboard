@@ -373,6 +373,8 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .line-spot .name-chip{width:100%}
 .unit-actions{margin:0 0 10px}
 .unit-actions .fill-pref{width:100%}
+.lineup-saved{margin:0 0 12px;color:var(--muted);font-size:12px;font-weight:600}
+.lineup-saved:empty{display:none}
 .spot-pref{margin-top:3px;font-size:10px;font-weight:600;color:var(--gold);line-height:1.25;text-transform:none;letter-spacing:0}
 .spot-pref.none{color:var(--muted);font-weight:500}
 .line-spot.off-pref{border-color:rgba(236,183,72,.45)}
@@ -723,6 +725,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
 
     <section class="page" id="page-lineup">
       <div class="section-head"><div><div class="eyebrow">Game spots</div><h2>Lineup</h2></div><p>Q1/Q3 unit · Q2/Q4 unit · 7 O + 7 D each</p></div>
+      <div class="lineup-saved" id="lineupSaved"></div>
       <div class="binder-note">
         <b>SBMSA Fall 7on7 · how the card has to work</b>
         <ul class="plain-list">
@@ -3192,7 +3195,9 @@ function normalizeLineup(raw){
     attendance,
     sessionLabel:cleanSessionLabel(raw.sessionLabel),
     attendanceDate:cleanAttendanceDate(raw.attendanceDate),
-    updatedAt:raw.updatedAt||raw.updated_at||""
+    updatedAt:raw.updatedAt||raw.updated_at||"",
+    savedBy:typeof raw.savedBy==="string"?raw.savedBy:"",
+    savedAt:raw.savedAt||raw.updatedAt||raw.updated_at||""
   });
 }
 function emptyTeamState(){
@@ -3239,7 +3244,9 @@ function lineupPayload(state){
     units,
     offense:units.A.offense,
     defense:units.A.defense,
-    updatedAt:source.updatedAt
+    updatedAt:source.updatedAt,
+    savedBy:source.savedBy||"",
+    savedAt:source.savedAt||source.updatedAt||""
   };
 }
 const SCORING_COACH_KEY="scoring_coach";
@@ -3344,7 +3351,20 @@ function setTeamStatus(message){
   const el=$("#teamStatus");
   if(el) el.textContent=message;
 }
+let lineupDirty=false;
+function renderLineupSaved(){
+  const el=$("#lineupSaved");
+  if(!el) return;
+  const by=teamState&&teamState.savedBy;
+  const at=teamState&&teamState.savedAt;
+  if(!by&&!at){ el.textContent=""; return; }
+  let when="";
+  const t=Date.parse(at||"");
+  if(t){ try{ when=new Date(t).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); }catch(_){ when=""; } }
+  el.textContent="Last set by "+(by||"a coach")+(when?" · "+when:"");
+}
 function persistTeamLocal(){
+  lineupDirty=true;
   syncLegacyLines(teamState);
   teamState.updatedAt=new Date().toISOString();
   setStore("staff_lineup",lineupPayload());
@@ -3789,6 +3809,7 @@ function renderTeamLineup(){
   });
   renderPlayTime();
   refreshPlayerSpots();
+  renderLineupSaved();
   bindTeamLineup();
   postPlayLineups();
 }
@@ -4219,16 +4240,26 @@ document.addEventListener("touchmove",event=>{
 async function saveStaffLineup(){
   syncLegacyLines(teamState);
   teamState.updatedAt=new Date().toISOString();
+  teamState.savedBy=(currentCoach&&currentCoach.first_name)||teamState.savedBy||"";
+  teamState.savedAt=teamState.updatedAt;
   const payload=lineupPayload();
   setStore("staff_lineup",payload);
   if(!sb){
     setTeamStatus("Saved on this device only · shared tables not reachable");
+    renderLineupSaved();
     return;
   }
+  setTeamStatus("Saving…");
   const {error}=await sb.from("commodores_plans").upsert({
     id:LINEUP_ID,payload,updated_at:teamState.updatedAt
   },{onConflict:"id"});
-  setTeamStatus(error?"Saved on this device · shared write failed: "+error.message:"Shared with staff");
+  if(error){
+    setTeamStatus("Saved on this device · shared write failed: "+error.message);
+  }else{
+    lineupDirty=false;
+    setTeamStatus("Saved ✓ · shared with staff");
+  }
+  renderLineupSaved();
 }
 const saveStaffLineupDebounced=debounce(saveStaffLineup,700);
 async function loadStaffLineup(){
@@ -4273,7 +4304,11 @@ async function loadStaffLineup(){
     setTeamStatus("Shared lineup loaded");
     return;
   }
-  if((localTime>cloudTime||localMigrated)&&hasTeamContent(teamState)) await saveStaffLineup();
+  // Only push this device's copy up if it has genuinely unsaved edits (or needs
+  // a migration). A merely-newer timestamp must NOT re-upload a stale local
+  // over a fresher shared cloud — that was silently clobbering other coaches.
+  if((lineupDirty||localMigrated)&&hasTeamContent(teamState)) await saveStaffLineup();
+  else renderLineupSaved();
 }
 
 // On load, resume an existing coach session (persisted per this page's own
