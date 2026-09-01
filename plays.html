@@ -178,6 +178,20 @@ body.immersive.gameday .speed{display:none}
 .gd-sheet button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .gd-sheet button b{color:var(--gold);margin-right:5px}
 .gd-sheet button.on b{color:var(--highlight)}
+.gd-subs{display:none}
+body.immersive.gameday .gd-subs{display:block;width:100%;min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800}
+.subs-sheet{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
+.subs-sheet.hidden{display:none}
+.subs-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--panel,#1C1C1C);border:1px solid var(--strong);border-top-left-radius:18px;border-top-right-radius:18px;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))}
+.subs-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.subs-head h3{margin:0;font-size:18px}
+.subs-section{margin:10px 0 4px;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.subs-row,.subs-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:50px;padding:9px 12px;margin:5px 0;border:1px solid var(--line);border-radius:12px;background:#000;color:var(--ink);text-align:left;font-weight:700}
+.subs-row .cur{color:var(--muted);font-weight:600;font-size:12.5px}
+.subs-star{color:var(--highlight);margin-right:5px}
+.subs-opt .tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.subs-tag{padding:2px 6px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:700;color:var(--muted)}
+.subs-tag.hit{border-color:var(--highlight);color:var(--highlight);background:var(--gold-soft)}
 @media(orientation:landscape) and (max-height:780px){
   body.immersive .tools #playBtn{min-height:48px;font-size:16px}
   body.immersive .play-name{font-size:22px;margin-bottom:4px}
@@ -279,6 +293,7 @@ body.immersive.gameday .speed{display:none}
         <button type="button" id="gdFlip" class="gd-flip">Flip</button>
         <button type="button" id="gdNext" class="gd-side" aria-label="Next play">▶</button>
       </div>
+      <button type="button" id="gdSubs" class="gd-subs">Subs · injury swap</button>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
     </div>
     <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
@@ -1296,6 +1311,108 @@ function gamedayStep(dir){
   selectPlay(list[(i+dir+list.length)%list.length]);
   renderGamedaySheet();
 }
+const DEF_ZONES=["D1","D2","D3","D4","D5","D6","D7"];
+function rawFirstName(shown){return shown==="Mike"?"Michael":shown;}
+function onFieldName(side,index){
+  const unit=STATE.lineupUnit;
+  return side==="offense"
+    ? ((STATE.lineups[unit]&&STATE.lineups[unit][OFFENSE_SPOT_ORDER[index]])||"")
+    : ((STATE.defenseLineups[unit]&&STATE.defenseLineups[unit][DEF_ZONES[index]])||"");
+}
+function subSpotTag(side,index){return side==="offense"?OFFENSE_SPOT_ORDER[index]:DEF_ZONES[index];}
+function ensureSubsSheet(){
+  let sheet=$("#subsSheet");
+  if(sheet) return sheet;
+  sheet=document.createElement("div");
+  sheet.id="subsSheet";
+  sheet.className="subs-sheet hidden";
+  sheet.innerHTML='<div class="subs-card"><div class="subs-head"><button type="button" class="ghost" id="subsBack" style="display:none">‹ Back</button><h3 id="subsTitle">Subs</h3><button type="button" id="subsDone">Done</button></div><div id="subsBody"></div></div>';
+  document.body.appendChild(sheet);
+  sheet.addEventListener("click",event=>{if(event.target===sheet) closeSubs();});
+  $("#subsDone").onclick=closeSubs;
+  $("#subsBack").onclick=openSubs;
+  return sheet;
+}
+function closeSubs(){const sheet=$("#subsSheet"); if(sheet) sheet.classList.add("hidden");}
+function openSubs(){
+  const sheet=ensureSubsSheet();
+  $("#subsTitle").textContent=(STATE.lineupUnit==="B"?"Q2/Q4":"Q1/Q3")+" · injury swap";
+  $("#subsBack").style.display="none";
+  const spotRow=(side,index,label)=>{
+    const cur=onFieldName(side,index);
+    return `<button type="button" class="subs-row" data-side="${side}" data-index="${index}"><span><b>${esc(label)}</b></span><span class="cur">${cur?esc(runnerLabel(cur)):"— open —"}</span></button>`;
+  };
+  let html='<div class="subs-section">Offense</div>';
+  html+=OFFENSE_SPOT_ORDER.map((L,i)=>spotRow("offense",i,L)).join("");
+  html+='<div class="subs-section">Defense</div>';
+  html+=DEF_ZONES.map((Z,i)=>spotRow("defense",i,Z)).join("");
+  $("#subsBody").innerHTML=html;
+  $$("#subsBody .subs-row").forEach(button=>button.onclick=()=>openSubPicker(button.dataset.side,Number(button.dataset.index)));
+  sheet.classList.remove("hidden");
+}
+function openSubPicker(side,index){
+  ensureSubsSheet();
+  const tag=subSpotTag(side,index);
+  $("#subsTitle").textContent="Sub in at "+tag;
+  $("#subsBack").style.display="";
+  const tagKey=side==="offense"?"offenseTags":"defenseTags";
+  const roster=STATE.roster||[];
+  const knows=r=>(r[tagKey]||[]).includes(tag);
+  const primary=roster.filter(r=>(r[tagKey]||[])[0]===tag);
+  const extra=roster.filter(r=>knows(r)&&(r[tagKey]||[])[0]!==tag);
+  const others=roster.filter(r=>!knows(r));
+  const cur=onFieldName(side,index);
+  const opt=(r,star)=>{
+    const tags=(r[tagKey]||[]);
+    const tagHtml=tags.map(t=>`<span class="subs-tag${t===tag?" hit":""}">${esc(t)}</span>`).join("");
+    return `<button type="button" class="subs-opt" data-name="${esc(r.name)}"><span>${star?'<span class="subs-star">★</span>':""}${esc(runnerLabel(r.name))}${r.name===cur?" (on now)":""}</span><span class="tags">${tagHtml}</span></button>`;
+  };
+  let html="";
+  if(primary.length||extra.length){
+    html+='<div class="subs-section">Knows '+esc(tag)+'</div>';
+    html+=primary.map(r=>opt(r,true)).join("");
+    html+=extra.map(r=>opt(r,false)).join("");
+  }
+  html+='<div class="subs-section">Everyone else</div>';
+  html+=others.map(r=>opt(r,false)).join("");
+  html+='<button type="button" class="subs-opt" data-name=""><span>— leave open —</span></button>';
+  $("#subsBody").innerHTML=html;
+  $$("#subsBody .subs-opt").forEach(button=>button.onclick=()=>saveSub(side,index,button.dataset.name));
+}
+async function saveSub(side,index,name){
+  const unit=STATE.lineupUnit;
+  const shown=shownFirstName(name);
+  if(side==="offense") STATE.lineups[unit][OFFENSE_SPOT_ORDER[index]]=shown;
+  else STATE.defenseLineups[unit][DEF_ZONES[index]]=shown;
+  stopAnim();
+  render();
+  openSubs();
+  if(!sb||!STATE.coach) return;
+  try{
+    const {data}=await sb.from("commodores_plans").select("payload").eq("id","staff-lineup").maybeSingle();
+    const payload=(data&&data.payload&&typeof data.payload==="object")?data.payload:{};
+    const units=payload.units||{A:{offense:[],defense:[]},B:{offense:[],defense:[]}};
+    ["A","B"].forEach(u=>{
+      if(!units[u]) units[u]={offense:[],defense:[]};
+      ["offense","defense"].forEach(s=>{
+        if(!Array.isArray(units[u][s])) units[u][s]=[];
+        while(units[u][s].length<7) units[u][s].push(null);
+      });
+    });
+    const raw=name?rawFirstName(name):null;
+    units[unit][side][index]=raw;
+    payload.units=units;
+    payload.lineupShape="units-ab";
+    payload.offense=units.A.offense;
+    payload.defense=units.A.defense;
+    if(raw){ payload.attendance=payload.attendance||{}; payload.attendance[raw]=true; }
+    payload.savedBy=STATE.coach.first_name;
+    const at=new Date().toISOString();
+    payload.savedAt=at;
+    payload.updatedAt=at;
+    await sb.from("commodores_plans").upsert({id:"staff-lineup",payload,updated_at:at},{onConflict:"id"});
+  }catch(_){}
+}
 function renderGamedaySheet(){
   const sheet=$("#gdSheet");
   if(!sheet) return;
@@ -1734,6 +1851,7 @@ $("#gamedayBtn").onclick=enterGameday;
 $("#gdPrev").onclick=()=>gamedayStep(-1);
 $("#gdNext").onclick=()=>gamedayStep(1);
 $("#gdFlip").onclick=()=>$("#flipBtn").click();
+$("#gdSubs").onclick=openSubs;
 $("#doneBtn").onclick=exitImmersive;
 document.addEventListener("fullscreenchange",()=>{
   if(document.fullscreenElement&&document.exitFullscreen){
