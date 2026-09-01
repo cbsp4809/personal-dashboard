@@ -179,7 +179,8 @@ body.immersive.gameday .speed{display:none}
 .gd-sheet button b{color:var(--gold);margin-right:5px}
 .gd-sheet button.on b{color:var(--highlight)}
 .gd-subs{display:none}
-body.immersive.gameday .gd-subs{display:block;width:100%;min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800}
+body.immersive.gameday .gd-subs,body.immersive.gameday .gd-draw{display:block;width:100%;min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800}
+.gd-draw{display:none}
 .subs-sheet{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
 .subs-sheet.hidden{display:none}
 .subs-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--panel,#1C1C1C);border:1px solid var(--strong);border-top-left-radius:18px;border-top-right-radius:18px;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -294,6 +295,7 @@ body.immersive.gameday .gd-subs{display:block;width:100%;min-height:46px;border:
         <button type="button" id="gdNext" class="gd-side" aria-label="Next play">▶</button>
       </div>
       <button type="button" id="gdSubs" class="gd-subs">Subs · injury swap</button>
+      <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
     </div>
     <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
@@ -612,6 +614,7 @@ const STATE={
   snapshotPublishedAt:"",
   playFilter:"all",
   gameday:false,
+  quickDraw:false,
   speed:loadSpeed()
 };
 const PUBLISH_LABELS={coach:"Coach only",kids:"Kids",edited:"Edited"};
@@ -1312,6 +1315,20 @@ function gamedayStep(dir){
   renderGamedaySheet();
 }
 const DEF_ZONES=["D1","D2","D3","D4","D5","D6","D7"];
+const QUICK_ORDER=["X","A","B","Y","Z","C","Q"];
+function advanceQuickDraw(){
+  const i=QUICK_ORDER.indexOf(STATE.selected);
+  STATE.selected=QUICK_ORDER[(i+1)%QUICK_ORDER.length];
+}
+function startQuickDraw(){
+  exitImmersive();
+  if(STATE.mode!=="draw") setMode("draw");
+  startNewPlay();
+  STATE.quickDraw=true;
+  STATE.selected="X";
+  $("#saveStatus").textContent="Quick draw: drag from the lit player to draw a route — it jumps to the next. Drag a player to move him on the line. Give it a number and Save.";
+  render();
+}
 function rawFirstName(shown){return shown==="Mike"?"Michael":shown;}
 function onFieldName(side,index){
   const unit=STATE.lineupUnit;
@@ -1532,6 +1549,7 @@ function setMode(mode){
   if(mode===STATE.mode) return;
   if(mode==="play"&&STATE.dirty&&!confirm("Leave Draw? Save first if you want these lines.")) return;
   STATE.mode=mode;
+  if(mode!=="draw") STATE.quickDraw=false;
   STATE.generatedFlip=false;
   if(mode==="draw"){
     if(!draft||draft.number!==STATE.number) setDraftFromStore();
@@ -1673,6 +1691,7 @@ function onFieldPointerUp(evt){
   const pointerId=pointer.id;
   const pending=pointer.kind==="pending";
   const hit=pointer.hit;
+  const wasDraw=pointer.kind==="draw";
   if(pointer.kind==="draw"){
     const spot=selectedSpot();
     if(spot){
@@ -1684,6 +1703,7 @@ function onFieldPointerUp(evt){
   pointer=null;
   releaseFieldPointer(pointerId);
   if(pending&&hit) STATE.selected=hit;
+  if(wasDraw&&STATE.quickDraw) advanceQuickDraw();
   render();
 }
 
@@ -1852,6 +1872,7 @@ $("#gdPrev").onclick=()=>gamedayStep(-1);
 $("#gdNext").onclick=()=>gamedayStep(1);
 $("#gdFlip").onclick=()=>$("#flipBtn").click();
 $("#gdSubs").onclick=openSubs;
+$("#gdDraw").onclick=startQuickDraw;
 $("#doneBtn").onclick=exitImmersive;
 document.addEventListener("fullscreenchange",()=>{
   if(document.fullscreenElement&&document.exitFullscreen){
