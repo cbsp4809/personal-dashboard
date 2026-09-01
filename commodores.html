@@ -1020,9 +1020,12 @@ const AREA_NAMES=["D1","D2","D3","D4","D5","D6"];
 const STAFF_SYNC_URL="https://dashboard-assistant.chrisbailey.workers.dev/sync";
 const STAFF_SYNC_KEY="commodores-defense-695a863f512239707278becb3dc382b06fc088f4121fde4fba431e2d40366f5b";
 const DEFENSE_HOW="Face the football. D1/D2/D3 are the front from defense-right to defense-left. D4 is behind D3, D5 behind D2, D6 behind D1. D7 is the deep safety behind D5. Stay in your grass. Do not rush.";
+const COVERAGE_43_HOW="Four across the short, three deep. Stand in your grass, don’t chase. The short four squeeze the quick throws; the deep three take anything over the top. No rush.";
+const COVERAGE_34_HOW="Three short, four deep — more help over the top. The short three take the quick stuff; the deep four blanket the go routes. No rush.";
+const GOAL_LINE_HOW="Inside the 15. Everyone tight and short — no deep. Cover your end-zone grass and tag with one hand below the neck. No rush.";
 function seedDefenseLooks(){
   return [{
-    id:"game-defense",kind:"defense",name:"Six spots + one helper",status:"taught",how:DEFENSE_HOW,spotSize:"normal",updatedAt:0,
+    id:"game-defense",kind:"defense",name:"Base · six spots + one helper",status:"taught",how:DEFENSE_HOW,spotSize:"normal",updatedAt:0,
     thrower:{x:180,y:258,label:"thrower"},
     spots:[
       {id:"ds-1",name:"D1",kind:"area",x:70,y:168},
@@ -1034,7 +1037,58 @@ function seedDefenseLooks(){
       {id:"ds-7",name:"D7",kind:"helper",x:180,y:34}
     ],
     paths:[]
+  },{
+    id:"cover-4-3",kind:"defense",name:"4-3 · four short, three deep",status:"taught",how:COVERAGE_43_HOW,spotSize:"normal",updatedAt:0,
+    thrower:{x:180,y:258,label:"thrower"},
+    spots:[
+      {id:"d43-1",name:"D1",kind:"area",x:58,y:174},
+      {id:"d43-2",name:"D2",kind:"area",x:132,y:174},
+      {id:"d43-3",name:"D3",kind:"area",x:206,y:174},
+      {id:"d43-4",name:"D4",kind:"area",x:300,y:174},
+      {id:"d43-5",name:"D5",kind:"area",x:78,y:80},
+      {id:"d43-6",name:"D6",kind:"area",x:290,y:80},
+      {id:"d43-7",name:"D7",kind:"helper",x:180,y:44}
+    ],
+    paths:[]
+  },{
+    id:"cover-3-4",kind:"defense",name:"3-4 · three short, four deep",status:"taught",how:COVERAGE_34_HOW,spotSize:"normal",updatedAt:0,
+    thrower:{x:180,y:258,label:"thrower"},
+    spots:[
+      {id:"d34-1",name:"D1",kind:"area",x:70,y:176},
+      {id:"d34-2",name:"D2",kind:"area",x:180,y:176},
+      {id:"d34-3",name:"D3",kind:"area",x:290,y:176},
+      {id:"d34-4",name:"D4",kind:"area",x:62,y:82},
+      {id:"d34-5",name:"D5",kind:"area",x:134,y:82},
+      {id:"d34-6",name:"D6",kind:"area",x:226,y:82},
+      {id:"d34-7",name:"D7",kind:"helper",x:298,y:82}
+    ],
+    paths:[]
+  },{
+    id:"goal-line",kind:"defense",name:"Goal line · tight, no deep",status:"taught",how:GOAL_LINE_HOW,spotSize:"normal",updatedAt:0,
+    thrower:{x:180,y:258,label:"thrower"},
+    spots:[
+      {id:"dgl-1",name:"D1",kind:"area",x:55,y:196},
+      {id:"dgl-2",name:"D2",kind:"area",x:118,y:196},
+      {id:"dgl-3",name:"D3",kind:"area",x:181,y:196},
+      {id:"dgl-4",name:"D4",kind:"area",x:244,y:196},
+      {id:"dgl-5",name:"D5",kind:"area",x:305,y:196},
+      {id:"dgl-6",name:"D6",kind:"area",x:125,y:150},
+      {id:"dgl-7",name:"D7",kind:"helper",x:235,y:150}
+    ],
+    paths:[]
   }];
+}
+function mergeDefenseLooks(incoming){
+  // Seeds are the source of the standard looks; a coach's saved copy (from the
+  // worker or cache) overrides by id, and seeds fill in any look the store
+  // predates so new coverages are never wiped. Only the Base look is snapped to
+  // fixed geometry; the coverages keep their own drawn shapes.
+  const byId={};
+  seedDefenseLooks().forEach(look=>{byId[look.id]=look;});
+  (Array.isArray(incoming)?incoming:[]).forEach(look=>{if(validDefenseLook(look)) byId[look.id]=look;});
+  const order=seedDefenseLooks().map(look=>look.id);
+  const ids=[...order,...Object.keys(byId).filter(id=>!order.includes(id))];
+  return ids.map(id=>byId[id]).filter(Boolean).map(look=>look.id==="game-defense"?lockDefenseGeometry(look):look);
 }
 function validDefenseLook(look){
   return look&&look.kind==="defense"&&typeof look.id==="string"&&typeof look.name==="string"&&Array.isArray(look.spots)&&Array.isArray(look.paths)&&look.thrower;
@@ -1169,30 +1223,37 @@ function setDefenseChrome(){
 function renderDefenseBook(){
   const looks=defenseLooks.filter(look=>look.status==="taught");
   const list=looks.length?looks:defenseLooks.slice(0,1);
-  $("#defenseBook").innerHTML=list.map(look=>`<article class="play-card" id="defense-base" style="margin-bottom:14px">
-    ${defenseCardSVG(look)}
-    <div class="play-copy">
-      <div class="play-head"><h3>${esc(look.name)}</h3><span class="badge taught">Game defense</span></div>
-      <ul class="plain-list">
-        <li>Stand in your named grass. Don’t chase a kid who leaves it.</li>
+  $("#defenseBook").innerHTML=list.map(look=>{
+    const isBase=look.id==="game-defense";
+    const bullets=isBase
+      ?`<li>Stand in your named grass. Don’t chase a kid who leaves it.</li>
         <li>If the ball comes to you, catch it. Tag with a one-hand touch below the neck.</li>
         <li>D7 starts deep behind D5, then helps toward extra people (Overload).</li>
-        <li>Do not rush the thrower. Hip-stay is never drawn here.</li>
-      </ul>
-      <div class="play-react">
+        <li>Do not rush the thrower. Hip-stay is never drawn here.</li>`
+      :`<li>${esc(look.how||"")}</li>`;
+    const reaction=isBase
+      ?`<div class="play-react">
         <div class="react-toggle" role="group" aria-label="D7 reaction">
           <button class="btn ghost on" data-react="pile" type="button">D7 helps the pile</button>
           <button class="btn ghost" data-react="middle" type="button">D7 stays deep</button>
         </div>
         <button class="btn play-now" data-play="${esc(look.id)}" type="button">Play</button>
         <div class="play-cue" data-play-cue>Watch D7. D1–D6 stay in their grass. They do not chase.</div>
-      </div>
+      </div>`
+      :"";
+    return `<article class="play-card" id="defense-${isBase?"base":esc(look.id)}" style="margin-bottom:14px">
+    ${defenseCardSVG(look)}
+    <div class="play-copy">
+      <div class="play-head"><h3>${esc(look.name)}</h3><span class="badge ${isBase?"taught":"parked"}">${isBase?"Base game look":"Coverage"}</span></div>
+      <ul class="plain-list">${bullets}</ul>
+      ${reaction}
       <div class="when" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
         <button class="btn ghost" data-bigger="${esc(look.id)}" type="button">${look.spotSize==="big"?"Spots are big · tap to shrink":"Kids look lost · make spots bigger"}</button>
         <button class="btn ghost edit-defense" data-id="${esc(look.id)}" type="button">Open in builder</button>
       </div>
     </div>
-  </article>`).join("");
+  </article>`;
+  }).join("");
   const book=defenseLooks.find(look=>look.id==="game-defense")||defenseLooks[0];
   if(book&&$("#playbookDefensePicture")){
     $("#playbookDefensePicture").innerHTML=defenseCardSVG(book);
@@ -1244,7 +1305,7 @@ async function pullDefenseLooks(){
     const payload=await response.json();
     const looks=payload&&payload.data&&payload.data.looks;
     if(Array.isArray(looks)&&looks.every(validDefenseLook)&&looks.length){
-      defenseLooks=looks.map(lockDefenseGeometry);
+      defenseLooks=mergeDefenseLooks(looks);
       setStore("defense_looks",defenseLooks);
       return true;
     }
@@ -1252,11 +1313,11 @@ async function pullDefenseLooks(){
   applyCachedDefense();
   return false;
 }
-let defenseLooks=seedDefenseLooks();
+let defenseLooks=mergeDefenseLooks([]);
 function applyCachedDefense(){
   const saved=getStore("defense_looks",null);
   if(Array.isArray(saved)&&saved.every(validDefenseLook)&&saved.length&&saved.some(look=>Number(look.updatedAt)>0)){
-    defenseLooks=saved.map(lockDefenseGeometry);
+    defenseLooks=mergeDefenseLooks(saved);
   }
 }
 const PAGE_ALIASES={team:"today",offense:"playbook",defense:"playbook",builder:"playbook",milestones:"season",attendance:"today",handoff:"practice"};
