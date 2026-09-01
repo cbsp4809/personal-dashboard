@@ -181,6 +181,12 @@ body.immersive.gameday .speed{display:none}
 .gd-subs{display:none}
 body.immersive.gameday .gd-subs,body.immersive.gameday .gd-draw{display:block;width:100%;min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800}
 .gd-draw{display:none}
+.gd-drawbar{display:none}
+body.immersive.gameday.gd-drawing .gd-drawbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(560px,100%);margin:6px auto 2px}
+body.immersive.gameday.gd-drawing .gd-drawbar button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--ink);font-weight:800}
+body.immersive.gameday.gd-drawing .gd-drawbar #gdDrawPlay{background:var(--gold-soft);border-color:var(--highlight)}
+body.immersive.gameday.gd-drawing .gd-actions,body.immersive.gameday.gd-drawing .gd-sheet,body.immersive.gameday.gd-drawing #gdSubs,body.immersive.gameday.gd-drawing #gdDraw{display:none}
+body.immersive.gameday.gd-drawing .tools{display:none!important}
 .subs-sheet{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
 .subs-sheet.hidden{display:none}
 .subs-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--panel,#1C1C1C);border:1px solid var(--strong);border-top-left-radius:18px;border-top-right-radius:18px;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -297,6 +303,12 @@ body.immersive.gameday .gd-subs,body.immersive.gameday .gd-draw{display:block;wi
       <button type="button" id="gdSubs" class="gd-subs">Subs · injury swap</button>
       <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
+      <div class="gd-drawbar" id="gdDrawBar">
+        <button type="button" id="gdFresh">↺ Fresh</button>
+        <button type="button" id="gdDrawPlay">▶ Play</button>
+        <button type="button" id="gdDrawSave">Save</button>
+        <button type="button" id="gdDrawDone">Done</button>
+      </div>
     </div>
     <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
       <button type="button" data-speed="0.5">0.5×</button>
@@ -1294,7 +1306,8 @@ function exitImmersive(){
     document.exitFullscreen().catch(()=>{});
   }
   STATE.gameday=false;
-  document.body.classList.remove("gameday");
+  STATE.quickDraw=false;
+  document.body.classList.remove("gameday","gd-drawing");
   setImmersive(false);
 }
 function enterGameday(){
@@ -1321,13 +1334,34 @@ function advanceQuickDraw(){
   STATE.selected=QUICK_ORDER[(i+1)%QUICK_ORDER.length];
 }
 function startQuickDraw(){
-  exitImmersive();
-  if(STATE.mode!=="draw") setMode("draw");
+  // Draw right here in full-screen — do NOT leave immersive.
+  document.body.classList.add("gd-drawing");
+  setMode("draw");
   startNewPlay();
   STATE.quickDraw=true;
   STATE.selected="X";
-  $("#saveStatus").textContent="Quick draw: drag from the lit player to draw a route — it jumps to the next. Drag a player to move him on the line. Give it a number and Save.";
   render();
+}
+function gdFresh(){
+  startNewPlay();
+  STATE.quickDraw=true;
+  STATE.selected="X";
+  render();
+}
+function gdDrawPlay(){ playNow(); }
+function gdDrawSave(){
+  const number=prompt("Save as play number (like 23). Cancel to skip saving.");
+  if(!number) return;
+  $("#playNumber").value=number;
+  saveDraft();
+}
+function endGamedayDraw(){
+  document.body.classList.remove("gd-drawing");
+  STATE.quickDraw=false;
+  setMode("play");
+  if(!STATE.number||!STORE[STATE.number]) STATE.number=orderedNumbers()[0]||"";
+  render();
+  renderGamedaySheet();
 }
 function rawFirstName(shown){return shown==="Mike"?"Michael":shown;}
 function onFieldName(side,index){
@@ -1492,7 +1526,7 @@ function setSpeed(speed){
   renderSpeed();
 }
 function playNow(){
-  if(STATE.mode==="draw") return;
+  if(STATE.mode==="draw"&&!document.body.classList.contains("gd-drawing")) return;
   if(anim){stopAnim();$("#playBtn").textContent="Play";return}
   const play=workingPlay();
   stopAnim();
@@ -1873,6 +1907,10 @@ $("#gdNext").onclick=()=>gamedayStep(1);
 $("#gdFlip").onclick=()=>$("#flipBtn").click();
 $("#gdSubs").onclick=openSubs;
 $("#gdDraw").onclick=startQuickDraw;
+$("#gdFresh").onclick=gdFresh;
+$("#gdDrawPlay").onclick=gdDrawPlay;
+$("#gdDrawSave").onclick=gdDrawSave;
+$("#gdDrawDone").onclick=endGamedayDraw;
 $("#doneBtn").onclick=exitImmersive;
 document.addEventListener("fullscreenchange",()=>{
   if(document.fullscreenElement&&document.exitFullscreen){
