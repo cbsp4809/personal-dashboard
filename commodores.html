@@ -371,6 +371,29 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .line-spot .spot-label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .line-spot .spot-slot{min-width:0;min-height:56px;display:flex;align-items:center}
 .line-spot .name-chip{width:100%}
+.unit-actions{margin:0 0 10px}
+.unit-actions .fill-pref{width:100%}
+.spot-pref{margin-top:3px;font-size:10px;font-weight:600;color:var(--gold);line-height:1.25;text-transform:none;letter-spacing:0}
+.spot-pref.none{color:var(--muted);font-weight:500}
+.line-spot.off-pref{border-color:rgba(236,183,72,.45)}
+.pick-sheet{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}
+.pick-sheet.hidden{display:none}
+.pick-card{width:min(560px,100%);max-height:86vh;overflow:auto;background:var(--panel);border:1px solid var(--strong);border-top-left-radius:18px;border-top-right-radius:18px;box-shadow:var(--shadow);padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.pick-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.pick-eyebrow{color:var(--gold);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.pick-head h3{margin:3px 0 0;font:500 20px/1.15 var(--serif)}
+.pick-section{margin:12px 0 4px;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.pick-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:52px;padding:10px 12px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);color:var(--ink);text-align:left}
+.pick-opt.here{border-color:var(--highlight);background:rgba(236,183,72,.12)}
+.pick-opt.clear{color:var(--oak);justify-content:center}
+.pick-name{display:flex;flex-direction:column;gap:2px;font-weight:700}
+.pick-star{color:var(--highlight)}
+.pick-here{color:var(--highlight);font-size:10.5px;font-weight:700}
+.pick-spots{color:var(--muted);font-size:11px;font-weight:500}
+.pick-tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:46%}
+.pick-tag{padding:2px 6px;border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:700;color:var(--muted)}
+.pick-tag.hit{border-color:rgba(236,183,72,.6);color:var(--highlight);background:rgba(236,183,72,.12)}
+.pick-none{color:var(--muted);font-size:12.5px;padding:8px 2px}
 .line-spot .spot-empty{display:grid;place-items:center;width:100%;min-height:56px;border:1px dashed var(--strong);border-radius:10px;color:var(--muted);font-size:12px}
 .team-drag-ghost{position:fixed;z-index:80;pointer-events:none;margin:0;opacity:.96;box-shadow:var(--shadow);-webkit-user-select:none;user-select:none}
 body.team-dragging{overflow:hidden;touch-action:none}
@@ -709,7 +732,8 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <li>Every present kid starts two full quarters on O and two on D, or plays all four quarters on one side only.</li>
           <li>14 spots a quarter. With fewer than 12 present you need more both-ways (11→3, 10→4, … 7→all both-ways). Need at least 7 to play.</li>
           <li>O letters: Q · C · X · A · B · Y · Z. Facing the ball, D1/D2/D3 are front defense-right to defense-left; D4 is behind D3, D5 behind D2, D6 behind D1, and D7 is the deep safety.</li>
-          <li>On a phone: tap a name, then tap a spot. On a computer you can also drag. Tap or drop onto Clear to empty a filled spot.</li>
+          <li><b>Fastest:</b> tap a spot to pick from the kids who studied it — their tags show right there — or hit <b>Fill from preferred</b> to auto-set a whole unit from what each kid was told, then tweak.</li>
+          <li>Still works: tap a name then a spot, or drag on a computer. Tap Clear, then a placed name, to empty a spot.</li>
         </ul>
       </div>
       <div class="lineup-attendance">
@@ -735,6 +759,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="unit-block">
         <h3>Q1/Q3 unit</h3>
         <p class="unit-note">Lock this 7+7 before Q1 and again before Q3. Same seven stay in unless someone is hurt.</p>
+        <div class="unit-actions"><button type="button" class="btn ghost fill-pref" data-fill-unit="A">⚡ Fill from preferred</button></div>
         <div class="team-boards">
           <div class="team-board">
             <h3>Offense · 7</h3>
@@ -749,6 +774,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="unit-block">
         <h3>Q2/Q4 unit</h3>
         <p class="unit-note">Lock this 7+7 before Q2 and again before Q4. No mid-quarter swaps.</p>
+        <div class="unit-actions"><button type="button" class="btn ghost fill-pref" data-fill-unit="B">⚡ Fill from preferred</button></div>
         <div class="team-boards">
           <div class="team-board">
             <h3>Offense · 7</h3>
@@ -3583,7 +3609,14 @@ function renderUnitBoard(unit,side,spots){
     const hint=spot.hint?`<div>${esc(spot.hint)}</div>`:"";
     const labelColor=side==="offense"?positionColor(spot.id):"";
     const labelStyle=labelColor?` style="color:${labelColor}"`:"";
-    return `<div class="line-spot" data-drop-unit="${unit}" data-drop-side="${side}" data-drop-index="${index}"><div class="spot-label"${labelStyle}>${esc(spot.label)}${hint}</div><div class="spot-slot">${name?nameChip(name,unit,side,index):`<div class="spot-empty">Tap or drop first name</div>`}</div></div>`;
+    const tag=spotTagFor(side,spot);
+    const pref=preferredForSpot(side,tag);
+    const prefNames=pref.primary.concat(pref.extra).map(displayName);
+    const prefHtml=prefNames.length
+      ?`<div class="spot-pref">${esc(prefNames.slice(0,3).join(", "))}${prefNames.length>3?"…":""}</div>`
+      :`<div class="spot-pref none">no tag yet</div>`;
+    const offPref=name&&!prefersSpot(name,side,tag);
+    return `<div class="line-spot${offPref?" off-pref":""}" data-drop-unit="${unit}" data-drop-side="${side}" data-drop-index="${index}"><div class="spot-label"${labelStyle}>${esc(spot.label)}${hint}${prefHtml}</div><div class="spot-slot">${name?nameChip(name,unit,side,index):`<div class="spot-empty">Tap to pick</div>`}</div></div>`;
   }).join("");
 }
 function playTimeRow(name){
@@ -4059,11 +4092,103 @@ function onTeamChipClick(event){
 function onTeamSpotClick(event){
   if(event.target.closest(".name-chip")) return;
   event.preventDefault();
-  handleTeamSpotTap(event.currentTarget);
+  if(teamPick){ handleTeamSpotTap(event.currentTarget); return; }
+  const el=event.currentTarget;
+  openSpotPicker(el.dataset.dropUnit,el.dataset.dropSide,Number(el.dataset.dropIndex));
 }
 function onTeamClearClick(event){
   event.preventDefault();
   handleTeamClearTap();
+}
+function spotTagFor(side,spot){return side==="offense"?spot.id:spot.label;}
+function playerTagList(name,side){
+  return cleanTags(ROSTER_META[name]&&ROSTER_META[name][side+"Tags"],side==="offense"?OFFENSE_TAGS:DEFENSE_TAGS);
+}
+function prefersSpot(name,side,tag){return playerTagList(name,side).includes(tag);}
+function isPrimarySpot(name,side,tag){return playerTagList(name,side)[0]===tag;}
+function preferredForSpot(side,tag){
+  const present=presentKids();
+  const primary=present.filter(name=>isPrimarySpot(name,side,tag));
+  const extra=present.filter(name=>!isPrimarySpot(name,side,tag)&&prefersSpot(name,side,tag));
+  return {primary,extra};
+}
+function fillFromPreferred(unit){
+  const spotsBySide={offense:OFFENSE_SPOTS,defense:DEFENSE_SPOTS};
+  ["offense","defense"].forEach(side=>{
+    const spots=spotsBySide[side];
+    const line=unitLine(unit,side);
+    spots.forEach((spot,index)=>{
+      if(line[index]&&isPresent(line[index])) return; // keep what a coach already set
+      const tag=spotTagFor(side,spot);
+      const {primary,extra}=preferredForSpot(side,tag);
+      const taken=new Set(line.filter(Boolean));
+      const pick=primary.find(name=>!taken.has(name))||extra.find(name=>!taken.has(name));
+      if(pick) line[index]=pick;
+    });
+  });
+  syncLegacyLines(teamState);
+  persistTeamLocal();
+  renderTeamLineup();
+  saveStaffLineupDebounced();
+  const o=lineFilled(unitLine(unit,"offense")),d=lineFilled(unitLine(unit,"defense"));
+  setTeamStatus("Filled "+unitLabel(unit)+" from preferred · "+o+"/7 O · "+d+"/7 D · adjust as needed");
+}
+function ensurePickSheet(){
+  let sheet=$("#pickSheet");
+  if(sheet) return sheet;
+  sheet=document.createElement("div");
+  sheet.id="pickSheet";
+  sheet.className="pick-sheet hidden";
+  sheet.innerHTML='<div class="pick-card" role="dialog" aria-modal="true" aria-label="Pick a player"><div class="pick-head"><div><div class="pick-eyebrow" id="pickEyebrow"></div><h3 id="pickTitle"></h3></div><button type="button" class="btn ghost" id="pickDone">Done</button></div><div id="pickBody"></div></div>';
+  document.body.appendChild(sheet);
+  sheet.addEventListener("click",event=>{if(event.target===sheet) closeSpotPicker();});
+  const done=sheet.querySelector("#pickDone");
+  if(done) done.onclick=closeSpotPicker;
+  return sheet;
+}
+function closeSpotPicker(){const sheet=$("#pickSheet"); if(sheet) sheet.classList.add("hidden");}
+function openSpotPicker(unit,side,index){
+  const spots=side==="offense"?OFFENSE_SPOTS:DEFENSE_SPOTS;
+  const spot=spots[index];
+  if(!spot) return;
+  const tag=spotTagFor(side,spot);
+  const line=unitLine(unit,side);
+  const current=line[index]||"";
+  const sheet=ensurePickSheet();
+  $("#pickEyebrow").textContent=unitLabel(unit)+" · "+(side==="offense"?"Offense":"Defense");
+  $("#pickTitle").textContent="Spot "+spot.label+(spot.hint?" · "+spot.hint:"");
+  const {primary,extra}=preferredForSpot(side,tag);
+  const prefSet=new Set(primary.concat(extra));
+  const others=presentKids().filter(name=>!prefSet.has(name));
+  const optRow=(name,star)=>{
+    const tags=playerTagList(name,side);
+    const tagHtml=tags.map(t=>`<span class="pick-tag${t===tag?" hit":""}">${esc(t)}${tags[0]===t?" 1":""}</span>`).join("");
+    const placed=playerSpotLabels(name);
+    const isHere=name===current;
+    return `<button type="button" class="pick-opt${isHere?" here":""}" data-pick-name="${esc(name)}"><span class="pick-name"><span>${star?'<span class="pick-star">★</span> ':''}${esc(rosterLabel(name))}${isHere?' <span class="pick-here">on this spot</span>':''}</span>${placed.length?`<span class="pick-spots">${esc(placed.join(" · "))}</span>`:""}</span><span class="pick-tags">${tagHtml}</span></button>`;
+  };
+  let html="";
+  if(prefSet.size){
+    html+='<div class="pick-section">Prefers '+esc(spot.label)+'</div>';
+    html+=primary.map(name=>optRow(name,true)).join("");
+    html+=extra.map(name=>optRow(name,false)).join("");
+  }
+  html+='<div class="pick-section">'+(prefSet.size?"Everyone else present":"Present players")+'</div>';
+  html+=others.length?others.map(name=>optRow(name,false)).join(""):'<div class="pick-none">No other present players.</div>';
+  if(current){
+    html+='<button type="button" class="pick-opt clear" data-pick-clear="1"><span class="pick-name">Clear this spot</span></button>';
+  }
+  $("#pickBody").innerHTML=html;
+  $$("#pickBody [data-pick-name]").forEach(button=>{
+    button.onclick=()=>{
+      placeOnSide(unit,side,index,button.dataset.pickName);
+      closeSpotPicker();
+      finishTeamPlace();
+    };
+  });
+  const clr=$("#pickBody [data-pick-clear]");
+  if(clr) clr.onclick=()=>{clearSpot({kind:"spot",unit,side,index}); closeSpotPicker(); finishTeamPlace();};
+  sheet.classList.remove("hidden");
 }
 function bindTeamLineup(){
   $$("#page-lineup .name-chip").forEach(chip=>{
@@ -4079,6 +4204,9 @@ function bindTeamLineup(){
   });
   const clear=$("#teamClear");
   if(clear) clear.onclick=onTeamClearClick;
+  $$("#page-lineup [data-fill-unit]").forEach(button=>{
+    button.onclick=()=>fillFromPreferred(button.dataset.fillUnit);
+  });
   paintTeamPick();
 }
 document.addEventListener("pointermove",onTeamPointerMove,{passive:false});
