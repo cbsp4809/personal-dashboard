@@ -165,6 +165,19 @@ body.immersive .tools button{display:none}
 body.immersive .tools #playBtn{display:block}
 body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}
 body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
+.gameday-bar{display:none}
+body.immersive.gameday .gameday-bar{display:flex;flex-direction:column;gap:8px;width:min(560px,100%);margin:6px auto 2px}
+body.immersive.gameday .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 320px)*1.2));max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 320px)}
+body.immersive.gameday .speed{display:none}
+.gd-actions{display:grid;grid-template-columns:68px 1fr 68px;gap:8px}
+.gd-actions button{min-height:56px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--ink);font-weight:800;font-size:19px}
+.gd-actions .gd-flip{background:var(--gold-soft);border-color:var(--highlight)}
+.gd-sheet{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gd-sheet::-webkit-scrollbar{display:none}
+.gd-sheet button{flex:0 0 auto;min-height:46px;padding:6px 13px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800;white-space:nowrap}
+.gd-sheet button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.gd-sheet button b{color:var(--gold);margin-right:5px}
+.gd-sheet button.on b{color:var(--highlight)}
 @media(orientation:landscape) and (max-height:780px){
   body.immersive .tools #playBtn{min-height:48px;font-size:16px}
   body.immersive .play-name{font-size:22px;margin-bottom:4px}
@@ -258,6 +271,15 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
       <button class="ghost" type="button" id="flipBtn">Flip</button>
       <button class="ghost" type="button" id="fullScreenBtn">Full screen</button>
       <button class="ghost" type="button" id="resetBtn">Reset</button>
+      <button type="button" id="gamedayBtn">Gameday</button>
+    </div>
+    <div class="gameday-bar" id="gamedayBar">
+      <div class="gd-actions">
+        <button type="button" id="gdPrev" class="gd-side" aria-label="Previous play">◀</button>
+        <button type="button" id="gdFlip" class="gd-flip">Flip</button>
+        <button type="button" id="gdNext" class="gd-side" aria-label="Next play">▶</button>
+      </div>
+      <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
     </div>
     <div class="speed" id="speedPicks" role="group" aria-label="Play speed">
       <button type="button" data-speed="0.5">0.5×</button>
@@ -574,6 +596,7 @@ const STATE={
   kidsSnapshot:null,
   snapshotPublishedAt:"",
   playFilter:"all",
+  gameday:false,
   speed:loadSpeed()
 };
 const PUBLISH_LABELS={coach:"Coach only",kids:"Kids",edited:"Edited"};
@@ -1252,7 +1275,41 @@ function exitImmersive(){
   if(document.fullscreenElement&&document.exitFullscreen){
     document.exitFullscreen().catch(()=>{});
   }
+  STATE.gameday=false;
+  document.body.classList.remove("gameday");
   setImmersive(false);
+}
+function enterGameday(){
+  STATE.gameday=true;
+  document.body.classList.add("gameday");
+  enterImmersive();
+  renderGamedaySheet();
+}
+function gamedayPlays(){
+  return orderedNumbers();
+}
+function gamedayStep(dir){
+  const list=gamedayPlays();
+  if(!list.length) return;
+  let i=list.indexOf(STATE.number);
+  if(i<0) i=0;
+  selectPlay(list[(i+dir+list.length)%list.length]);
+  renderGamedaySheet();
+}
+function renderGamedaySheet(){
+  const sheet=$("#gdSheet");
+  if(!sheet) return;
+  const list=gamedayPlays();
+  sheet.innerHTML=list.map(n=>{
+    const play=STORE[n];
+    const title=((play&&play.title)||"").replace(/^\d+\s*/,"")||"Play";
+    return `<button type="button" data-gd="${esc(n)}" class="${n===STATE.number?"on":""}"><b>${esc(n)}</b>${esc(title)}</button>`;
+  }).join("");
+  $$("#gdSheet [data-gd]").forEach(button=>{
+    button.onclick=()=>{selectPlay(button.dataset.gd);renderGamedaySheet();};
+  });
+  const on=sheet.querySelector(".on");
+  if(on&&on.scrollIntoView){try{on.scrollIntoView({inline:"center",block:"nearest"});}catch(_){}}
 }
 function paintProgress(play,progress){
   const q=formationPoint(play.spots.find(s=>s.letter==="Q"));
@@ -1673,6 +1730,10 @@ $("#speedPicks").onclick=event=>{
   setSpeed(button.dataset.speed);
 };
 $("#fullScreenBtn").onclick=enterImmersive;
+$("#gamedayBtn").onclick=enterGameday;
+$("#gdPrev").onclick=()=>gamedayStep(-1);
+$("#gdNext").onclick=()=>gamedayStep(1);
+$("#gdFlip").onclick=()=>$("#flipBtn").click();
 $("#doneBtn").onclick=exitImmersive;
 document.addEventListener("fullscreenchange",()=>{
   if(document.fullscreenElement&&document.exitFullscreen){
