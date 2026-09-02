@@ -289,6 +289,8 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .pr-picklist{display:grid;gap:8px;max-height:46vh;overflow:auto}
 .pr-pick{text-align:left;border:1px solid var(--line);border-radius:12px;background:#000;color:var(--ink);padding:11px 13px;min-height:48px}
 .pr-pick b{display:block}.pr-pick span{color:var(--muted);font-size:12px}
+.pr-pick em{display:block;margin-top:4px;color:var(--soft);font-size:12px;font-style:normal}
+.pr-station-how{margin:5px 0 0;color:var(--soft);font-size:12.5px}
 .pr-pick:active{border-color:var(--gold);background:var(--gold-soft,rgba(207,174,112,.16))}
 .pr-stations{display:grid;gap:8px}
 .pr-station{display:flex;align-items:stretch;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
@@ -304,6 +306,23 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .pr-ico{width:38px;min-height:30px;border:1px solid var(--strong);border-radius:9px;background:#000;color:var(--soft);font-size:12px;font-weight:800}
 .pr-ico:disabled{opacity:.35}
 .pr-ico.danger{color:var(--oak)}
+.pr-station-row{display:flex;align-items:stretch;gap:8px}
+.pr-station.is-split{flex-direction:column}
+.pr-split-btn{min-height:32px;border:1px solid var(--gold);border-radius:9px;background:transparent;color:var(--gold);font-size:12px;font-weight:800;padding:0 10px}
+.pr-groups{margin-top:10px;display:grid;gap:8px;padding-left:6px;border-left:2px solid var(--gold-soft,rgba(207,174,112,.3))}
+.pr-group{border:1px solid var(--line);border-radius:12px;background:#000;padding:10px 11px}
+.pr-group-top{display:flex;align-items:center;gap:8px}
+.pr-group-top b{flex:none;font-size:13px}
+.pr-group-top select{margin-left:auto;width:auto;padding:6px 8px;font-size:13px}
+.pr-grp-block{width:100%;text-align:left;margin-top:8px;min-height:42px;border:1px solid var(--strong);border-radius:10px;background:var(--panel);color:var(--ink);font-weight:700;padding:8px 11px}
+.pr-grp-picklist{display:grid;gap:7px;margin-top:7px;max-height:40vh;overflow:auto}
+.pr-group-kids{display:flex;align-items:center;gap:8px;margin-top:8px}
+.pr-kidchips{display:flex;flex-wrap:wrap;gap:5px;flex:1;min-width:0}
+.pr-kidchip{padding:3px 9px;border:1px solid var(--gold);border-radius:999px;background:var(--gold-soft,rgba(207,174,112,.16));color:var(--ink);font-size:12px;font-weight:700}
+.pr-kidbtn{flex:none;min-height:38px}
+.pr-kidgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:7px;margin-top:8px}
+.pr-kidtoggle{min-height:42px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--soft);font-weight:700;font-size:13px}
+.pr-kidtoggle.on{border-color:var(--gold);background:var(--gold-soft,rgba(207,174,112,.18));color:var(--ink)}
 /* Dawgs chain */
 .chain-nudge{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 15px;border:1px solid var(--gold);border-radius:14px;background:var(--gold-soft,rgba(207,174,112,.14))}
 .chain-nudge b{display:block}.chain-nudge span{color:var(--soft);font-size:12.5px}
@@ -2848,6 +2867,9 @@ function cleanGroup(g){
     id:typeof g.id==="string"&&g.id?g.id:pbUid("grp"),
     label:typeof g.label==="string"&&g.label?g.label.slice(0,24):"Group",
     coach:coachName(g.coach),
+    name:typeof g.name==="string"?g.name.slice(0,80):"",
+    detail:typeof g.detail==="string"?g.detail:"",
+    blockId:typeof g.blockId==="string"?g.blockId:"",
     kids:Array.isArray(g.kids)?g.kids.filter(k=>typeof k==="string"):[]
   };
 }
@@ -2955,25 +2977,85 @@ function clearBuild(){
   practiceBuild=emptyBuild();buildPickerOpen=false;saveBuildLocal();renderBuildTab();
 }
 function buildPickerHTML(){
-  const cards=practiceBlocks.map(b=>`<button class="pr-pick" type="button" data-add-station="${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.minutes)}m · ${esc(b.group)}</span></button>`).join("")
+  const cards=practiceBlocks.map(b=>`<button class="pr-pick" type="button" data-add-station="${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.minutes)}m · ${esc(b.group)}</span>${b.how?`<em>${esc(oneLineHow(b.how))}</em>`:""}</button>`).join("")
     ||'<div class="pr-empty">No blocks yet — make some on the Blocks tab.</div>';
   return `<div class="pr-picker"><div class="pr-picker-head"><b>Tap a block to add</b><button class="btn ghost" type="button" id="buildPickClose">Close</button></div><div class="pr-picklist">${cards}</div></div>`;
 }
+let openGroupBlock="",openGroupKids=""; // "i:gid" for inline pickers
+function stationGroups(i){const s=practiceBuild.stations[i];return s&&s.split?s.split.groups:[];}
+function newGroup(label,from){
+  return cleanGroup({id:pbUid("grp"),label:label||"Group",coach:(from&&from.coach)||"Unassigned",
+    name:(from&&from.name)||"",detail:(from&&from.detail)||"",blockId:(from&&from.blockId)||"",kids:[]});
+}
+function splitStation(i){
+  const s=practiceBuild.stations[i];if(!s||s.split) return;
+  s.split={groups:[newGroup("Group 1",{coach:s.coach,name:s.name,detail:s.detail,blockId:s.blockId}),newGroup("Group 2",{})]};
+  saveBuildLocal();renderBuildTab();
+}
+function unsplitStation(i){const s=practiceBuild.stations[i];if(s&&s.split) delete s.split;openGroupBlock="";openGroupKids="";saveBuildLocal();renderBuildTab();}
+function addGroup(i){const gs=stationGroups(i);if(gs.length>=3) return;gs.push(newGroup("Group "+(gs.length+1),{}));saveBuildLocal();renderBuildTab();}
+function removeGroup(i,gid){
+  const s=practiceBuild.stations[i];if(!s||!s.split) return;
+  s.split.groups=s.split.groups.filter(g=>g.id!==gid);
+  if(s.split.groups.length<=1){
+    const g=s.split.groups[0];
+    if(g){s.coach=g.coach;if(g.name)s.name=g.name;if(g.detail)s.detail=g.detail;if(g.blockId)s.blockId=g.blockId;}
+    delete s.split;
+  }
+  openGroupBlock="";openGroupKids="";saveBuildLocal();renderBuildTab();
+}
+function setGroupCoach(i,gid,coach){const g=stationGroups(i).find(x=>x.id===gid);if(g){g.coach=coachName(coach);saveBuildLocal();renderBuildTab();}}
+function setGroupBlock(i,gid,blockId){
+  const g=stationGroups(i).find(x=>x.id===gid),b=blockById(blockId);
+  if(g&&b){g.name=b.name;g.detail=b.how;g.blockId=b.id;}
+  openGroupBlock="";saveBuildLocal();renderBuildTab();
+}
+function toggleGroupKid(i,gid,kid){
+  const groups=stationGroups(i);
+  groups.forEach(g=>{if(g.id!==gid) g.kids=g.kids.filter(k=>k!==kid);});
+  const g=groups.find(x=>x.id===gid);if(!g) return;
+  g.kids=g.kids.includes(kid)?g.kids.filter(k=>k!==kid):[...g.kids,kid];
+  saveBuildLocal();renderBuildTab();
+}
+function groupsHTML(i){
+  const groups=stationGroups(i),names=rosterAwardNames();
+  const rows=groups.map(g=>{
+    const key=i+":"+g.id;
+    const coachOpts=["Unassigned",...STAFF_FIRST].map(c=>`<option value="${esc(c)}"${c===g.coach?" selected":""}>${esc(c)}</option>`).join("");
+    const blockList=openGroupBlock===key?`<div class="pr-grp-picklist">${practiceBlocks.map(b=>`<button class="pr-pick" type="button" data-grp-block="${esc(key)}::${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.minutes)}m · ${esc(b.group)}</span></button>`).join("")||'<div class="pr-empty">No blocks — add some on the Blocks tab.</div>'}</div>`:"";
+    const kidChips=g.kids.length?g.kids.map(k=>`<span class="pr-kidchip">${esc(k)}</span>`).join(""):'<span class="muted">No kids yet</span>';
+    const kidGrid=openGroupKids===key?`<div class="pr-kidgrid">${names.map(n=>`<button class="pr-kidtoggle${g.kids.includes(n)?" on":""}" type="button" data-grp-kid="${esc(key)}::${esc(n)}">${esc(n)}</button>`).join("")||'<span class="muted">Roster loads after sign-in.</span>'}</div>`:"";
+    return `<div class="pr-group">
+      <div class="pr-group-top"><b>${esc(g.label)}</b><select data-grp-coach="${esc(key)}" aria-label="Group coach">${coachOpts}</select><button class="pr-ico danger" type="button" data-grp-remove="${esc(key)}" aria-label="Remove group">✕</button></div>
+      <button class="pr-grp-block" type="button" data-grp-blockopen="${esc(key)}">${g.name?esc(g.name):'Pick a block'}</button>
+      ${blockList}
+      <div class="pr-group-kids"><div class="pr-kidchips">${kidChips}</div><button class="btn ghost pr-kidbtn" type="button" data-grp-kidsopen="${esc(key)}">${openGroupKids===key?"Done":"Edit kids"}</button></div>
+      ${kidGrid}
+    </div>`;
+  }).join("");
+  const addBtn=groups.length<3?`<button class="btn ghost" type="button" data-grp-add="${i}">+ Add group</button>`:"";
+  return `<div class="pr-groups">${rows}<div class="pr-actions">${addBtn}<button class="btn ghost" type="button" data-grp-merge="${i}">Merge to one</button></div></div>`;
+}
 function stationRowHTML(s,i,total){
+  const split=!!s.split;
   const coachOpts=["Unassigned",...STAFF_FIRST].map(c=>`<option value="${esc(c)}"${c===s.coach?" selected":""}>${esc(c)}</option>`).join("");
-  return `<div class="pr-station">
-    <div class="pr-station-main">
-      <div class="pr-station-name"><span class="pr-num">${i+1}</span><b>${esc(s.name)}</b></div>
-      <div class="pr-station-ctl">
-        <span class="pr-min"><input type="number" inputmode="numeric" min="1" max="90" value="${esc(s.minutes)}" data-min="${i}" aria-label="Minutes">m</span>
-        <select data-coach="${i}" aria-label="Coach">${coachOpts}</select>
+  return `<div class="pr-station${split?" is-split":""}">
+    <div class="pr-station-row">
+      <div class="pr-station-main">
+        <div class="pr-station-name"><span class="pr-num">${i+1}</span><b>${esc(s.name)}${split?" · split":""}</b></div>
+        ${s.detail&&!split?`<p class="pr-station-how">${esc(oneLineHow(s.detail))}</p>`:""}
+        <div class="pr-station-ctl">
+          <span class="pr-min"><input type="number" inputmode="numeric" min="1" max="90" value="${esc(s.minutes)}" data-min="${i}" aria-label="Minutes">m</span>
+          ${split?`<span class="muted">${stationGroups(i).length} groups</span>`:`<select data-coach="${i}" aria-label="Coach">${coachOpts}</select><button class="pr-split-btn" type="button" data-split="${i}">Split</button>`}
+        </div>
+      </div>
+      <div class="pr-station-side">
+        <button class="pr-ico" type="button" data-up="${i}"${i===0?" disabled":""} aria-label="Move up">▲</button>
+        <button class="pr-ico" type="button" data-down="${i}"${i===total-1?" disabled":""} aria-label="Move down">▼</button>
+        <button class="pr-ico danger" type="button" data-remove="${i}" aria-label="Remove">✕</button>
       </div>
     </div>
-    <div class="pr-station-side">
-      <button class="pr-ico" type="button" data-up="${i}"${i===0?" disabled":""} aria-label="Move up">▲</button>
-      <button class="pr-ico" type="button" data-down="${i}"${i===total-1?" disabled":""} aria-label="Move down">▼</button>
-      <button class="pr-ico danger" type="button" data-remove="${i}" aria-label="Remove">✕</button>
-    </div>
+    ${split?groupsHTML(i):""}
   </div>`;
 }
 function renderBuildTab(){
@@ -2999,6 +3081,15 @@ function renderBuildTab(){
   $$("#prBuild [data-remove]").forEach(b=>b.onclick=()=>removeStation(+b.getAttribute("data-remove")));
   $$("#prBuild [data-coach]").forEach(sel=>sel.onchange=()=>{practiceBuild.stations[+sel.getAttribute("data-coach")].coach=coachName(sel.value);saveBuildLocal();renderBuildTab();});
   $$("#prBuild [data-min]").forEach(inp=>inp.onchange=()=>{const i=+inp.getAttribute("data-min");practiceBuild.stations[i].minutes=Math.max(1,Math.min(90,Number(inp.value)||1));saveBuildLocal();renderBuildTab();});
+  $$("#prBuild [data-split]").forEach(b=>b.onclick=()=>splitStation(+b.getAttribute("data-split")));
+  $$("#prBuild [data-grp-merge]").forEach(b=>b.onclick=()=>unsplitStation(+b.getAttribute("data-grp-merge")));
+  $$("#prBuild [data-grp-add]").forEach(b=>b.onclick=()=>addGroup(+b.getAttribute("data-grp-add")));
+  $$("#prBuild [data-grp-remove]").forEach(b=>b.onclick=()=>{const [i,gid]=b.getAttribute("data-grp-remove").split(":");removeGroup(+i,gid);});
+  $$("#prBuild [data-grp-coach]").forEach(sel=>sel.onchange=()=>{const [i,gid]=sel.getAttribute("data-grp-coach").split(":");setGroupCoach(+i,gid,sel.value);});
+  $$("#prBuild [data-grp-blockopen]").forEach(b=>b.onclick=()=>{const k=b.getAttribute("data-grp-blockopen");openGroupBlock=openGroupBlock===k?"":k;openGroupKids="";renderBuildTab();});
+  $$("#prBuild [data-grp-block]").forEach(b=>b.onclick=()=>{const [key,blockId]=b.getAttribute("data-grp-block").split("::");const [i,gid]=key.split(":");setGroupBlock(+i,gid,blockId);});
+  $$("#prBuild [data-grp-kidsopen]").forEach(b=>b.onclick=()=>{const k=b.getAttribute("data-grp-kidsopen");openGroupKids=openGroupKids===k?"":k;openGroupBlock="";renderBuildTab();});
+  $$("#prBuild [data-grp-kid]").forEach(b=>b.onclick=()=>{const [key,kid]=b.getAttribute("data-grp-kid").split("::");const [i,gid]=key.split(":");toggleGroupKid(+i,gid,kid);});
 }
 function renderTemplatesTab(){
   const host=$("#prTemplates");if(!host) return;
