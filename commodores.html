@@ -257,6 +257,21 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .board-item p{margin:0;color:var(--muted);font-size:12.5px}
 .board-item .remove-station{min-height:44px;min-width:44px;padding:8px 10px}
 .drill-soon{margin-top:10px;color:var(--muted);font-size:12.5px}
+/* Practice builder v2 */
+.pr-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 10px}
+.pr-chip{min-height:46px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--muted);font-weight:800;font-size:14px}
+.pr-chip.on{border-color:var(--gold);background:var(--gold-soft,rgba(207,174,112,.16));color:var(--ink)}
+.pr-panel[hidden]{display:none}
+.pr-hint{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+.pr-list{display:grid;gap:10px}
+.pr-empty{padding:18px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);text-align:center;font-size:13.5px}
+.pr-card{padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.pr-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.pr-card-top b{font:500 18px/1.15 var(--serif)}
+.pr-card p{margin:0;color:var(--soft);font-size:13px}
+.pr-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px}
+.pr-row{display:grid;gap:8px}
+.pr-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .draft-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .diagram .area{fill:none;stroke:#777777;stroke-width:1;opacity:.55}
 .diagram .grass{fill:rgba(207,174,112,.16);stroke:#CFAE70;stroke-width:1.6}
@@ -798,15 +813,18 @@ body.team-dragging{overflow:hidden;touch-action:none}
     </section>
 
     <section class="page" id="page-practice">
-      <div class="section-head"><div><div class="eyebrow">Date list</div><h2>Practice</h2></div><p>Thu 5:00 p.m. · Sun 1:00 p.m. · Frostwood through Dec 6</p></div>
-      <div class="section-head" id="drill-library"><div><div class="eyebrow">Skills / drills</div><h2>Drill picker</h2></div><p>Tap a drill onto the practice you’re building</p></div>
-      <div class="drill-wrap" id="drillPicker"></div>
-      <div class="shell-tools">
-        <button class="btn ghost" id="expandShells" type="button">Open next four</button>
-        <span class="badge">Thursday written before leaving Sunday</span>
+      <div class="section-head"><div><div class="eyebrow">Plan</div><h2>Practice</h2></div><p>Thu 5:00 p.m. · Sun 1:00 p.m. · Frostwood through Dec 6</p></div>
+      <div class="pr-nav" id="practiceNav" role="group" aria-label="Practice sections">
+        <button class="pr-chip on" type="button" data-prtab="build">Build</button>
+        <button class="pr-chip" type="button" data-prtab="blocks">Blocks</button>
+        <button class="pr-chip" type="button" data-prtab="templates">Templates</button>
+        <button class="pr-chip" type="button" data-prtab="dates">Dates</button>
       </div>
-      <div class="season-list" id="seasonList"></div>
       <div class="status-line" id="importStatus" aria-live="polite"></div>
+      <div class="pr-panel" id="prBuild"></div>
+      <div class="pr-panel" id="prBlocks" hidden></div>
+      <div class="pr-panel" id="prTemplates" hidden></div>
+      <div class="pr-panel" id="prDates" hidden></div>
 
       <div class="section-head"><div><div class="eyebrow">Continuity</div><h2>Last practice → next practice</h2></div><p>Shared with staff · not local-only</p></div>
       <div class="author-row">
@@ -880,9 +898,11 @@ let ROSTER=[];
 let ROSTER_META={};
 const LINEUP_ID="staff-lineup";
 const LEAGUE_ID="sbmsa-jv-maxwell";
+const BLOCKS_ID="practice-blocks";
+const TEMPLATES_ID="practice-templates";
 const LEAGUE_TZ="America/Chicago";
 function reservedPlanId(id){
-  return id===LINEUP_ID||id===LEAGUE_ID;
+  return id===LINEUP_ID||id===LEAGUE_ID||id===BLOCKS_ID||id===TEMPLATES_ID;
 }
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
 const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
@@ -1622,8 +1642,7 @@ async function loadCloudPlans(){
   if(changed){
     plans.sort((a,b)=>(a.date+" "+a.time).localeCompare(b.date+" "+b.time));
     setStore("plans",plans);
-    renderSeason();
-    renderDrillPicker();
+    renderPractice();
     if($("#importStatus")) $("#importStatus").textContent="Loaded newer shared practice plans.";
   }
 }
@@ -1920,8 +1939,7 @@ async function openApp(){
   $("#gate").classList.add("hidden");
   $("#app").style.display="block";
   await loadRoster();
-  renderSeason();
-  renderDrillPicker();
+  renderPractice();
   renderLeagueSchedule();
   renderTeam();
   renderDefenseBook();
@@ -1940,6 +1958,7 @@ async function openApp(){
   });
   await loadComments();
   await loadCloudPlans();
+  await pullPracticeDocs();
   await loadLeagueSchedule();
   await loadStaffLineup();
   postPlayLineups();
@@ -2733,6 +2752,163 @@ plans=plans.map(plan=>({
 }));
 if(JSON.stringify(plans)!==savedPlansBeforeDefenseUpdate) setStore("plans",plans);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PRACTICE BUILDER v2 (fresh redesign)
+// Single-activity blocks · reusable templates · dated practices · per-station
+// group splits with assigned kids. Tap-first, no drag. Storage lives in
+// commodores_plans: BLOCKS_ID and TEMPLATES_ID rows (reserved), plus one row
+// per dated practice (the existing `plans`). All RLS-gated to coaches.
+// ═══════════════════════════════════════════════════════════════════════════
+function pbUid(prefix){return (prefix||"pb")+"-"+Math.random().toString(36).slice(2,9);}
+function coachName(v){return STAFF_FIRST.includes(v)?v:"Unassigned";}
+function totalMinutes(stations){return (stations||[]).reduce((n,s)=>n+(Number(s.minutes)||0),0);}
+
+function seedBlocks(){
+  return DRILL_LIBRARY.map(d=>({
+    id:d.id,name:d.name,minutes:Number(d.minutes)||10,how:d.how||"",
+    group:d.group||"skills",defaultCoach:"Unassigned",noLines:!!d.noLines
+  }));
+}
+function cleanBlock(b){
+  if(!b||typeof b.name!=="string") return null;
+  return {
+    id:typeof b.id==="string"&&b.id?b.id:pbUid("blk"),
+    name:b.name.slice(0,60),
+    minutes:Math.max(1,Math.min(90,Number(b.minutes)||10)),
+    how:typeof b.how==="string"?b.how:"",
+    group:typeof b.group==="string"&&b.group?b.group:"skills",
+    defaultCoach:coachName(b.defaultCoach),
+    noLines:!!b.noLines
+  };
+}
+let practiceBlocks=getStore("practice_blocks",null);
+practiceBlocks=Array.isArray(practiceBlocks)?practiceBlocks.map(cleanBlock).filter(Boolean):seedBlocks();
+function saveBlocksLocal(){setStore("practice_blocks",practiceBlocks);}
+function blockById(id){return practiceBlocks.find(b=>b.id===id);}
+
+function cleanGroup(g){
+  if(!g||typeof g!=="object") return null;
+  return {
+    id:typeof g.id==="string"&&g.id?g.id:pbUid("grp"),
+    label:typeof g.label==="string"&&g.label?g.label.slice(0,24):"Group",
+    coach:coachName(g.coach),
+    kids:Array.isArray(g.kids)?g.kids.filter(k=>typeof k==="string"):[]
+  };
+}
+function cleanStation(s){
+  if(!s||typeof s.name!=="string") return null;
+  const split=s.split&&Array.isArray(s.split.groups)&&s.split.groups.length
+    ?{groups:s.split.groups.map(cleanGroup).filter(Boolean)}:null;
+  return {
+    id:typeof s.id==="string"&&s.id?s.id:pbUid("st"),
+    minutes:Math.max(1,Math.min(90,Number(s.minutes)||10)),
+    name:s.name.slice(0,80),
+    detail:typeof s.detail==="string"?s.detail:"",
+    coach:coachName(s.coach),
+    blockId:typeof s.blockId==="string"?s.blockId:"",
+    ...(split&&split.groups.length?{split}:{})
+  };
+}
+function cleanTemplate(t){
+  if(!t||typeof t.name!=="string") return null;
+  return {
+    id:typeof t.id==="string"&&t.id?t.id:pbUid("tpl"),
+    name:t.name.slice(0,60),
+    stations:Array.isArray(t.stations)?t.stations.map(cleanStation).filter(Boolean):[],
+    updatedAt:t.updatedAt||0
+  };
+}
+let practiceTemplates=getStore("practice_templates",null);
+practiceTemplates=Array.isArray(practiceTemplates)?practiceTemplates.map(cleanTemplate).filter(Boolean):[];
+function saveTemplatesLocal(){setStore("practice_templates",practiceTemplates);}
+
+// The practice currently being assembled on the Build tab.
+function emptyBuild(){return {mode:"new",name:"",targetDate:"",sourceId:"",stations:[]};}
+function loadBuild(){
+  const saved=getStore("practice_build",null);
+  if(!saved||typeof saved!=="object"||!Array.isArray(saved.stations)) return emptyBuild();
+  return {
+    mode:["new","template","date"].includes(saved.mode)?saved.mode:"new",
+    name:typeof saved.name==="string"?saved.name:"",
+    targetDate:typeof saved.targetDate==="string"?saved.targetDate:"",
+    sourceId:typeof saved.sourceId==="string"?saved.sourceId:"",
+    stations:saved.stations.map(cleanStation).filter(Boolean)
+  };
+}
+let practiceBuild=loadBuild();
+function saveBuildLocal(){setStore("practice_build",practiceBuild);}
+
+// Cloud sync — block library + templates share commodores_plans (reserved ids).
+async function upsertCloudDoc(id,payload){
+  if(!sb||!id) return;
+  const updatedAt=new Date().toISOString();
+  const {error}=await sb.from("commodores_plans").upsert(
+    {id,payload:{...payload,id,updatedAt},updated_at:updatedAt},{onConflict:"id"});
+  if(error&&$("#importStatus")) $("#importStatus").textContent="Saved on this device; cloud sync failed: "+error.message;
+}
+async function loadCloudDoc(id){
+  if(!sb) return null;
+  const {data,error}=await sb.from("commodores_plans").select("payload,updated_at").eq("id",id).maybeSingle();
+  if(error||!data) return null;
+  return {...(data.payload||{}),updatedAt:data.updated_at};
+}
+async function pushBlocks(){saveBlocksLocal();await upsertCloudDoc(BLOCKS_ID,{blocks:practiceBlocks});}
+async function pushTemplates(){saveTemplatesLocal();await upsertCloudDoc(TEMPLATES_ID,{templates:practiceTemplates});}
+async function pullPracticeDocs(){
+  const [b,t]=await Promise.all([loadCloudDoc(BLOCKS_ID),loadCloudDoc(TEMPLATES_ID)]);
+  let changed=false;
+  if(b&&Array.isArray(b.blocks)){practiceBlocks=b.blocks.map(cleanBlock).filter(Boolean);saveBlocksLocal();changed=true;}
+  if(t&&Array.isArray(t.templates)){practiceTemplates=t.templates.map(cleanTemplate).filter(Boolean);saveTemplatesLocal();changed=true;}
+  if(changed) renderPractice();
+}
+
+// ── Sub-tab routing ──
+let practiceTab=getStore("practice_tab","build");
+if(!["build","blocks","templates","dates"].includes(practiceTab)) practiceTab="build";
+function setPracticeTab(tab){
+  if(!["build","blocks","templates","dates"].includes(tab)) return;
+  practiceTab=tab;setStore("practice_tab",tab);renderPractice();
+}
+function renderPractice(){
+  if($("#practiceNav")) $$("#practiceNav [data-prtab]").forEach(b=>b.classList.toggle("on",b.dataset.prtab===practiceTab));
+  [["build","prBuild"],["blocks","prBlocks"],["templates","prTemplates"],["dates","prDates"]].forEach(([tab,id])=>{
+    const panel=$("#"+id);if(panel) panel.hidden=tab!==practiceTab;
+  });
+  if(practiceTab==="build") renderBuildTab();
+  else if(practiceTab==="blocks") renderBlocksTab();
+  else if(practiceTab==="templates") renderTemplatesTab();
+  else if(practiceTab==="dates") renderDatesTab();
+}
+// Slice A: Build + Templates are stubs; Blocks + Dates show read-only lists.
+function renderBuildTab(){
+  const host=$("#prBuild");if(!host) return;
+  host.innerHTML=`<div class="pr-empty">The practice assembler arrives next. Blocks and Dates are live now — tap the chips above.</div>`;
+}
+function renderTemplatesTab(){
+  const host=$("#prTemplates");if(!host) return;
+  host.innerHTML=`<div class="pr-empty">Saved practice templates will show here.</div>`;
+}
+function renderBlocksTab(){
+  const host=$("#prBlocks");if(!host) return;
+  const cards=practiceBlocks.map(b=>`<div class="pr-card">
+    <div class="pr-card-top"><b>${esc(b.name)}</b><span class="badge live">${esc(b.minutes)} min</span></div>
+    <p>${esc(oneLineHow(b.how))}</p>
+    <div class="pr-card-meta"><span class="badge">${esc(b.group)}</span>${b.noLines?'<span class="badge">No lines</span>':""}${b.defaultCoach!=="Unassigned"?`<span class="badge">${esc(b.defaultCoach)}</span>`:""}</div>
+  </div>`).join("");
+  host.innerHTML=`<div class="pr-hint">${practiceBlocks.length} block${practiceBlocks.length===1?"":"s"} in the library. Create &amp; edit arrives next slice.</div><div class="pr-list">${cards||'<div class="pr-empty">No blocks yet.</div>'}</div>`;
+}
+function renderDatesTab(){
+  const host=$("#prDates");if(!host) return;
+  const rows=plans.filter(p=>!reservedPlanId(p.id)).map(p=>{
+    const n=(p.stations||[]).length;
+    return `<div class="pr-card"><div class="pr-card-top"><b>${esc(labelDate(p.date))}</b><span class="badge">${esc(p.time)}</span></div>
+      <div class="pr-card-meta"><span class="badge${n?" live":""}">${n?n+" stations · "+totalMinutes(p.stations)+" min":"empty"}</span></div></div>`;
+  }).join("");
+  host.innerHTML=`<div class="pr-hint">Every Thu/Sun through Dec 6. Build &amp; assign arrives next slice.</div><div class="pr-list">${rows||'<div class="pr-empty">No dates.</div>'}</div>`;
+}
+const practiceNavEl=$("#practiceNav");
+if(practiceNavEl) practiceNavEl.onclick=e=>{const b=e.target.closest("[data-prtab]");if(b) setPracticeTab(b.dataset.prtab);};
+
 function emptyPracticeDraft(){
   return {coach:"Chris",concurrent:"",targetId:"",stations:[]};
 }
@@ -3002,6 +3178,7 @@ function shellHTML(plan,index){
   </details>`;
 }
 function renderSeason(){
+  if(!$("#seasonList")) return;
   $("#seasonList").innerHTML=plans.map(shellHTML).join("");
   $$(".save-shell").forEach(button=>button.onclick=()=>{
     const shell=button.closest(".shell");
@@ -3025,9 +3202,10 @@ function renderSeason(){
     renderDrillPicker();
   });
 }
-$("#expandShells").onclick=()=>{
+const expandShellsBtn=$("#expandShells");
+if(expandShellsBtn) expandShellsBtn.onclick=()=>{
   $$(".shell").slice(0,4).forEach(shell=>{shell.open=true});
-  $("#seasonList").scrollIntoView({behavior:"smooth",block:"start"});
+  if($("#seasonList")) $("#seasonList").scrollIntoView({behavior:"smooth",block:"start"});
 };
 
 function validPlan(plan){
