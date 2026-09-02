@@ -69,13 +69,26 @@ split into `/css`, `/js`, and per-module partials.
 
 ## Ops board (`ops.html`)
 
-A five-column board for work Chris and Sydney share:
+A shared card board for work Chris and Sydney share. Same `ops_cards` rows;
+the top bar is now **Master** (default), dedicated **Studio Pod / CBP /
+Personal** boards, **Unfiled**, then Emails, Content, Digest, and Home.
+
+Master shows only **Needs you** cards, stacked by project (Studio Pod, CBP,
+Personal) — three columns on desktop, stacked on the phone with no horizontal
+scroll. Unfiled cards are not on Master; they live in the Unfiled tab so Chris
+can push each onto a board. Dedicated boards keep today's five columns:
 
 - **Needs you** — waiting on Chris
 - **Today** — the day's focus (the morning dashboard's "My Day" idea)
 - **This week** — parked for the next few days
 - **Later** — the long list outside this week
 - **Sydney owns** — cards Sydney writes and can complete
+
+On a dedicated board, the Chris / Sydney chips still change whose work is
+prioritized. Chris sees Needs you, Today, This week, and Later before a quiet
+Sydney owns column. Sydney sees Sydney owns first, then cards assigned to her
+in other columns. Home (gratitude / prayers / lunch) stays its own tab and is
+not the Personal todo board.
 
 Cards persist in Supabase table `public.ops_cards` on the same Studio Pod
 project Chris already signs into (`daddiljpnhfuxcdqsulg`). Sign in with that
@@ -183,15 +196,15 @@ Canvas, or SchoolCafé — Sydney writes school/lunch/Virginia rows; Chris write
 gratitude and prayers. House cards reuse `ops_cards` where
 `project='personal'`.
 
-The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
-Needs you, Today, This week, and Later before a quiet Sydney owns column.
-Sydney sees Sydney owns first, then cards assigned to her in other columns.
-
-Intake is a sticky chat-style composer at the bottom. It loosely recognizes
-owner, project, and timeline words in a dictated or typed sentence, then shows
-what it parsed. Unsaid values default to the current person, Unfiled, and Today
-(Chris) or Sydney owns (Sydney). The standard iOS keyboard dictation works in
-the text field; browsers with Web Speech also get direct microphone input.
+Intake is a sticky chat-style composer on Master, the dedicated boards, and
+Unfiled (hidden on Emails, Content, Digest, and Home). It loosely recognizes
+owner, project, and timeline words (`on cbp`, `studio pod`, `needs you`,
+`this week`, `later`, `sydney owns`) and shows **Project · Column** chips
+before save so a bad parse is one tap to fix. If the column is not named,
+it defaults to **Today**. If the project is not named, a dedicated board
+keeps that board; Master and Unfiled default to **Unfiled**. The standard
+iOS keyboard dictation works in the text field; browsers with Web Speech
+also get direct microphone input.
 
 Each card has a one-tap star for **Needs you**. Starring a card moves it to the
 top of Needs you; unstarring it moves it to Today. The card column dropdown
@@ -459,8 +472,9 @@ python3 -m http.server 8000   # then visit http://localhost:8000
   run inside Cowork.
 - **Automated Reports** — on-demand briefs (e.g. photo-booth market pulse).
 - To-dos, goals, and gratitude **persist in the browser** (localStorage).
-- **Ops board** (`ops.html`) — shared Chris/Sydney columns stored in
-  `ops_cards` on the Studio Pod Supabase project. Linked from the masthead.
+- **Ops board** (`ops.html`) — Master Needs you stacks plus Studio Pod /
+  CBP / Personal / Unfiled boards, stored in `ops_cards` on the Studio Pod
+  Supabase project. Linked from the masthead.
 
 ## Roadmap — making it live
 
