@@ -167,32 +167,42 @@ body.immersive .speed{width:min(440px,100%);margin:0 auto 6px}
 body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 .gameday-bar{display:none}
 body.immersive.gameday .gameday-bar{display:flex;flex-direction:column;gap:8px;width:min(560px,100%);margin:6px auto 2px}
-body.immersive.gameday .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 320px)*1.2));max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 320px)}
+/* Field auto-fits the space left between the top and bottom bars, so controls
+   can never overlap the play/names again. */
+body.immersive.gameday .field{width:auto;height:100%;max-width:100%;max-height:100%}
 body.immersive.gameday .speed{display:none}
+/* Top floating context bar: lineup group, subs, coverage overlay */
+.gd-topbar{display:none}
+body.immersive.gameday .gd-topbar{display:flex;flex-direction:column;gap:8px;width:min(560px,100%);margin:2px auto 6px}
+body.immersive.gameday.gd-drawing .gd-topbar{display:none}
+.gd-top2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gd-chip{min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800;font-size:16px}
+body.immersive.gameday #gdCover.on{background:var(--gold-soft);border-color:var(--highlight);color:var(--ink)}
 .gd-unit{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.gd-unit button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:17px}
+.gd-unit button{min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:17px}
 .gd-unit button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
-body.immersive.gameday.gd-drawing #gdUnit{display:none}
 .gd-actions{display:grid;grid-template-columns:68px 1fr 68px;gap:8px}
-.gd-actions button{min-height:56px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--ink);font-weight:800;font-size:19px}
+.gd-actions button{min-height:54px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--ink);font-weight:800;font-size:19px}
 .gd-actions .gd-flip{background:var(--gold-soft);border-color:var(--highlight)}
+.gd-row2{display:none}
+body.immersive.gameday .gd-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gd-draw{display:none}
+body.immersive.gameday .gd-draw{display:block;width:100%;min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800}
 .gd-sheet{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .gd-sheet::-webkit-scrollbar{display:none}
-.gd-sheet button{flex:0 0 auto;min-height:46px;padding:6px 13px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800;white-space:nowrap}
+.gd-sheet button{flex:0 0 auto;min-height:44px;padding:6px 13px;border:1px solid var(--strong);border-radius:999px;background:#000;color:var(--muted);font-weight:800;white-space:nowrap}
 .gd-sheet button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
 .gd-sheet button b{color:var(--gold);margin-right:5px}
 .gd-sheet button.on b{color:var(--highlight)}
-.gd-subs{display:none}
-body.immersive.gameday .gd-subs,body.immersive.gameday .gd-draw{display:block;width:100%;min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--soft,#E0D5C0);font-weight:800}
-.gd-draw{display:none}
 .gd-drawbar{display:none}
 body.immersive.gameday.gd-drawing .gd-drawbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(560px,100%);margin:6px auto 2px}
 body.immersive.gameday.gd-drawing .gd-drawbar button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--ink);font-weight:800}
 body.immersive.gameday.gd-drawing .gd-drawbar #gdDrawPlay{background:var(--gold-soft);border-color:var(--highlight)}
-body.immersive.gameday.gd-drawing .gd-actions,body.immersive.gameday.gd-drawing .gd-sheet,body.immersive.gameday.gd-drawing #gdSubs,body.immersive.gameday.gd-drawing #gdDraw,body.immersive.gameday.gd-drawing #gdCover,body.immersive.gameday.gd-drawing #gdDef{display:none}
-body.immersive.gameday #gdCover.on{background:var(--gold-soft);border-color:var(--highlight);color:var(--ink)}
+body.immersive.gameday.gd-drawing .gd-actions,body.immersive.gameday.gd-drawing .gd-sheet,body.immersive.gameday.gd-drawing .gd-row2{display:none}
+/* Defense-only view: keep quarters + prev/next(steps scheme) + the toggle back */
 body.immersive.gameday.gd-defense #gdDef{background:var(--gold-soft);border-color:var(--highlight);color:var(--ink)}
-body.immersive.gameday.gd-defense .gd-sheet,body.immersive.gameday.gd-defense #gdSubs,body.immersive.gameday.gd-defense #gdDraw,body.immersive.gameday.gd-defense #gdCover{display:none}
+body.immersive.gameday.gd-defense .gd-top2,body.immersive.gameday.gd-defense .gd-sheet,body.immersive.gameday.gd-defense #gdDraw{display:none}
+body.immersive.gameday.gd-defense .gd-row2{grid-template-columns:1fr}
 body.immersive.gameday.gd-defense .tools,body.immersive.gameday.gd-defense .scrub{display:none!important}
 body.immersive.gameday.gd-drawing .tools{display:none!important}
 .subs-sheet{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
@@ -293,6 +303,16 @@ body.immersive.gameday.gd-drawing .tools{display:none!important}
   <div class="immersive-shell" id="immersiveShell">
     <button class="immersive-done" type="button" id="doneBtn">Done</button>
     <p class="play-name" id="playName" aria-live="polite"></p>
+    <div class="gd-topbar" id="gdTopBar">
+      <div class="gd-unit" id="gdUnit" role="group" aria-label="Lineup group">
+        <button type="button" data-gdunit="A" class="on">Q1 · Q3</button>
+        <button type="button" data-gdunit="B">Q2 · Q4</button>
+      </div>
+      <div class="gd-top2">
+        <button type="button" id="gdSubs" class="gd-chip">Subs</button>
+        <button type="button" id="gdCover" class="gd-chip">Coverage: off</button>
+      </div>
+    </div>
     <p class="cue" id="cue" aria-live="polite"></p>
     <div class="field-wrap" id="fieldWrap"><div class="field-host" id="fieldHost"></div></div>
     <div class="tools" id="playTools">
@@ -303,19 +323,15 @@ body.immersive.gameday.gd-drawing .tools{display:none!important}
       <button type="button" id="gamedayBtn">Gameday</button>
     </div>
     <div class="gameday-bar" id="gamedayBar">
-      <div class="gd-unit" id="gdUnit" role="group" aria-label="Lineup group">
-        <button type="button" data-gdunit="A" class="on">Q1 · Q3</button>
-        <button type="button" data-gdunit="B">Q2 · Q4</button>
-      </div>
       <div class="gd-actions">
         <button type="button" id="gdPrev" class="gd-side" aria-label="Previous play">◀</button>
         <button type="button" id="gdFlip" class="gd-flip">Flip</button>
         <button type="button" id="gdNext" class="gd-side" aria-label="Next play">▶</button>
       </div>
-      <button type="button" id="gdSubs" class="gd-subs">Subs · injury swap</button>
-      <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
-      <button type="button" id="gdCover" class="gd-draw">Coverage overlay: off</button>
-      <button type="button" id="gdDef" class="gd-draw">Defense look</button>
+      <div class="gd-row2">
+        <button type="button" id="gdDef" class="gd-draw">Show defense</button>
+        <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
+      </div>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
       <div class="gd-drawbar" id="gdDrawBar">
         <button type="button" id="gdFresh">↺ Fresh</button>
@@ -1272,7 +1288,7 @@ function renderChrome(){
   const gdCoverBtn=$("#gdCover");
   if(gdCoverBtn){gdCoverBtn.textContent=coverageOverlayLabel();gdCoverBtn.classList.toggle("on",STATE.coverageOn);}
   const gdDefBtn=$("#gdDef");
-  if(gdDefBtn) gdDefBtn.textContent=STATE.gdDefense?"Show offense":"Defense look";
+  if(gdDefBtn) gdDefBtn.textContent=STATE.gdDefense?"Show offense":"Show defense";
   if(!pointer||(pointer.kind!=="draw"&&pointer.kind!=="drag")) $("#fieldWrap").classList.remove("is-drawing");
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
     const spot=play.spots.find(s=>s.letter===letter);
@@ -1414,7 +1430,7 @@ function gamedayStep(dir){
 // ── Coverage / defense views ────────────────────────────────────────────────
 const COVERAGE_CYCLE=["base","4-3","3-4","goal-line"];
 function coverageOverlayLabel(){
-  if(!STATE.coverageOn) return "Coverage overlay: off";
+  if(!STATE.coverageOn) return "Coverage: off";
   return "Coverage: "+coverageScheme(STATE.coverage).name.split(" · ")[0];
 }
 // Cycle the QB overlay: off → base → 4-3 → 3-4 → goal-line → off.
