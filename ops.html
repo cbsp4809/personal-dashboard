@@ -77,7 +77,7 @@ a{color:var(--brass)}
 .login-foot a{color:var(--soft);}
 .install-hint{margin-top:10px;font-size:12px;line-height:1.4;color:var(--muted);}
 
-#app{display:none;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden;padding-bottom:calc(92px + env(safe-area-inset-bottom, 0px));}
+#app{display:none;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden;padding-bottom:calc(124px + env(safe-area-inset-bottom, 0px));}
 .top{width:100%;min-width:0;padding:22px 28px 0;max-width:1720px;margin:0 auto;}
 .mast{display:flex;min-width:0;max-width:100%;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid var(--line);}
 .brand{min-width:0;}
@@ -112,14 +112,17 @@ a{color:var(--brass)}
 .alert-item-time{display:block;margin-top:4px;color:var(--muted);font-size:10.5px;}
 .alert-empty{padding:28px 16px;text-align:center;color:var(--muted);font-family:var(--serif);font-style:italic;}
 .alert-foot{padding:9px 14px;color:var(--muted);font-size:10.5px;border-top:1px solid var(--line);}
-.actor{display:inline-flex;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:999px;padding:2px;}
-.actor button{background:transparent;border:none;color:var(--muted);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+.actor{display:inline-flex;flex-wrap:wrap;max-width:100%;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:16px;padding:2px;}
+.actor button{background:transparent;border:none;color:var(--muted);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:600;line-height:1.15;}
 .actor button.on{background:var(--brass-soft);color:var(--ink);}
+.actor-gap{display:block;flex:1 0 100%;height:0;margin:2px 0;}
 
-.viewbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 12px;}
-.viewbar-label{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;}
-.viewbar .actor{flex-wrap:wrap;max-width:100%;}
-.viewbar .actor button{min-width:72px;padding:9px 12px;font-size:13px;}
+.viewbar{display:flex;min-width:0;max-width:100%;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 0 12px;overflow-x:hidden;}
+.viewbar-label{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;padding-top:10px;}
+.viewbar .actor{flex:1 1 auto;flex-wrap:wrap;max-width:100%;}
+.viewbar .actor button{min-width:0;padding:9px 12px;font-size:13px;}
+.owner-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 0 12px;}
+.owner-filterbar .filters{justify-content:flex-end;padding:0;}
 .email-filterbar{display:flex;min-width:0;max-width:100%;align-items:flex-start;justify-content:space-between;gap:12px 18px;flex-wrap:wrap;padding:0 0 16px;}
 .email-filter-group{display:flex;min-width:0;max-width:100%;align-items:center;gap:10px;flex-wrap:wrap;}
 .email-filterbar .filters{justify-content:flex-start;padding:0;}
@@ -139,6 +142,9 @@ a{color:var(--brass)}
 .board.digest-board{display:block;max-width:640px;}
 .board.home-board{display:block;max-width:720px;}
 .board.content-board{display:block;max-width:760px;}
+.board.master-board{grid-template-columns:repeat(3,minmax(0,1fr));}
+.board.unfiled-board{display:block;max-width:760px;}
+.board.master-board .col,.board.unfiled-board .col{min-height:0;}
 .content{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:12px;}
 .content-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
 .content-command-copy{min-width:0;max-width:100%;}
@@ -201,8 +207,8 @@ a{color:var(--brass)}
 .content-help-sheet ol{margin:0 0 10px;padding:0 0 0 1.15em;}
 .content-help-sheet li{padding-left:2px;}
 .content-help-sheet li:last-child{margin-bottom:10px;}
-#app.content-view,#app.email-view,#app.home-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
-#app.content-view .composer,#app.email-view .composer,#app.home-view .composer{display:none;}
+#app.content-view,#app.email-view,#app.digest-view,#app.home-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
+#app.content-view .composer,#app.email-view .composer,#app.digest-view .composer,#app.home-view .composer{display:none;}
 .modal .box.content-box{max-width:560px;}
 .modal textarea{display:block;width:100%;min-height:140px;resize:vertical;padding:11px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;margin-bottom:12px;}
 .modal textarea:focus{outline:none;border-color:var(--brass);}
@@ -408,7 +414,11 @@ a{color:var(--brass)}
 .col.deemphasized{opacity:.58;}
 .composer{position:fixed;z-index:30;left:0;right:0;bottom:0;width:100%;max-width:100vw;overflow:hidden;background:rgba(18,17,15,.96);border-top:1px solid var(--line-strong);padding:8px max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
 .composer-inner{width:100%;min-width:0;max-width:900px;margin:0 auto;}
-.composer-confirm{height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--brass);font-size:11.5px;padding:0 6px 3px;}
+.composer-confirm{display:flex;min-width:0;max-width:100%;align-items:center;flex-wrap:wrap;gap:6px 10px;min-height:28px;color:var(--brass);font-size:11.5px;padding:0 6px 6px;}
+.composer-chips{display:flex;min-width:0;flex-wrap:wrap;align-items:center;gap:6px;}
+.composer-chip{min-height:32px;padding:5px 10px;font-size:11px;}
+.composer-chip.on{background:var(--brass-soft);border-color:transparent;color:var(--ink);}
+.composer-heard{min-width:0;flex:1 1 140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11.5px;}
 .composer-row{display:flex;width:100%;min-width:0;max-width:100%;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line-strong);border-radius:18px;padding:6px;}
 .composer-row:focus-within{border-color:rgba(196,165,116,.55);}
 .composer input{flex:1;min-width:0;background:transparent;border:0;outline:0;padding:8px 6px;font-size:16px;}
@@ -417,12 +427,15 @@ a{color:var(--brass)}
 .mic-btn.listening{color:var(--over);background:rgba(201,122,106,.12);}
 .send-btn{background:var(--brass);color:#1a160f;font-size:20px;font-weight:700;}
 .send-btn:disabled{opacity:.55;cursor:wait;}
-@media(min-width:701px){.home-lunch-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}}
+@media(min-width:701px){
+  .home-lunch-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .actor-gap{flex:0 0 auto;width:1px;height:22px;margin:8px 6px;background:var(--line-strong);}
+}
 @media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
-@media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}.board.master-board{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:700px){
-  #app{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px));}
-  .board{grid-template-columns:minmax(0,1fr);padding:0 max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));}
+  #app{padding-bottom:calc(118px + env(safe-area-inset-bottom, 0px));}
+  .board,.board.master-board{grid-template-columns:minmax(0,1fr);padding:0 max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));}
   .below-board{padding:0 max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));}
   .top{padding:max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));}
   .mast{align-items:center;padding-bottom:12px;}
@@ -437,6 +450,9 @@ a{color:var(--brass)}
   .viewbar-label{display:none;}
   .viewbar .actor{width:100%;display:flex;flex-wrap:wrap;}
   .viewbar .actor button{flex:1 1 calc(33.333% - 4px);min-width:0;min-height:44px;padding:8px 4px;font-size:12px;}
+  .owner-filterbar{padding-bottom:10px;}
+  .owner-filterbar .viewbar-label{display:block;padding-top:0;margin:0 0 6px;}
+  .owner-filterbar .filters{justify-content:flex-start;}
   .digest-today{padding:18px 16px 16px;}
   .digest-date{font-size:26px;}
   .email-filterbar{display:flex;flex-direction:column;align-items:stretch;padding-bottom:14px;}
@@ -461,7 +477,7 @@ a{color:var(--brass)}
   .content-photo-preview{width:100%;height:160px;}
   .content-actions .btn{flex:1 1 calc(50% - 4px);min-height:44px;}
   .content-caption{min-height:200px;}
-  #app.content-view,#app.email-view,#app.home-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
+  #app.content-view,#app.email-view,#app.digest-view,#app.home-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
   .home-block{padding:18px 16px 16px;}
   .home-lead{font-size:24px;}
   .home-save,.home-copy,.home-pin-got,.home-prayer-add,.home-prayer-amen,.home-prayer-save{min-height:52px;}
@@ -528,6 +544,8 @@ a{color:var(--brass)}
   .ctrls > *{flex:1 1 calc(50% - 3px);width:auto;min-width:0;max-width:100%;}
   .col.deemphasized{opacity:.46;}
   .composer-confirm{font-size:11px;}
+  .composer-chip{min-height:36px;}
+  .file-chip{min-height:40px;}
 }
 .col{min-width:0;max-width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;min-height:420px;display:flex;flex-direction:column;}
 .col.over{outline:1px dashed var(--brass);}
@@ -568,6 +586,9 @@ body.touch-sorting{user-select:none;-webkit-user-select:none;}
 .src{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
 .ctrls{display:flex;min-width:0;max-width:calc(100% - 24px);flex-wrap:wrap;gap:6px;margin:10px 0 0 24px;}
 .ctrls select,.ctrls input[type="date"]{min-width:0;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:11.5px;color:var(--soft);}
+.file-row{display:flex;min-width:0;max-width:calc(100% - 24px);flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 0 24px;}
+.file-label{width:100%;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.file-chip{min-height:36px;}
 .card-detail{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;max-width:100vw;padding:20px;background:rgba(0,0,0,.62);}
 .card-detail-sheet{display:flex;flex-direction:column;width:min(680px,100%);min-width:0;max-width:100%;max-height:min(820px,calc(100dvh - 40px));overflow:hidden;background:var(--panel);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);}
 .card-detail-head{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);}
@@ -679,14 +700,25 @@ body.card-detail-open{overflow:hidden;}
       </div>
     </div>
     <div class="viewbar">
-      <span class="viewbar-label">Whose board?</span>
-      <div class="actor" title="Whose work to show">
-        <button type="button" data-actor="chris" class="on">Chris</button>
-        <button type="button" data-actor="sydney">Sydney</button>
+      <span class="viewbar-label">Board</span>
+      <div class="actor" title="Which board to show">
+        <button type="button" data-actor="master" class="on">Master</button>
+        <button type="button" data-actor="studio-pod">Studio Pod</button>
+        <button type="button" data-actor="cbp">CBP</button>
+        <button type="button" data-actor="personal">Personal</button>
+        <button type="button" data-actor="unfiled">Unfiled</button>
+        <span class="actor-gap" aria-hidden="true"></span>
         <button type="button" data-actor="emails">Emails</button>
         <button type="button" data-actor="content">Content</button>
         <button type="button" data-actor="digest">Digest</button>
         <button type="button" data-actor="home">Home</button>
+      </div>
+    </div>
+    <div class="owner-filterbar hidden" id="ownerFilters">
+      <span class="viewbar-label">Whose work?</span>
+      <div class="filters" aria-label="Filter this board by Chris or Sydney">
+        <button type="button" class="chip on" data-owner="chris">Chris</button>
+        <button type="button" class="chip" data-owner="sydney">Sydney</button>
       </div>
     </div>
     <div class="email-filterbar hidden" id="emailFilters">
@@ -746,7 +778,7 @@ body.card-detail-open{overflow:hidden;}
       <button class="btn tiny ghost" id="msImport">Import To Do</button>
       <button class="btn tiny ghost" id="doneBtn">Done <span id="doneCount">0</span></button>
     </div>
-    <div class="filters" id="projectFilters">
+    <div class="filters hidden" id="projectFilters">
       <button class="chip on" data-project="">All projects</button>
       <button class="chip" data-project="studio-pod">Studio Pod</button>
       <button class="chip" data-project="cbp">CBP</button>
@@ -758,7 +790,13 @@ body.card-detail-open{overflow:hidden;}
 
   <div class="composer" role="region" aria-label="Add a card">
     <div class="composer-inner">
-      <div class="composer-confirm" id="composerConfirm" aria-live="polite"></div>
+      <div class="composer-confirm" id="composerConfirm" aria-live="polite">
+        <div class="composer-chips">
+          <button type="button" class="chip composer-chip on" id="composerProjectChip" title="Tap to change project">Unfiled</button>
+          <button type="button" class="chip composer-chip on" id="composerColumnChip" title="Tap to change column">Today</button>
+        </div>
+        <span class="composer-heard" id="composerHeard"></span>
+      </div>
       <div class="composer-row">
         <button type="button" class="mic-btn" id="micBtn" title="Dictate" aria-label="Dictate">🎙</button>
         <input id="composerInput" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" placeholder="Tell Ops what to add…">
@@ -791,6 +829,10 @@ const COLUMNS = [
   { key:"sydney", label:"Sydney owns", sub:"She writes these and can finish them" }
 ];
 const PROJECTS = { "studio-pod":"Studio Pod", cbp:"CBP", personal:"Personal", unfiled:"Unfiled" };
+const BOARD_PROJECTS = ["studio-pod", "cbp", "personal"];
+const BOARD_ACTORS = ["master", "studio-pod", "cbp", "personal", "unfiled"];
+const VIEW_ACTORS = ["master", "studio-pod", "cbp", "personal", "unfiled", "emails", "content", "digest", "home"];
+const PROJECT_CYCLE = ["studio-pod", "cbp", "personal", "unfiled"];
 const OWNERS = { chris:"Chris", sydney:"Sydney" };
 const SOURCES = { chat:"chat", email:"email", todo:"To Do", calendar:"calendar" };
 const OPS_TIME_ZONE = "America/Chicago";
@@ -802,8 +844,17 @@ const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
 });
 
 let currentUser = null;
-let actor = localStorage.getItem("ops_actor") || "chris";
-if(!["chris","sydney","emails","content","digest","home"].includes(actor)) actor = "chris";
+let storedActor = localStorage.getItem("ops_actor") || "master";
+let ownerFilter = localStorage.getItem("ops_owner") || "chris";
+if(storedActor==="chris" || storedActor==="sydney"){
+  ownerFilter = storedActor==="sydney" ? "sydney" : "chris";
+  storedActor = "master";
+  localStorage.setItem("ops_actor", "master");
+  localStorage.setItem("ops_owner", ownerFilter);
+}
+let actor = VIEW_ACTORS.includes(storedActor) ? storedActor : "master";
+if(!["chris","sydney"].includes(ownerFilter)) ownerFilter = "chris";
+let composerOverride = { project:null, column_key:null };
 let cards = [];
 let morningDigests = [];
 let digestsAvailable = true;
@@ -1177,7 +1228,7 @@ async function openAlert(id){
   const card = cards.find(item => item.id===alert.card_id);
   if(!card) return;
   if(!(await finishOpenEmailDraft())) return;
-  actor = isEmailCard(card) ? "emails" : (card.owner==="sydney" ? "sydney" : "chris");
+  actor = isEmailCard(card) ? "emails" : boardActorForCard(card);
   localStorage.setItem("ops_actor", actor);
   syncActorUI();
   renderBoard();
@@ -1218,28 +1269,67 @@ async function registerServiceWorker(){
   }catch(_){}
 }
 
+function isBoardActor(value){
+  return BOARD_ACTORS.includes(value);
+}
+function isDedicatedActor(value){
+  return BOARD_PROJECTS.includes(value);
+}
+function dedicatedProject(){
+  return isDedicatedActor(actor) ? actor : "";
+}
+function cardProjectKey(card){
+  const key = projectKey(card && card.project);
+  return BOARD_PROJECTS.includes(key) ? key : "unfiled";
+}
+function isUnfiledProject(card){
+  return cardProjectKey(card)==="unfiled";
+}
+function boardActorForCard(card){
+  if(!card) return "master";
+  const project = cardProjectKey(card);
+  return project==="unfiled" ? "unfiled" : project;
+}
+function showingBoard(){
+  return isBoardActor(actor);
+}
+
 function syncActorUI(){
   $$(".actor button").forEach(b => b.classList.toggle("on", b.dataset.actor===actor));
+  $$("#ownerFilters [data-owner]").forEach(b => b.classList.toggle("on", b.dataset.owner===ownerFilter));
   const showingEmails = actor==="emails";
   const showingDigest = actor==="digest";
   const showingContent = actor==="content";
   const showingHome = actor==="home";
-  const showingBoardTools = !showingEmails && !showingDigest && !showingContent && !showingHome;
+  const showingBoardTools = showingBoard();
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
   $("#contentFilters").classList.toggle("hidden", !showingContent);
   $("#contentHelp").classList.toggle("hidden", !showingContent);
-  $("#projectFilters").classList.toggle("hidden", !showingBoardTools);
+  $("#ownerFilters").classList.toggle("hidden", !isDedicatedActor(actor));
+  $("#projectFilters").classList.add("hidden");
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
   $("#doneBtn").classList.toggle("hidden", showingContent || showingHome);
   $("#app").classList.toggle("content-view", showingContent);
   $("#app").classList.toggle("email-view", showingEmails);
+  $("#app").classList.toggle("digest-view", showingDigest);
   $("#app").classList.toggle("home-view", showingHome);
   syncEmailSheetClass();
-  $(".viewbar-label").textContent = showingEmails || showingDigest || showingContent || showingHome ? "View" : "Whose board?";
+  const label = $(".viewbar-label");
+  if(label){
+    label.textContent = showingEmails || showingDigest || showingContent || showingHome
+      ? "View"
+      : actor==="master" ? "Needs you" : actor==="unfiled" ? "File these" : "Board";
+  }
   const input = $("#composerInput");
-  if(input) input.placeholder = actor==="sydney"
-    ? "Tell Ops what Sydney should pick up…"
-    : "Tell Ops what to add…";
+  if(input){
+    input.placeholder = actor==="unfiled"
+      ? "Add a card — lands in Unfiled unless you name a board…"
+      : actor==="master"
+        ? "Add a card — name a board, or it goes to Unfiled…"
+        : "Tell Ops what to add…";
+  }
+  composerOverride = { project:null, column_key:null };
+  syncComposerChips();
 }
 
 $$(".actor button").forEach(b => b.onclick = async () => {
@@ -1680,7 +1770,15 @@ function digestRowForDate(key){
 }
 
 function visible(card){
-  return !projectFilter || card.project===projectFilter;
+  if(isDedicatedActor(actor)) return cardProjectKey(card)===actor;
+  if(actor==="unfiled") return isUnfiledProject(card);
+  return true;
+}
+function masterNeedsYouCards(){
+  return openCards()
+    .filter(c => !isEmailCard(c))
+    .filter(c => c.column_key==="needs-you")
+    .filter(c => !isUnfiledProject(c));
 }
 
 function compareCards(a, b){
@@ -4124,6 +4222,8 @@ function renderBoard(){
   const savedEmailScroll = captureOpenEmailScroll();
   tick();
   const root = $("#board");
+  root.classList.remove("master-board");
+  root.classList.remove("unfiled-board");
   $("#doneCount").textContent = String(doneCards().length);
   if(actor==="emails"){
     root.classList.remove("digest-board");
@@ -4158,20 +4258,30 @@ function renderBoard(){
   root.classList.remove("digest-board");
   root.classList.remove("content-board");
   root.classList.remove("home-board");
+  if(actor==="master"){
+    renderMasterBoard(root);
+    return;
+  }
+  if(actor==="unfiled"){
+    renderUnfiledBoard(root);
+    return;
+  }
+  root.classList.remove("master-board");
+  root.classList.remove("unfiled-board");
   const open = openCards().filter(c => !isEmailCard(c)).filter(visible);
-  const ordered = actor==="chris"
+  const ordered = ownerFilter==="chris"
     ? COLUMNS
     : ["sydney","today","this-week","later","needs-you"]
         .map(key => COLUMNS.find(col => col.key===key))
         .filter(col => col && (col.key==="sydney" || open.some(c => c.column_key===col.key && c.owner==="sydney")));
   root.innerHTML = ordered.map(col => {
     const list = open
-      .filter(c => c.column_key===col.key && (actor==="chris" || col.key==="sydney" || c.owner==="sydney"))
+      .filter(c => c.column_key===col.key && (ownerFilter==="chris" || col.key==="sydney" || c.owner==="sydney"))
       .sort(compareCards);
     const body = list.length
-      ? list.map(cardHTML).join("")
+      ? list.map(c => cardHTML(c)).join("")
       : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
-    const deemphasized = actor==="chris" && col.key==="sydney";
+    const deemphasized = ownerFilter==="chris" && col.key==="sydney";
     return `<section class="col${deemphasized?" deemphasized":""}" data-col="${col.key}">
       <div class="col-h"><div><h2>${esc(col.label)}</h2><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
       <div class="col-body">${body}</div>
@@ -4180,11 +4290,45 @@ function renderBoard(){
   bindBoard();
 }
 
-function cardHTML(c){
+function renderMasterBoard(root){
+  root.classList.remove("unfiled-board");
+  root.classList.add("master-board");
+  const needs = masterNeedsYouCards();
+  root.innerHTML = BOARD_PROJECTS.map(key => {
+    const list = needs.filter(c => cardProjectKey(c)===key).sort(compareCards);
+    const body = list.length
+      ? list.map(c => cardHTML(c, { draggable:false })).join("")
+      : `<div class="empty">Nothing needs you.</div>`;
+    return `<section class="col" data-project="${key}">
+      <div class="col-h"><div><h2>${esc(PROJECTS[key])}</h2><span class="sub">Needs you</span></div><span class="n">${list.length}</span></div>
+      <div class="col-body">${body}</div>
+    </section>`;
+  }).join("");
+  bindBoard({ drag:false });
+}
+
+function renderUnfiledBoard(root){
+  root.classList.remove("master-board");
+  root.classList.add("unfiled-board");
+  const list = openCards().filter(c => !isEmailCard(c)).filter(isUnfiledProject).sort(compareCards);
+  const body = list.length
+    ? list.map(c => cardHTML(c, { draggable:false, file:true })).join("")
+    : `<div class="empty">Nothing unfiled. New cards without a board land here.</div>`;
+  root.innerHTML = `<section class="col">
+    <div class="col-h"><div><h2>Unfiled</h2><span class="sub">Push these onto Studio Pod, CBP, or Personal</span></div><span class="n">${list.length}</span></div>
+    <div class="col-body">${body}</div>
+  </section>`;
+  bindBoard({ drag:false });
+}
+
+function cardHTML(c, options){
+  const opts = options || {};
   const due = c.due_on || "";
   const src = SOURCES[c.source] || c.source || "chat";
   const starred = c.column_key==="needs-you";
-  return `<article class="card" draggable="true" tabindex="0" data-id="${esc(c.id)}" aria-label="Open ${esc(c.title)} details">
+  const drag = opts.draggable!==false;
+  const project = cardProjectKey(c);
+  return `<article class="card" ${drag?`draggable="true"`:""} tabindex="0" data-id="${esc(c.id)}" aria-label="Open ${esc(c.title)} details">
     <div class="card-top">
       <input type="checkbox" class="chk" title="Mark done">
       <div class="title">${esc(c.title)}</div>
@@ -4192,13 +4336,19 @@ function cardHTML(c){
     </div>
     ${c.snippet ? `<div class="snippet">${esc(c.snippet)}</div>` : ""}
     <div class="meta">
-      <span class="tag ${esc(c.project)}">${esc(PROJECTS[c.project]||c.project)}</span>
+      <span class="tag ${esc(project)}">${esc(PROJECTS[project]||project)}</span>
       <span class="tag">${esc(OWNERS[c.owner]||c.owner)}</span>
       ${due?`<span class="duechip ${dueClass(due)}">${esc(fmtDue(due))}</span>`:""}
       <span class="src">${esc(src)}</span>
     </div>
+    ${opts.file ? `<div class="file-row">
+      <span class="file-label">File on</span>
+      <button type="button" class="chip file-chip" data-file-project="studio-pod">Studio Pod</button>
+      <button type="button" class="chip file-chip" data-file-project="cbp">CBP</button>
+      <button type="button" class="chip file-chip" data-file-project="personal">Personal</button>
+    </div>` : ""}
     <div class="ctrls">
-      <select class="proj" title="Project">${Object.entries(PROJECTS).map(([k,v])=>`<option value="${k}" ${c.project===k?"selected":""}>${v}</option>`).join("")}</select>
+      <select class="proj" title="Project">${Object.entries(PROJECTS).map(([k,v])=>`<option value="${k}" ${project===k?"selected":""}>${v}</option>`).join("")}</select>
       <select class="own" title="Owner">${Object.entries(OWNERS).map(([k,v])=>`<option value="${k}" ${c.owner===k?"selected":""}>${v}</option>`).join("")}</select>
       <select class="colsel" title="Move">${COLUMNS.map(col=>`<option value="${col.key}" ${c.column_key===col.key?"selected":""}>${col.label}</option>`).join("")}</select>
       <input type="date" class="due" value="${esc(due)}" title="Due">
@@ -4481,9 +4631,11 @@ document.addEventListener("click", e => {
   }
 }, true);
 
-function bindBoard(){
-  $$(".col").forEach(col => {
+function bindBoard(options){
+  const allowDrag = !options || options.drag!==false;
+  if(allowDrag) $$(".col[data-col]").forEach(col => {
     const body = col.querySelector(".col-body");
+    if(!body) return;
     body.ondragover = e => {
       e.preventDefault();
       col.classList.add("over");
@@ -4510,32 +4662,42 @@ function bindBoard(){
     const id = el.dataset.id;
     const card = cards.find(c => c.id===id);
     if(!card) return;
-    el.ondragstart = e => {
-      dragId = id;
-      el.classList.add("dragging");
-      if(e.dataTransfer){
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", id);
-      }
-    };
-    el.ondragend = () => {
-      dragId = null;
-      el.classList.remove("dragging");
-      $$(".col.over").forEach(col => col.classList.remove("over"));
-      $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
-    };
+    const canDrag = allowDrag && el.getAttribute("draggable")==="true";
+    if(canDrag){
+      el.ondragstart = e => {
+        dragId = id;
+        el.classList.add("dragging");
+        if(e.dataTransfer){
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", id);
+        }
+      };
+      el.ondragend = () => {
+        dragId = null;
+        el.classList.remove("dragging");
+        $$(".col.over").forEach(col => col.classList.remove("over"));
+        $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
+      };
+      el.addEventListener("touchstart", beginTouchHold, { passive:true });
+      el.oncontextmenu = e => {
+        if(touchDrag && touchDrag.el===el) e.preventDefault();
+      };
+    }
     el.querySelector(".chk").onchange = e => completeCard(card, e.target);
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
     star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
-    el.addEventListener("touchstart", beginTouchHold, { passive:true });
-    el.oncontextmenu = e => {
-      if(touchDrag && touchDrag.el===el) e.preventDefault();
-    };
     el.querySelector(".proj").onchange = e => patchCard(id, { project:e.target.value });
     el.querySelector(".own").onchange = e => patchCard(id, { owner:e.target.value });
     el.querySelector(".colsel").onchange = e => moveCard(id, e.target.value);
     el.querySelector(".due").onchange = e => patchCard(id, { due_on: e.target.value || null });
+    el.querySelectorAll(".file-chip").forEach(btn => {
+      btn.onclick = e => {
+        e.preventDefault();
+        e.stopPropagation();
+        patchCard(id, { project: btn.dataset.fileProject });
+      };
+    });
     el.onclick = e => {
       if(!e.target.closest(TOUCH_CONTROL_SELECTOR)) openCardDetail(card);
     };
@@ -4955,7 +5117,7 @@ async function notifySydneyOwns(card){
 
 async function completeCard(card, checkbox){
   if(checkbox) checkbox.disabled = true;
-  const doneBy = actor==="sydney" ? "sydney" : "chris";
+  const doneBy = showingBoard() && ownerFilter==="sydney" ? "sydney" : "chris";
   const wasOpenEmail = isEmailCard(card) && openEmailCardId===card.id;
   if(wasOpenEmail) openEmailCardId = null;
   const saved = await patchCard(card.id, { done_at: isoNow(), done_by: doneBy });
@@ -4978,17 +5140,30 @@ async function reopenCard(id){
       localStorage.setItem("ops_actor", actor);
       syncActorUI();
       renderBoard();
+    }else if(card && !isEmailCard(card) && showingBoard()){
+      actor = boardActorForCard(card);
+      localStorage.setItem("ops_actor", actor);
+      syncActorUI();
+      renderBoard();
     }
     setStatus(card && isEmailCard(card) ? "Restored to Emails." : "Restored to the board.");
   }
 }
 
-function parseComposer(raw, currentActor){
+function composerDefaults(){
+  return {
+    project: dedicatedProject() || "unfiled",
+    column_key: "today",
+    owner: ownerFilter==="sydney" ? "sydney" : "chris"
+  };
+}
+
+function parseComposer(raw){
   let title = String(raw||"").trim();
   if(!title) return null;
-  let owner = currentActor==="sydney" ? "sydney" : "chris";
-  let project = "unfiled";
-  let column_key = currentActor==="sydney" ? "sydney" : "today";
+  let owner = null;
+  let project = null;
+  let column_key = null;
 
   title = title
     .replace(/^\s*(?:please\s+)?(?:add\s+)?(?:a\s+)?(?:to[\s-]?do|task)\s*:?\s*/i, "")
@@ -5001,36 +5176,101 @@ function parseComposer(raw, currentActor){
     }
   };
 
+  take(/\bunder\s+needs\s+you\b/i, () => { column_key = "needs-you"; owner = "chris"; });
   take(/\bneeds\s+you\b/i, () => { column_key = "needs-you"; owner = "chris"; });
-  take(/\bsydney(?:\s+owns)\b/i, () => { column_key = "sydney"; owner = "sydney"; });
+  take(/\bsydney\s+owns\b/i, () => { column_key = "sydney"; owner = "sydney"; });
   take(/\bthis\s+week\b/i, () => { column_key = "this-week"; });
   take(/\btoday\b/i, () => { column_key = "today"; });
   take(/\blater\b/i, () => { column_key = "later"; });
 
+  take(/\b(?:on|for|to)\s+studio[\s-]*pod\b/i, () => { project = "studio-pod"; });
   take(/\bstudio[\s-]*pod\b/i, () => { project = "studio-pod"; });
+  take(/\b(?:on|for|to|under)\s+cbp\b/i, () => { project = "cbp"; });
   take(/\bcbp\b/i, () => { project = "cbp"; });
+  take(/\b(?:on|for|to)\s+personal\b/i, () => { project = "personal"; });
   take(/\bpersonal\b/i, () => { project = "personal"; });
   take(/\bunfiled\b/i, () => { project = "unfiled"; });
   take(/\bbusiness\b/i, () => { project = "studio-pod"; });
 
-  take(/\b(?:for\s+|assign(?:ed)?\s+to\s+)?(?:sydney|you)\b/i, () => { owner = "sydney"; });
-  take(/\b(?:for\s+|assign(?:ed)?\s+to\s+)?(?:chris|me)\b/i, () => { owner = "chris"; });
+  take(/\b(?:for\s+|assign(?:ed)?\s+to\s+)(?:sydney|you)\b/i, () => { owner = "sydney"; });
+  take(/\b(?:for\s+|assign(?:ed)?\s+to\s+)(?:chris|me)\b/i, () => { owner = "chris"; });
+  take(/\bsydney\b/i, () => {
+    if(!column_key){ column_key = "sydney"; owner = "sydney"; }
+    else owner = "sydney";
+  });
+  take(/\b(?:chris|me)\b/i, () => { owner = "chris"; });
 
   title = title.replace(/\s+([,.;:!?])/g, "$1").replace(/\s{2,}/g, " ").replace(/^[\s,.;:–—-]+|[\s,.;:–—-]+$/g, "");
-  if(!title) return null;
+  if(!title) return { title:"", project, owner, column_key, source:"chat" };
   return { title, project, owner, column_key, source:"chat" };
+}
+
+function resolveComposer(raw){
+  const parsed = parseComposer(raw);
+  const defaults = composerDefaults();
+  const project = composerOverride.project || (parsed && parsed.project) || defaults.project;
+  const column_key = composerOverride.column_key || (parsed && parsed.column_key) || defaults.column_key;
+  let owner = (parsed && parsed.owner) || defaults.owner;
+  if(column_key==="sydney") owner = "sydney";
+  if(column_key==="needs-you") owner = "chris";
+  return {
+    title: parsed ? parsed.title : "",
+    project,
+    column_key,
+    owner,
+    source:"chat"
+  };
+}
+
+function syncComposerChips(){
+  const heard = $("#composerHeard");
+  const projectChip = $("#composerProjectChip");
+  const columnChip = $("#composerColumnChip");
+  if(!projectChip || !columnChip) return;
+  const input = $("#composerInput");
+  const resolved = resolveComposer(input ? input.value : "");
+  projectChip.textContent = PROJECTS[resolved.project] || resolved.project;
+  columnChip.textContent = (COLUMNS.find(c => c.key===resolved.column_key) || {}).label || resolved.column_key;
+  projectChip.classList.toggle("on", true);
+  columnChip.classList.toggle("on", true);
+  if(heard && !heard.dataset.hold) heard.textContent = resolved.title ? `“${resolved.title}”` : "";
+}
+
+function cycleComposerProject(){
+  const current = resolveComposer(($("#composerInput")||{}).value || "").project;
+  const next = PROJECT_CYCLE[(PROJECT_CYCLE.indexOf(current)+1) % PROJECT_CYCLE.length];
+  composerOverride.project = next;
+  const heard = $("#composerHeard");
+  if(heard){ heard.dataset.hold = ""; heard.textContent = "Project set — tap again to change."; }
+  syncComposerChips();
+}
+
+function cycleComposerColumn(){
+  const keys = COLUMNS.map(c => c.key);
+  const current = resolveComposer(($("#composerInput")||{}).value || "").column_key;
+  const next = keys[(keys.indexOf(current)+1) % keys.length];
+  composerOverride.column_key = next;
+  const heard = $("#composerHeard");
+  if(heard){ heard.dataset.hold = ""; heard.textContent = "Column set — tap again to change."; }
+  syncComposerChips();
 }
 
 function confirmAdded(card){
   const col = COLUMNS.find(c => c.key===card.column_key);
-  $("#composerConfirm").textContent = `Added “${card.title}” · ${OWNERS[card.owner]} · ${PROJECTS[card.project]} · ${col ? col.label : card.column_key}`;
+  const heard = $("#composerHeard");
+  if(heard){
+    heard.dataset.hold = "1";
+    heard.textContent = `Added “${card.title}” · ${PROJECTS[card.project]||card.project} · ${col ? col.label : card.column_key}`;
+  }
+  syncComposerChips();
 }
 
 async function sendComposer(){
   const input = $("#composerInput");
-  const parsed = parseComposer(input.value, actor);
-  if(!parsed){
-    $("#composerConfirm").textContent = "Say what you want Ops to add.";
+  const heard = $("#composerHeard");
+  const parsed = resolveComposer(input.value);
+  if(!parsed.title){
+    if(heard){ heard.dataset.hold = ""; heard.textContent = "Say what you want Ops to add."; }
     input.focus();
     return;
   }
@@ -5047,6 +5287,7 @@ async function sendComposer(){
   $("#sendBtn").disabled = false;
   if(!row) return;
   input.value = "";
+  composerOverride = { project:null, column_key:null };
   confirmAdded(row);
   input.focus();
 }
@@ -5085,6 +5326,15 @@ $$("#projectFilters .chip").forEach(ch => ch.onclick = () => {
   renderBoard();
 });
 
+$$("#ownerFilters [data-owner]").forEach(ch => ch.onclick = () => {
+  ownerFilter = ch.dataset.owner || "chris";
+  localStorage.setItem("ops_owner", ownerFilter);
+  $$("#ownerFilters [data-owner]").forEach(x => x.classList.toggle("on", x===ch));
+  composerOverride = { project:null, column_key:null };
+  syncComposerChips();
+  renderBoard();
+});
+
 $$("[data-email-project]").forEach(ch => ch.onclick = async () => {
   if(!(await finishOpenEmailDraft())) return;
   emailProjectFilter = ch.dataset.emailProject || "";
@@ -5107,6 +5357,14 @@ $$("[data-content-status]").forEach(ch => ch.onclick = () => {
 
 $("#sendBtn").onclick = sendComposer;
 $("#composerInput").onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); sendComposer(); } };
+$("#composerInput").oninput = () => {
+  const heard = $("#composerHeard");
+  if(heard) heard.dataset.hold = "";
+  if(!$("#composerInput").value.trim()) composerOverride = { project:null, column_key:null };
+  syncComposerChips();
+};
+$("#composerProjectChip").onclick = cycleComposerProject;
+$("#composerColumnChip").onclick = cycleComposerColumn;
 $("#loginBtn").onclick = signInPassword;
 $("#magicBtn").onclick = sendMagicLink;
 $("#loginPassword").onkeydown = e => { if(e.key==="Enter") signInPassword(); };
@@ -5147,6 +5405,9 @@ function setupSpeech(){
     speechRecognition.onresult = e => {
       const words = e.results[0][0].transcript.trim();
       input.value = [input.value.trim(), words].filter(Boolean).join(" ");
+      const heard = $("#composerHeard");
+      if(heard) heard.dataset.hold = "";
+      syncComposerChips();
       input.focus();
     };
     speechRecognition.onerror = () => input.focus();
@@ -5178,7 +5439,7 @@ function renderDrawer(){
     document.body.appendChild(d);
     panel = d;
   }
-  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="content"?"Back to Content":actor==="digest"?"Back to Digest":actor==="home"?"Back to Home":"Back to board"}</button></div>
+  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="content"?"Back to Content":actor==="digest"?"Back to Digest":actor==="home"?"Back to Home":actor==="master"?"Back to Master":actor==="unfiled"?"Back to Unfiled":"Back to board"}</button></div>
     <div class="sub">Finished cards leave the board. Restore one if it came back.</div>` +
     (items.length ? items.map(c => `<div class="done-item">
       <div class="t">${esc(c.title)}</div>
@@ -5332,9 +5593,26 @@ function hideInstallHintsIfStandalone(){
 
 function previewOpsEmailsIfRequested(){
   if(!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return false;
-  if(new URLSearchParams(location.search).get("preview")!=="emails") return false;
+  const preview = new URLSearchParams(location.search).get("preview");
+  if(preview!=="emails" && preview!=="boards") return false;
   currentUser = { email:"preview@local" };
-  actor = "emails";
+  actor = preview==="boards" ? "master" : "emails";
+  if(preview==="boards"){
+    cards = [
+      { id:"preview-ny-sp", title:"Approve Iris claim on the landing page", snippet:"Sydney flagged the wording.", project:"studio-pod", column_key:"needs-you", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-ny-cbp", title:"Pick the album cover for the June wedding", snippet:"", project:"cbp", column_key:"needs-you", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-ny-home", title:"Call the plumber about the upstairs sink", snippet:"", project:"personal", column_key:"needs-you", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-today-cbp", title:"Send the gallery link to the Reeds", snippet:"", project:"cbp", column_key:"today", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-week-sp", title:"Draft the PopCam follow-up", snippet:"", project:"studio-pod", column_key:"this-week", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-sydney", title:"Write the client recap for Studio Pod", snippet:"I can finish this.", project:"studio-pod", column_key:"sydney", owner:"sydney", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-unfiled", title:"Plan Chicago trip", snippet:"Came in without a board.", project:"unfiled", column_key:"today", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null },
+      { id:"preview-unfiled-2", title:"Order more gaffer tape", snippet:"", project:"", column_key:"later", owner:"chris", source:"chat", sort:0, created_at:new Date().toISOString(), done_at:null }
+    ];
+    showApp();
+    syncActorUI();
+    renderBoard();
+    return true;
+  }
   cards = [{
     id:"preview-1",
     title:"Studio Pod quote for the Houston install",
