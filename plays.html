@@ -185,7 +185,11 @@ body.immersive.gameday .gd-subs,body.immersive.gameday .gd-draw{display:block;wi
 body.immersive.gameday.gd-drawing .gd-drawbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(560px,100%);margin:6px auto 2px}
 body.immersive.gameday.gd-drawing .gd-drawbar button{min-height:52px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--ink);font-weight:800}
 body.immersive.gameday.gd-drawing .gd-drawbar #gdDrawPlay{background:var(--gold-soft);border-color:var(--highlight)}
-body.immersive.gameday.gd-drawing .gd-actions,body.immersive.gameday.gd-drawing .gd-sheet,body.immersive.gameday.gd-drawing #gdSubs,body.immersive.gameday.gd-drawing #gdDraw{display:none}
+body.immersive.gameday.gd-drawing .gd-actions,body.immersive.gameday.gd-drawing .gd-sheet,body.immersive.gameday.gd-drawing #gdSubs,body.immersive.gameday.gd-drawing #gdDraw,body.immersive.gameday.gd-drawing #gdCover,body.immersive.gameday.gd-drawing #gdDef{display:none}
+body.immersive.gameday #gdCover.on{background:var(--gold-soft);border-color:var(--highlight);color:var(--ink)}
+body.immersive.gameday.gd-defense #gdDef{background:var(--gold-soft);border-color:var(--highlight);color:var(--ink)}
+body.immersive.gameday.gd-defense .gd-sheet,body.immersive.gameday.gd-defense #gdSubs,body.immersive.gameday.gd-defense #gdDraw,body.immersive.gameday.gd-defense #gdCover{display:none}
+body.immersive.gameday.gd-defense .tools,body.immersive.gameday.gd-defense .scrub{display:none!important}
 body.immersive.gameday.gd-drawing .tools{display:none!important}
 .subs-sheet{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
 .subs-sheet.hidden{display:none}
@@ -302,6 +306,8 @@ body.immersive.gameday.gd-drawing .tools{display:none!important}
       </div>
       <button type="button" id="gdSubs" class="gd-subs">Subs · injury swap</button>
       <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
+      <button type="button" id="gdCover" class="gd-draw">Coverage overlay: off</button>
+      <button type="button" id="gdDef" class="gd-draw">Defense look</button>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
       <div class="gd-drawbar" id="gdDrawBar">
         <button type="button" id="gdFresh">↺ Fresh</button>
@@ -414,6 +420,11 @@ function playDisplayName(play){
 function setPlayName(play){
   const el=$("#playName");
   if(!el) return;
+  if(STATE.gdDefense){
+    const scheme=coverageScheme(STATE.coverage||"base");
+    el.innerHTML=`<small>Defense${STATE.coverageFlip?" · flipped":""}</small>${esc(scheme.name)}`;
+    return;
+  }
   const shown=playDisplayName(play);
   el.innerHTML=shown.title&&shown.number
     ?`<small>Play ${esc(shown.number)}</small>${esc(shown.title)}`
@@ -627,6 +638,10 @@ const STATE={
   playFilter:"all",
   gameday:false,
   quickDraw:false,
+  coverage:"base",
+  coverageOn:false,
+  coverageFlip:false,
+  gdDefense:false,
   speed:loadSpeed()
 };
 const PUBLISH_LABELS={coach:"Coach only",kids:"Kids",edited:"Edited"};
@@ -998,27 +1013,75 @@ function setDraftFromStore(){
   STATE.selected="";
 }
 
+// Coverage shells in THIS field's coordinates (LOS y=300, downfield toward y=10).
+// Same seven kids (D1-D7) rearranged per scheme; names come from the defense
+// lineup. Kept faithful to the field-book Defense book shapes. Do not add a rush
+// front — this is no-rush 7-on-7; these are coverage variations only.
+const COVERAGE_SHORT_Y=LOS_Y-YARD*10;   // 230
+const COVERAGE_DEEP_Y=LOS_Y-YARD*22;    // 146
+const COVERAGE_ROVER_Y=LOS_Y-YARD*36;   // 48
+const COVERAGE_SCHEMES=[
+  {id:"base",name:"Base · six spots + helper",how:"Six areas, one deep helper. No rush.",bw:118,
+    spots:[
+      {z:1,x:90,y:COVERAGE_SHORT_Y},{z:2,x:MID_X,y:COVERAGE_SHORT_Y},{z:3,x:390,y:COVERAGE_SHORT_Y},
+      {z:6,x:90,y:COVERAGE_DEEP_Y},{z:5,x:MID_X,y:COVERAGE_DEEP_Y},{z:4,x:390,y:COVERAGE_DEEP_Y},
+      {z:7,x:MID_X,y:COVERAGE_ROVER_Y,helper:true}]},
+  {id:"4-3",name:"4-3 · four short, three deep",how:"Four up short, two deep corners, one deep middle.",bw:98,
+    spots:[
+      {z:1,x:70,y:COVERAGE_SHORT_Y},{z:2,x:180,y:COVERAGE_SHORT_Y},{z:3,x:300,y:COVERAGE_SHORT_Y},{z:4,x:410,y:COVERAGE_SHORT_Y},
+      {z:5,x:110,y:COVERAGE_DEEP_Y},{z:6,x:370,y:COVERAGE_DEEP_Y},
+      {z:7,x:MID_X,y:COVERAGE_ROVER_Y,helper:true}]},
+  {id:"3-4",name:"3-4 · three short, four deep",how:"Three up short, four spread deep.",bw:102,
+    spots:[
+      {z:1,x:90,y:COVERAGE_SHORT_Y},{z:2,x:MID_X,y:COVERAGE_SHORT_Y},{z:3,x:390,y:COVERAGE_SHORT_Y},
+      {z:4,x:80,y:COVERAGE_DEEP_Y},{z:5,x:190,y:COVERAGE_DEEP_Y},{z:6,x:300,y:COVERAGE_DEEP_Y},{z:7,x:410,y:COVERAGE_DEEP_Y}]},
+  {id:"goal-line",name:"Goal line · tight, no deep",how:"Five tight across, two behind. No deep.",bw:76,
+    spots:[
+      {z:1,x:64,y:LOS_Y-YARD*7},{z:2,x:150,y:LOS_Y-YARD*7},{z:3,x:MID_X,y:LOS_Y-YARD*7},{z:4,x:330,y:LOS_Y-YARD*7},{z:5,x:416,y:LOS_Y-YARD*7},
+      {z:6,x:160,y:LOS_Y-YARD*15},{z:7,x:320,y:LOS_Y-YARD*15}]}
+];
+function coverageScheme(id){return COVERAGE_SCHEMES.find(s=>s.id===id)||COVERAGE_SCHEMES[0];}
+function coverageZoneName(zone){
+  const player=STATE.defenseLineups[STATE.lineupUnit]&&STATE.defenseLineups[STATE.lineupUnit]["D"+zone];
+  return player?runnerLabel(player):"";
+}
+function coverageSVG(id,overlay){
+  const scheme=coverageScheme(id);
+  const bw=overlay?scheme.bw:Math.min(scheme.bw+8,138);
+  const bh=overlay?64:74;
+  const fs=overlay?8:11;
+  const op=overlay?".7":"1";
+  const boxFill=overlay?"rgba(207,174,112,.12)":"rgba(207,174,112,.22)";
+  const cells=scheme.spots.map(sp=>{
+    const x=STATE.coverageFlip?FIELD_W-sp.x:sp.x;
+    const nm=coverageZoneName(sp.z);
+    if(sp.helper){
+      const r=overlay?12:15;
+      return `<polygon points="${x},${sp.y-r} ${x+r},${sp.y} ${x},${sp.y+r} ${x-r},${sp.y}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${x}" y="${sp.y+(overlay?24:32)}" fill="#ECB748" text-anchor="middle" font-size="${fs}">D${sp.z}${nm?" · "+esc(nm):""}</text>`;
+    }
+    return `<rect x="${x-bw/2}" y="${sp.y-bh/2}" width="${bw}" height="${bh}" rx="10" fill="${boxFill}" stroke="#CFAE70" stroke-width="1.4"/><text x="${x}" y="${sp.y-3}" fill="#E0D5C0" text-anchor="middle" font-size="${fs}"><tspan x="${x}">D${sp.z}</tspan>${nm?`<tspan x="${x}" dy="${fs+3}">${esc(nm)}</tspan>`:""}</text>`;
+  }).join("");
+  const foot=overlay?`<text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text>`:"";
+  return `<g opacity="${op}">${cells}${foot}</g>`;
+}
 function areasSVG(){
-  if(!$("#showAreas").checked) return "";
-  // Facing the football: D1 is defense-right (screen-left), D3 defense-left.
-  // D4 sits behind D3, D5 behind D2, D6 behind D1; D7 is deep behind D5.
-  const shortY=LOS_Y-YARD*10;
-  const deepY=LOS_Y-YARD*22;
-  const roverY=LOS_Y-YARD*36;
-  const name=zone=>{
-    const player=STATE.defenseLineups[STATE.lineupUnit]&&STATE.defenseLineups[STATE.lineupUnit]["D"+zone];
-    return player?runnerLabel(player):"";
-  };
-  const box=(area,y,height,fill)=>{
-    const player=name(area.zone);
-    return `<rect x="${area.x-60}" y="${y-height/2}" width="120" height="${height}" rx="10" fill="${fill}" stroke="#CFAE70" stroke-width="1.4"/><text x="${area.x}" y="${y-3}" fill="#E0D5C0" text-anchor="middle" font-size="8"><tspan x="${area.x}">D${area.zone}</tspan>${player?`<tspan x="${area.x}" dy="11">${esc(player)}</tspan>`:""}</text>`;
-  };
-  const front=[{x:90,zone:1},{x:MID_X,zone:2},{x:390,zone:3}].map(area=>box(area,shortY,66,"rgba(207,174,112,.12)")).join("");
-  const second=[{x:90,zone:6},{x:MID_X,zone:5},{x:390,zone:4}].map(area=>box(area,deepY,76,"rgba(207,174,112,.1)")).join("");
-  const safety=name(7);
-  return `<g opacity=".72">${front}${second}<polygon points="${MID_X},${roverY-13} ${MID_X+12},${roverY} ${MID_X},${roverY+13} ${MID_X-12},${roverY}" fill="#ECB748" stroke="#1C1C1C" stroke-width="2"/><text x="${MID_X}" y="${roverY+26}" fill="#ECB748" text-anchor="middle" font-size="8">D7${safety?" · "+esc(safety):""}</text><text x="${MID_X}" y="388" fill="#ECB748" text-anchor="middle" font-size="9">thrower · do not rush</text></g>`;
+  if(!STATE.coverageOn&&!$("#showAreas").checked) return "";
+  return coverageSVG(STATE.coverage||"base",true);
+}
+function defenseFieldSVG(){
+  const scheme=coverageScheme(STATE.coverage||"base");
+  return `<svg class="field" viewBox="0 0 ${FIELD_W} ${FIELD_H}" role="img" aria-label="${esc(scheme.name)}">
+    <rect width="${FIELD_W}" height="${FIELD_H}" fill="#000"/>
+    <rect x="${FIELD_LEFT}" y="10" width="${FIELD_RIGHT-FIELD_LEFT}" height="${FIELD_H-20}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+    ${yardLinesSVG()}
+    <path d="M${FIELD_LEFT} ${LOS_Y}H${FIELD_RIGHT}" fill="none" stroke="#CFAE70" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="18" y="${LOS_Y-8}" fill="#E0D5C0" font-size="9">0 / LOS</text>
+    <circle cx="${MID_X}" cy="${LOS_Y+DISPLAY_OFFENSE_OFF}" r="5" fill="#CFAE70"/>
+    ${coverageSVG(scheme.id,false)}
+  </svg>`;
 }
 function fieldSVG(play,pos,ball,liveRoute){
+  if(STATE.gdDefense) return defenseFieldSVG();
   const targets=new Set([play.looks[STATE.look]?.target]);
   const routes=play.spots.filter(s=>s.letter!=="Q"&&s.route&&s.route.length).map(s=>{
     const on=STATE.mode==="draw"?s.letter===STATE.selected:targets.has(s.letter);
@@ -1198,6 +1261,10 @@ function renderChrome(){
   $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
   $$("#unitPicks [data-unit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.unit===STATE.lineupUnit));
   $("#flipBtn").textContent="Flip";
+  const gdCoverBtn=$("#gdCover");
+  if(gdCoverBtn){gdCoverBtn.textContent=coverageOverlayLabel();gdCoverBtn.classList.toggle("on",STATE.coverageOn);}
+  const gdDefBtn=$("#gdDef");
+  if(gdDefBtn) gdDefBtn.textContent=STATE.gdDefense?"Show offense":"Defense look";
   if(!pointer||(pointer.kind!=="draw"&&pointer.kind!=="drag")) $("#fieldWrap").classList.remove("is-drawing");
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
     const spot=play.spots.find(s=>s.letter===letter);
@@ -1313,7 +1380,10 @@ function exitImmersive(){
   }
   STATE.gameday=false;
   STATE.quickDraw=false;
-  document.body.classList.remove("gameday","gd-drawing");
+  STATE.gdDefense=false;
+  STATE.coverageOn=false;
+  STATE.coverageFlip=false;
+  document.body.classList.remove("gameday","gd-drawing","gd-defense");
   setImmersive(false);
 }
 function enterGameday(){
@@ -1333,6 +1403,47 @@ function gamedayStep(dir){
   selectPlay(list[(i+dir+list.length)%list.length]);
   renderGamedaySheet();
 }
+// ── Coverage / defense views ────────────────────────────────────────────────
+const COVERAGE_CYCLE=["base","4-3","3-4","goal-line"];
+function coverageOverlayLabel(){
+  if(!STATE.coverageOn) return "Coverage overlay: off";
+  return "Coverage: "+coverageScheme(STATE.coverage).name.split(" · ")[0];
+}
+// Cycle the QB overlay: off → base → 4-3 → 3-4 → goal-line → off.
+function cycleCoverage(){
+  if(!STATE.coverageOn){STATE.coverageOn=true;STATE.coverage="base";}
+  else{
+    const i=COVERAGE_CYCLE.indexOf(STATE.coverage);
+    if(i>=COVERAGE_CYCLE.length-1) STATE.coverageOn=false;
+    else STATE.coverage=COVERAGE_CYCLE[i+1];
+  }
+  render();
+}
+function enterDefenseLook(){
+  STATE.gdDefense=true;
+  document.body.classList.add("gd-defense");
+  if(!COVERAGE_CYCLE.includes(STATE.coverage)) STATE.coverage="base";
+  stopAnim();
+  render();
+}
+function exitDefenseLook(){
+  STATE.gdDefense=false;
+  document.body.classList.remove("gd-defense");
+  render();
+}
+function toggleDefenseLook(){STATE.gdDefense?exitDefenseLook():enterDefenseLook();}
+function defenseStep(dir){
+  const i=Math.max(0,COVERAGE_CYCLE.indexOf(STATE.coverage));
+  STATE.coverage=COVERAGE_CYCLE[(i+dir+COVERAGE_CYCLE.length)%COVERAGE_CYCLE.length];
+  render();
+}
+// Top ◀/▶ and Flip serve plays normally, defense schemes when in the D view.
+function gdPrevAction(){STATE.gdDefense?defenseStep(-1):gamedayStep(-1);}
+function gdNextAction(){STATE.gdDefense?defenseStep(1):gamedayStep(1);}
+function gdFlipAction(){
+  if(STATE.gdDefense){STATE.coverageFlip=!STATE.coverageFlip;render();}
+  else $("#flipBtn").click();
+}
 const DEF_ZONES=["D1","D2","D3","D4","D5","D6","D7"];
 const QUICK_ORDER=["X","A","B","Y","Z","C","Q"];
 function advanceQuickDraw(){
@@ -1341,6 +1452,7 @@ function advanceQuickDraw(){
 }
 function startQuickDraw(){
   // Draw right here in full-screen — do NOT leave immersive.
+  if(STATE.gdDefense) exitDefenseLook();
   document.body.classList.add("gd-drawing");
   setMode("draw");
   startNewPlay();
@@ -1908,11 +2020,13 @@ $("#speedPicks").onclick=event=>{
 };
 $("#fullScreenBtn").onclick=enterImmersive;
 $("#gamedayBtn").onclick=enterGameday;
-$("#gdPrev").onclick=()=>gamedayStep(-1);
-$("#gdNext").onclick=()=>gamedayStep(1);
-$("#gdFlip").onclick=()=>$("#flipBtn").click();
+$("#gdPrev").onclick=gdPrevAction;
+$("#gdNext").onclick=gdNextAction;
+$("#gdFlip").onclick=gdFlipAction;
 $("#gdSubs").onclick=openSubs;
 $("#gdDraw").onclick=startQuickDraw;
+$("#gdCover").onclick=cycleCoverage;
+$("#gdDef").onclick=toggleDefenseLook;
 $("#gdFresh").onclick=gdFresh;
 $("#gdDrawPlay").onclick=gdDrawPlay;
 $("#gdDrawSave").onclick=gdDrawSave;
