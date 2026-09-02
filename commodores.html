@@ -281,6 +281,29 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .pr-editor textarea{min-height:80px;resize:vertical}
 .pr-check{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;min-height:44px}
 .pr-check input{width:auto;min-height:0}
+/* Build assembler */
+.pr-build-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pr-title-input{flex:1;min-width:0}
+.pr-picker{margin:4px 0 12px;border:1px solid var(--gold);border-radius:14px;background:var(--panel);padding:12px}
+.pr-picker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.pr-picklist{display:grid;gap:8px;max-height:46vh;overflow:auto}
+.pr-pick{text-align:left;border:1px solid var(--line);border-radius:12px;background:#000;color:var(--ink);padding:11px 13px;min-height:48px}
+.pr-pick b{display:block}.pr-pick span{color:var(--muted);font-size:12px}
+.pr-pick:active{border-color:var(--gold);background:var(--gold-soft,rgba(207,174,112,.16))}
+.pr-stations{display:grid;gap:8px}
+.pr-station{display:flex;align-items:stretch;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.pr-station-main{flex:1;min-width:0}
+.pr-station-name{display:flex;align-items:center;gap:8px}
+.pr-station-name b{overflow-wrap:anywhere}
+.pr-num{flex:none;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:var(--gold-soft,rgba(207,174,112,.16));color:var(--gold);font-size:12px;font-weight:800}
+.pr-station-ctl{display:flex;align-items:center;gap:8px;margin-top:8px}
+.pr-min{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:12px}
+.pr-min input{width:56px;padding:6px 7px}
+.pr-station-ctl select{width:auto;padding:6px 8px;font-size:13px}
+.pr-station-side{display:flex;flex-direction:column;gap:5px;justify-content:center}
+.pr-ico{width:38px;min-height:30px;border:1px solid var(--strong);border-radius:9px;background:#000;color:var(--soft);font-size:12px;font-weight:800}
+.pr-ico:disabled{opacity:.35}
+.pr-ico.danger{color:var(--oak)}
 /* Dawgs chain */
 .chain-nudge{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 15px;border:1px solid var(--gold);border-radius:14px;background:var(--gold-soft,rgba(207,174,112,.14))}
 .chain-nudge b{display:block}.chain-nudge span{color:var(--soft);font-size:12.5px}
@@ -853,6 +876,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
       <div class="pr-panel" id="prTemplates" hidden></div>
       <div class="pr-panel" id="prDates" hidden></div>
 
+      <div id="prContinuity" hidden>
       <div class="section-head"><div><div class="eyebrow">Continuity</div><h2>Last practice → next practice</h2></div><p>Shared with staff · not local-only</p></div>
       <div class="author-row">
         <div class="field">
@@ -877,6 +901,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
           <textarea id="staffComment" placeholder="Short note for the other coaches. First names only."></textarea>
           <button class="btn ghost" id="postComment" type="button">Post comment</button>
         </div>
+      </div>
       </div>
     </section>
 
@@ -1682,7 +1707,7 @@ function seedLeague(){
     kind:"league-schedule",
     league:"SBMSA Fall 2026 JV 7on7 Maxwell",
     source:"https://sbmsa.net/schedule/740099/jv-7-on-7-maxwell",
-    revisedAt:"2026-08-25T17:17:00-05:00",
+    revisedAt:"2026-09-02T09:00:00-05:00",
     timezone:LEAGUE_TZ,
     team:"Commodores",
     coach:"Selber",
@@ -1703,7 +1728,7 @@ function seedLeague(){
       {team:"Commodores",coach:"Selber",w:0,l:0,t:0,gp:0}
     ],
     games:[
-      {id:"2026-09-01-georgia",week:1,date:"2026-09-01",time:"18:00",home:"Commodores",away:"Georgia Bulldogs",location:"MMS North West",result:null},
+      {id:"2026-09-01-georgia",week:1,date:"2026-09-02",time:"18:00",home:"Commodores",away:"Georgia Bulldogs",location:"MMS North West",result:null},
       {id:"2026-09-08-msst",week:2,date:"2026-09-08",time:"18:00",home:"MS ST Bulldogs",away:"Commodores",location:"MMS North West",result:null},
       {id:"2026-09-15-irish",week:3,date:"2026-09-15",time:"19:30",home:"Commodores",away:"Irish",location:"MMS North West",result:null},
       {id:"2026-09-22-longhorns",week:4,date:"2026-09-22",time:"19:30",home:"Commodores",away:"Longhorns",location:"MMS North West",result:null},
@@ -2905,15 +2930,75 @@ function renderPractice(){
   [["build","prBuild"],["blocks","prBlocks"],["templates","prTemplates"],["dates","prDates"]].forEach(([tab,id])=>{
     const panel=$("#"+id);if(panel) panel.hidden=tab!==practiceTab;
   });
+  const cont=$("#prContinuity");if(cont) cont.hidden=practiceTab!=="build";
   if(practiceTab==="build") renderBuildTab();
   else if(practiceTab==="blocks") renderBlocksTab();
   else if(practiceTab==="templates") renderTemplatesTab();
   else if(practiceTab==="dates") renderDatesTab();
 }
 // Slice A: Build + Templates are stubs; Blocks + Dates show read-only lists.
+let buildPickerOpen=false;
+function addStationFromBlock(blockId){
+  const b=blockById(blockId);if(!b) return;
+  practiceBuild.stations.push(cleanStation({minutes:b.minutes,name:b.name,detail:b.how,coach:b.defaultCoach,blockId:b.id}));
+  buildPickerOpen=false;saveBuildLocal();renderBuildTab();
+}
+function moveStation(i,dir){
+  const s=practiceBuild.stations,j=i+dir;
+  if(j<0||j>=s.length) return;
+  [s[i],s[j]]=[s[j],s[i]];saveBuildLocal();renderBuildTab();
+}
+function removeStation(i){practiceBuild.stations.splice(i,1);saveBuildLocal();renderBuildTab();}
+function clearBuild(){
+  if(!practiceBuild.stations.length) return;
+  if(!confirm("Clear this practice?")) return;
+  practiceBuild=emptyBuild();buildPickerOpen=false;saveBuildLocal();renderBuildTab();
+}
+function buildPickerHTML(){
+  const cards=practiceBlocks.map(b=>`<button class="pr-pick" type="button" data-add-station="${esc(b.id)}"><b>${esc(b.name)}</b><span>${esc(b.minutes)}m · ${esc(b.group)}</span></button>`).join("")
+    ||'<div class="pr-empty">No blocks yet — make some on the Blocks tab.</div>';
+  return `<div class="pr-picker"><div class="pr-picker-head"><b>Tap a block to add</b><button class="btn ghost" type="button" id="buildPickClose">Close</button></div><div class="pr-picklist">${cards}</div></div>`;
+}
+function stationRowHTML(s,i,total){
+  const coachOpts=["Unassigned",...STAFF_FIRST].map(c=>`<option value="${esc(c)}"${c===s.coach?" selected":""}>${esc(c)}</option>`).join("");
+  return `<div class="pr-station">
+    <div class="pr-station-main">
+      <div class="pr-station-name"><span class="pr-num">${i+1}</span><b>${esc(s.name)}</b></div>
+      <div class="pr-station-ctl">
+        <span class="pr-min"><input type="number" inputmode="numeric" min="1" max="90" value="${esc(s.minutes)}" data-min="${i}" aria-label="Minutes">m</span>
+        <select data-coach="${i}" aria-label="Coach">${coachOpts}</select>
+      </div>
+    </div>
+    <div class="pr-station-side">
+      <button class="pr-ico" type="button" data-up="${i}"${i===0?" disabled":""} aria-label="Move up">▲</button>
+      <button class="pr-ico" type="button" data-down="${i}"${i===total-1?" disabled":""} aria-label="Move down">▼</button>
+      <button class="pr-ico danger" type="button" data-remove="${i}" aria-label="Remove">✕</button>
+    </div>
+  </div>`;
+}
 function renderBuildTab(){
   const host=$("#prBuild");if(!host) return;
-  host.innerHTML=`<div class="pr-empty">The practice assembler arrives next. Blocks and Dates are live now — tap the chips above.</div>`;
+  const st=practiceBuild.stations,total=totalMinutes(st);
+  const rows=st.map((s,i)=>stationRowHTML(s,i,st.length)).join("")||'<div class="pr-empty">No blocks yet. Tap “Add block” to start building.</div>';
+  host.innerHTML=`
+    <div class="pr-build-head">
+      <input id="buildName" class="pr-title-input" maxlength="60" placeholder="Practice name (optional)" value="${esc(practiceBuild.name)}">
+      <span class="badge live">${total} min</span>
+    </div>
+    <div class="pr-actions"><button class="btn" type="button" id="buildAdd">+ Add block</button>${st.length?'<button class="btn ghost" type="button" id="buildClear">Clear</button>':""}</div>
+    ${buildPickerOpen?buildPickerHTML():""}
+    <div class="pr-stations">${rows}</div>
+    <div class="pr-hint">Splitting a block into groups, saving as a template, and assigning to a date arrive next. Your work here is kept automatically.</div>`;
+  const nameEl=$("#buildName");if(nameEl) nameEl.onchange=()=>{practiceBuild.name=nameEl.value;saveBuildLocal();};
+  const addBtn=$("#buildAdd");if(addBtn) addBtn.onclick=()=>{buildPickerOpen=!buildPickerOpen;renderBuildTab();};
+  const clearBtn=$("#buildClear");if(clearBtn) clearBtn.onclick=clearBuild;
+  const pickClose=$("#buildPickClose");if(pickClose) pickClose.onclick=()=>{buildPickerOpen=false;renderBuildTab();};
+  $$("#prBuild [data-add-station]").forEach(b=>b.onclick=()=>addStationFromBlock(b.getAttribute("data-add-station")));
+  $$("#prBuild [data-up]").forEach(b=>b.onclick=()=>moveStation(+b.getAttribute("data-up"),-1));
+  $$("#prBuild [data-down]").forEach(b=>b.onclick=()=>moveStation(+b.getAttribute("data-down"),1));
+  $$("#prBuild [data-remove]").forEach(b=>b.onclick=()=>removeStation(+b.getAttribute("data-remove")));
+  $$("#prBuild [data-coach]").forEach(sel=>sel.onchange=()=>{practiceBuild.stations[+sel.getAttribute("data-coach")].coach=coachName(sel.value);saveBuildLocal();renderBuildTab();});
+  $$("#prBuild [data-min]").forEach(inp=>inp.onchange=()=>{const i=+inp.getAttribute("data-min");practiceBuild.stations[i].minutes=Math.max(1,Math.min(90,Number(inp.value)||1));saveBuildLocal();renderBuildTab();});
 }
 function renderTemplatesTab(){
   const host=$("#prTemplates");if(!host) return;
