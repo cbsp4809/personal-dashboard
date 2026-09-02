@@ -271,7 +271,16 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .pr-card p{margin:0;color:var(--soft);font-size:13px}
 .pr-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px}
 .pr-row{display:grid;gap:8px}
+.pr-row.two{grid-template-columns:1fr 1fr;align-items:end}
 .pr-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pr-card.tap{cursor:pointer}
+.pr-tap{margin-left:auto;color:var(--gold);font-size:11px;font-weight:700}
+.pr-editor{padding:14px 15px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.pr-editor .field{margin-top:10px}
+.pr-editor input,.pr-editor select,.pr-editor textarea{width:100%}
+.pr-editor textarea{min-height:80px;resize:vertical}
+.pr-check{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;min-height:44px}
+.pr-check input{width:auto;min-height:0}
 /* Dawgs chain */
 .chain-nudge{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 15px;border:1px solid var(--gold);border-radius:14px;background:var(--gold-soft,rgba(207,174,112,.14))}
 .chain-nudge b{display:block}.chain-nudge span{color:var(--soft);font-size:12.5px}
@@ -2910,14 +2919,74 @@ function renderTemplatesTab(){
   const host=$("#prTemplates");if(!host) return;
   host.innerHTML=`<div class="pr-empty">Saved practice templates will show here.</div>`;
 }
+const BLOCK_GROUPS=["skills","team","situational","conditioning"];
+let blockEdit=null; // null = list view; object = editing/new
+function newBlockDraft(){return {id:"",name:"",minutes:10,how:"",group:"skills",defaultCoach:"Unassigned",noLines:false};}
 function renderBlocksTab(){
   const host=$("#prBlocks");if(!host) return;
-  const cards=practiceBlocks.map(b=>`<div class="pr-card">
+  if(blockEdit){host.innerHTML=blockEditorHTML();bindBlockEditor();return;}
+  const cards=practiceBlocks.map(b=>`<div class="pr-card tap" data-edit-block="${esc(b.id)}" role="button" tabindex="0">
     <div class="pr-card-top"><b>${esc(b.name)}</b><span class="badge live">${esc(b.minutes)} min</span></div>
     <p>${esc(oneLineHow(b.how))}</p>
-    <div class="pr-card-meta"><span class="badge">${esc(b.group)}</span>${b.noLines?'<span class="badge">No lines</span>':""}${b.defaultCoach!=="Unassigned"?`<span class="badge">${esc(b.defaultCoach)}</span>`:""}</div>
+    <div class="pr-card-meta"><span class="badge">${esc(b.group)}</span>${b.noLines?'<span class="badge">No lines</span>':""}${b.defaultCoach!=="Unassigned"?`<span class="badge">${esc(b.defaultCoach)}</span>`:""}<span class="pr-tap">Tap to edit</span></div>
   </div>`).join("");
-  host.innerHTML=`<div class="pr-hint">${practiceBlocks.length} block${practiceBlocks.length===1?"":"s"} in the library. Create &amp; edit arrives next slice.</div><div class="pr-list">${cards||'<div class="pr-empty">No blocks yet.</div>'}</div>`;
+  host.innerHTML=`<div class="pr-actions"><button class="btn" type="button" id="prNewBlock">+ New block</button></div>
+    <div class="pr-hint">${practiceBlocks.length} block${practiceBlocks.length===1?"":"s"} in the library. Tap one to edit.</div>
+    <div class="pr-list">${cards||'<div class="pr-empty">No blocks yet — create your first.</div>'}</div>`;
+  const nb=$("#prNewBlock");if(nb) nb.onclick=()=>{blockEdit=newBlockDraft();renderBlocksTab();};
+  $$("#prBlocks [data-edit-block]").forEach(el=>{
+    const open=()=>{const b=blockById(el.getAttribute("data-edit-block"));if(b){blockEdit={...b};renderBlocksTab();}};
+    el.onclick=open;
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}};
+  });
+}
+function blockEditorHTML(){
+  const b=blockEdit,isNew=!b.id;
+  const coachOpts=["Unassigned",...STAFF_FIRST].map(c=>`<option value="${esc(c)}"${c===b.defaultCoach?" selected":""}>${esc(c)}</option>`).join("");
+  const groupOpts=BLOCK_GROUPS.map(g=>`<option value="${esc(g)}"${g===b.group?" selected":""}>${esc(g)}</option>`).join("");
+  return `<div class="pr-editor">
+    <div class="pr-card-top"><b>${isNew?"New block":"Edit block"}</b></div>
+    <div class="field"><label for="blkName">Name</label><input id="blkName" maxlength="60" value="${esc(b.name)}" placeholder="Route feet"></div>
+    <div class="pr-row two"><div class="field"><label for="blkMin">Minutes</label><input id="blkMin" type="number" inputmode="numeric" min="1" max="90" value="${esc(b.minutes)}"></div>
+      <div class="field"><label for="blkGroup">Group</label><select id="blkGroup">${groupOpts}</select></div></div>
+    <div class="field"><label for="blkHow">How-to · one or two sentences</label><textarea id="blkHow" placeholder="Coach the cue plainly.">${esc(b.how)}</textarea></div>
+    <div class="pr-row two"><div class="field"><label for="blkCoach">Default coach</label><select id="blkCoach">${coachOpts}</select></div>
+      <label class="pr-check"><input id="blkNoLines" type="checkbox"${b.noLines?" checked":""}> No lines</label></div>
+    <div class="pr-actions">
+      <button class="btn" type="button" id="blkSave">Save block</button>
+      <button class="btn ghost" type="button" id="blkCancel">Cancel</button>
+      ${isNew?"":`<button class="btn ghost danger" type="button" id="blkDelete">Delete</button>`}
+    </div>
+  </div>`;
+}
+function bindBlockEditor(){
+  const save=$("#blkSave");if(save) save.onclick=saveBlockEdit;
+  const cancel=$("#blkCancel");if(cancel) cancel.onclick=()=>{blockEdit=null;renderBlocksTab();};
+  const del=$("#blkDelete");if(del) del.onclick=deleteBlockEdit;
+}
+function saveBlockEdit(){
+  const name=($("#blkName").value||"").trim();
+  if(!name){$("#blkName").focus();return;}
+  const draft=cleanBlock({
+    id:blockEdit.id||pbUid("blk"),name,
+    minutes:$("#blkMin").value,how:$("#blkHow").value,
+    group:$("#blkGroup").value,defaultCoach:$("#blkCoach").value,
+    noLines:$("#blkNoLines").checked
+  });
+  const idx=practiceBlocks.findIndex(b=>b.id===draft.id);
+  if(idx>=0) practiceBlocks[idx]=draft; else practiceBlocks.push(draft);
+  blockEdit=null;
+  pushBlocks();
+  renderBlocksTab();
+  if($("#importStatus")) $("#importStatus").textContent=`Saved block “${draft.name}”.`;
+}
+function deleteBlockEdit(){
+  if(!blockEdit.id){blockEdit=null;renderBlocksTab();return;}
+  if(!confirm("Delete this block from the library?")) return;
+  practiceBlocks=practiceBlocks.filter(b=>b.id!==blockEdit.id);
+  blockEdit=null;
+  pushBlocks();
+  renderBlocksTab();
 }
 function renderDatesTab(){
   const host=$("#prDates");if(!host) return;
