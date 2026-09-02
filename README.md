@@ -51,6 +51,7 @@ sql/ops_email_attachments.sql  # Email file metadata + ops-email-attachments buc
 sql/ops_mail_status.sql        # Emails-tab inbox/send heartbeat (Sydney writes)
 sql/ops_email_kind.sql         # Emails-tab sales/lead flag (Sydney applies)
 sql/ops_content.sql            # LinkedIn Content tab queue + ops-content-photos bucket
+sql/ops_home.sql               # Personal Home tab (gratitude, school pins, lunch, Virginia)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
@@ -171,6 +172,16 @@ date, a photo thumbnail or “no photo”, and a source that defaults to
 ChatGPT. Actions: Approve, Request changes (note), Save caption, Attach /
 replace photo, Mark posted, Ready for Chris. New draft pastes a caption as
 written. The tab does not post to LinkedIn.
+
+**Home** is a sixth top-bar view for Chris’s personal morning list (gratitude
+for Regan, Thoughts & Prayers, school pins, this week’s lunch, Virginia Hub
+items, and open Personal house cards). It is not a new app: same `ops.html`,
+same Studio Pod project, same sign-in. Apply `sql/ops_home.sql` manually on
+Studio Pod before the tab can persist gratitude, prayers, pins, lunch, or
+Virginia. The page never emails Regan (or anyone) and never pulls Gmail,
+Canvas, or SchoolCafé — Sydney writes school/lunch/Virginia rows; Chris writes
+gratitude and prayers. House cards reuse `ops_cards` where
+`project='personal'`.
 
 The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
 Needs you, Today, This week, and Later before a quiet Sydney owns column.

@@ -137,6 +137,7 @@ a{color:var(--brass)}
 .board{display:grid;width:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;padding:0 28px 20px;max-width:1720px;margin:0 auto;}
 .board.email-board{display:block;max-width:900px;}
 .board.digest-board{display:block;max-width:640px;}
+.board.home-board{display:block;max-width:720px;}
 .board.content-board{display:block;max-width:760px;}
 .content{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:12px;}
 .content-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
@@ -200,8 +201,8 @@ a{color:var(--brass)}
 .content-help-sheet ol{margin:0 0 10px;padding:0 0 0 1.15em;}
 .content-help-sheet li{padding-left:2px;}
 .content-help-sheet li:last-child{margin-bottom:10px;}
-#app.content-view,#app.email-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
-#app.content-view .composer,#app.email-view .composer{display:none;}
+#app.content-view,#app.email-view,#app.home-view{padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));}
+#app.content-view .composer,#app.email-view .composer,#app.home-view .composer{display:none;}
 .modal .box.content-box{max-width:560px;}
 .modal textarea{display:block;width:100%;min-height:140px;resize:vertical;padding:11px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;margin-bottom:12px;}
 .modal textarea:focus{outline:none;border-color:var(--brass);}
@@ -227,6 +228,68 @@ a{color:var(--brass)}
 .digest-archive-item:hover,.digest-archive-item:focus-visible{background:var(--card-hover);outline:none;}
 .digest-archive-item.on{border-color:rgba(196,165,116,.45);background:var(--brass-soft);color:var(--ink);}
 .digest-archive-empty{color:var(--muted);font-family:var(--serif);font-style:italic;padding:8px 2px;}
+.home{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:18px;}
+.home-block{min-width:0;max-width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:20px 18px 18px;}
+.home-block h3{margin:0 0 10px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.home-kicker{color:var(--brass);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
+.home-lead{margin:8px 0 14px;font-family:var(--serif);font-size:26px;font-weight:400;letter-spacing:-.02em;overflow-wrap:anywhere;}
+.home-body{min-width:0;max-width:100%;display:block;width:100%;min-height:120px;resize:vertical;padding:12px;border:1px solid var(--line-strong);border-radius:12px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.45;}
+.home-body:focus{outline:none;border-color:var(--brass);}
+.home-gratitude-actions{display:flex;min-width:0;max-width:100%;flex-direction:column;gap:10px;margin-top:12px;}
+.home-save,.home-copy{width:100%;min-width:0;min-height:52px;font-size:16px;font-weight:700;}
+.home-copy{letter-spacing:.02em;}
+.home-copy.copied{background:var(--sydney);color:#142014;}
+.home-stamp{margin:10px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
+.home-copy-text{display:block;width:100%;min-width:0;min-height:88px;margin-top:12px;padding:12px;border:1px dashed var(--line-strong);border-radius:12px;background:var(--bg);color:var(--soft);font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;resize:none;user-select:text;-webkit-user-select:text;}
+.home-earlier{min-width:0;max-width:100%;margin-top:14px;border-top:1px solid var(--line);padding-top:10px;}
+.home-earlier summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--soft);font-size:13px;font-weight:600;list-style:none;}
+.home-earlier summary::-webkit-details-marker{display:none;}
+.home-earlier summary::marker{content:"";}
+.home-earlier-list{display:flex;flex-direction:column;gap:10px;padding:4px 0 2px;}
+.home-earlier-item{min-width:0;max-width:100%;color:var(--soft);font-size:13px;line-height:1.45;overflow-wrap:anywhere;}
+.home-earlier-item strong{display:block;color:var(--ink);font-size:12px;font-weight:700;margin-bottom:2px;}
+.home-empty{margin:0;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:17px;}
+.home-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
+.home-pin,.home-house-item,.home-virginia-item{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;}
+.home-pin-from,.home-virginia-kind{color:var(--brass);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;overflow-wrap:anywhere;}
+.home-pin-subject,.home-house-title,.home-virginia-title{margin:4px 0 0;color:var(--ink);font-size:15px;font-weight:700;overflow-wrap:anywhere;}
+.home-pin-summary,.home-house-snippet,.home-virginia-notes{margin:6px 0 0;color:var(--soft);font-size:14px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap;}
+.home-pin-when,.home-virginia-due{margin:8px 0 0;color:var(--muted);font-size:12px;}
+.home-pin-got{width:100%;min-height:48px;margin-top:12px;}
+.home-lunch-grid{display:grid;min-width:0;max-width:100%;grid-template-columns:minmax(0,1fr);gap:14px;}
+.home-lunch-school{min-width:0;max-width:100%;}
+.home-lunch-school h4{margin:0 0 8px;font-family:var(--serif);font-size:20px;font-weight:400;}
+.home-lunch-school .home-lunch-sub{display:block;margin:-4px 0 10px;color:var(--muted);font-size:12px;}
+.home-lunch-day{min-width:0;display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid var(--line);}
+.home-lunch-day:first-of-type{border-top:0;padding-top:0;}
+.home-lunch-day-h{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:8px;}
+.home-lunch-day-h span{color:var(--ink);font-size:13px;font-weight:700;}
+.home-lunch-flag{flex-shrink:0;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-radius:999px;padding:3px 8px;border:1px solid var(--line-strong);color:var(--soft);}
+.home-lunch-flag.buy{color:#d8c4a0;border-color:rgba(196,165,116,.4);background:var(--brass-soft);}
+.home-lunch-flag.pack{color:var(--sydney);border-color:rgba(154,175,152,.4);background:rgba(154,175,152,.1);}
+.home-lunch-flag.menu{color:var(--week);border-color:rgba(143,163,176,.4);}
+.home-lunch-items{margin:0;padding:0;list-style:none;color:var(--soft);font-size:14px;line-height:1.4;overflow-wrap:anywhere;}
+.home-lunch-items li{margin:3px 0 0;}
+.home-house-item{display:block;width:100%;text-align:left;color:inherit;background:var(--card);}
+.home-house-item:hover,.home-house-item:focus-visible{background:var(--card-hover);outline:none;}
+.home-house-row{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:10px;}
+.home-house-copy{flex:1;min-width:0;background:transparent;border:0;padding:0;text-align:left;color:inherit;}
+.home-house-copy:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:8px;}
+.home-house-check{width:22px;height:22px;min-width:22px;margin-top:2px;accent-color:var(--brass);flex-shrink:0;}
+.home-prayer-form{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.home-prayer-form input,.home-prayer-note,.home-prayer-edit input,.home-prayer-edit textarea{display:block;width:100%;min-width:0;max-width:100%;border:1px solid var(--line-strong);border-radius:12px;background:var(--bg);color:var(--ink);font-size:16px;padding:12px;}
+.home-prayer-form input:focus,.home-prayer-note:focus,.home-prayer-edit input:focus,.home-prayer-edit textarea:focus{outline:none;border-color:var(--brass);}
+.home-prayer-note,.home-prayer-edit textarea{min-height:72px;resize:vertical;line-height:1.45;}
+.home-prayer-add,.home-prayer-amen,.home-prayer-save{width:100%;min-width:0;min-height:52px;font-size:16px;font-weight:700;}
+.home-prayer{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;}
+.home-prayer.open{border-color:rgba(196,165,116,.4);background:rgba(196,165,116,.06);}
+.home-prayer-who{margin:0;color:var(--ink);font-size:16px;font-weight:700;overflow-wrap:anywhere;}
+.home-prayer-body{margin:6px 0 0;color:var(--soft);font-size:14px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap;}
+.home-prayer-meta{margin:8px 0 0;color:var(--muted);font-size:12px;}
+.home-prayer-actions{display:flex;min-width:0;max-width:100%;flex-direction:column;gap:8px;margin-top:12px;}
+.home-prayer-toggle{display:block;width:100%;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;}
+.home-prayer-toggle:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:8px;}
+.home-prayer-edit{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
 .email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
 .email-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
 .email-command-copy{min-width:0;max-width:100%;}
@@ -354,6 +417,7 @@ a{color:var(--brass)}
 .mic-btn.listening{color:var(--over);background:rgba(201,122,106,.12);}
 .send-btn{background:var(--brass);color:#1a160f;font-size:20px;font-weight:700;}
 .send-btn:disabled{opacity:.55;cursor:wait;}
+@media(min-width:701px){.home-lunch-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}}
 @media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:700px){
@@ -372,7 +436,7 @@ a{color:var(--brass)}
   .viewbar{padding:12px 0 10px;}
   .viewbar-label{display:none;}
   .viewbar .actor{width:100%;display:flex;flex-wrap:wrap;}
-  .viewbar .actor button{flex:1 1 calc(20% - 4px);min-width:62px;min-height:44px;padding:8px 4px;font-size:12px;}
+  .viewbar .actor button{flex:1 1 calc(33.333% - 4px);min-width:0;min-height:44px;padding:8px 4px;font-size:12px;}
   .digest-today{padding:18px 16px 16px;}
   .digest-date{font-size:26px;}
   .email-filterbar{display:flex;flex-direction:column;align-items:stretch;padding-bottom:14px;}
@@ -397,7 +461,11 @@ a{color:var(--brass)}
   .content-photo-preview{width:100%;height:160px;}
   .content-actions .btn{flex:1 1 calc(50% - 4px);min-height:44px;}
   .content-caption{min-height:200px;}
-  #app.content-view,#app.email-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
+  #app.content-view,#app.email-view,#app.home-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
+  .home-block{padding:18px 16px 16px;}
+  .home-lead{font-size:24px;}
+  .home-save,.home-copy,.home-pin-got,.home-prayer-add,.home-prayer-amen,.home-prayer-save{min-height:52px;}
+  .home-lunch-grid{grid-template-columns:minmax(0,1fr);}
   .email-commandbar{align-items:stretch;flex-direction:column;}
   .email-command-copy,.email-command-sub,.email-mail-line{width:100%;max-width:100%;}
   .send-now{width:100%;min-height:44px;}
@@ -618,6 +686,7 @@ body.card-detail-open{overflow:hidden;}
         <button type="button" data-actor="emails">Emails</button>
         <button type="button" data-actor="content">Content</button>
         <button type="button" data-actor="digest">Digest</button>
+        <button type="button" data-actor="home">Home</button>
       </div>
     </div>
     <div class="email-filterbar hidden" id="emailFilters">
@@ -734,11 +803,21 @@ const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
 
 let currentUser = null;
 let actor = localStorage.getItem("ops_actor") || "chris";
-if(!["chris","sydney","emails","content","digest"].includes(actor)) actor = "chris";
+if(!["chris","sydney","emails","content","digest","home"].includes(actor)) actor = "chris";
 let cards = [];
 let morningDigests = [];
 let digestsAvailable = true;
 let openDigestDate = null;
+let homeGratitude = [];
+let homePins = [];
+let homeLunch = null;
+let homeVirginia = [];
+let homePrayers = [];
+let homeAvailable = true;
+let homeGratitudeDraft = "";
+let homePrayerDraft = { who:"", note:"" };
+let openHomePrayerId = null;
+let homeCopyTimer = null;
 let contentItems = [];
 let contentAvailable = true;
 let contentStatusFilter = "open";
@@ -1144,17 +1223,19 @@ function syncActorUI(){
   const showingEmails = actor==="emails";
   const showingDigest = actor==="digest";
   const showingContent = actor==="content";
-  const showingBoardTools = !showingEmails && !showingDigest && !showingContent;
+  const showingHome = actor==="home";
+  const showingBoardTools = !showingEmails && !showingDigest && !showingContent && !showingHome;
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
   $("#contentFilters").classList.toggle("hidden", !showingContent);
   $("#contentHelp").classList.toggle("hidden", !showingContent);
   $("#projectFilters").classList.toggle("hidden", !showingBoardTools);
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
-  $("#doneBtn").classList.toggle("hidden", showingContent);
+  $("#doneBtn").classList.toggle("hidden", showingContent || showingHome);
   $("#app").classList.toggle("content-view", showingContent);
   $("#app").classList.toggle("email-view", showingEmails);
+  $("#app").classList.toggle("home-view", showingHome);
   syncEmailSheetClass();
-  $(".viewbar-label").textContent = showingEmails || showingDigest || showingContent ? "View" : "Whose board?";
+  $(".viewbar-label").textContent = showingEmails || showingDigest || showingContent || showingHome ? "View" : "Whose board?";
   const input = $("#composerInput");
   if(input) input.placeholder = actor==="sydney"
     ? "Tell Ops what Sydney should pick up…"
@@ -1164,6 +1245,7 @@ function syncActorUI(){
 $$(".actor button").forEach(b => b.onclick = async () => {
   if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
   if(actor==="content") snapshotOpenContentForm();
+  if(actor==="home") captureHomeDraft();
   actor = b.dataset.actor;
   if(actor==="digest") openDigestDate = null;
   localStorage.setItem("ops_actor", actor);
@@ -1175,6 +1257,7 @@ $$(".actor button").forEach(b => b.onclick = async () => {
   }
   if(actor==="content") loadContent();
   if(actor==="digest") loadMorningDigests();
+  if(actor==="home") loadHome();
 });
 
 function redirectTo(){
@@ -1220,6 +1303,7 @@ async function onSignedIn(session){
   await repairQueuedReplySignedUrls();
   await loadMorningDigests();
   await loadContent();
+  await loadHome();
   await loadAlerts();
   subscribeToAlerts();
   startSendNowPolling();
@@ -1325,8 +1409,9 @@ async function loadCards(){
   }
   applyDetectedEmailKinds();
   persistDetectedEmailKinds();
-  if(actor==="content"){
+  if(actor==="content" || actor==="home"){
     $("#doneCount").textContent = String(doneCards().length);
+    if(actor==="home" && !shouldPreserveHomeInput()) renderBoard();
     if(drawerOpen) renderDrawer();
     return;
   }
@@ -1804,6 +1889,179 @@ function formatDigestDate(key){
   if(parts.length!==3 || parts.some(n => !n)) return key || "";
   return new Date(Date.UTC(parts[0], parts[1]-1, parts[2]))
     .toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", timeZone:"UTC" });
+}
+
+function formatGratitudeDate(key){
+  const parts = String(key||"").split("-").map(Number);
+  if(parts.length!==3 || parts.some(n => !n)) return key || "";
+  return new Date(Date.UTC(parts[0], parts[1]-1, parts[2]))
+    .toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", year:"numeric", timeZone:"UTC" });
+}
+
+function addDaysISO(key, days){
+  const parts = String(key||"").split("-").map(Number);
+  if(parts.length!==3 || parts.some(n => !n)) return "";
+  const date = new Date(Date.UTC(parts[0], parts[1]-1, parts[2] + Number(days||0)));
+  return date.getUTCFullYear()+"-"+String(date.getUTCMonth()+1).padStart(2,"0")+"-"+String(date.getUTCDate()).padStart(2,"0");
+}
+
+function chicagoMondayISO(value=new Date()){
+  const key = chicagoDateISO(value);
+  const parts = String(key||"").split("-").map(Number);
+  if(parts.length!==3 || parts.some(n => !n)) return "";
+  const dow = new Date(Date.UTC(parts[0], parts[1]-1, parts[2])).getUTCDay();
+  const offset = dow===0 ? -6 : 1 - dow;
+  return addDaysISO(key, offset);
+}
+
+function buildGratitudeCopy(dateKey, body){
+  return formatGratitudeDate(dateKey)+"\n\n"+String(body||"").trim();
+}
+
+function homeTableMissing(error){
+  return !!(error && (error.code==="42P01" || /ops_home_|schema cache/i.test(error.message||"")));
+}
+
+function todayGratitudeRow(){
+  const today = chicagoDateISO();
+  return homeGratitude.find(row => digestDateKey(row.gratitude_date)===today) || null;
+}
+
+function earlierGratitudeRows(){
+  const today = chicagoDateISO();
+  const oldest = addDaysISO(today, -7);
+  return homeGratitude.filter(row => {
+    const key = digestDateKey(row.gratitude_date);
+    return key && key < today && key >= oldest;
+  }).sort((a,b) => digestDateKey(b.gratitude_date).localeCompare(digestDateKey(a.gratitude_date)));
+}
+
+function unreadHomePins(){
+  return homePins
+    .filter(pin => !pin.read_at)
+    .sort((a,b) => String(b.received_at||b.created_at||"").localeCompare(String(a.received_at||a.created_at||"")));
+}
+
+function homeVirginiaOpen(){
+  const weekStart = chicagoMondayISO();
+  const weekEnd = addDaysISO(weekStart, 7);
+  return homeVirginia.filter(row => {
+    if(row.done_at) return false;
+    if(!row.due_at) return true;
+    const key = chicagoDateISO(row.due_at);
+    return key && key >= weekStart && key < weekEnd;
+  }).sort((a,b) => String(a.due_at||"9999").localeCompare(String(b.due_at||"9999")) || String(a.title||"").localeCompare(String(b.title||"")));
+}
+
+function homeHouseCards(){
+  return openCards()
+    .filter(card => !isEmailCard(card))
+    .filter(card => projectKey(card.project)==="personal")
+    .filter(card => !card.owner || card.owner==="chris" || card.owner==="sydney")
+    .sort(compareCards)
+    .slice(0, 8);
+}
+
+function shouldPreserveHomeInput(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
+  return !!(active && active.closest && (
+    active.closest("#homeGratitude") || active.closest("#homePrayers")
+  ));
+}
+
+function shouldPreserveHomeGratitude(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
+  return !!(active && active.closest && active.closest("#homeGratitude"));
+}
+
+function shouldPreserveHomePrayers(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
+  return !!(active && active.closest && active.closest("#homePrayers"));
+}
+
+function captureHomeDraft(){
+  const ta = $("#homeGratitudeBody");
+  if(ta) homeGratitudeDraft = ta.value;
+  const who = $("#homePrayerWho");
+  const note = $("#homePrayerNote");
+  if(who) homePrayerDraft.who = who.value;
+  if(note) homePrayerDraft.note = note.value;
+  if(openHomePrayerId){
+    const editWho = document.querySelector(`[data-prayer-edit="${CSS.escape(openHomePrayerId)}"] .home-prayer-edit-who`);
+    const editNote = document.querySelector(`[data-prayer-edit="${CSS.escape(openHomePrayerId)}"] .home-prayer-edit-note`);
+    if(editWho || editNote){
+      const row = homePrayers.find(item => item.id===openHomePrayerId);
+      if(row){
+        if(editWho) row.who = editWho.value;
+        if(editNote) row.note = editNote.value;
+      }
+    }
+  }
+}
+
+function openHomePrayers(){
+  return homePrayers
+    .filter(row => !row.done_at)
+    .sort((a,b) => String(b.updated_at||b.created_at||"").localeCompare(String(a.updated_at||a.created_at||""))
+      || String(b.created_at||"").localeCompare(String(a.created_at||"")));
+}
+
+function doneHomePrayers(){
+  return homePrayers
+    .filter(row => row.done_at)
+    .sort((a,b) => String(b.done_at||"").localeCompare(String(a.done_at||"")))
+    .slice(0, 20);
+}
+
+async function loadHome(){
+  if(!sb || !currentUser) return;
+  captureHomeDraft();
+  const today = chicagoDateISO();
+  const oldest = addDaysISO(today, -7);
+  const weekOf = chicagoMondayISO();
+  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes] = await Promise.all([
+    sb.from("ops_home_gratitude")
+      .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
+      .gte("gratitude_date", oldest)
+      .order("gratitude_date", { ascending:false }),
+    sb.from("ops_home_pins")
+      .select("id,source,source_ref,from_name,subject,summary,received_at,read_at,created_at,updated_at")
+      .is("read_at", null)
+      .order("received_at", { ascending:false }),
+    sb.from("ops_home_lunch")
+      .select("id,week_of,frostwood,memorial,updated_at")
+      .eq("week_of", weekOf)
+      .maybeSingle(),
+    sb.from("ops_home_virginia")
+      .select("id,title,kind,due_at,notes,source_ref,done_at,created_at,updated_at")
+      .is("done_at", null)
+      .order("due_at", { ascending:true }),
+    sb.from("ops_home_prayers")
+      .select("id,who,note,created_at,updated_at,done_at")
+      .order("updated_at", { ascending:false })
+      .limit(80)
+  ]);
+  const missing = [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes].some(res => homeTableMissing(res.error));
+  homeAvailable = !missing;
+  if(gratitudeRes.error && !homeTableMissing(gratitudeRes.error)){
+    if(actor==="home") setStatus("Could not load gratitude: "+gratitudeRes.error.message, true);
+  }
+  homeGratitude = gratitudeRes.error ? [] : (gratitudeRes.data || []);
+  homePins = pinsRes.error ? [] : (pinsRes.data || []);
+  homeLunch = lunchRes.error ? null : (lunchRes.data || null);
+  homeVirginia = virginiaRes.error ? [] : (virginiaRes.data || []);
+  homePrayers = prayersRes.error ? [] : (prayersRes.data || []);
+  if(openHomePrayerId && !homePrayers.some(row => row.id===openHomePrayerId && !row.done_at)){
+    openHomePrayerId = null;
+  }
+  const todayRow = todayGratitudeRow();
+  if(todayRow && !shouldPreserveHomeGratitude() && !String(homeGratitudeDraft||"").trim()){
+    homeGratitudeDraft = todayRow.body || "";
+  }
+  if(actor==="home") renderBoard();
 }
 
 function digestSectionText(value){
@@ -2805,6 +3063,495 @@ function renderDigest(root){
   });
 }
 
+const HOME_LUNCH_DAYS = [
+  { key:"Mon", label:"Monday" },
+  { key:"Tue", label:"Tuesday" },
+  { key:"Wed", label:"Wednesday" },
+  { key:"Thu", label:"Thursday" },
+  { key:"Fri", label:"Friday" }
+];
+const HOME_LUNCH_FLAGS = { buy:"Buy", pack:"Packed", menu:"Menu" };
+
+function lunchDayRecord(school, dayKey){
+  const raw = school && typeof school==="object" ? school[dayKey] : null;
+  if(!raw || typeof raw!=="object") return { flag:"", items:[] };
+  const flag = String(raw.flag||"").trim().toLowerCase();
+  const items = Array.isArray(raw.items)
+    ? raw.items.map(item => String(item||"").trim()).filter(Boolean)
+    : String(raw.items||"").trim() ? [String(raw.items).trim()] : [];
+  return { flag, items };
+}
+
+function lunchSchoolHTML(title, sub, school){
+  const days = HOME_LUNCH_DAYS.map(day => {
+    const rec = lunchDayRecord(school, day.key);
+    const flagLabel = HOME_LUNCH_FLAGS[rec.flag] || "";
+    const items = rec.items.length
+      ? `<ul class="home-lunch-items">${rec.items.map(item => `<li>${esc(item)}</li>`).join("")}</ul>`
+      : "";
+    return `<div class="home-lunch-day">
+      <div class="home-lunch-day-h">
+        <span>${esc(day.label)}</span>
+        ${flagLabel?`<span class="home-lunch-flag ${esc(rec.flag)}">${esc(flagLabel)}</span>`:""}
+      </div>
+      ${items}
+    </div>`;
+  }).join("");
+  return `<div class="home-lunch-school">
+    <h4>${esc(title)}</h4>
+    <span class="home-lunch-sub">${esc(sub)}</span>
+    ${days}
+  </div>`;
+}
+
+function gratitudeStamp(row){
+  if(!row) return "";
+  if(row.emailed_at){
+    const clock = formatMailClock(row.emailed_at);
+    return clock ? "Emailed "+clock : "Emailed";
+  }
+  return "Saved · waiting on email";
+}
+
+function fillHomeGratitude(){
+  const el = $("#homeGratitude");
+  if(!el) return;
+  if(shouldPreserveHomeGratitude()){
+    captureHomeDraft();
+    return;
+  }
+  const earlierWasOpen = !!(el.querySelector(".home-earlier") && el.querySelector(".home-earlier").open);
+  const row = todayGratitudeRow();
+  const body = homeGratitudeDraft || (row && row.body) || "";
+  const copyText = (row && row.copy_text) || "";
+  const earlier = earlierGratitudeRows();
+  el.innerHTML = `<div class="home-kicker">Gratitude for Regan</div>
+    <h2 class="home-lead">What are you grateful for today?</h2>
+    <label class="hidden" for="homeGratitudeBody">What are you grateful for today?</label>
+    <textarea id="homeGratitudeBody" class="home-body" rows="4" placeholder="What are you grateful for today?">${esc(body)}</textarea>
+    <div class="home-gratitude-actions">
+      <button type="button" class="btn home-save" id="homeGratitudeSave">Save</button>
+      ${copyText?`<button type="button" class="btn ghost home-copy" id="homeGratitudeCopy">Copy</button>`:""}
+    </div>
+    ${row?`<div class="home-stamp" id="homeGratitudeStamp">${esc(gratitudeStamp(row))}</div>`:""}
+    ${copyText?`<textarea class="home-copy-text" id="homeGratitudePreview" readonly aria-label="Paste-ready gratitude">${esc(copyText)}</textarea>`:""}
+    <details class="home-earlier">
+      <summary>Earlier</summary>
+      ${earlier.length
+        ? `<div class="home-earlier-list">${earlier.map(item => `<div class="home-earlier-item"><strong>${esc(formatGratitudeDate(digestDateKey(item.gratitude_date)))}</strong>${esc(item.body||"")}</div>`).join("")}</div>`
+        : `<p class="home-empty">No earlier notes this week.</p>`}
+    </details>`;
+  const ta = $("#homeGratitudeBody");
+  if(ta){
+    ta.oninput = () => { homeGratitudeDraft = ta.value; };
+  }
+  const save = $("#homeGratitudeSave");
+  if(save) save.onclick = saveHomeGratitude;
+  const copy = $("#homeGratitudeCopy");
+  if(copy) copy.onclick = copyHomeGratitude;
+  const earlierEl = el.querySelector(".home-earlier");
+  if(earlierEl && earlierWasOpen) earlierEl.open = true;
+}
+
+function fillHomePrayers(){
+  const el = $("#homePrayers");
+  if(!el) return;
+  if(shouldPreserveHomePrayers()){
+    captureHomeDraft();
+    return;
+  }
+  const earlierWasOpen = !!(el.querySelector(".home-earlier") && el.querySelector(".home-earlier").open);
+  const open = openHomePrayers();
+  const done = doneHomePrayers();
+  const draftWho = homePrayerDraft.who || "";
+  const draftNote = homePrayerDraft.note || "";
+  el.innerHTML = `<h3>Thoughts &amp; Prayers</h3>
+    <div class="home-prayer-form">
+      <label class="hidden" for="homePrayerWho">Who</label>
+      <input id="homePrayerWho" type="text" autocomplete="off" placeholder="Who are you holding?" value="${esc(draftWho)}">
+      <label class="hidden" for="homePrayerNote">Note</label>
+      <textarea id="homePrayerNote" class="home-prayer-note" rows="2" placeholder="Optional — surgery, a date, what to hold them in">${esc(draftNote)}</textarea>
+      <button type="button" class="btn home-prayer-add" id="homePrayerAdd">Add</button>
+    </div>
+    ${open.length
+      ? `<div class="home-list">${open.map(row => {
+          const editing = openHomePrayerId===row.id;
+          return `<article class="home-prayer${editing?" open":""}" data-prayer-id="${esc(row.id)}">
+            ${editing
+              ? `<div class="home-prayer-edit" data-prayer-edit="${esc(row.id)}">
+                  <input class="home-prayer-edit-who" type="text" autocomplete="off" value="${esc(row.who||"")}" aria-label="Who">
+                  <textarea class="home-prayer-edit-note" rows="2" aria-label="Note">${esc(row.note||"")}</textarea>
+                  <div class="home-prayer-actions">
+                    <button type="button" class="btn home-prayer-save" data-prayer-save="${esc(row.id)}">Save</button>
+                    <button type="button" class="btn ghost home-prayer-amen" data-prayer-amen="${esc(row.id)}">Amen</button>
+                  </div>
+                </div>`
+              : `<button type="button" class="home-prayer-toggle" data-prayer-open="${esc(row.id)}">
+                  <div class="home-prayer-who">${esc(row.who||"")}</div>
+                  ${row.note?`<div class="home-prayer-body">${esc(row.note)}</div>`:""}
+                </button>
+                <div class="home-prayer-actions">
+                  <button type="button" class="btn ghost tiny home-prayer-amen" data-prayer-amen="${esc(row.id)}">Amen</button>
+                </div>`}
+          </article>`;
+        }).join("")}</div>`
+      : `<p class="home-empty">Add someone you&rsquo;re holding in thought.</p>`}
+    <details class="home-earlier">
+      <summary>Earlier / Done</summary>
+      ${done.length
+        ? `<div class="home-earlier-list">${done.map(item => `<div class="home-earlier-item"><strong>${esc(item.who||"")}</strong>${item.note?esc(item.note):""}${item.done_at?`<div class="home-prayer-meta">${esc(OPS_RECEIVED_FORMAT.format(new Date(item.done_at)))}</div>`:""}</div>`).join("")}</div>`
+        : `<p class="home-empty">Nothing archived yet.</p>`}
+    </details>`;
+  const who = $("#homePrayerWho");
+  const note = $("#homePrayerNote");
+  if(who) who.oninput = () => { homePrayerDraft.who = who.value; };
+  if(note) note.oninput = () => { homePrayerDraft.note = note.value; };
+  const add = $("#homePrayerAdd");
+  if(add) add.onclick = addHomePrayer;
+  el.querySelectorAll("[data-prayer-open]").forEach(button => {
+    button.onclick = () => {
+      openHomePrayerId = button.dataset.prayerOpen || null;
+      fillHomePrayers();
+    };
+  });
+  el.querySelectorAll("[data-prayer-save]").forEach(button => {
+    button.onclick = () => saveHomePrayer(button.dataset.prayerSave);
+  });
+  el.querySelectorAll("[data-prayer-amen]").forEach(button => {
+    button.onclick = () => amenHomePrayer(button.dataset.prayerAmen);
+  });
+  const earlierEl = el.querySelector(".home-earlier");
+  if(earlierEl && earlierWasOpen) earlierEl.open = true;
+}
+
+function fillHomePins(){
+  const el = $("#homePins");
+  if(!el) return;
+  const pins = unreadHomePins();
+  el.innerHTML = `<h3>School pins</h3>` + (pins.length
+    ? `<div class="home-list">${pins.map(pin => `<article class="home-pin" data-pin-id="${esc(pin.id)}">
+        <div class="home-pin-from">${esc(pin.from_name || pin.source || "School")}</div>
+        ${pin.subject?`<div class="home-pin-subject">${esc(pin.subject)}</div>`:""}
+        <div class="home-pin-summary">${esc(pin.summary||"")}</div>
+        ${pin.received_at?`<div class="home-pin-when">${esc(OPS_RECEIVED_FORMAT.format(new Date(pin.received_at)))}</div>`:""}
+        <button type="button" class="btn ghost tiny home-pin-got" data-pin-got="${esc(pin.id)}">Got it</button>
+      </article>`).join("")}</div>`
+    : `<p class="home-empty">No school notes waiting.</p>`);
+  el.querySelectorAll("[data-pin-got]").forEach(button => {
+    button.onclick = () => markHomePinRead(button.dataset.pinGot);
+  });
+}
+
+function fillHomeLunch(){
+  const el = $("#homeLunch");
+  if(!el) return;
+  const row = homeLunch;
+  el.innerHTML = `<h3>This week's lunch</h3>` + (row
+    ? `<div class="home-lunch-grid">${lunchSchoolHTML("Frostwood", "Teddy", row.frostwood)}${lunchSchoolHTML("Memorial", "Virginia", row.memorial)}</div>`
+    : `<p class="home-empty">Lunch week not posted yet.</p>`);
+}
+
+function fillHomeVirginia(){
+  const el = $("#homeVirginia");
+  if(!el) return;
+  const items = homeVirginiaOpen();
+  el.innerHTML = `<h3>Virginia this week</h3>` + (items.length
+    ? `<div class="home-list">${items.map(item => `<article class="home-virginia-item">
+        <div class="home-virginia-kind">${esc(item.kind || "assignment")}</div>
+        <div class="home-virginia-title">${esc(item.title||"")}</div>
+        ${item.notes?`<div class="home-virginia-notes">${esc(item.notes)}</div>`:""}
+        ${item.due_at?`<div class="home-virginia-due">${esc(OPS_RECEIVED_FORMAT.format(new Date(item.due_at)))}</div>`:""}
+      </article>`).join("")}</div>`
+    : `<p class="home-empty">Nothing from Hub yet.</p>`);
+}
+
+function fillHomeHouse(){
+  const el = $("#homeHouse");
+  if(!el) return;
+  const items = homeHouseCards();
+  el.innerHTML = `<h3>House</h3>` + (items.length
+    ? `<div class="home-list">${items.map(card => `<div class="home-house-item" data-house-id="${esc(card.id)}">
+        <div class="home-house-row">
+          <input type="checkbox" class="home-house-check" data-house-done="${esc(card.id)}" title="Mark done" aria-label="Mark ${esc(card.title||"card")} done">
+          <button type="button" class="home-house-copy" data-house-open="${esc(card.id)}">
+            <div class="home-house-title">${esc(card.title||"")}</div>
+            ${card.snippet?`<div class="home-house-snippet">${esc(card.snippet)}</div>`:""}
+          </button>
+        </div>
+      </div>`).join("")}</div>`
+    : `<p class="home-empty">No open house cards.</p>`);
+  el.querySelectorAll("[data-house-open]").forEach(button => {
+    button.onclick = () => {
+      const card = cards.find(item => item.id===button.dataset.houseOpen);
+      if(card) openCardDetail(card);
+    };
+  });
+  el.querySelectorAll("[data-house-done]").forEach(box => {
+    box.onchange = () => {
+      if(!box.checked) return;
+      const card = cards.find(item => item.id===box.dataset.houseDone);
+      if(card) completeCard(card, box);
+    };
+  });
+}
+
+function renderHome(root){
+  root.classList.remove("email-board");
+  root.classList.remove("content-board");
+  root.classList.remove("digest-board");
+  root.classList.add("home-board");
+  captureHomeDraft();
+  const preserve = shouldPreserveHomeInput();
+  const scrollY = preserve ? window.scrollY : (root.querySelector(".home") ? window.scrollY : 0);
+  if(!root.querySelector(".home")){
+    root.innerHTML = `<div class="home">
+      <section class="home-block" id="homeGratitude"></section>
+      <section class="home-block" id="homePrayers"></section>
+      <section class="home-block" id="homePins"></section>
+      <section class="home-block" id="homeLunch"></section>
+      <section class="home-block" id="homeVirginia"></section>
+      <section class="home-block" id="homeHouse"></section>
+    </div>`;
+  }else if(!$("#homePrayers")){
+    const gratitude = $("#homeGratitude");
+    const prayers = document.createElement("section");
+    prayers.className = "home-block";
+    prayers.id = "homePrayers";
+    if(gratitude && gratitude.parentNode){
+      gratitude.parentNode.insertBefore(prayers, gratitude.nextSibling);
+    }
+  }
+  fillHomeGratitude();
+  fillHomePrayers();
+  fillHomePins();
+  fillHomeLunch();
+  fillHomeVirginia();
+  fillHomeHouse();
+  if(root.querySelector(".home")){
+    requestAnimationFrame(() => { window.scrollTo(0, scrollY); });
+  }
+}
+
+async function addHomePrayer(){
+  const whoInput = $("#homePrayerWho");
+  const noteInput = $("#homePrayerNote");
+  const who = (whoInput && whoInput.value || "").trim();
+  const note = (noteInput && noteInput.value || "").trim();
+  if(!who){
+    if(whoInput){
+      whoInput.setCustomValidity("Who are you holding?");
+      whoInput.reportValidity();
+    }
+    return;
+  }
+  if(whoInput) whoInput.setCustomValidity("");
+  if(!sb || !currentUser){
+    setStatus("Sign in to add a prayer.", true);
+    return;
+  }
+  const add = $("#homePrayerAdd");
+  if(add) add.disabled = true;
+  const payload = { who, note: note || null, updated_at: isoNow() };
+  const { data, error } = await sb.from("ops_home_prayers")
+    .insert(payload)
+    .select("id,who,note,created_at,updated_at,done_at")
+    .single();
+  if(add) add.disabled = false;
+  if(error){
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet. Run sql/ops_home.sql on Studio Pod." : "Could not add prayer: "+error.message, true);
+    return;
+  }
+  homePrayerDraft = { who:"", note:"" };
+  homePrayers.unshift(data);
+  openHomePrayerId = null;
+  fillHomePrayers();
+  setStatus("Added to Thoughts & Prayers.");
+}
+
+async function saveHomePrayer(id){
+  if(!id) return;
+  const wrap = document.querySelector(`[data-prayer-edit="${CSS.escape(id)}"]`);
+  if(!wrap) return;
+  const whoInput = wrap.querySelector(".home-prayer-edit-who");
+  const noteInput = wrap.querySelector(".home-prayer-edit-note");
+  const who = (whoInput && whoInput.value || "").trim();
+  const note = (noteInput && noteInput.value || "").trim();
+  if(!who){
+    if(whoInput){
+      whoInput.setCustomValidity("Who are you holding?");
+      whoInput.reportValidity();
+    }
+    return;
+  }
+  if(whoInput) whoInput.setCustomValidity("");
+  if(!sb || !currentUser){
+    setStatus("Sign in to save.", true);
+    return;
+  }
+  const save = wrap.querySelector("[data-prayer-save]");
+  if(save) save.disabled = true;
+  const payload = { who, note: note || null, updated_at: isoNow() };
+  const { data, error } = await sb.from("ops_home_prayers")
+    .update(payload)
+    .eq("id", id)
+    .select("id,who,note,created_at,updated_at,done_at")
+    .single();
+  if(save) save.disabled = false;
+  if(error){
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet." : "Could not save prayer: "+error.message, true);
+    return;
+  }
+  const idx = homePrayers.findIndex(row => row.id===id);
+  if(idx>=0) homePrayers[idx] = data;
+  openHomePrayerId = null;
+  fillHomePrayers();
+  setStatus("Prayer updated.");
+}
+
+async function amenHomePrayer(id){
+  if(!id) return;
+  const row = homePrayers.find(item => item.id===id);
+  const previous = row ? row.done_at : null;
+  if(row){
+    row.done_at = isoNow();
+    row.updated_at = row.done_at;
+  }
+  if(openHomePrayerId===id) openHomePrayerId = null;
+  fillHomePrayers();
+  if(!sb) return;
+  const { error } = await sb.from("ops_home_prayers")
+    .update({ done_at: isoNow(), updated_at: isoNow() })
+    .eq("id", id);
+  if(error){
+    if(row) row.done_at = previous;
+    fillHomePrayers();
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet." : "Could not archive prayer: "+error.message, true);
+    return;
+  }
+  setStatus("Amen.");
+}
+
+async function saveHomeGratitude(){
+  const ta = $("#homeGratitudeBody");
+  if(!ta) return;
+  const body = ta.value.trim();
+  if(!body){
+    ta.setCustomValidity("Write what you are grateful for.");
+    ta.reportValidity();
+    return;
+  }
+  ta.setCustomValidity("");
+  if(!sb || !currentUser){
+    setStatus("Sign in to save gratitude.", true);
+    return;
+  }
+  const dateKey = chicagoDateISO();
+  const copyText = buildGratitudeCopy(dateKey, body);
+  const save = $("#homeGratitudeSave");
+  if(save) save.disabled = true;
+  const payload = {
+    gratitude_date: dateKey,
+    body,
+    copy_text: copyText,
+    updated_at: isoNow()
+  };
+  const { data, error } = await sb.from("ops_home_gratitude")
+    .upsert(payload, { onConflict:"gratitude_date" })
+    .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
+    .single();
+  if(save) save.disabled = false;
+  if(error){
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet. Run sql/ops_home.sql on Studio Pod." : "Could not save gratitude: "+error.message, true);
+    return;
+  }
+  homeAvailable = true;
+  homeGratitudeDraft = body;
+  const idx = homeGratitude.findIndex(row => digestDateKey(row.gratitude_date)===dateKey);
+  if(idx>=0) homeGratitude[idx] = data;
+  else homeGratitude.unshift(data);
+  fillHomeGratitude();
+  setStatus("Saved. Copy it into Notes, then Sydney emails Regan.");
+}
+
+async function copyTextToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch(_){}
+  }
+  const preview = $("#homeGratitudePreview");
+  let scratch = null;
+  const el = preview || (scratch = document.createElement("textarea"));
+  if(scratch){
+    scratch.value = text;
+    scratch.setAttribute("readonly", "");
+    scratch.style.position = "fixed";
+    scratch.style.left = "-9999px";
+    document.body.appendChild(scratch);
+  }
+  el.focus();
+  el.select();
+  let ok = false;
+  try{ ok = document.execCommand("copy"); }catch(_){}
+  if(scratch) scratch.remove();
+  return ok;
+}
+
+function flashHomeCopied(button){
+  if(!button) return;
+  button.textContent = "Copied";
+  button.classList.add("copied");
+  if(homeCopyTimer) clearTimeout(homeCopyTimer);
+  homeCopyTimer = setTimeout(() => {
+    button.textContent = "Copy";
+    button.classList.remove("copied");
+  }, 1500);
+}
+
+async function copyHomeGratitude(){
+  const row = todayGratitudeRow();
+  const ta = $("#homeGratitudeBody");
+  const body = (ta && ta.value.trim()) || (row && row.body) || "";
+  const text = (row && row.copy_text) || buildGratitudeCopy(chicagoDateISO(), body);
+  if(!text.trim()) return;
+  const button = $("#homeGratitudeCopy");
+  // Prefer a sync copy from the preview so the tap gesture stays valid on iPhone.
+  const preview = $("#homeGratitudePreview");
+  let ok = false;
+  if(preview){
+    preview.focus();
+    preview.select();
+    try{ ok = document.execCommand("copy"); }catch(_){}
+  }
+  if(!ok) ok = await copyTextToClipboard(text);
+  if(ok){
+    flashHomeCopied(button);
+    return;
+  }
+  if(preview){
+    preview.focus();
+    preview.select();
+  }
+  setStatus("Select the note below and copy it.", true);
+}
+
+async function markHomePinRead(id){
+  if(!id) return;
+  const pin = homePins.find(item => item.id===id);
+  if(pin) pin.read_at = isoNow();
+  fillHomePins();
+  if(!sb) return;
+  const { error } = await sb.from("ops_home_pins")
+    .update({ read_at: isoNow(), updated_at: isoNow() })
+    .eq("id", id);
+  if(error){
+    if(pin) pin.read_at = null;
+    fillHomePins();
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet." : "Could not check off pin: "+error.message, true);
+  }
+}
+
 function contentStatusLabel(status){
   const row = CONTENT_STATUSES.find(item => item.key===status);
   return row ? row.label : (status || "Draft");
@@ -3381,6 +4128,7 @@ function renderBoard(){
   if(actor==="emails"){
     root.classList.remove("digest-board");
     root.classList.remove("content-board");
+    root.classList.remove("home-board");
     renderEmails(root);
     restoreOpenEmailScroll(savedEmailScroll);
     return;
@@ -3388,18 +4136,28 @@ function renderBoard(){
   if(actor==="content"){
     root.classList.remove("email-board");
     root.classList.remove("digest-board");
+    root.classList.remove("home-board");
     renderContent(root);
     return;
   }
   if(actor==="digest"){
     root.classList.remove("email-board");
     root.classList.remove("content-board");
+    root.classList.remove("home-board");
     renderDigest(root);
+    return;
+  }
+  if(actor==="home"){
+    root.classList.remove("email-board");
+    root.classList.remove("content-board");
+    root.classList.remove("digest-board");
+    renderHome(root);
     return;
   }
   root.classList.remove("email-board");
   root.classList.remove("digest-board");
   root.classList.remove("content-board");
+  root.classList.remove("home-board");
   const open = openCards().filter(c => !isEmailCard(c)).filter(visible);
   const ordered = actor==="chris"
     ? COLUMNS
@@ -4420,7 +5178,7 @@ function renderDrawer(){
     document.body.appendChild(d);
     panel = d;
   }
-  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="content"?"Back to Content":actor==="digest"?"Back to Digest":"Back to board"}</button></div>
+  panel.innerHTML = `<div class="drawer-head"><h3>Done</h3><button type="button" class="btn tiny ghost drawer-close" id="doneClose">${actor==="emails"?"Back to Emails":actor==="content"?"Back to Content":actor==="digest"?"Back to Digest":actor==="home"?"Back to Home":"Back to board"}</button></div>
     <div class="sub">Finished cards leave the board. Restore one if it came back.</div>` +
     (items.length ? items.map(c => `<div class="done-item">
       <div class="t">${esc(c.title)}</div>
@@ -4668,12 +5426,13 @@ document.addEventListener("visibilitychange", () => {
     loadMailStatus();
     loadMorningDigests();
     loadContent();
+    loadHome();
     loadSendNowStatus();
     loadAlerts({ notifyNew:true });
     if(actor==="emails") repairQueuedReplySignedUrls();
   }
 });
-setInterval(() => { if(currentUser){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); } }, 45000);
+setInterval(() => { if(currentUser){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); } }, 45000);
 boot();
 </script>
 </body>
