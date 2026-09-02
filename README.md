@@ -53,6 +53,7 @@ sql/ops_email_kind.sql         # Emails-tab sales/lead flag (Sydney applies)
 sql/ops_content.sql            # LinkedIn Content tab queue + ops-content-photos bucket
 sql/ops_home.sql               # Personal Home tab (gratitude, school pins, lunch, Virginia)
 sql/ops_home_virginia_notes.sql # Ops-to-Virginia Hub note delivery queue
+sql/ops_home_monitors.sql      # Personal Home traffic-light checks (Sydney routines write)
 sql/commodores_staff.sql       # Commodores comments + plans (Sydney applies)
 sql/commodores_league_schedule.sql  # SBMSA JV Maxwell slate on commodores_plans (Commodores project only)
 sql/commodores_plays.sql       # Drawn play routes (Commodores project only; coaches via RLS)
@@ -188,11 +189,14 @@ replace photo, Mark posted, Ready for Chris. New draft pastes a caption as
 written. The tab does not post to LinkedIn.
 
 **Home** is a sixth top-bar view for Chris’s personal morning list (gratitude
-for Regan, notes to Virginia, Thoughts & Prayers, school pins, this week’s
-lunch, Virginia Hub items, and open Personal house cards). It is not a new app:
-same `ops.html`, same Studio Pod project, same sign-in. Apply
-`sql/ops_home.sql` and `sql/ops_home_virginia_notes.sql` manually on Studio Pod
-before the tab can persist all Home data.
+for Regan, notes to Virginia, traffic-light monitors, Thoughts & Prayers,
+school pins, this week’s lunch, Virginia Hub items, and open Personal house
+cards). It is not a new app: same `ops.html`, same Studio Pod project, same
+sign-in. Apply `sql/ops_home.sql`, `sql/ops_home_virginia_notes.sql`, and
+`sql/ops_home_monitors.sql` manually on Studio Pod before the tab can persist
+all Home data. The monitor migration seeds the initial red Synology → Box
+backup check. Sydney routines calculate and upsert monitor statuses; the
+browser only displays them and soft-fails while the table is missing.
 
 The Virginia composer saves to `ops_home_virginia_notes`; it does not connect
 the public browser to Virginia’s Netlify Database. Until a trusted Sydney/Hub
