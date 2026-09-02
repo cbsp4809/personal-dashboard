@@ -844,6 +844,7 @@ const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
 });
 
 let currentUser = null;
+let previewMode = false;
 let storedActor = localStorage.getItem("ops_actor") || "master";
 let ownerFilter = localStorage.getItem("ops_owner") || "chris";
 if(storedActor==="chris" || storedActor==="sydney"){
@@ -1400,6 +1401,7 @@ async function onSignedIn(session){
 }
 
 async function loadCards(){
+  if(previewMode) return;
   if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
   const requiredFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at";
@@ -5029,8 +5031,14 @@ async function finishOpenEmailDraft(){
 }
 
 async function patchCard(id, fields, options){
-  if(!sb) return false;
   const payload = Object.assign({ updated_at: isoNow() }, fields);
+  if(previewMode){
+    const i = cards.findIndex(c => c.id===id);
+    if(i>=0) cards[i] = Object.assign({}, cards[i], payload);
+    if(!options || options.render!==false) renderBoard();
+    return true;
+  }
+  if(!sb) return false;
   const { error } = await sb.from("ops_cards").update(payload).eq("id", id);
   if(error){ setStatus("Update failed: "+error.message, true); return false; }
   const i = cards.findIndex(c => c.id===id);
@@ -5293,7 +5301,7 @@ async function sendComposer(){
 }
 
 async function createCard(fields, options){
-  if(!sb){ setStatus("Not signed in.", true); return null; }
+  if(!sb && !previewMode){ setStatus("Not signed in.", true); return null; }
   const siblings = openCards().filter(c => c.column_key===fields.column_key);
   const sort = siblings.length ? Math.max(...siblings.map(c => c.sort||0)) + 1 : 0;
   const row = {
@@ -5310,6 +5318,13 @@ async function createCard(fields, options){
     done_by: null,
     updated_at: isoNow()
   };
+  if(previewMode){
+    const local = Object.assign({ id:"preview-"+Date.now(), created_at:isoNow() }, row);
+    cards.push(local);
+    setStatus("Added.");
+    renderBoard();
+    return local;
+  }
   const { data, error } = await sb.from("ops_cards").insert(row).select("*").single();
   if(error){ setStatus("Could not add card: "+error.message, true); return null; }
   cards.push(data);
@@ -5595,6 +5610,7 @@ function previewOpsEmailsIfRequested(){
   if(!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return false;
   const preview = new URLSearchParams(location.search).get("preview");
   if(preview!=="emails" && preview!=="boards") return false;
+  previewMode = true;
   currentUser = { email:"preview@local" };
   actor = preview==="boards" ? "master" : "emails";
   if(preview==="boards"){
@@ -5699,7 +5715,7 @@ document.addEventListener("keydown", event => {
   closeOpenEmail();
 });
 document.addEventListener("visibilitychange", () => {
-  if(!document.hidden && currentUser){
+  if(!document.hidden && currentUser && !previewMode){
     loadCards();
     loadMailStatus();
     loadMorningDigests();
@@ -5710,7 +5726,7 @@ document.addEventListener("visibilitychange", () => {
     if(actor==="emails") repairQueuedReplySignedUrls();
   }
 });
-setInterval(() => { if(currentUser){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); } }, 45000);
+setInterval(() => { if(currentUser && !previewMode){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); } }, 45000);
 boot();
 </script>
 </body>
