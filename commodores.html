@@ -272,6 +272,21 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .pr-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px}
 .pr-row{display:grid;gap:8px}
 .pr-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+/* Dawgs chain */
+.chain-nudge{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 15px;border:1px solid var(--gold);border-radius:14px;background:var(--gold-soft,rgba(207,174,112,.14))}
+.chain-nudge b{display:block}.chain-nudge span{color:var(--soft);font-size:12.5px}
+.chain-card{margin-top:16px}
+.chain-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.chain-head h3{margin:2px 0 2px;font:500 24px/1.1 var(--serif)}
+.chain-history{margin-top:12px;display:grid;gap:8px}
+.chain-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#000}
+.chain-row b{display:block}.chain-row span{color:var(--muted);font-size:12px}
+.chain-remove{background:none;border:0;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
+.chain-picker{margin:12px 0}
+.chain-kidgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:8px}
+.chain-kid{min-height:46px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-weight:700}
+.chain-kid:active{border-color:var(--gold);background:var(--gold-soft,rgba(207,174,112,.16))}
+.muted{color:var(--muted);font-size:12.5px}
 .draft-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .diagram .area{fill:none;stroke:#777777;stroke-width:1;opacity:.55}
 .diagram .grass{fill:rgba(207,174,112,.16);stroke:#CFAE70;stroke-width:1.6}
@@ -570,6 +585,8 @@ body.team-dragging{overflow:hidden;touch-action:none}
 
       <div class="league-block" id="todayLeague"></div>
 
+      <div class="chain-nudge" id="chainNudge" hidden></div>
+
       <div class="section-head"><div><div class="eyebrow">First names only</div><h2>Roster</h2></div><p>Shared with staff · tap a name for ranks</p></div>
       <div class="scoring-as">
         <div class="scoring-as-label" id="scoringAsLabel">Scoring as</div>
@@ -590,6 +607,7 @@ body.team-dragging{overflow:hidden;touch-action:none}
         <div class="tag-summary-grid" id="tagSummary"></div>
       </div>
       <div class="team-table-wrap"><table class="team-table" id="teamTable"></table></div>
+      <div class="panel chain-card" id="chainCard"></div>
     </section>
 
     <section class="page" id="page-playbook">
@@ -900,9 +918,10 @@ const LINEUP_ID="staff-lineup";
 const LEAGUE_ID="sbmsa-jv-maxwell";
 const BLOCKS_ID="practice-blocks";
 const TEMPLATES_ID="practice-templates";
+const CHAIN_ID="dawgs-chain";
 const LEAGUE_TZ="America/Chicago";
 function reservedPlanId(id){
-  return id===LINEUP_ID||id===LEAGUE_ID||id===BLOCKS_ID||id===TEMPLATES_ID;
+  return id===LINEUP_ID||id===LEAGUE_ID||id===BLOCKS_ID||id===TEMPLATES_ID||id===CHAIN_ID;
 }
 const RATE_KEYS=["speed","catching","passing","agility","listening","routes","coverage","overall"];
 const RATE_LABELS={speed:"Speed",catching:"Catching",passing:"Passing",agility:"Agility",listening:"Listening",routes:"Routes",coverage:"Coverage",overall:"Overall"};
@@ -1941,6 +1960,7 @@ async function openApp(){
   await loadRoster();
   renderPractice();
   renderLeagueSchedule();
+  renderChain();
   renderTeam();
   renderDefenseBook();
   renderOffenseBook();
@@ -1959,7 +1979,9 @@ async function openApp(){
   await loadComments();
   await loadCloudPlans();
   await pullPracticeDocs();
+  await pullChain();
   await loadLeagueSchedule();
+  renderChain();
   await loadStaffLineup();
   postPlayLineups();
   openFromHash();
@@ -2908,6 +2930,111 @@ function renderDatesTab(){
 }
 const practiceNavEl=$("#practiceNav");
 if(practiceNavEl) practiceNavEl.onclick=e=>{const b=e.target.closest("[data-prtab]");if(b) setPracticeTab(b.dataset.prtab);};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DAWGS CHAIN — post-game award tracker. Current holder + history on the Roster
+// (Today), plus a Today nudge after a game/scrimmage that has no award yet.
+// Reserved commodores_plans row `dawgs-chain`, RLS-gated to coaches.
+// ═══════════════════════════════════════════════════════════════════════════
+function chainGames(){
+  const out=[];
+  const games=(league&&Array.isArray(league.games))?league.games:[];
+  games.forEach(game=>{
+    if(!game||!game.date) return;
+    const opp=game.home==="Commodores"?game.away:game.home;
+    out.push({id:game.id,date:game.date,label:`${labelDate(game.date)} · ${opp||"game"}`});
+  });
+  (Array.isArray(plans)?plans:[]).forEach(p=>{
+    if(p&&p.special==="Scrimmage"&&p.date) out.push({id:p.id,date:p.date,label:`${labelDate(p.date)} · scrimmage`});
+  });
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function cleanAward(a){
+  if(!a||typeof a!=="object"||typeof a.kid!=="string"||!a.kid) return null;
+  return {
+    id:typeof a.id==="string"&&a.id?a.id:pbUid("chain"),
+    kid:a.kid.slice(0,40),
+    gameId:typeof a.gameId==="string"?a.gameId:"",
+    gameLabel:typeof a.gameLabel==="string"?a.gameLabel:"",
+    date:typeof a.date==="string"?a.date:"",
+    note:typeof a.note==="string"?a.note.slice(0,120):"",
+    at:a.at||0
+  };
+}
+function seedChain(){
+  return {awards:[{id:pbUid("chain"),kid:"Zepplin",gameId:"2026-08-30-scrimmage",gameLabel:"Aug 30 · scrimmage",date:"2026-08-30",note:"",at:Date.parse("2026-08-30T15:00:00")}]};
+}
+let dawgsChain=getStore("dawgs_chain",null);
+dawgsChain=(dawgsChain&&Array.isArray(dawgsChain.awards))?{awards:dawgsChain.awards.map(cleanAward).filter(Boolean)}:seedChain();
+function saveChainLocal(){setStore("dawgs_chain",dawgsChain);}
+async function pushChain(){saveChainLocal();await upsertCloudDoc(CHAIN_ID,{awards:dawgsChain.awards});}
+async function pullChain(){
+  const doc=await loadCloudDoc(CHAIN_ID);
+  if(doc&&Array.isArray(doc.awards)){dawgsChain={awards:doc.awards.map(cleanAward).filter(Boolean)};saveChainLocal();renderChain();}
+}
+function chainSorted(){return dawgsChain.awards.slice().sort((a,b)=>(b.date+" "+String(b.at)).localeCompare(a.date+" "+String(a.at)));}
+function chainHolder(){return chainSorted()[0]||null;}
+function pendingChainGame(){
+  const today=localDateISO(new Date());
+  const done=new Set(dawgsChain.awards.map(a=>a.gameId).filter(Boolean));
+  const past=chainGames().filter(g=>g.date<=today&&!done.has(g.id));
+  return past.length?past[past.length-1]:null;
+}
+let chainPickOpen=false,chainPickGameId="";
+function rosterAwardNames(){return ROSTER.filter(n=>n&&n!=="Brett").map(n=>displayName(n));}
+function recordChainAward(kid,gameId){
+  if(!kid) return;
+  const game=chainGames().find(g=>g.id===gameId);
+  dawgsChain.awards.push(cleanAward({
+    kid,gameId,gameLabel:game?game.label:"",date:game?game.date:localDateISO(new Date()),at:Date.now()
+  }));
+  chainPickOpen=false;chainPickGameId="";
+  pushChain();renderChain();
+}
+function removeChainAward(id){
+  dawgsChain.awards=dawgsChain.awards.filter(a=>a.id!==id);
+  pushChain();renderChain();
+}
+function renderChain(){renderChainNudge();renderChainCard();}
+function renderChainNudge(){
+  const host=$("#chainNudge");if(!host) return;
+  const pending=pendingChainGame();
+  if(!pending||chainPickOpen){host.hidden=true;host.innerHTML="";return;}
+  host.hidden=false;
+  host.innerHTML=`<div><b>Award the Dawgs chain</b><span>${esc(pending.label)} — who earned it?</span></div>
+    <button class="btn" type="button" data-chain-award="${esc(pending.id)}">Pick a kid</button>`;
+}
+function chainPickerHTML(){
+  const games=chainGames();
+  const fallback=(pendingChainGame()&&pendingChainGame().id)||(games[games.length-1]&&games[games.length-1].id)||"";
+  const gameId=chainPickGameId||fallback;
+  const opts=games.slice().reverse().map(g=>`<option value="${esc(g.id)}"${g.id===gameId?" selected":""}>${esc(g.label)}</option>`).join("");
+  const kids=rosterAwardNames().map(n=>`<button class="chain-kid" type="button" data-chain-kid="${esc(n)}">${esc(n)}</button>`).join("")||'<span class="muted">Roster loads after sign-in.</span>';
+  return `<div class="chain-picker">
+    <div class="field"><label for="chainGameSel">Game</label><select id="chainGameSel">${opts||'<option value="">No games listed</option>'}</select></div>
+    <div class="chain-kidgrid">${kids}</div>
+    <div class="pr-actions"><button class="btn ghost" type="button" data-chain-cancel="1">Cancel</button></div>
+  </div>`;
+}
+function renderChainCard(){
+  const host=$("#chainCard");if(!host) return;
+  const holder=chainHolder();
+  const history=chainSorted().map(a=>`<div class="chain-row"><div><b>${esc(a.kid)}</b><span>${esc(a.gameLabel||labelDate(a.date))}</span></div><button class="chain-remove" type="button" data-chain-remove="${esc(a.id)}">Remove</button></div>`).join("")||'<div class="muted">No awards yet.</div>';
+  host.innerHTML=`<div class="chain-head"><div><div class="eyebrow">Dawgs chain</div><h3>${holder?esc(holder.kid):"Up for grabs"}</h3><p class="muted">${holder?"Current holder · "+esc(holder.gameLabel||labelDate(holder.date)):"Award it after the next game."}</p></div>
+    ${chainPickOpen?"":`<button class="btn" type="button" data-chain-open="1">Award the chain</button>`}</div>
+    ${chainPickOpen?chainPickerHTML():""}
+    <div class="chain-history">${history}</div>`;
+}
+document.addEventListener("click",e=>{
+  const open=e.target.closest("[data-chain-open],[data-chain-award]");
+  if(open){chainPickGameId=open.getAttribute("data-chain-award")||"";chainPickOpen=true;renderChain();
+    const sel=$("#chainGameSel");if(sel) sel.scrollIntoView({behavior:"smooth",block:"center"});return;}
+  if(e.target.closest("[data-chain-cancel]")){chainPickOpen=false;renderChain();return;}
+  const kidBtn=e.target.closest("[data-chain-kid]");
+  if(kidBtn){const sel=$("#chainGameSel");recordChainAward(kidBtn.getAttribute("data-chain-kid"),sel?sel.value:chainPickGameId);return;}
+  const rm=e.target.closest("[data-chain-remove]");
+  if(rm){if(confirm("Remove this chain award?")) removeChainAward(rm.getAttribute("data-chain-remove"));return;}
+});
 
 function emptyPracticeDraft(){
   return {coach:"Chris",concurrent:"",targetId:"",stations:[]};
