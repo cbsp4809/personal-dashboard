@@ -222,6 +222,25 @@ body.immersive.gameday.gd-drawing .tools{display:none!important}
   body.immersive .play-name{font-size:22px;margin-bottom:4px}
   body.immersive .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 156px)*1.2));max-height:calc(var(--vvh) - 156px)}
 }
+/* The scrub bar isn't needed in gameday — Play replays it — so reclaim its
+   height on every screen. */
+body.immersive.gameday .scrub{display:none}
+/* Compact tier for short viewports (iPhone in gameday): shrink the control
+   rows and tighten gaps so the field always keeps real space and the bottom
+   bar never rides up over the near-line players. */
+@media(max-height:760px){
+  body.immersive.gameday .play-name{font-size:20px;margin:2px 0 3px}
+  body.immersive.gameday .immersive-done{margin-bottom:2px}
+  body.immersive.gameday .gd-topbar{gap:6px;margin:1px auto 4px}
+  body.immersive.gameday .gd-top2{gap:6px}
+  body.immersive.gameday .gd-chip,body.immersive.gameday .gd-unit button{min-height:40px;font-size:15px}
+  body.immersive.gameday .gameday-bar{gap:6px;margin:4px auto 1px}
+  body.immersive.gameday .gd-actions button{min-height:44px;font-size:17px}
+  body.immersive.gameday .gd-draw{min-height:42px;font-size:15px}
+  body.immersive.gameday .gd-sheet button{min-height:38px;padding:5px 11px}
+  body.immersive.gameday .tools #playBtn{min-height:44px;font-size:16px}
+  body.immersive.gameday.gd-drawing .gd-drawbar button{min-height:46px}
+}
 @media(max-width:420px){
   h1{font-size:26px}
   .tools{grid-template-columns:1fr 1fr}
