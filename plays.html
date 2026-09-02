@@ -169,6 +169,10 @@ body.immersive .scrub{width:min(560px,100%);margin:2px auto 0;min-height:34px}
 body.immersive.gameday .gameday-bar{display:flex;flex-direction:column;gap:8px;width:min(560px,100%);margin:6px auto 2px}
 body.immersive.gameday .field{width:min(calc(var(--vvw) - 8px),calc((var(--vvh) - 320px)*1.2));max-width:calc(var(--vvw) - 8px);max-height:calc(var(--vvh) - 320px)}
 body.immersive.gameday .speed{display:none}
+.gd-unit{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gd-unit button{min-height:48px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800;font-size:17px}
+.gd-unit button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+body.immersive.gameday.gd-drawing #gdUnit{display:none}
 .gd-actions{display:grid;grid-template-columns:68px 1fr 68px;gap:8px}
 .gd-actions button{min-height:56px;border:1px solid var(--strong);border-radius:14px;background:#000;color:var(--ink);font-weight:800;font-size:19px}
 .gd-actions .gd-flip{background:var(--gold-soft);border-color:var(--highlight)}
@@ -299,6 +303,10 @@ body.immersive.gameday.gd-drawing .tools{display:none!important}
       <button type="button" id="gamedayBtn">Gameday</button>
     </div>
     <div class="gameday-bar" id="gamedayBar">
+      <div class="gd-unit" id="gdUnit" role="group" aria-label="Lineup group">
+        <button type="button" data-gdunit="A" class="on">Q1 · Q3</button>
+        <button type="button" data-gdunit="B">Q2 · Q4</button>
+      </div>
       <div class="gd-actions">
         <button type="button" id="gdPrev" class="gd-side" aria-label="Previous play">◀</button>
         <button type="button" id="gdFlip" class="gd-flip">Flip</button>
@@ -1026,11 +1034,10 @@ const COVERAGE_SCHEMES=[
       {z:1,x:90,y:COVERAGE_SHORT_Y},{z:2,x:MID_X,y:COVERAGE_SHORT_Y},{z:3,x:390,y:COVERAGE_SHORT_Y},
       {z:6,x:90,y:COVERAGE_DEEP_Y},{z:5,x:MID_X,y:COVERAGE_DEEP_Y},{z:4,x:390,y:COVERAGE_DEEP_Y},
       {z:7,x:MID_X,y:COVERAGE_ROVER_Y,helper:true}]},
-  {id:"4-3",name:"4-3 · four short, three deep",how:"Four up short, two deep corners, one deep middle.",bw:98,
+  {id:"4-3",name:"4-3 · four short, three linebackers",how:"Four up short, three linebackers across the second level.",bw:98,
     spots:[
       {z:1,x:70,y:COVERAGE_SHORT_Y},{z:2,x:180,y:COVERAGE_SHORT_Y},{z:3,x:300,y:COVERAGE_SHORT_Y},{z:4,x:410,y:COVERAGE_SHORT_Y},
-      {z:5,x:110,y:COVERAGE_DEEP_Y},{z:6,x:370,y:COVERAGE_DEEP_Y},
-      {z:7,x:MID_X,y:COVERAGE_ROVER_Y,helper:true}]},
+      {z:5,x:90,y:COVERAGE_DEEP_Y},{z:7,x:MID_X,y:COVERAGE_DEEP_Y},{z:6,x:390,y:COVERAGE_DEEP_Y}]},
   {id:"3-4",name:"3-4 · three short, four deep",how:"Three up short, four spread deep.",bw:102,
     spots:[
       {z:1,x:90,y:COVERAGE_SHORT_Y},{z:2,x:MID_X,y:COVERAGE_SHORT_Y},{z:3,x:390,y:COVERAGE_SHORT_Y},
@@ -1260,6 +1267,7 @@ function renderChrome(){
   $("#looks").innerHTML=(STATE.mode==="play"?play.looks:[]).map((look,i)=>`<button type="button" data-look="${i}" class="${i===STATE.look?"on":""}">${esc(look.label)}</button>`).join("");
   $$("#looks [data-look]").forEach(btn=>btn.onclick=()=>{STATE.look=Number(btn.dataset.look);stopAnim();render();});
   $$("#unitPicks [data-unit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.unit===STATE.lineupUnit));
+  $$("#gdUnit [data-gdunit]").forEach(btn=>btn.classList.toggle("on",btn.dataset.gdunit===STATE.lineupUnit));
   $("#flipBtn").textContent="Flip";
   const gdCoverBtn=$("#gdCover");
   if(gdCoverBtn){gdCoverBtn.textContent=coverageOverlayLabel();gdCoverBtn.classList.toggle("on",STATE.coverageOn);}
@@ -2072,6 +2080,14 @@ $("#unitPicks").onclick=event=>{
   STATE.lineupUnit=button.dataset.unit==="B"?"B":"A";
   stopAnim();
   render();
+};
+$("#gdUnit").onclick=event=>{
+  const button=event.target.closest("[data-gdunit]");
+  if(!button) return;
+  STATE.lineupUnit=button.dataset.gdunit==="B"?"B":"A";
+  stopAnim();
+  render();
+  renderGamedaySheet();
 };
 $("#scrub").oninput=()=>{
   if(STATE.mode==="draw") return;
