@@ -277,6 +277,25 @@ a{color:var(--brass)}
 .home-lunch-flag.menu{color:var(--week);border-color:rgba(143,163,176,.4);}
 .home-lunch-items{margin:0;padding:0;list-style:none;color:var(--soft);font-size:14px;line-height:1.4;overflow-wrap:anywhere;}
 .home-lunch-items li{margin:3px 0 0;}
+.home-monitor-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
+.home-monitor{min-width:0;max-width:100%;display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;}
+.home-monitor-light{width:42px;height:42px;min-width:42px;display:grid;place-items:center;border:3px solid rgba(255,255,255,.25);border-radius:50%;box-shadow:0 0 0 4px rgba(255,255,255,.04),0 3px 10px rgba(0,0,0,.22);}
+.home-monitor-light::after{content:"";width:14px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);filter:blur(1px);transform:translate(-5px,-7px);}
+.home-monitor-light.green{background:#4aae70;box-shadow:0 0 0 4px rgba(74,174,112,.12),0 3px 10px rgba(0,0,0,.22);}
+.home-monitor-light.orange{background:#dc9138;box-shadow:0 0 0 4px rgba(220,145,56,.14),0 3px 10px rgba(0,0,0,.22);}
+.home-monitor-light.red{background:#d45750;box-shadow:0 0 0 4px rgba(212,87,80,.14),0 3px 10px rgba(0,0,0,.22);}
+.home-monitor-copy{flex:1;min-width:0;max-width:100%;}
+.home-monitor-head{display:flex;min-width:0;align-items:baseline;justify-content:space-between;gap:8px;}
+.home-monitor-title{margin:0;color:var(--ink);font-size:16px;font-weight:700;overflow-wrap:anywhere;}
+.home-monitor-state{flex-shrink:0;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+.home-monitor-state.green{color:#72c990;}
+.home-monitor-state.orange{color:#e5a65b;}
+.home-monitor-state.red{color:#e57871;}
+.home-monitor-summary{margin:5px 0 0;color:var(--soft);font-size:14px;line-height:1.4;overflow-wrap:anywhere;}
+.home-monitor-note{margin:8px 0 0;padding:8px 10px;border-left:3px solid currentColor;border-radius:0 8px 8px 0;background:rgba(255,255,255,.035);color:var(--soft);font-size:13px;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap;}
+.home-monitor.orange .home-monitor-note{border-left-color:#dc9138;}
+.home-monitor.red .home-monitor-note{border-left-color:#d45750;}
+.home-monitor-checked{margin:8px 0 0;color:var(--muted);font-size:12px;overflow-wrap:anywhere;}
 .home-house-item{display:block;width:100%;text-align:left;color:inherit;background:var(--card);}
 .home-house-item:hover,.home-house-item:focus-visible{background:var(--card-hover);outline:none;}
 .home-house-row{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:10px;}
@@ -843,6 +862,10 @@ const OPS_DATE_PARTS = new Intl.DateTimeFormat("en-US", {
 const OPS_RECEIVED_FORMAT = new Intl.DateTimeFormat("en-US", {
   timeZone:OPS_TIME_ZONE, month:"short", day:"numeric", year:"numeric"
 });
+const OPS_MONITOR_FORMAT = new Intl.DateTimeFormat("en-US", {
+  timeZone:OPS_TIME_ZONE, month:"short", day:"numeric", year:"numeric",
+  hour:"numeric", minute:"2-digit", timeZoneName:"short"
+});
 
 let currentUser = null;
 let previewMode = false;
@@ -866,6 +889,7 @@ let homePins = [];
 let homeLunch = null;
 let homeVirginia = [];
 let homePrayers = [];
+let homeMonitors = [];
 let homeAvailable = true;
 let homeGratitudeDraft = "";
 let homePrayerDraft = { who:"", note:"" };
@@ -2132,7 +2156,7 @@ async function loadHome(){
   const today = chicagoDateISO();
   const oldest = addDaysISO(today, -7);
   const weekOf = chicagoMondayISO();
-  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes] = await Promise.all([
+  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes, monitorsRes] = await Promise.all([
     sb.from("ops_home_gratitude")
       .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
       .gte("gratitude_date", oldest)
@@ -2152,7 +2176,10 @@ async function loadHome(){
     sb.from("ops_home_prayers")
       .select("id,who,note,created_at,updated_at,done_at")
       .order("updated_at", { ascending:false })
-      .limit(80)
+      .limit(80),
+    sb.from("ops_home_monitors")
+      .select("id,key,label,status,summary,note,detail,checked_at,updated_at")
+      .order("label", { ascending:true })
   ]);
   const missing = [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes].some(res => homeTableMissing(res.error));
   homeAvailable = !missing;
@@ -2164,6 +2191,7 @@ async function loadHome(){
   homeLunch = lunchRes.error ? null : (lunchRes.data || null);
   homeVirginia = virginiaRes.error ? [] : (virginiaRes.data || []);
   homePrayers = prayersRes.error ? [] : (prayersRes.data || []);
+  homeMonitors = monitorsRes.error ? [] : (monitorsRes.data || []);
   if(openHomePrayerId && !homePrayers.some(row => row.id===openHomePrayerId && !row.done_at)){
     openHomePrayerId = null;
   }
@@ -3417,6 +3445,40 @@ function fillHomeLunch(){
     : `<p class="home-empty">Lunch week not posted yet.</p>`);
 }
 
+function monitorStatus(row){
+  const status = String(row && row.status || "").toLowerCase();
+  return ["green","orange","red"].includes(status) ? status : "orange";
+}
+
+function monitorCheckedAt(value){
+  if(!value) return "Last checked time unavailable";
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return "Last checked time unavailable";
+  return "Last checked "+OPS_MONITOR_FORMAT.format(date);
+}
+
+function fillHomeMonitors(){
+  const el = $("#homeMonitors");
+  if(!el) return;
+  el.innerHTML = `<h3>Monitor</h3>` + (homeMonitors.length
+    ? `<div class="home-monitor-list">${homeMonitors.map(row => {
+        const status = monitorStatus(row);
+        return `<article class="home-monitor ${status}">
+          <span class="home-monitor-light ${status}" role="img" aria-label="${esc(status)} status"></span>
+          <div class="home-monitor-copy">
+            <div class="home-monitor-head">
+              <h4 class="home-monitor-title">${esc(row.label||row.key||"Monitor")}</h4>
+              <span class="home-monitor-state ${status}">${esc(status)}</span>
+            </div>
+            <p class="home-monitor-summary">${esc(row.summary||"No status summary.")}</p>
+            ${status!=="green" && row.note?`<p class="home-monitor-note">${esc(row.note)}</p>`:""}
+            <p class="home-monitor-checked">${esc(monitorCheckedAt(row.checked_at))}</p>
+          </div>
+        </article>`;
+      }).join("")}</div>`
+    : `<p class="home-empty">No monitors yet</p>`);
+}
+
 function fillHomeVirginia(){
   const el = $("#homeVirginia");
   if(!el) return;
@@ -3472,6 +3534,7 @@ function renderHome(root){
   if(!root.querySelector(".home")){
     root.innerHTML = `<div class="home">
       <section class="home-block" id="homeGratitude"></section>
+      <section class="home-block" id="homeMonitors"></section>
       <section class="home-block" id="homePrayers"></section>
       <section class="home-block" id="homePins"></section>
       <section class="home-block" id="homeLunch"></section>
@@ -3487,7 +3550,17 @@ function renderHome(root){
       gratitude.parentNode.insertBefore(prayers, gratitude.nextSibling);
     }
   }
+  if(!$("#homeMonitors")){
+    const gratitude = $("#homeGratitude");
+    const monitors = document.createElement("section");
+    monitors.className = "home-block";
+    monitors.id = "homeMonitors";
+    if(gratitude && gratitude.parentNode){
+      gratitude.parentNode.insertBefore(monitors, gratitude.nextSibling);
+    }
+  }
   fillHomeGratitude();
+  fillHomeMonitors();
   fillHomePrayers();
   fillHomePins();
   fillHomeLunch();
