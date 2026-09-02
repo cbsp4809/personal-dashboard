@@ -247,6 +247,13 @@ a{color:var(--brass)}
 .home-copy.copied{background:var(--sydney);color:#142014;}
 .home-stamp{margin:10px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
 .home-stamp.error{color:var(--over);}
+.home-virginia-note-help{margin:0 0 12px;color:var(--soft);font-size:14px;line-height:1.45;overflow-wrap:anywhere;}
+.home-virginia-note-recent{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);}
+.home-virginia-note-recent h3{margin-bottom:10px;}
+.home-virginia-note-item{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;}
+.home-virginia-note-body{color:var(--ink);font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;}
+.home-virginia-note-meta{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+.home-virginia-note-meta.error{color:var(--over);}
 .home-copy-text{display:block;width:100%;min-width:0;min-height:88px;margin-top:12px;padding:12px;border:1px dashed var(--line-strong);border-radius:12px;background:var(--bg);color:var(--soft);font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;resize:none;user-select:text;-webkit-user-select:text;}
 .home-earlier{min-width:0;max-width:100%;margin-top:14px;border-top:1px solid var(--line);padding-top:10px;}
 .home-earlier summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--soft);font-size:13px;font-weight:600;list-style:none;}
@@ -866,9 +873,12 @@ let homePins = [];
 let homeLunch = null;
 let homeVirginia = [];
 let homePrayers = [];
+let homeVirginiaNotes = [];
 let homeAvailable = true;
+let homeVirginiaNotesAvailable = true;
 let homeGratitudeDraft = "";
 let homePrayerDraft = { who:"", note:"" };
+let homeVirginiaNoteDraft = "";
 let openHomePrayerId = null;
 let homeCopyTimer = null;
 let homeGratitudePollTimer = 0;
@@ -2076,7 +2086,7 @@ function shouldPreserveHomeInput(){
   if(actor!=="home") return false;
   const active = document.activeElement;
   return !!(active && active.closest && (
-    active.closest("#homeGratitude") || active.closest("#homePrayers")
+    active.closest("#homeGratitude") || active.closest("#homePrayers") || active.closest("#homeVirginiaNote")
   ));
 }
 
@@ -2092,9 +2102,17 @@ function shouldPreserveHomePrayers(){
   return !!(active && active.closest && active.closest("#homePrayers"));
 }
 
+function shouldPreserveHomeVirginiaNote(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
+  return !!(active && active.closest && active.closest("#homeVirginiaNote"));
+}
+
 function captureHomeDraft(){
   const ta = $("#homeGratitudeBody");
   if(ta) homeGratitudeDraft = ta.value;
+  const virginiaNote = $("#homeVirginiaNoteBody");
+  if(virginiaNote) homeVirginiaNoteDraft = virginiaNote.value;
   const who = $("#homePrayerWho");
   const note = $("#homePrayerNote");
   if(who) homePrayerDraft.who = who.value;
@@ -2132,7 +2150,7 @@ async function loadHome(){
   const today = chicagoDateISO();
   const oldest = addDaysISO(today, -7);
   const weekOf = chicagoMondayISO();
-  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes] = await Promise.all([
+  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes, virginiaNotesRes] = await Promise.all([
     sb.from("ops_home_gratitude")
       .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
       .gte("gratitude_date", oldest)
@@ -2152,18 +2170,27 @@ async function loadHome(){
     sb.from("ops_home_prayers")
       .select("id,who,note,created_at,updated_at,done_at")
       .order("updated_at", { ascending:false })
-      .limit(80)
+      .limit(80),
+    sb.from("ops_home_virginia_notes")
+      .select("id,body,created_at,sent_at,send_error,hub_note_id")
+      .order("created_at", { ascending:false })
+      .limit(5)
   ]);
   const missing = [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes].some(res => homeTableMissing(res.error));
   homeAvailable = !missing;
+  homeVirginiaNotesAvailable = !homeTableMissing(virginiaNotesRes.error);
   if(gratitudeRes.error && !homeTableMissing(gratitudeRes.error)){
     if(actor==="home") setStatus("Could not load gratitude: "+gratitudeRes.error.message, true);
+  }
+  if(virginiaNotesRes.error && !homeTableMissing(virginiaNotesRes.error)){
+    if(actor==="home") setStatus("Could not load Virginia notes: "+virginiaNotesRes.error.message, true);
   }
   homeGratitude = gratitudeRes.error ? [] : (gratitudeRes.data || []);
   homePins = pinsRes.error ? [] : (pinsRes.data || []);
   homeLunch = lunchRes.error ? null : (lunchRes.data || null);
   homeVirginia = virginiaRes.error ? [] : (virginiaRes.data || []);
   homePrayers = prayersRes.error ? [] : (prayersRes.data || []);
+  homeVirginiaNotes = virginiaNotesRes.error ? [] : (virginiaNotesRes.data || []);
   if(openHomePrayerId && !homePrayers.some(row => row.id===openHomePrayerId && !row.done_at)){
     openHomePrayerId = null;
   }
@@ -3390,6 +3417,76 @@ function fillHomePrayers(){
   if(earlierEl && earlierWasOpen) earlierEl.open = true;
 }
 
+function virginiaNoteStamp(row){
+  if(!row) return "Ready to save for Hub push.";
+  if(row.sent_at){
+    const clock = formatMailClock(row.sent_at);
+    return clock ? "Sent to Hub · "+clock : "Sent to Hub";
+  }
+  if(row.send_error){
+    const message = String(row.send_error).replace(/\s+/g, " ").trim();
+    const shortMessage = message.length>120 ? message.slice(0, 117).trimEnd()+"…" : message;
+    return "Hub push error — "+(shortMessage || "Unknown error");
+  }
+  return "Saved · waiting for Hub push";
+}
+
+function virginiaNoteStampClass(row){
+  return row && row.send_error && !row.sent_at ? "home-stamp error" : "home-stamp";
+}
+
+function virginiaNoteMeta(row){
+  const savedDate = row && row.created_at ? new Date(row.created_at) : null;
+  const saved = savedDate && !Number.isNaN(savedDate.getTime())
+    ? OPS_RECEIVED_FORMAT.format(savedDate)+" · "+formatMailClock(savedDate)
+    : "";
+  const status = virginiaNoteStamp(row);
+  return saved ? saved+" · "+status : status;
+}
+
+function setHomeVirginiaNoteStatus(message, error=false){
+  const status = $("#homeVirginiaNoteStatus");
+  if(!status) return;
+  status.textContent = message;
+  status.className = error ? "home-stamp error" : "home-stamp";
+}
+
+function fillHomeVirginiaNote(){
+  const el = $("#homeVirginiaNote");
+  if(!el) return;
+  if(shouldPreserveHomeVirginiaNote()){
+    captureHomeDraft();
+    return;
+  }
+  const latest = homeVirginiaNotes[0] || null;
+  const statusText = homeVirginiaNotesAvailable
+    ? virginiaNoteStamp(latest)
+    : "Notes table not applied yet.";
+  const statusError = !homeVirginiaNotesAvailable || !!(latest && latest.send_error && !latest.sent_at);
+  el.innerHTML = `<div class="home-kicker">From Dad</div>
+    <h2 class="home-lead">Message Virginia</h2>
+    <p class="home-virginia-note-help">Write a short note for Virginia. It will be saved here for Sydney&rsquo;s routine to add to her Hub without changing homework.</p>
+    <label class="hidden" for="homeVirginiaNoteBody">Note to Virginia</label>
+    <textarea id="homeVirginiaNoteBody" class="home-body" rows="3" maxlength="1000" placeholder="Love you. You&rsquo;ve got this today.">${esc(homeVirginiaNoteDraft)}</textarea>
+    <div class="home-gratitude-actions">
+      <button type="button" class="btn home-save" id="homeVirginiaNoteSend">Send</button>
+    </div>
+    <div class="${statusError?"home-stamp error":"home-stamp"}" id="homeVirginiaNoteStatus" role="status" aria-live="polite">${esc(statusText)}</div>
+    <div class="home-virginia-note-recent">
+      <h3>Recent notes</h3>
+      ${homeVirginiaNotes.length
+        ? `<div class="home-list">${homeVirginiaNotes.map(row => `<article class="home-virginia-note-item">
+            <div class="home-virginia-note-body">${esc(row.body||"")}</div>
+            <div class="home-virginia-note-meta${row.send_error && !row.sent_at?" error":""}">${esc(virginiaNoteMeta(row))}</div>
+          </article>`).join("")}</div>`
+        : `<p class="home-empty">No notes sent yet.</p>`}
+    </div>`;
+  const textarea = $("#homeVirginiaNoteBody");
+  if(textarea) textarea.oninput = () => { homeVirginiaNoteDraft = textarea.value; };
+  const send = $("#homeVirginiaNoteSend");
+  if(send) send.onclick = saveHomeVirginiaNote;
+}
+
 function fillHomePins(){
   const el = $("#homePins");
   if(!el) return;
@@ -3472,6 +3569,7 @@ function renderHome(root){
   if(!root.querySelector(".home")){
     root.innerHTML = `<div class="home">
       <section class="home-block" id="homeGratitude"></section>
+      <section class="home-block" id="homeVirginiaNote"></section>
       <section class="home-block" id="homePrayers"></section>
       <section class="home-block" id="homePins"></section>
       <section class="home-block" id="homeLunch"></section>
@@ -3487,7 +3585,17 @@ function renderHome(root){
       gratitude.parentNode.insertBefore(prayers, gratitude.nextSibling);
     }
   }
+  if(!$("#homeVirginiaNote")){
+    const gratitude = $("#homeGratitude");
+    const virginiaNote = document.createElement("section");
+    virginiaNote.className = "home-block";
+    virginiaNote.id = "homeVirginiaNote";
+    if(gratitude && gratitude.parentNode){
+      gratitude.parentNode.insertBefore(virginiaNote, gratitude.nextSibling);
+    }
+  }
   fillHomeGratitude();
+  fillHomeVirginiaNote();
   fillHomePrayers();
   fillHomePins();
   fillHomeLunch();
@@ -3496,6 +3604,55 @@ function renderHome(root){
   if(root.querySelector(".home")){
     requestAnimationFrame(() => { window.scrollTo(0, scrollY); });
   }
+}
+
+async function saveHomeVirginiaNote(){
+  const textarea = $("#homeVirginiaNoteBody");
+  if(!textarea) return;
+  const body = textarea.value.trim();
+  if(!body){
+    textarea.setCustomValidity("Write a note to Virginia.");
+    textarea.reportValidity();
+    return;
+  }
+  textarea.setCustomValidity("");
+  if(!sb || !currentUser){
+    setHomeVirginiaNoteStatus("Sign in to save this note.", true);
+    return;
+  }
+  const send = $("#homeVirginiaNoteSend");
+  if(send){
+    send.disabled = true;
+    send.textContent = "Saving…";
+  }
+  setHomeVirginiaNoteStatus("Saving note…");
+  const { data, error } = await sb.from("ops_home_virginia_notes")
+    .insert({ body })
+    .select("id,body,created_at,sent_at,send_error,hub_note_id")
+    .single();
+  if(send){
+    send.disabled = false;
+    send.textContent = "Send";
+  }
+  if(error){
+    const message = homeTableMissing(error)
+      ? "Notes table not applied yet. Run sql/ops_home_virginia_notes.sql on Studio Pod."
+      : "Could not save note: "+error.message;
+    homeVirginiaNotesAvailable = !homeTableMissing(error);
+    setHomeVirginiaNoteStatus(message, true);
+    setStatus(message, true);
+    return;
+  }
+  homeVirginiaNotesAvailable = true;
+  homeVirginiaNoteDraft = "";
+  textarea.value = "";
+  if(document.activeElement && document.activeElement.closest && document.activeElement.closest("#homeVirginiaNote")){
+    document.activeElement.blur();
+  }
+  homeVirginiaNotes.unshift(data);
+  homeVirginiaNotes = homeVirginiaNotes.slice(0, 5);
+  fillHomeVirginiaNote();
+  setStatus("Saved · waiting for Hub push.");
 }
 
 async function addHomePrayer(){
