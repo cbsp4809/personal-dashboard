@@ -246,6 +246,7 @@ a{color:var(--brass)}
 .home-copy{letter-spacing:.02em;}
 .home-copy.copied{background:var(--sydney);color:#142014;}
 .home-stamp{margin:10px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
+.home-stamp.error{color:var(--over);}
 .home-copy-text{display:block;width:100%;min-width:0;min-height:88px;margin-top:12px;padding:12px;border:1px dashed var(--line-strong);border-radius:12px;background:var(--bg);color:var(--soft);font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;resize:none;user-select:text;-webkit-user-select:text;}
 .home-earlier{min-width:0;max-width:100%;margin-top:14px;border-top:1px solid var(--line);padding-top:10px;}
 .home-earlier summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--soft);font-size:13px;font-weight:600;list-style:none;}
@@ -870,6 +871,11 @@ let homeGratitudeDraft = "";
 let homePrayerDraft = { who:"", note:"" };
 let openHomePrayerId = null;
 let homeCopyTimer = null;
+let homeGratitudePollTimer = 0;
+let homeGratitudePollGeneration = 0;
+let homeGratitudePollDeadline = 0;
+const HOME_GRATITUDE_POLL_MS = 7000;
+const HOME_GRATITUDE_POLL_WINDOW_MS = 120000;
 let contentItems = [];
 let contentAvailable = true;
 let contentStatusFilter = "open";
@@ -1336,7 +1342,10 @@ function syncActorUI(){
 $$(".actor button").forEach(b => b.onclick = async () => {
   if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
   if(actor==="content") snapshotOpenContentForm();
-  if(actor==="home") captureHomeDraft();
+  if(actor==="home"){
+    captureHomeDraft();
+    if(b.dataset.actor!=="home") stopHomeGratitudePolling();
+  }
   actor = b.dataset.actor;
   if(actor==="digest") openDigestDate = null;
   localStorage.setItem("ops_actor", actor);
@@ -1378,6 +1387,7 @@ async function signOut(){
   if(alertChannel && sb) await sb.removeChannel(alertChannel);
   stopAlertPolling();
   stopSendNowPolling();
+  stopHomeGratitudePolling();
   clearSendNowReset();
   syncAppBadge(0);
   if(sb) await sb.auth.signOut();
@@ -3208,9 +3218,65 @@ function gratitudeStamp(row){
   if(!row) return "";
   if(row.emailed_at){
     const clock = formatMailClock(row.emailed_at);
-    return clock ? "Emailed "+clock : "Emailed";
+    return clock ? "Sent to Regan · "+clock : "Sent to Regan";
   }
-  return "Saved · waiting on email";
+  if(row.email_error){
+    const message = String(row.email_error).replace(/\s+/g, " ").trim();
+    const shortMessage = message.length>120 ? message.slice(0, 117).trimEnd()+"…" : message;
+    return "Error sending to Regan — "+(shortMessage || "Unknown error");
+  }
+  return "Sending to Regan…";
+}
+
+function gratitudeStampClass(row){
+  return row && row.email_error && !row.emailed_at ? "home-stamp error" : "home-stamp";
+}
+
+function applyHomeGratitudeRow(row){
+  if(!row) return;
+  const dateKey = digestDateKey(row.gratitude_date);
+  const idx = homeGratitude.findIndex(item => digestDateKey(item.gratitude_date)===dateKey);
+  if(idx>=0) homeGratitude[idx] = row;
+  else homeGratitude.unshift(row);
+  const stamp = $("#homeGratitudeStamp");
+  if(stamp && dateKey===chicagoDateISO()){
+    stamp.textContent = gratitudeStamp(row);
+    stamp.className = gratitudeStampClass(row);
+  }
+}
+
+function stopHomeGratitudePolling(){
+  homeGratitudePollGeneration += 1;
+  if(homeGratitudePollTimer) clearInterval(homeGratitudePollTimer);
+  homeGratitudePollTimer = 0;
+  homeGratitudePollDeadline = 0;
+}
+
+function startHomeGratitudePolling(dateKey){
+  stopHomeGratitudePolling();
+  const generation = homeGratitudePollGeneration;
+  homeGratitudePollDeadline = Date.now()+HOME_GRATITUDE_POLL_WINDOW_MS;
+  const refresh = async () => {
+    if(generation!==homeGratitudePollGeneration) return;
+    if(actor!=="home" || document.hidden || Date.now()>=homeGratitudePollDeadline){
+      stopHomeGratitudePolling();
+      return;
+    }
+    const { data, error } = await sb.from("ops_home_gratitude")
+      .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
+      .eq("gratitude_date", dateKey)
+      .maybeSingle();
+    if(generation!==homeGratitudePollGeneration) return;
+    if(error){
+      stopHomeGratitudePolling();
+      return;
+    }
+    if(data){
+      applyHomeGratitudeRow(data);
+      if(data.emailed_at || data.email_error) stopHomeGratitudePolling();
+    }
+  };
+  homeGratitudePollTimer = setInterval(refresh, HOME_GRATITUDE_POLL_MS);
 }
 
 function fillHomeGratitude(){
@@ -3233,7 +3299,7 @@ function fillHomeGratitude(){
       <button type="button" class="btn home-save" id="homeGratitudeSave">Save</button>
       ${copyText?`<button type="button" class="btn ghost home-copy" id="homeGratitudeCopy">Copy</button>`:""}
     </div>
-    ${row?`<div class="home-stamp" id="homeGratitudeStamp">${esc(gratitudeStamp(row))}</div>`:""}
+    ${row?`<div class="${gratitudeStampClass(row)}" id="homeGratitudeStamp" role="status" aria-live="polite">${esc(gratitudeStamp(row))}</div>`:""}
     ${copyText?`<textarea class="home-copy-text" id="homeGratitudePreview" readonly aria-label="Paste-ready gratitude">${esc(copyText)}</textarea>`:""}
     <details class="home-earlier">
       <summary>Earlier</summary>
@@ -3532,6 +3598,7 @@ async function amenHomePrayer(id){
 }
 
 async function saveHomeGratitude(){
+  stopHomeGratitudePolling();
   const ta = $("#homeGratitudeBody");
   if(!ta) return;
   const body = ta.value.trim();
@@ -3548,30 +3615,42 @@ async function saveHomeGratitude(){
   const dateKey = chicagoDateISO();
   const copyText = buildGratitudeCopy(dateKey, body);
   const save = $("#homeGratitudeSave");
-  if(save) save.disabled = true;
+  if(save){
+    save.disabled = true;
+    save.textContent = "Saving…";
+  }
   const payload = {
     gratitude_date: dateKey,
     body,
     copy_text: copyText,
     updated_at: isoNow()
   };
+  const existing = todayGratitudeRow();
+  if(existing && existing.email_error && !existing.emailed_at) payload.email_error = null;
   const { data, error } = await sb.from("ops_home_gratitude")
     .upsert(payload, { onConflict:"gratitude_date" })
     .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
     .single();
-  if(save) save.disabled = false;
+  if(save){
+    save.disabled = false;
+    save.textContent = "Save";
+  }
   if(error){
     setStatus(homeTableMissing(error) ? "Home tables are not applied yet. Run sql/ops_home.sql on Studio Pod." : "Could not save gratitude: "+error.message, true);
     return;
   }
   homeAvailable = true;
   homeGratitudeDraft = body;
-  const idx = homeGratitude.findIndex(row => digestDateKey(row.gratitude_date)===dateKey);
-  if(idx>=0) homeGratitude[idx] = data;
-  else homeGratitude.unshift(data);
+  applyHomeGratitudeRow(data);
   fillHomeGratitude();
-  setStatus("Saved. Copy it into Notes, then Sydney emails Regan.");
+  if(!data.emailed_at && !data.email_error) startHomeGratitudePolling(dateKey);
+  setStatus(gratitudeStamp(data), !!(data.email_error && !data.emailed_at));
 }
+
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden) stopHomeGratitudePolling();
+});
+window.addEventListener("pagehide", stopHomeGratitudePolling);
 
 async function copyTextToClipboard(text){
   if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
