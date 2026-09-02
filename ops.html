@@ -3226,6 +3226,42 @@ async function saveHomeGratitude(){
   setStatus("Saved. Copy it into Notes, then Sydney emails Regan.");
 }
 
+async function copyTextToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch(_){}
+  }
+  const preview = $("#homeGratitudePreview");
+  let scratch = null;
+  const el = preview || (scratch = document.createElement("textarea"));
+  if(scratch){
+    scratch.value = text;
+    scratch.setAttribute("readonly", "");
+    scratch.style.position = "fixed";
+    scratch.style.left = "-9999px";
+    document.body.appendChild(scratch);
+  }
+  el.focus();
+  el.select();
+  let ok = false;
+  try{ ok = document.execCommand("copy"); }catch(_){}
+  if(scratch) scratch.remove();
+  return ok;
+}
+
+function flashHomeCopied(button){
+  if(!button) return;
+  button.textContent = "Copied";
+  button.classList.add("copied");
+  if(homeCopyTimer) clearTimeout(homeCopyTimer);
+  homeCopyTimer = setTimeout(() => {
+    button.textContent = "Copy";
+    button.classList.remove("copied");
+  }, 1500);
+}
+
 async function copyHomeGratitude(){
   const row = todayGratitudeRow();
   const ta = $("#homeGratitudeBody");
@@ -3233,36 +3269,24 @@ async function copyHomeGratitude(){
   const text = (row && row.copy_text) || buildGratitudeCopy(chicagoDateISO(), body);
   if(!text.trim()) return;
   const button = $("#homeGratitudeCopy");
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(text);
-    }else{
-      const preview = $("#homeGratitudePreview");
-      if(preview){
-        preview.focus();
-        preview.select();
-        document.execCommand("copy");
-      }else{
-        throw new Error("clipboard unavailable");
-      }
-    }
-    if(button){
-      button.textContent = "Copied";
-      button.classList.add("copied");
-      if(homeCopyTimer) clearTimeout(homeCopyTimer);
-      homeCopyTimer = setTimeout(() => {
-        button.textContent = "Copy";
-        button.classList.remove("copied");
-      }, 1500);
-    }
-  }catch(_){
-    const preview = $("#homeGratitudePreview");
-    if(preview){
-      preview.focus();
-      preview.select();
-    }
-    setStatus("Select the note below and copy it.", true);
+  // Prefer a sync copy from the preview so the tap gesture stays valid on iPhone.
+  const preview = $("#homeGratitudePreview");
+  let ok = false;
+  if(preview){
+    preview.focus();
+    preview.select();
+    try{ ok = document.execCommand("copy"); }catch(_){}
   }
+  if(!ok) ok = await copyTextToClipboard(text);
+  if(ok){
+    flashHomeCopied(button);
+    return;
+  }
+  if(preview){
+    preview.focus();
+    preview.select();
+  }
+  setStatus("Select the note below and copy it.", true);
 }
 
 async function markHomePinRead(id){
