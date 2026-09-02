@@ -1224,6 +1224,12 @@ function renderChrome(){
 function render(liveRoute){
   const play=workingPlay();
   renderChrome();
+  paintOnly(liveRoute);
+}
+// Repaint only the field SVG — no control-panel rebuild. Use this on every
+// pointermove so dragging a player / drawing a route stays smooth on iPhone.
+function paintOnly(liveRoute){
+  const play=workingPlay();
   const pos={};
   play.spots.forEach(s=>pos[s.letter]=formationPoint(s));
   const center=play.spots.find(s=>s.letter==="C");
@@ -1644,7 +1650,7 @@ function startLetterDrag(evt,letter,pt){
     spot.y=storedFormationY(pt.y);
     markDirty();
   }
-  render();
+  paintOnly();
 }
 function startRouteDraw(evt,pt){
   const spot=selectedSpot();
@@ -1654,7 +1660,7 @@ function startRouteDraw(evt,pt){
   const start=pt||(pointer&&pointer.start);
   claimFieldPointer(evt,{kind:"draw",points:start?[start]:[],id:evt.pointerId});
   markDirty();
-  render(pointer.points);
+  paintOnly(pointer.points);
 }
 
 function onFieldPointerDown(evt){
@@ -1685,7 +1691,7 @@ function onFieldPointerMove(evt){
     spot.x=pt.x;
     spot.y=storedFormationY(pt.y);
     markDirty();
-    render();
+    paintOnly();
     return;
   }
   if(pointer.kind==="draw"){
@@ -1693,7 +1699,7 @@ function onFieldPointerMove(evt){
     evt.preventDefault();
     const last=pointer.points[pointer.points.length-1];
     if(!last||Math.hypot(pt.x-last.x,pt.y-last.y)>=5) pointer.points.push(pt);
-    render(pointer.points);
+    paintOnly(pointer.points);
     return;
   }
   if(pointer.kind!=="pending") return;
