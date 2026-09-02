@@ -174,12 +174,14 @@ replace photo, Mark posted, Ready for Chris. New draft pastes a caption as
 written. The tab does not post to LinkedIn.
 
 **Home** is a sixth top-bar view for Chris’s personal morning list (gratitude
-for Regan, school pins, this week’s lunch, Virginia Hub items, and open
-Personal house cards). It is not a new app: same `ops.html`, same Studio Pod
-project, same sign-in. Apply `sql/ops_home.sql` manually on Studio Pod before
-the tab can persist gratitude or show pins / lunch / Virginia. The page never
-emails Regan and never pulls Gmail, Canvas, or SchoolCafé — Sydney writes
-those rows. House cards reuse `ops_cards` where `project='personal'`.
+for Regan, Thoughts & Prayers, school pins, this week’s lunch, Virginia Hub
+items, and open Personal house cards). It is not a new app: same `ops.html`,
+same Studio Pod project, same sign-in. Apply `sql/ops_home.sql` manually on
+Studio Pod before the tab can persist gratitude, prayers, pins, lunch, or
+Virginia. The page never emails Regan (or anyone) and never pulls Gmail,
+Canvas, or SchoolCafé — Sydney writes school/lunch/Virginia rows; Chris writes
+gratitude and prayers. House cards reuse `ops_cards` where
+`project='personal'`.
 
 The top Chris / Sydney toggle changes whose work is prioritized. Chris sees
 Needs you, Today, This week, and Later before a quiet Sydney owns column.

@@ -276,6 +276,20 @@ a{color:var(--brass)}
 .home-house-copy{flex:1;min-width:0;background:transparent;border:0;padding:0;text-align:left;color:inherit;}
 .home-house-copy:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:8px;}
 .home-house-check{width:22px;height:22px;min-width:22px;margin-top:2px;accent-color:var(--brass);flex-shrink:0;}
+.home-prayer-form{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.home-prayer-form input,.home-prayer-note,.home-prayer-edit input,.home-prayer-edit textarea{display:block;width:100%;min-width:0;max-width:100%;border:1px solid var(--line-strong);border-radius:12px;background:var(--bg);color:var(--ink);font-size:16px;padding:12px;}
+.home-prayer-form input:focus,.home-prayer-note:focus,.home-prayer-edit input:focus,.home-prayer-edit textarea:focus{outline:none;border-color:var(--brass);}
+.home-prayer-note,.home-prayer-edit textarea{min-height:72px;resize:vertical;line-height:1.45;}
+.home-prayer-add,.home-prayer-amen,.home-prayer-save{width:100%;min-width:0;min-height:52px;font-size:16px;font-weight:700;}
+.home-prayer{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;}
+.home-prayer.open{border-color:rgba(196,165,116,.4);background:rgba(196,165,116,.06);}
+.home-prayer-who{margin:0;color:var(--ink);font-size:16px;font-weight:700;overflow-wrap:anywhere;}
+.home-prayer-body{margin:6px 0 0;color:var(--soft);font-size:14px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap;}
+.home-prayer-meta{margin:8px 0 0;color:var(--muted);font-size:12px;}
+.home-prayer-actions{display:flex;min-width:0;max-width:100%;flex-direction:column;gap:8px;margin-top:12px;}
+.home-prayer-toggle{display:block;width:100%;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;}
+.home-prayer-toggle:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:8px;}
+.home-prayer-edit{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
 .email-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
 .email-commandbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
 .email-command-copy{min-width:0;max-width:100%;}
@@ -450,7 +464,7 @@ a{color:var(--brass)}
   #app.content-view,#app.email-view,#app.home-view{padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
   .home-block{padding:18px 16px 16px;}
   .home-lead{font-size:24px;}
-  .home-save,.home-copy,.home-pin-got{min-height:52px;}
+  .home-save,.home-copy,.home-pin-got,.home-prayer-add,.home-prayer-amen,.home-prayer-save{min-height:52px;}
   .home-lunch-grid{grid-template-columns:minmax(0,1fr);}
   .email-commandbar{align-items:stretch;flex-direction:column;}
   .email-command-copy,.email-command-sub,.email-mail-line{width:100%;max-width:100%;}
@@ -798,8 +812,11 @@ let homeGratitude = [];
 let homePins = [];
 let homeLunch = null;
 let homeVirginia = [];
+let homePrayers = [];
 let homeAvailable = true;
 let homeGratitudeDraft = "";
+let homePrayerDraft = { who:"", note:"" };
+let openHomePrayerId = null;
 let homeCopyTimer = null;
 let contentItems = [];
 let contentAvailable = true;
@@ -1948,12 +1965,55 @@ function homeHouseCards(){
 function shouldPreserveHomeInput(){
   if(actor!=="home") return false;
   const active = document.activeElement;
+  return !!(active && active.closest && (
+    active.closest("#homeGratitude") || active.closest("#homePrayers")
+  ));
+}
+
+function shouldPreserveHomeGratitude(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
   return !!(active && active.closest && active.closest("#homeGratitude"));
+}
+
+function shouldPreserveHomePrayers(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
+  return !!(active && active.closest && active.closest("#homePrayers"));
 }
 
 function captureHomeDraft(){
   const ta = $("#homeGratitudeBody");
   if(ta) homeGratitudeDraft = ta.value;
+  const who = $("#homePrayerWho");
+  const note = $("#homePrayerNote");
+  if(who) homePrayerDraft.who = who.value;
+  if(note) homePrayerDraft.note = note.value;
+  if(openHomePrayerId){
+    const editWho = document.querySelector(`[data-prayer-edit="${CSS.escape(openHomePrayerId)}"] .home-prayer-edit-who`);
+    const editNote = document.querySelector(`[data-prayer-edit="${CSS.escape(openHomePrayerId)}"] .home-prayer-edit-note`);
+    if(editWho || editNote){
+      const row = homePrayers.find(item => item.id===openHomePrayerId);
+      if(row){
+        if(editWho) row.who = editWho.value;
+        if(editNote) row.note = editNote.value;
+      }
+    }
+  }
+}
+
+function openHomePrayers(){
+  return homePrayers
+    .filter(row => !row.done_at)
+    .sort((a,b) => String(b.updated_at||b.created_at||"").localeCompare(String(a.updated_at||a.created_at||""))
+      || String(b.created_at||"").localeCompare(String(a.created_at||"")));
+}
+
+function doneHomePrayers(){
+  return homePrayers
+    .filter(row => row.done_at)
+    .sort((a,b) => String(b.done_at||"").localeCompare(String(a.done_at||"")))
+    .slice(0, 20);
 }
 
 async function loadHome(){
@@ -1962,7 +2022,7 @@ async function loadHome(){
   const today = chicagoDateISO();
   const oldest = addDaysISO(today, -7);
   const weekOf = chicagoMondayISO();
-  const [gratitudeRes, pinsRes, lunchRes, virginiaRes] = await Promise.all([
+  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes] = await Promise.all([
     sb.from("ops_home_gratitude")
       .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
       .gte("gratitude_date", oldest)
@@ -1978,9 +2038,13 @@ async function loadHome(){
     sb.from("ops_home_virginia")
       .select("id,title,kind,due_at,notes,source_ref,done_at,created_at,updated_at")
       .is("done_at", null)
-      .order("due_at", { ascending:true })
+      .order("due_at", { ascending:true }),
+    sb.from("ops_home_prayers")
+      .select("id,who,note,created_at,updated_at,done_at")
+      .order("updated_at", { ascending:false })
+      .limit(80)
   ]);
-  const missing = [gratitudeRes, pinsRes, lunchRes, virginiaRes].some(res => homeTableMissing(res.error));
+  const missing = [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes].some(res => homeTableMissing(res.error));
   homeAvailable = !missing;
   if(gratitudeRes.error && !homeTableMissing(gratitudeRes.error)){
     if(actor==="home") setStatus("Could not load gratitude: "+gratitudeRes.error.message, true);
@@ -1989,8 +2053,12 @@ async function loadHome(){
   homePins = pinsRes.error ? [] : (pinsRes.data || []);
   homeLunch = lunchRes.error ? null : (lunchRes.data || null);
   homeVirginia = virginiaRes.error ? [] : (virginiaRes.data || []);
+  homePrayers = prayersRes.error ? [] : (prayersRes.data || []);
+  if(openHomePrayerId && !homePrayers.some(row => row.id===openHomePrayerId && !row.done_at)){
+    openHomePrayerId = null;
+  }
   const todayRow = todayGratitudeRow();
-  if(todayRow && !shouldPreserveHomeInput() && !String(homeGratitudeDraft||"").trim()){
+  if(todayRow && !shouldPreserveHomeGratitude() && !String(homeGratitudeDraft||"").trim()){
     homeGratitudeDraft = todayRow.body || "";
   }
   if(actor==="home") renderBoard();
@@ -3048,8 +3116,7 @@ function gratitudeStamp(row){
 function fillHomeGratitude(){
   const el = $("#homeGratitude");
   if(!el) return;
-  const focused = shouldPreserveHomeInput();
-  if(focused){
+  if(shouldPreserveHomeGratitude()){
     captureHomeDraft();
     return;
   }
@@ -3082,6 +3149,77 @@ function fillHomeGratitude(){
   if(save) save.onclick = saveHomeGratitude;
   const copy = $("#homeGratitudeCopy");
   if(copy) copy.onclick = copyHomeGratitude;
+  const earlierEl = el.querySelector(".home-earlier");
+  if(earlierEl && earlierWasOpen) earlierEl.open = true;
+}
+
+function fillHomePrayers(){
+  const el = $("#homePrayers");
+  if(!el) return;
+  if(shouldPreserveHomePrayers()){
+    captureHomeDraft();
+    return;
+  }
+  const earlierWasOpen = !!(el.querySelector(".home-earlier") && el.querySelector(".home-earlier").open);
+  const open = openHomePrayers();
+  const done = doneHomePrayers();
+  const draftWho = homePrayerDraft.who || "";
+  const draftNote = homePrayerDraft.note || "";
+  el.innerHTML = `<h3>Thoughts &amp; Prayers</h3>
+    <div class="home-prayer-form">
+      <label class="hidden" for="homePrayerWho">Who</label>
+      <input id="homePrayerWho" type="text" autocomplete="off" placeholder="Who are you holding?" value="${esc(draftWho)}">
+      <label class="hidden" for="homePrayerNote">Note</label>
+      <textarea id="homePrayerNote" class="home-prayer-note" rows="2" placeholder="Optional — surgery, a date, what to hold them in">${esc(draftNote)}</textarea>
+      <button type="button" class="btn home-prayer-add" id="homePrayerAdd">Add</button>
+    </div>
+    ${open.length
+      ? `<div class="home-list">${open.map(row => {
+          const editing = openHomePrayerId===row.id;
+          return `<article class="home-prayer${editing?" open":""}" data-prayer-id="${esc(row.id)}">
+            ${editing
+              ? `<div class="home-prayer-edit" data-prayer-edit="${esc(row.id)}">
+                  <input class="home-prayer-edit-who" type="text" autocomplete="off" value="${esc(row.who||"")}" aria-label="Who">
+                  <textarea class="home-prayer-edit-note" rows="2" aria-label="Note">${esc(row.note||"")}</textarea>
+                  <div class="home-prayer-actions">
+                    <button type="button" class="btn home-prayer-save" data-prayer-save="${esc(row.id)}">Save</button>
+                    <button type="button" class="btn ghost home-prayer-amen" data-prayer-amen="${esc(row.id)}">Amen</button>
+                  </div>
+                </div>`
+              : `<button type="button" class="home-prayer-toggle" data-prayer-open="${esc(row.id)}">
+                  <div class="home-prayer-who">${esc(row.who||"")}</div>
+                  ${row.note?`<div class="home-prayer-body">${esc(row.note)}</div>`:""}
+                </button>
+                <div class="home-prayer-actions">
+                  <button type="button" class="btn ghost tiny home-prayer-amen" data-prayer-amen="${esc(row.id)}">Amen</button>
+                </div>`}
+          </article>`;
+        }).join("")}</div>`
+      : `<p class="home-empty">Add someone you&rsquo;re holding in thought.</p>`}
+    <details class="home-earlier">
+      <summary>Earlier / Done</summary>
+      ${done.length
+        ? `<div class="home-earlier-list">${done.map(item => `<div class="home-earlier-item"><strong>${esc(item.who||"")}</strong>${item.note?esc(item.note):""}${item.done_at?`<div class="home-prayer-meta">${esc(OPS_RECEIVED_FORMAT.format(new Date(item.done_at)))}</div>`:""}</div>`).join("")}</div>`
+        : `<p class="home-empty">Nothing archived yet.</p>`}
+    </details>`;
+  const who = $("#homePrayerWho");
+  const note = $("#homePrayerNote");
+  if(who) who.oninput = () => { homePrayerDraft.who = who.value; };
+  if(note) note.oninput = () => { homePrayerDraft.note = note.value; };
+  const add = $("#homePrayerAdd");
+  if(add) add.onclick = addHomePrayer;
+  el.querySelectorAll("[data-prayer-open]").forEach(button => {
+    button.onclick = () => {
+      openHomePrayerId = button.dataset.prayerOpen || null;
+      fillHomePrayers();
+    };
+  });
+  el.querySelectorAll("[data-prayer-save]").forEach(button => {
+    button.onclick = () => saveHomePrayer(button.dataset.prayerSave);
+  });
+  el.querySelectorAll("[data-prayer-amen]").forEach(button => {
+    button.onclick = () => amenHomePrayer(button.dataset.prayerAmen);
+  });
   const earlierEl = el.querySelector(".home-earlier");
   if(earlierEl && earlierWasOpen) earlierEl.open = true;
 }
@@ -3168,13 +3306,23 @@ function renderHome(root){
   if(!root.querySelector(".home")){
     root.innerHTML = `<div class="home">
       <section class="home-block" id="homeGratitude"></section>
+      <section class="home-block" id="homePrayers"></section>
       <section class="home-block" id="homePins"></section>
       <section class="home-block" id="homeLunch"></section>
       <section class="home-block" id="homeVirginia"></section>
       <section class="home-block" id="homeHouse"></section>
     </div>`;
+  }else if(!$("#homePrayers")){
+    const gratitude = $("#homeGratitude");
+    const prayers = document.createElement("section");
+    prayers.className = "home-block";
+    prayers.id = "homePrayers";
+    if(gratitude && gratitude.parentNode){
+      gratitude.parentNode.insertBefore(prayers, gratitude.nextSibling);
+    }
   }
   fillHomeGratitude();
+  fillHomePrayers();
   fillHomePins();
   fillHomeLunch();
   fillHomeVirginia();
@@ -3182,6 +3330,105 @@ function renderHome(root){
   if(root.querySelector(".home")){
     requestAnimationFrame(() => { window.scrollTo(0, scrollY); });
   }
+}
+
+async function addHomePrayer(){
+  const whoInput = $("#homePrayerWho");
+  const noteInput = $("#homePrayerNote");
+  const who = (whoInput && whoInput.value || "").trim();
+  const note = (noteInput && noteInput.value || "").trim();
+  if(!who){
+    if(whoInput){
+      whoInput.setCustomValidity("Who are you holding?");
+      whoInput.reportValidity();
+    }
+    return;
+  }
+  if(whoInput) whoInput.setCustomValidity("");
+  if(!sb || !currentUser){
+    setStatus("Sign in to add a prayer.", true);
+    return;
+  }
+  const add = $("#homePrayerAdd");
+  if(add) add.disabled = true;
+  const payload = { who, note: note || null, updated_at: isoNow() };
+  const { data, error } = await sb.from("ops_home_prayers")
+    .insert(payload)
+    .select("id,who,note,created_at,updated_at,done_at")
+    .single();
+  if(add) add.disabled = false;
+  if(error){
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet. Run sql/ops_home.sql on Studio Pod." : "Could not add prayer: "+error.message, true);
+    return;
+  }
+  homePrayerDraft = { who:"", note:"" };
+  homePrayers.unshift(data);
+  openHomePrayerId = null;
+  fillHomePrayers();
+  setStatus("Added to Thoughts & Prayers.");
+}
+
+async function saveHomePrayer(id){
+  if(!id) return;
+  const wrap = document.querySelector(`[data-prayer-edit="${CSS.escape(id)}"]`);
+  if(!wrap) return;
+  const whoInput = wrap.querySelector(".home-prayer-edit-who");
+  const noteInput = wrap.querySelector(".home-prayer-edit-note");
+  const who = (whoInput && whoInput.value || "").trim();
+  const note = (noteInput && noteInput.value || "").trim();
+  if(!who){
+    if(whoInput){
+      whoInput.setCustomValidity("Who are you holding?");
+      whoInput.reportValidity();
+    }
+    return;
+  }
+  if(whoInput) whoInput.setCustomValidity("");
+  if(!sb || !currentUser){
+    setStatus("Sign in to save.", true);
+    return;
+  }
+  const save = wrap.querySelector("[data-prayer-save]");
+  if(save) save.disabled = true;
+  const payload = { who, note: note || null, updated_at: isoNow() };
+  const { data, error } = await sb.from("ops_home_prayers")
+    .update(payload)
+    .eq("id", id)
+    .select("id,who,note,created_at,updated_at,done_at")
+    .single();
+  if(save) save.disabled = false;
+  if(error){
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet." : "Could not save prayer: "+error.message, true);
+    return;
+  }
+  const idx = homePrayers.findIndex(row => row.id===id);
+  if(idx>=0) homePrayers[idx] = data;
+  openHomePrayerId = null;
+  fillHomePrayers();
+  setStatus("Prayer updated.");
+}
+
+async function amenHomePrayer(id){
+  if(!id) return;
+  const row = homePrayers.find(item => item.id===id);
+  const previous = row ? row.done_at : null;
+  if(row){
+    row.done_at = isoNow();
+    row.updated_at = row.done_at;
+  }
+  if(openHomePrayerId===id) openHomePrayerId = null;
+  fillHomePrayers();
+  if(!sb) return;
+  const { error } = await sb.from("ops_home_prayers")
+    .update({ done_at: isoNow(), updated_at: isoNow() })
+    .eq("id", id);
+  if(error){
+    if(row) row.done_at = previous;
+    fillHomePrayers();
+    setStatus(homeTableMissing(error) ? "Home tables are not applied yet." : "Could not archive prayer: "+error.message, true);
+    return;
+  }
+  setStatus("Amen.");
 }
 
 async function saveHomeGratitude(){

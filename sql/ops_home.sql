@@ -143,6 +143,34 @@ comment on column public.ops_home_virginia.kind is
 comment on column public.ops_home_virginia.source_ref is
   'Optional Hub identifier. The page does not fetch Canvas.';
 
+create table if not exists public.ops_home_prayers (
+  id uuid primary key default gen_random_uuid(),
+  who text not null,
+  note text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  done_at timestamptz
+);
+
+create index if not exists ops_home_prayers_done_created_idx
+  on public.ops_home_prayers (done_at, created_at desc);
+
+create index if not exists ops_home_prayers_open_updated_idx
+  on public.ops_home_prayers (updated_at desc)
+  where done_at is null;
+
+comment on table public.ops_home_prayers is
+  'Thoughts & Prayers board on Ops Home. Chris adds, edits, and archives. Private — the page never emails or shares.';
+
+comment on column public.ops_home_prayers.who is
+  'Person or situation Chris is holding in thought.';
+
+comment on column public.ops_home_prayers.note is
+  'Optional note: what to hold them in (surgery, job, grief, a date).';
+
+comment on column public.ops_home_prayers.done_at is
+  'Set when Chris taps Amen / Done. Leaves the open board.';
+
 -- RLS: enable on every table. One permissive policy per action for
 -- authenticated. Shared Studio Pod users (using true). No anon writes.
 -- auth.uid() is not consulted (same as ops_cards / ops_morning_digests);
@@ -152,6 +180,7 @@ alter table public.ops_home_gratitude enable row level security;
 alter table public.ops_home_pins enable row level security;
 alter table public.ops_home_lunch enable row level security;
 alter table public.ops_home_virginia enable row level security;
+alter table public.ops_home_prayers enable row level security;
 
 drop policy if exists ops_home_gratitude_select on public.ops_home_gratitude;
 drop policy if exists ops_home_gratitude_insert on public.ops_home_gratitude;
@@ -165,6 +194,9 @@ drop policy if exists ops_home_lunch_update on public.ops_home_lunch;
 drop policy if exists ops_home_virginia_select on public.ops_home_virginia;
 drop policy if exists ops_home_virginia_insert on public.ops_home_virginia;
 drop policy if exists ops_home_virginia_update on public.ops_home_virginia;
+drop policy if exists ops_home_prayers_select on public.ops_home_prayers;
+drop policy if exists ops_home_prayers_insert on public.ops_home_prayers;
+drop policy if exists ops_home_prayers_update on public.ops_home_prayers;
 
 create policy ops_home_gratitude_select
   on public.ops_home_gratitude
@@ -242,6 +274,25 @@ create policy ops_home_virginia_update
   using (true)
   with check (true);
 
+create policy ops_home_prayers_select
+  on public.ops_home_prayers
+  for select
+  to authenticated
+  using (true);
+
+create policy ops_home_prayers_insert
+  on public.ops_home_prayers
+  for insert
+  to authenticated
+  with check (true);
+
+create policy ops_home_prayers_update
+  on public.ops_home_prayers
+  for update
+  to authenticated
+  using (true)
+  with check (true);
+
 revoke all on public.ops_home_gratitude from public;
 revoke all on public.ops_home_gratitude from anon;
 revoke all on public.ops_home_gratitude from authenticated;
@@ -265,3 +316,9 @@ revoke all on public.ops_home_virginia from anon;
 revoke all on public.ops_home_virginia from authenticated;
 grant select, insert, update on public.ops_home_virginia to authenticated;
 grant all on public.ops_home_virginia to service_role;
+
+revoke all on public.ops_home_prayers from public;
+revoke all on public.ops_home_prayers from anon;
+revoke all on public.ops_home_prayers from authenticated;
+grant select, insert, update on public.ops_home_prayers to authenticated;
+grant all on public.ops_home_prayers to service_role;
