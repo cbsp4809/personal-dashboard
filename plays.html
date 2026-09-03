@@ -205,6 +205,19 @@ body.immersive.gameday.gd-defense .gd-top2,body.immersive.gameday.gd-defense .gd
 body.immersive.gameday.gd-defense .gd-row2{grid-template-columns:1fr}
 body.immersive.gameday.gd-defense .tools,body.immersive.gameday.gd-defense .scrub{display:none!important}
 body.immersive.gameday.gd-drawing .tools{display:none!important}
+/* Move / Route draw-mode toggle */
+.drawmode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.drawmode button{min-height:44px;border:1px solid var(--strong);border-radius:11px;background:#000;color:var(--muted);font-weight:800}
+.drawmode button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+.gd-drawmode{display:none}
+body.immersive.gameday.gd-drawing .gd-drawmode{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(560px,100%);margin:6px auto 0}
+body.immersive.gameday.gd-drawing .gd-drawmode button{min-height:46px;border:1px solid var(--strong);border-radius:12px;background:#000;color:var(--muted);font-weight:800}
+body.immersive.gameday.gd-drawing .gd-drawmode button.on{border-color:var(--highlight);background:var(--gold-soft);color:var(--ink)}
+/* Bigger-play toggle for gameday */
+.gd-max-btn{display:none}
+body.immersive.gameday .gd-max-btn{display:block;position:fixed;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));z-index:120;min-height:34px;padding:0 13px;border:1px solid var(--strong);border-radius:999px;background:rgba(0,0,0,.6);color:var(--ink);font-weight:800;font-size:13px}
+body.immersive.gameday.gd-drawing .gd-max-btn{display:none}
+body.immersive.gameday.gd-max .gd-topbar,body.immersive.gameday.gd-max .gd-sheet,body.immersive.gameday.gd-max .gd-row2,body.immersive.gameday.gd-max .play-name,body.immersive.gameday.gd-max .scrub{display:none!important}
 .subs-sheet{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
 .subs-sheet.hidden{display:none}
 .subs-card{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--panel,#1C1C1C);border:1px solid var(--strong);border-top-left-radius:18px;border-top-right-radius:18px;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -310,7 +323,11 @@ body.immersive.gameday .scrub{display:none}
     <button type="button" data-unit="B">Q2/Q4 names</button>
   </div>
   <div id="drawPanel" class="hidden">
-    <p class="draw-help" id="drawHelp">Drag a letter to place it. Tap a letter chip, then draw from that letter. A straight up/down swipe on empty turf scrolls the page.</p>
+    <div class="drawmode" id="drawMode" role="group" aria-label="Draw mode">
+      <button type="button" data-drawmode="move">Move players</button>
+      <button type="button" data-drawmode="route">Draw routes</button>
+    </div>
+    <p class="draw-help" id="drawHelp">Move players: drag anyone to place them. Draw routes: drag from a player to draw its path.</p>
     <div class="chips" id="letterChips"></div>
     <div class="draw-tools">
       <button type="button" id="sitBtn">Sit / no route</button>
@@ -321,6 +338,7 @@ body.immersive.gameday .scrub{display:none}
 
   <div class="immersive-shell" id="immersiveShell">
     <button class="immersive-done" type="button" id="doneBtn">Done</button>
+    <button class="gd-max-btn" type="button" id="gdMax" aria-label="Bigger play">⤢ Bigger</button>
     <p class="play-name" id="playName" aria-live="polite"></p>
     <div class="gd-topbar" id="gdTopBar">
       <div class="gd-unit" id="gdUnit" role="group" aria-label="Lineup group">
@@ -352,6 +370,10 @@ body.immersive.gameday .scrub{display:none}
         <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
       </div>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
+      <div class="gd-drawmode" id="gdDrawMode" role="group" aria-label="Draw mode">
+        <button type="button" data-drawmode="move">Move players</button>
+        <button type="button" data-drawmode="route">Draw routes</button>
+      </div>
       <div class="gd-drawbar" id="gdDrawBar">
         <button type="button" id="gdFresh">↺ Fresh</button>
         <button type="button" id="gdDrawPlay">▶ Play</button>
@@ -681,6 +703,7 @@ const STATE={
   playFilter:"all",
   gameday:false,
   quickDraw:false,
+  drawMode:"move",
   coverage:"base",
   coverageOn:false,
   coverageFlip:false,
@@ -1308,6 +1331,9 @@ function renderChrome(){
   if(gdCoverBtn){gdCoverBtn.textContent=coverageOverlayLabel();gdCoverBtn.classList.toggle("on",STATE.coverageOn);}
   const gdDefBtn=$("#gdDef");
   if(gdDefBtn) gdDefBtn.textContent=STATE.gdDefense?"Show offense":"Show defense";
+  $$("[data-drawmode]").forEach(b=>b.classList.toggle("on",b.dataset.drawmode===STATE.drawMode));
+  const gdMaxBtn=$("#gdMax");
+  if(gdMaxBtn) gdMaxBtn.textContent=document.body.classList.contains("gd-max")?"⤡ Smaller":"⤢ Bigger";
   if(!pointer||(pointer.kind!=="draw"&&pointer.kind!=="drag")) $("#fieldWrap").classList.remove("is-drawing");
   $("#letterChips").innerHTML=LETTERS.map(letter=>{
     const spot=play.spots.find(s=>s.letter===letter);
@@ -1426,7 +1452,7 @@ function exitImmersive(){
   STATE.gdDefense=false;
   STATE.coverageOn=false;
   STATE.coverageFlip=false;
-  document.body.classList.remove("gameday","gd-drawing","gd-defense");
+  document.body.classList.remove("gameday","gd-drawing","gd-defense","gd-max");
   setImmersive(false);
 }
 function enterGameday(){
@@ -1500,12 +1526,14 @@ function startQuickDraw(){
   setMode("draw");
   startNewPlay();
   STATE.quickDraw=true;
+  STATE.drawMode="move";
   STATE.selected="X";
   render();
 }
 function gdFresh(){
   startNewPlay();
   STATE.quickDraw=true;
+  STATE.drawMode="move";
   STATE.selected="X";
   render();
 }
@@ -1745,6 +1773,7 @@ function setMode(mode){
   if(mode==="play"&&STATE.dirty&&!confirm("Leave Draw? Save first if you want these lines.")) return;
   STATE.mode=mode;
   if(mode!=="draw") STATE.quickDraw=false;
+  else STATE.drawMode="move";
   STATE.generatedFlip=false;
   if(mode==="draw"){
     if(!draft||draft.number!==STATE.number) setDraftFromStore();
@@ -1862,11 +1891,16 @@ function onFieldPointerMove(evt){
   const dy=evt.clientY-pointer.clientY;
   if(Math.hypot(dx,dy)<POINTER_SLOP_PX) return;
   const hit=pointer.hit;
-  if(hit&&hit!==STATE.selected){
-    startLetterDrag(evt,hit,pt);
+  // Move mode: dragging any player repositions it. Draw routes mode: dragging
+  // from a player draws its route (and selects it). This keeps "place first,
+  // then draw" unambiguous on touch.
+  if(STATE.drawMode==="move"){
+    if(hit){startLetterDrag(evt,hit,pt);return;}
+    pointer=null;
     return;
   }
-  if(hit&&hit===STATE.selected){
+  if(hit){
+    if(hit!==STATE.selected) STATE.selected=hit;
     startRouteDraw(evt,pt||pointer.start);
     return;
   }
@@ -2070,6 +2104,8 @@ $("#gdSubs").onclick=openSubs;
 $("#gdDraw").onclick=startQuickDraw;
 $("#gdCover").onclick=cycleCoverage;
 $("#gdDef").onclick=toggleDefenseLook;
+$("#gdMax").onclick=()=>{document.body.classList.toggle("gd-max");renderChrome();};
+$$("[data-drawmode]").forEach(b=>b.onclick=()=>{STATE.drawMode=b.dataset.drawmode==="route"?"route":"move";render();});
 $("#gdFresh").onclick=gdFresh;
 $("#gdDrawPlay").onclick=gdDrawPlay;
 $("#gdDrawSave").onclick=gdDrawSave;

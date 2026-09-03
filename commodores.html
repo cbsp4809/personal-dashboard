@@ -308,7 +308,7 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .pr-ico.danger{color:var(--oak)}
 .pr-station-row{display:flex;align-items:stretch;gap:8px}
 .pr-station.is-split{flex-direction:column}
-.pr-split-btn{min-height:32px;border:1px solid var(--gold);border-radius:9px;background:transparent;color:var(--gold);font-size:12px;font-weight:800;padding:0 10px}
+.pr-splitwide{width:100%;margin-top:9px;min-height:42px;border:1px dashed var(--gold);border-radius:11px;background:var(--gold-soft,rgba(207,174,112,.10));color:var(--gold);font-weight:800;font-size:14px}
 .pr-groups{margin-top:10px;display:grid;gap:8px;padding-left:6px;border-left:2px solid var(--gold-soft,rgba(207,174,112,.3))}
 .pr-group{border:1px solid var(--line);border-radius:12px;background:#000;padding:10px 11px}
 .pr-group-top{display:flex;align-items:center;gap:8px}
@@ -3046,7 +3046,7 @@ function stationRowHTML(s,i,total){
         ${s.detail&&!split?`<p class="pr-station-how">${esc(oneLineHow(s.detail))}</p>`:""}
         <div class="pr-station-ctl">
           <span class="pr-min"><input type="number" inputmode="numeric" min="1" max="90" value="${esc(s.minutes)}" data-min="${i}" aria-label="Minutes">m</span>
-          ${split?`<span class="muted">${stationGroups(i).length} groups</span>`:`<select data-coach="${i}" aria-label="Coach">${coachOpts}</select><button class="pr-split-btn" type="button" data-split="${i}">Split</button>`}
+          ${split?`<span class="muted">${stationGroups(i).length} groups</span>`:`<select data-coach="${i}" aria-label="Coach">${coachOpts}</select>`}
         </div>
       </div>
       <div class="pr-station-side">
@@ -3055,7 +3055,7 @@ function stationRowHTML(s,i,total){
         <button class="pr-ico danger" type="button" data-remove="${i}" aria-label="Remove">✕</button>
       </div>
     </div>
-    ${split?groupsHTML(i):""}
+    ${split?groupsHTML(i):`<button class="pr-splitwide" type="button" data-split="${i}">Split into groups</button>`}
   </div>`;
 }
 function renderBuildTab(){
