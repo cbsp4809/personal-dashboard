@@ -246,6 +246,14 @@ a{color:var(--brass)}
 .home-copy{letter-spacing:.02em;}
 .home-copy.copied{background:var(--sydney);color:#142014;}
 .home-stamp{margin:10px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
+.home-stamp.error{color:var(--over);}
+.home-virginia-note-help{margin:0 0 12px;color:var(--soft);font-size:14px;line-height:1.45;overflow-wrap:anywhere;}
+.home-virginia-note-recent{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);}
+.home-virginia-note-recent h3{margin-bottom:10px;}
+.home-virginia-note-item{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;}
+.home-virginia-note-body{color:var(--ink);font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;}
+.home-virginia-note-meta{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+.home-virginia-note-meta.error{color:var(--over);}
 .home-copy-text{display:block;width:100%;min-width:0;min-height:88px;margin-top:12px;padding:12px;border:1px dashed var(--line-strong);border-radius:12px;background:var(--bg);color:var(--soft);font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;resize:none;user-select:text;-webkit-user-select:text;}
 .home-earlier{min-width:0;max-width:100%;margin-top:14px;border-top:1px solid var(--line);padding-top:10px;}
 .home-earlier summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--soft);font-size:13px;font-weight:600;list-style:none;}
@@ -256,6 +264,24 @@ a{color:var(--brass)}
 .home-earlier-item strong{display:block;color:var(--ink);font-size:12px;font-weight:700;margin-bottom:2px;}
 .home-empty{margin:0;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:17px;}
 .home-list{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:10px;}
+.home-monitor{display:flex;min-width:0;max-width:100%;align-items:flex-start;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;}
+.home-monitor.green{border-color:rgba(91,188,116,.3);}
+.home-monitor.orange{border-color:rgba(235,163,63,.38);}
+.home-monitor.red{border-color:rgba(218,88,75,.42);}
+.home-monitor-light{width:24px;height:24px;min-width:24px;margin-top:1px;border:2px solid rgba(255,255,255,.24);border-radius:50%;background:var(--muted);}
+.home-monitor.green .home-monitor-light{background:#4fc66e;box-shadow:0 0 0 5px rgba(79,198,110,.13),0 0 16px rgba(79,198,110,.48);}
+.home-monitor.orange .home-monitor-light{background:#f0a53d;box-shadow:0 0 0 5px rgba(240,165,61,.13),0 0 16px rgba(240,165,61,.48);}
+.home-monitor.red .home-monitor-light{background:#e0564b;box-shadow:0 0 0 5px rgba(224,86,75,.14),0 0 16px rgba(224,86,75,.55);}
+.home-monitor-copy{flex:1;min-width:0;}
+.home-monitor-head{display:flex;min-width:0;align-items:flex-start;justify-content:space-between;gap:8px;}
+.home-monitor-label{margin:0;color:var(--ink);font-size:16px;font-weight:700;overflow-wrap:anywhere;}
+.home-monitor-status{flex-shrink:0;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+.home-monitor.green .home-monitor-status{color:#8ce5a4;background:rgba(79,198,110,.12);}
+.home-monitor.orange .home-monitor-status{color:#ffc570;background:rgba(240,165,61,.13);}
+.home-monitor.red .home-monitor-status{color:#ff958c;background:rgba(224,86,75,.14);}
+.home-monitor-summary{margin:5px 0 0;color:var(--soft);font-size:14px;line-height:1.4;overflow-wrap:anywhere;}
+.home-monitor-note{margin:8px 0 0;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.035);color:var(--ink);font-size:13px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap;}
+.home-monitor-checked{margin:8px 0 0;color:var(--muted);font-size:12px;}
 .home-pin,.home-house-item,.home-virginia-item{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;}
 .home-pin-from,.home-virginia-kind{color:var(--brass);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;overflow-wrap:anywhere;}
 .home-pin-subject,.home-house-title,.home-virginia-title{margin:4px 0 0;color:var(--ink);font-size:15px;font-weight:700;overflow-wrap:anywhere;}
@@ -865,11 +891,20 @@ let homePins = [];
 let homeLunch = null;
 let homeVirginia = [];
 let homePrayers = [];
+let homeVirginiaNotes = [];
+let homeMonitors = [];
 let homeAvailable = true;
+let homeVirginiaNotesAvailable = true;
 let homeGratitudeDraft = "";
 let homePrayerDraft = { who:"", note:"" };
+let homeVirginiaNoteDraft = "";
 let openHomePrayerId = null;
 let homeCopyTimer = null;
+let homeGratitudePollTimer = 0;
+let homeGratitudePollGeneration = 0;
+let homeGratitudePollDeadline = 0;
+const HOME_GRATITUDE_POLL_MS = 7000;
+const HOME_GRATITUDE_POLL_WINDOW_MS = 120000;
 let contentItems = [];
 let contentAvailable = true;
 let contentStatusFilter = "open";
@@ -1336,7 +1371,10 @@ function syncActorUI(){
 $$(".actor button").forEach(b => b.onclick = async () => {
   if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
   if(actor==="content") snapshotOpenContentForm();
-  if(actor==="home") captureHomeDraft();
+  if(actor==="home"){
+    captureHomeDraft();
+    if(b.dataset.actor!=="home") stopHomeGratitudePolling();
+  }
   actor = b.dataset.actor;
   if(actor==="digest") openDigestDate = null;
   localStorage.setItem("ops_actor", actor);
@@ -1378,6 +1416,7 @@ async function signOut(){
   if(alertChannel && sb) await sb.removeChannel(alertChannel);
   stopAlertPolling();
   stopSendNowPolling();
+  stopHomeGratitudePolling();
   clearSendNowReset();
   syncAppBadge(0);
   if(sb) await sb.auth.signOut();
@@ -2066,7 +2105,7 @@ function shouldPreserveHomeInput(){
   if(actor!=="home") return false;
   const active = document.activeElement;
   return !!(active && active.closest && (
-    active.closest("#homeGratitude") || active.closest("#homePrayers")
+    active.closest("#homeGratitude") || active.closest("#homePrayers") || active.closest("#homeVirginiaNote")
   ));
 }
 
@@ -2082,9 +2121,17 @@ function shouldPreserveHomePrayers(){
   return !!(active && active.closest && active.closest("#homePrayers"));
 }
 
+function shouldPreserveHomeVirginiaNote(){
+  if(actor!=="home") return false;
+  const active = document.activeElement;
+  return !!(active && active.closest && active.closest("#homeVirginiaNote"));
+}
+
 function captureHomeDraft(){
   const ta = $("#homeGratitudeBody");
   if(ta) homeGratitudeDraft = ta.value;
+  const virginiaNote = $("#homeVirginiaNoteBody");
+  if(virginiaNote) homeVirginiaNoteDraft = virginiaNote.value;
   const who = $("#homePrayerWho");
   const note = $("#homePrayerNote");
   if(who) homePrayerDraft.who = who.value;
@@ -2122,7 +2169,7 @@ async function loadHome(){
   const today = chicagoDateISO();
   const oldest = addDaysISO(today, -7);
   const weekOf = chicagoMondayISO();
-  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes] = await Promise.all([
+  const [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes, virginiaNotesRes, monitorsRes] = await Promise.all([
     sb.from("ops_home_gratitude")
       .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
       .gte("gratitude_date", oldest)
@@ -2142,18 +2189,34 @@ async function loadHome(){
     sb.from("ops_home_prayers")
       .select("id,who,note,created_at,updated_at,done_at")
       .order("updated_at", { ascending:false })
-      .limit(80)
+      .limit(80),
+    sb.from("ops_home_virginia_notes")
+      .select("id,body,created_at,sent_at,send_error,hub_note_id")
+      .order("created_at", { ascending:false })
+      .limit(5),
+    sb.from("ops_home_monitors")
+      .select("id,key,label,status,summary,note,detail,checked_at,updated_at")
+      .order("label", { ascending:true })
   ]);
   const missing = [gratitudeRes, pinsRes, lunchRes, virginiaRes, prayersRes].some(res => homeTableMissing(res.error));
   homeAvailable = !missing;
+  homeVirginiaNotesAvailable = !homeTableMissing(virginiaNotesRes.error);
   if(gratitudeRes.error && !homeTableMissing(gratitudeRes.error)){
     if(actor==="home") setStatus("Could not load gratitude: "+gratitudeRes.error.message, true);
+  }
+  if(virginiaNotesRes.error && !homeTableMissing(virginiaNotesRes.error)){
+    if(actor==="home") setStatus("Could not load Virginia notes: "+virginiaNotesRes.error.message, true);
   }
   homeGratitude = gratitudeRes.error ? [] : (gratitudeRes.data || []);
   homePins = pinsRes.error ? [] : (pinsRes.data || []);
   homeLunch = lunchRes.error ? null : (lunchRes.data || null);
   homeVirginia = virginiaRes.error ? [] : (virginiaRes.data || []);
   homePrayers = prayersRes.error ? [] : (prayersRes.data || []);
+  homeVirginiaNotes = virginiaNotesRes.error ? [] : (virginiaNotesRes.data || []);
+  homeMonitors = monitorsRes.error ? [] : (monitorsRes.data || []);
+  if(monitorsRes.error && !homeTableMissing(monitorsRes.error) && actor==="home"){
+    setStatus("Could not load monitors: "+monitorsRes.error.message, true);
+  }
   if(openHomePrayerId && !homePrayers.some(row => row.id===openHomePrayerId && !row.done_at)){
     openHomePrayerId = null;
   }
@@ -3208,9 +3271,65 @@ function gratitudeStamp(row){
   if(!row) return "";
   if(row.emailed_at){
     const clock = formatMailClock(row.emailed_at);
-    return clock ? "Emailed "+clock : "Emailed";
+    return clock ? "Sent to Regan · "+clock : "Sent to Regan";
   }
-  return "Saved · waiting on email";
+  if(row.email_error){
+    const message = String(row.email_error).replace(/\s+/g, " ").trim();
+    const shortMessage = message.length>120 ? message.slice(0, 117).trimEnd()+"…" : message;
+    return "Error sending to Regan — "+(shortMessage || "Unknown error");
+  }
+  return "Sending to Regan…";
+}
+
+function gratitudeStampClass(row){
+  return row && row.email_error && !row.emailed_at ? "home-stamp error" : "home-stamp";
+}
+
+function applyHomeGratitudeRow(row){
+  if(!row) return;
+  const dateKey = digestDateKey(row.gratitude_date);
+  const idx = homeGratitude.findIndex(item => digestDateKey(item.gratitude_date)===dateKey);
+  if(idx>=0) homeGratitude[idx] = row;
+  else homeGratitude.unshift(row);
+  const stamp = $("#homeGratitudeStamp");
+  if(stamp && dateKey===chicagoDateISO()){
+    stamp.textContent = gratitudeStamp(row);
+    stamp.className = gratitudeStampClass(row);
+  }
+}
+
+function stopHomeGratitudePolling(){
+  homeGratitudePollGeneration += 1;
+  if(homeGratitudePollTimer) clearInterval(homeGratitudePollTimer);
+  homeGratitudePollTimer = 0;
+  homeGratitudePollDeadline = 0;
+}
+
+function startHomeGratitudePolling(dateKey){
+  stopHomeGratitudePolling();
+  const generation = homeGratitudePollGeneration;
+  homeGratitudePollDeadline = Date.now()+HOME_GRATITUDE_POLL_WINDOW_MS;
+  const refresh = async () => {
+    if(generation!==homeGratitudePollGeneration) return;
+    if(actor!=="home" || document.hidden || Date.now()>=homeGratitudePollDeadline){
+      stopHomeGratitudePolling();
+      return;
+    }
+    const { data, error } = await sb.from("ops_home_gratitude")
+      .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
+      .eq("gratitude_date", dateKey)
+      .maybeSingle();
+    if(generation!==homeGratitudePollGeneration) return;
+    if(error){
+      stopHomeGratitudePolling();
+      return;
+    }
+    if(data){
+      applyHomeGratitudeRow(data);
+      if(data.emailed_at || data.email_error) stopHomeGratitudePolling();
+    }
+  };
+  homeGratitudePollTimer = setInterval(refresh, HOME_GRATITUDE_POLL_MS);
 }
 
 function fillHomeGratitude(){
@@ -3233,7 +3352,7 @@ function fillHomeGratitude(){
       <button type="button" class="btn home-save" id="homeGratitudeSave">Save</button>
       ${copyText?`<button type="button" class="btn ghost home-copy" id="homeGratitudeCopy">Copy</button>`:""}
     </div>
-    ${row?`<div class="home-stamp" id="homeGratitudeStamp">${esc(gratitudeStamp(row))}</div>`:""}
+    ${row?`<div class="${gratitudeStampClass(row)}" id="homeGratitudeStamp" role="status" aria-live="polite">${esc(gratitudeStamp(row))}</div>`:""}
     ${copyText?`<textarea class="home-copy-text" id="homeGratitudePreview" readonly aria-label="Paste-ready gratitude">${esc(copyText)}</textarea>`:""}
     <details class="home-earlier">
       <summary>Earlier</summary>
@@ -3324,6 +3443,76 @@ function fillHomePrayers(){
   if(earlierEl && earlierWasOpen) earlierEl.open = true;
 }
 
+function virginiaNoteStamp(row){
+  if(!row) return "Ready to save for Hub push.";
+  if(row.sent_at){
+    const clock = formatMailClock(row.sent_at);
+    return clock ? "Sent to Hub · "+clock : "Sent to Hub";
+  }
+  if(row.send_error){
+    const message = String(row.send_error).replace(/\s+/g, " ").trim();
+    const shortMessage = message.length>120 ? message.slice(0, 117).trimEnd()+"…" : message;
+    return "Hub push error — "+(shortMessage || "Unknown error");
+  }
+  return "Saved · waiting for Hub push";
+}
+
+function virginiaNoteStampClass(row){
+  return row && row.send_error && !row.sent_at ? "home-stamp error" : "home-stamp";
+}
+
+function virginiaNoteMeta(row){
+  const savedDate = row && row.created_at ? new Date(row.created_at) : null;
+  const saved = savedDate && !Number.isNaN(savedDate.getTime())
+    ? OPS_RECEIVED_FORMAT.format(savedDate)+" · "+formatMailClock(savedDate)
+    : "";
+  const status = virginiaNoteStamp(row);
+  return saved ? saved+" · "+status : status;
+}
+
+function setHomeVirginiaNoteStatus(message, error=false){
+  const status = $("#homeVirginiaNoteStatus");
+  if(!status) return;
+  status.textContent = message;
+  status.className = error ? "home-stamp error" : "home-stamp";
+}
+
+function fillHomeVirginiaNote(){
+  const el = $("#homeVirginiaNote");
+  if(!el) return;
+  if(shouldPreserveHomeVirginiaNote()){
+    captureHomeDraft();
+    return;
+  }
+  const latest = homeVirginiaNotes[0] || null;
+  const statusText = homeVirginiaNotesAvailable
+    ? virginiaNoteStamp(latest)
+    : "Notes table not applied yet.";
+  const statusError = !homeVirginiaNotesAvailable || !!(latest && latest.send_error && !latest.sent_at);
+  el.innerHTML = `<div class="home-kicker">From Dad</div>
+    <h2 class="home-lead">Message Virginia</h2>
+    <p class="home-virginia-note-help">Write a short note for Virginia. It will be saved here for Sydney&rsquo;s routine to add to her Hub without changing homework.</p>
+    <label class="hidden" for="homeVirginiaNoteBody">Note to Virginia</label>
+    <textarea id="homeVirginiaNoteBody" class="home-body" rows="3" maxlength="1000" placeholder="Love you. You&rsquo;ve got this today.">${esc(homeVirginiaNoteDraft)}</textarea>
+    <div class="home-gratitude-actions">
+      <button type="button" class="btn home-save" id="homeVirginiaNoteSend">Send</button>
+    </div>
+    <div class="${statusError?"home-stamp error":"home-stamp"}" id="homeVirginiaNoteStatus" role="status" aria-live="polite">${esc(statusText)}</div>
+    <div class="home-virginia-note-recent">
+      <h3>Recent notes</h3>
+      ${homeVirginiaNotes.length
+        ? `<div class="home-list">${homeVirginiaNotes.map(row => `<article class="home-virginia-note-item">
+            <div class="home-virginia-note-body">${esc(row.body||"")}</div>
+            <div class="home-virginia-note-meta${row.send_error && !row.sent_at?" error":""}">${esc(virginiaNoteMeta(row))}</div>
+          </article>`).join("")}</div>`
+        : `<p class="home-empty">No notes sent yet.</p>`}
+    </div>`;
+  const textarea = $("#homeVirginiaNoteBody");
+  if(textarea) textarea.oninput = () => { homeVirginiaNoteDraft = textarea.value; };
+  const send = $("#homeVirginiaNoteSend");
+  if(send) send.onclick = saveHomeVirginiaNote;
+}
+
 function fillHomePins(){
   const el = $("#homePins");
   if(!el) return;
@@ -3340,6 +3529,38 @@ function fillHomePins(){
   el.querySelectorAll("[data-pin-got]").forEach(button => {
     button.onclick = () => markHomePinRead(button.dataset.pinGot);
   });
+}
+
+function monitorCheckedAt(value){
+  if(!value) return "Last checked time unavailable";
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return "Last checked time unavailable";
+  const day = OPS_RECEIVED_FORMAT.format(date);
+  const clock = formatMailClock(date);
+  return "Last checked "+day+(clock ? " at "+clock : "")+" CT";
+}
+
+function fillHomeMonitors(){
+  const el = $("#homeMonitors");
+  if(!el) return;
+  const monitors = homeMonitors.filter(row => ["green","orange","red"].includes(String(row.status||"").toLowerCase()));
+  el.innerHTML = `<h3>Monitor</h3>` + (monitors.length
+    ? `<div class="home-list">${monitors.map(row => {
+        const status = String(row.status||"").toLowerCase();
+        return `<article class="home-monitor ${status}">
+          <span class="home-monitor-light" aria-hidden="true"></span>
+          <div class="home-monitor-copy">
+            <div class="home-monitor-head">
+              <h4 class="home-monitor-label">${esc(row.label||row.key||"Monitor")}</h4>
+              <span class="home-monitor-status">${esc(status)}</span>
+            </div>
+            ${row.summary?`<p class="home-monitor-summary">${esc(row.summary)}</p>`:""}
+            ${status!=="green" && row.note?`<p class="home-monitor-note">${esc(row.note)}</p>`:""}
+            <p class="home-monitor-checked">${esc(monitorCheckedAt(row.checked_at))}</p>
+          </div>
+        </article>`;
+      }).join("")}</div>`
+    : `<p class="home-empty">No monitors yet.</p>`);
 }
 
 function fillHomeLunch(){
@@ -3406,22 +3627,48 @@ function renderHome(root){
   if(!root.querySelector(".home")){
     root.innerHTML = `<div class="home">
       <section class="home-block" id="homeGratitude"></section>
+      <section class="home-block" id="homeVirginiaNote"></section>
+      <section class="home-block" id="homeMonitors"></section>
       <section class="home-block" id="homePrayers"></section>
       <section class="home-block" id="homePins"></section>
       <section class="home-block" id="homeLunch"></section>
       <section class="home-block" id="homeVirginia"></section>
       <section class="home-block" id="homeHouse"></section>
     </div>`;
-  }else if(!$("#homePrayers")){
+  }
+  if(!$("#homeVirginiaNote")){
     const gratitude = $("#homeGratitude");
+    const virginiaNote = document.createElement("section");
+    virginiaNote.className = "home-block";
+    virginiaNote.id = "homeVirginiaNote";
+    if(gratitude && gratitude.parentNode){
+      gratitude.parentNode.insertBefore(virginiaNote, gratitude.nextSibling);
+    }
+  }
+  if(!$("#homeMonitors")){
+    const gratitude = $("#homeGratitude");
+    const virginiaNote = $("#homeVirginiaNote");
+    const anchor = virginiaNote || gratitude;
+    const monitors = document.createElement("section");
+    monitors.className = "home-block";
+    monitors.id = "homeMonitors";
+    if(anchor && anchor.parentNode){
+      anchor.parentNode.insertBefore(monitors, anchor.nextSibling);
+    }
+  }
+  if(!$("#homePrayers")){
+    const gratitude = $("#homeGratitude");
+    const anchor = $("#homeMonitors") || $("#homeVirginiaNote") || gratitude;
     const prayers = document.createElement("section");
     prayers.className = "home-block";
     prayers.id = "homePrayers";
-    if(gratitude && gratitude.parentNode){
-      gratitude.parentNode.insertBefore(prayers, gratitude.nextSibling);
+    if(anchor && anchor.parentNode){
+      anchor.parentNode.insertBefore(prayers, anchor.nextSibling);
     }
   }
   fillHomeGratitude();
+  fillHomeVirginiaNote();
+  fillHomeMonitors();
   fillHomePrayers();
   fillHomePins();
   fillHomeLunch();
@@ -3430,6 +3677,55 @@ function renderHome(root){
   if(root.querySelector(".home")){
     requestAnimationFrame(() => { window.scrollTo(0, scrollY); });
   }
+}
+
+async function saveHomeVirginiaNote(){
+  const textarea = $("#homeVirginiaNoteBody");
+  if(!textarea) return;
+  const body = textarea.value.trim();
+  if(!body){
+    textarea.setCustomValidity("Write a note to Virginia.");
+    textarea.reportValidity();
+    return;
+  }
+  textarea.setCustomValidity("");
+  if(!sb || !currentUser){
+    setHomeVirginiaNoteStatus("Sign in to save this note.", true);
+    return;
+  }
+  const send = $("#homeVirginiaNoteSend");
+  if(send){
+    send.disabled = true;
+    send.textContent = "Saving…";
+  }
+  setHomeVirginiaNoteStatus("Saving note…");
+  const { data, error } = await sb.from("ops_home_virginia_notes")
+    .insert({ body })
+    .select("id,body,created_at,sent_at,send_error,hub_note_id")
+    .single();
+  if(send){
+    send.disabled = false;
+    send.textContent = "Send";
+  }
+  if(error){
+    const message = homeTableMissing(error)
+      ? "Notes table not applied yet. Run sql/ops_home_virginia_notes.sql on Studio Pod."
+      : "Could not save note: "+error.message;
+    homeVirginiaNotesAvailable = !homeTableMissing(error);
+    setHomeVirginiaNoteStatus(message, true);
+    setStatus(message, true);
+    return;
+  }
+  homeVirginiaNotesAvailable = true;
+  homeVirginiaNoteDraft = "";
+  textarea.value = "";
+  if(document.activeElement && document.activeElement.closest && document.activeElement.closest("#homeVirginiaNote")){
+    document.activeElement.blur();
+  }
+  homeVirginiaNotes.unshift(data);
+  homeVirginiaNotes = homeVirginiaNotes.slice(0, 5);
+  fillHomeVirginiaNote();
+  setStatus("Saved · waiting for Hub push.");
 }
 
 async function addHomePrayer(){
@@ -3532,6 +3828,7 @@ async function amenHomePrayer(id){
 }
 
 async function saveHomeGratitude(){
+  stopHomeGratitudePolling();
   const ta = $("#homeGratitudeBody");
   if(!ta) return;
   const body = ta.value.trim();
@@ -3548,30 +3845,42 @@ async function saveHomeGratitude(){
   const dateKey = chicagoDateISO();
   const copyText = buildGratitudeCopy(dateKey, body);
   const save = $("#homeGratitudeSave");
-  if(save) save.disabled = true;
+  if(save){
+    save.disabled = true;
+    save.textContent = "Saving…";
+  }
   const payload = {
     gratitude_date: dateKey,
     body,
     copy_text: copyText,
     updated_at: isoNow()
   };
+  const existing = todayGratitudeRow();
+  if(existing && existing.email_error && !existing.emailed_at) payload.email_error = null;
   const { data, error } = await sb.from("ops_home_gratitude")
     .upsert(payload, { onConflict:"gratitude_date" })
     .select("id,gratitude_date,body,copy_text,emailed_at,email_error,created_at,updated_at")
     .single();
-  if(save) save.disabled = false;
+  if(save){
+    save.disabled = false;
+    save.textContent = "Save";
+  }
   if(error){
     setStatus(homeTableMissing(error) ? "Home tables are not applied yet. Run sql/ops_home.sql on Studio Pod." : "Could not save gratitude: "+error.message, true);
     return;
   }
   homeAvailable = true;
   homeGratitudeDraft = body;
-  const idx = homeGratitude.findIndex(row => digestDateKey(row.gratitude_date)===dateKey);
-  if(idx>=0) homeGratitude[idx] = data;
-  else homeGratitude.unshift(data);
+  applyHomeGratitudeRow(data);
   fillHomeGratitude();
-  setStatus("Saved. Copy it into Notes, then Sydney emails Regan.");
+  if(!data.emailed_at && !data.email_error) startHomeGratitudePolling(dateKey);
+  setStatus(gratitudeStamp(data), !!(data.email_error && !data.emailed_at));
 }
+
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden) stopHomeGratitudePolling();
+});
+window.addEventListener("pagehide", stopHomeGratitudePolling);
 
 async function copyTextToClipboard(text){
   if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
