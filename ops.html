@@ -2057,6 +2057,14 @@ function buildGratitudeCopy(dateKey, body){
   return formatGratitudeDate(dateKey)+"\n\n"+String(body||"").trim();
 }
 
+function buildGratitudeClipboardCopy(copyText){
+  const text = String(copyText||"");
+  const divider = text.indexOf("\n\n");
+  const messageStart = divider>=0 ? divider+2 : 0;
+  if(/^CB:(?:\s|$)/.test(text.slice(messageStart).trimStart())) return text;
+  return text.slice(0, messageStart)+"CB: "+text.slice(messageStart);
+}
+
 function homeTableMissing(error){
   return !!(error && (error.code==="42P01" || /ops_home_|schema cache/i.test(error.message||"")));
 }
@@ -3342,7 +3350,7 @@ function fillHomeGratitude(){
   const earlierWasOpen = !!(el.querySelector(".home-earlier") && el.querySelector(".home-earlier").open);
   const row = todayGratitudeRow();
   const body = homeGratitudeDraft || (row && row.body) || "";
-  const copyText = (row && row.copy_text) || "";
+  const copyText = row && row.copy_text ? buildGratitudeClipboardCopy(row.copy_text) : "";
   const earlier = earlierGratitudeRows();
   el.innerHTML = `<div class="home-kicker">Gratitude for Regan</div>
     <h2 class="home-lead">What are you grateful for today?</h2>
@@ -3922,7 +3930,7 @@ async function copyHomeGratitude(){
   const row = todayGratitudeRow();
   const ta = $("#homeGratitudeBody");
   const body = (ta && ta.value.trim()) || (row && row.body) || "";
-  const text = (row && row.copy_text) || buildGratitudeCopy(chicagoDateISO(), body);
+  const text = buildGratitudeClipboardCopy((row && row.copy_text) || buildGratitudeCopy(chicagoDateISO(), body));
   if(!text.trim()) return;
   const button = $("#homeGratitudeCopy");
   // Prefer a sync copy from the preview so the tap gesture stays valid on iPhone.
@@ -4608,14 +4616,14 @@ function renderMasterBoard(root){
   root.innerHTML = BOARD_PROJECTS.map(key => {
     const list = needs.filter(c => cardProjectKey(c)===key).sort(compareCards);
     const body = list.length
-      ? list.map(c => cardHTML(c, { draggable:false })).join("")
+      ? list.map(c => cardHTML(c)).join("")
       : `<div class="empty">Nothing needs you.</div>`;
-    return `<section class="col" data-project="${key}">
+    return `<section class="col" data-col="needs-you" data-project="${key}">
       <div class="col-h"><div><h2>${esc(PROJECTS[key])}</h2><span class="sub">Needs you</span></div><span class="n">${list.length}</span></div>
       <div class="col-body">${body}</div>
     </section>`;
   }).join("");
-  bindBoard({ drag:false });
+  bindBoard({ projectScope:true });
 }
 
 function renderUnfiledBoard(root){
@@ -4780,10 +4788,12 @@ function beginTouchHold(e){
   if(savingOrder || touchDrag || e.touches.length!==1 || e.target.closest(TOUCH_CONTROL_SELECTOR)) return;
   const touch = e.changedTouches[0];
   const el = e.currentTarget;
+  const column = el.closest(".col");
   touchDrag = {
     id: el.dataset.id,
     identifier: touch.identifier,
     el,
+    projectScope: column && column.dataset.project ? column.dataset.project : null,
     startX: touch.clientX,
     startY: touch.clientY,
     x: touch.clientX,
@@ -4851,6 +4861,7 @@ function updateTouchDropTarget(){
   const body = touchColumnBodyAt(state.x, state.y);
   if(!body) return;
   const column = body.closest(".col");
+  if(state.projectScope && column.dataset.project!==state.projectScope) return;
   const anchor = [...body.querySelectorAll(".card:not(.touch-dragging)")]
     .find(card => state.y < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
   column.classList.add("over");
@@ -4944,10 +4955,17 @@ document.addEventListener("click", e => {
 
 function bindBoard(options){
   const allowDrag = !options || options.drag!==false;
+  const projectScope = Boolean(options && options.projectScope);
   if(allowDrag) $$(".col[data-col]").forEach(col => {
     const body = col.querySelector(".col-body");
     if(!body) return;
+    const acceptsDraggedCard = () => {
+      if(!projectScope) return true;
+      const draggedCard = cards.find(card => card.id===dragId);
+      return draggedCard && cardProjectKey(draggedCard)===col.dataset.project;
+    };
     body.ondragover = e => {
+      if(!acceptsDraggedCard()) return;
       e.preventDefault();
       col.classList.add("over");
       $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
@@ -4962,6 +4980,10 @@ function bindBoard(options){
     };
     body.ondrop = async e => {
       e.preventDefault();
+      if(!acceptsDraggedCard()){
+        clearDropMarkers();
+        return;
+      }
       const anchor = body.querySelector(".card.drop-before");
       col.classList.remove("over");
       $$(".card.drop-before").forEach(card => card.classList.remove("drop-before"));
@@ -5387,7 +5409,9 @@ async function reorderCard(id, column_key, beforeId){
   }));
 
   savingOrder = true;
+  const scrollPosition = { x:window.scrollX, y:window.scrollY };
   renderBoard();
+  window.scrollTo(scrollPosition.x, scrollPosition.y);
   const results = await Promise.all(updates.map(update =>
     sb.from("ops_cards").update(update.fields).eq("id", update.id)
   ));
@@ -5396,6 +5420,7 @@ async function reorderCard(id, column_key, beforeId){
   if(failed){
     cards = snapshot;
     renderBoard();
+    window.scrollTo(scrollPosition.x, scrollPosition.y);
     setStatus("Could not save card order: "+failed.error.message, true);
     return;
   }
