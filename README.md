@@ -151,6 +151,91 @@ and queued cards about every 20 seconds, the same cadence as the live alert
 badge, so the status clears without a reload. The dashboard does not send
 Gmail. A unique partial index keeps only one flush request pending at a time.
 
+### Desktop Emails layout
+
+At 900px and wider the Emails tab is a two-pane reading layout: a compact list
+on the left that scrolls on its own, and the selected email's Incoming / Reply
+pane on the right with **Send** pinned to the bottom edge. Clicking a row swaps
+only the right pane, so the list never jumps or loses its scroll position. The
+right pane opens on **Reply** with the reply box already visible — the
+"Who / files" block (recipients, original participants, sales/lead) starts
+collapsed there, and expands into its own scroll area rather than pushing the
+textarea off the bottom. Phone (≤700px) keeps the stacked full-screen sheet
+exactly as it was, and the 701–899px band keeps the original inline accordion
+with "Who / files" expanded. Crossing 900px re-renders the tab.
+
+### Cold Leads mode
+
+The Emails filter bar has a **Mode** switch: *Inbox* (reply queue, the default)
+and *Cold Leads*. Cold Leads is the working surface for the daily Studio Pod
+cold-outreach batch and uses the same two-pane pattern — leads left, editable
+subject and body right, Send pinned.
+
+**Reading today's batch.** Studio Pod Sales assigns a day's leads by stamping
+`cold_lead_touches` **at pull time** with `touched_by = 'Chris Bailey'` and
+`touched_on` = that day's Chicago date. That stamp is what defines "today's
+25" — not `cold_leads.status`, which Sales also sets to `Contacted` at pull, and
+not the touch row, which already exists before anything is sent. Ops reads the
+touches for today scoped to `COLD_LEAD_OPERATOR` (one constant in `ops.html`;
+change it there if Sales renames the stamp), then joins `cold_leads` and
+`cold_lead_drafts`. Filtering on `Contacted` instead would pull in every stale
+contacted lead and other operators' batches.
+
+**Which draft.** Sales writes several drafts per lead — email `sequence_order`
+1/2/3 plus `linkedin_connection` and `linkedin_message` rows. Ops sends the
+lowest unsent draft with `channel='email'` and ignores the rest, so a LinkedIn
+note can never go out as an email. If a lead has no draft row, Ops composes a
+short editable cold email from company / contact / hook, but will not send it —
+without a `cold_lead_drafts` row Sales has nothing to reconcile against.
+
+**Editing.** Subject and body autosave back to `cold_lead_drafts` (debounced,
+plus on blur and before the pane swaps, the mode switches, or the email sends).
+Ops writes only `subject`, `body`, and `updated_at` — `status` and `sent_at`
+stay Sydney's — and the update carries `is('sent_at', null)`, so an edit can
+never land on a draft that already went out. A draft with no
+`cold_lead_drafts` row shows Ops' generated text but does not autosave and
+cannot be sent.
+
+**Progress.** The `N/25` counter counts leads whose email draft has a
+`sent_at` stamped today. It cannot come from `cold_lead_touches`: all 25 touch
+rows exist before the first send.
+
+**Sending.** Ops does not talk to Gmail here either. Send stages one throwaway
+`ops_cards` row per lead carrying the edited subject and body, addressed to the
+lead, `source='email'` with `source_ref='cold-lead:<draft_id>'`, then queues it
+with `send_requested_at` so **Send now** flushes it through the same path as
+every inbox reply. Those cards are excluded from the Inbox list and never reach
+the boards. There is no batch of 25 cards — one row per actual send.
+
+**Write-back is Sydney's, not Ops'.** Because the page has no Gmail success
+signal, it never writes `cold_lead_drafts`, `cold_leads`, or
+`cold_lead_touches`. After Gmail accepts a send whose card has a
+`cold-lead:<draft_id>` `source_ref`, Sydney's inbox watch owns all three
+statements (locked with Studio Pod Sales 2026-09-04):
+
+1. `cold_lead_drafts` where `id = <draft_id>` — subject/body as sent,
+   `status='Sent'` (capitalised; the check constraint allows only
+   `Draft / Ready / Sent / Skipped`), `channel='email'`,
+   `sent_at=coalesce(sent_at,now())`, `updated_at=now()`
+2. `cold_leads` — `status='Contacted'`,
+   `assigned_to=coalesce(nullif(assigned_to,''),'Chris Bailey')`,
+   `updated_at=now()`
+3. `cold_lead_touches` — insert `(cold_lead_id, touched_by, touched_on)` with
+   the Chicago send date, `on conflict (cold_lead_id, touched_by, touched_on)
+   do nothing`
+
+In practice 2 and 3 are already true when Sales stamps the batch at pull, so
+`cold_lead_drafts.sent_at` is the only write that changes anything — and it is
+the flag Ops reads back. If `draft.sent_at` is already set, the lead shows as
+sent and cannot be re-sent.
+
+**What Ops shows.** *Not sent* → *Queued* (card waiting on the flush) →
+*Sent · write-back pending* (Sydney completed the card but `sent_at` is still
+null) → *Sent* (Sydney wrote `sent_at`). The pending state is deliberate: a
+dropped write-back must never look like a clean send. Ops polls the cold-lead
+tables on the same ~20s cadence as the send status, so the state settles
+without a reload.
+
 On iPhone, opening an Emails card is a full-screen sheet: from and subject in
 the header, Incoming | Reply, and the message or reply box first. Recipients,
 sales/lead, original participants, and files sit behind **Who / files**.

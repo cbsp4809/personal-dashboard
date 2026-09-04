@@ -457,6 +457,66 @@ a{color:var(--brass)}
   .home-lunch-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
   .actor-gap{flex:0 0 auto;width:1px;height:22px;margin:8px 6px;background:var(--line-strong);}
 }
+/* Desktop Emails: two-pane reading layout. Compact list left, Incoming/Reply
+   right, Send pinned to the bottom of the right pane. Each pane scrolls on its
+   own so clicking a row never moves the list. Phone (<=700px) and the
+   701-899px band keep the original stacked flow. */
+@media(min-width:900px){
+  .board.email-board{max-width:1720px;padding:0 28px 20px;}
+  /* Never taller than the screen — Send has to stay reachable without
+     scrolling the page. */
+  .email-two-pane{display:grid;min-width:0;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:stretch;height:calc(100dvh - var(--email-pane-offset,260px));min-height:340px;max-height:calc(100dvh - var(--email-pane-offset,260px));}
+  .email-pane-list{display:flex;min-width:0;flex-direction:column;height:100%;}
+  .email-pane-list .email-commandbar{flex:0 0 auto;}
+  .email-pane-list .email-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
+  .email-pane-list .email-empty{flex:0 0 auto;}
+  /* Compact rows: drop the preview line and tighten spacing so more fit. */
+  .email-pane-list .email-card-toggle{min-height:0;padding:10px 12px 10px 8px;}
+  .email-pane-list .email-preview{display:none;}
+  .email-pane-list .email-subject{-webkit-line-clamp:2;}
+  .email-pane-list .email-meta{margin-top:6px;}
+  .email-pane-list .email-check{width:36px;min-width:36px;height:36px;margin:6px 0 0 4px;}
+  .email-card.open{border-color:var(--brass);box-shadow:0 0 0 1px rgba(196,165,116,.35);}
+  .email-pane-detail{display:flex;min-width:0;flex-direction:column;height:100%;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);overflow:hidden;}
+  .email-pane-detail.empty-pane{align-items:center;justify-content:center;}
+  .email-detail-empty{padding:24px;text-align:center;}
+  .email-detail-empty-title{color:var(--ink);font-size:15px;font-weight:700;}
+  .email-detail-empty-sub{margin-top:6px;color:var(--muted);font-size:13px;}
+  .email-pane-detail .email-detail{display:flex;min-width:0;min-height:0;flex:1 1 auto;flex-direction:column;border-top:0;background:transparent;}
+  .email-pane-detail .email-detail-head{flex:0 0 auto;padding:14px 20px 12px;border-bottom:1px solid var(--line);}
+  .email-pane-detail .email-sheet-top{flex:1;order:0;}
+  .email-pane-detail .email-sheet-id{display:block;}
+  /* Reply pane fills the column: collapsed "Who / files" row, then the
+     textarea takes whatever height is left. No scrolling to reach it. */
+  .email-pane-detail .email-detail-scroll{display:flex;min-height:0;flex:1 1 auto;flex-direction:column;gap:10px;max-height:none;overflow-y:auto;padding:14px 20px 16px;}
+  .email-pane-detail .email-more{flex:0 0 auto;}
+  .email-pane-detail .email-more:not([open]) .email-more-toggle{margin:0;}
+  .email-pane-detail .email-reply-label{flex:0 0 auto;margin:0;}
+  /* min-height:0 lets the box shrink to the pane instead of forcing the
+     scroll container past the bottom of the screen. */
+  .email-pane-detail .email-reply{flex:1 1 auto;min-height:0;height:auto;resize:none;}
+  .email-pane-detail .email-incoming{display:flex;min-height:0;flex:1 1 auto;flex-direction:column;gap:10px;}
+  .email-pane-detail .email-incoming-body{flex:1 1 auto;min-height:0;overflow-y:auto;}
+  /* An expanded Who / files block scrolls inside itself instead of pushing
+     the reply box off the bottom of the pane. */
+  .email-pane-detail .email-more[open] .email-more-body{max-height:38vh;overflow-y:auto;}
+  .email-pane-detail .email-attach-dock{flex:0 0 auto;padding:0 20px;}
+  /* Send stays pinned to the bottom edge of the pane. */
+  .email-pane-detail .email-actions{flex:0 0 auto;padding:12px 20px;border-top:1px solid var(--line);background:var(--bg-2);}
+  .email-pane-detail .cold-lead-body{min-height:0;}
+}
+/* Cold Leads mode */
+.cold-lead-state{flex-shrink:0;padding:2px 8px;border-radius:999px;background:var(--line);color:var(--soft);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.cold-lead-state.sent{background:rgba(122,168,116,.18);color:#9ecf95;}
+.cold-lead-state.queued{background:var(--brass-soft);color:var(--ink);}
+.cold-lead-state.pending{background:rgba(201,122,106,.18);color:#e0a294;}
+.cold-lead-state.head{align-self:flex-start;margin-top:4px;}
+.cold-lead-subject{width:100%;min-width:0;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg-2);color:var(--ink);font:inherit;font-size:14px;}
+.cold-lead-subject:focus-visible{border-color:var(--brass);outline:none;}
+.cold-lead-subject[readonly]{opacity:.7;}
+.cold-lead-card .email-card-toggle{min-height:0;}
+.cold-lead-stacked{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);overflow:hidden;}
+.cold-lead-stacked .cold-lead-body{min-height:220px;}
 @media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:1100px){.board{grid-template-columns:repeat(2,minmax(0,1fr));}.board.master-board{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:700px){
@@ -748,7 +808,7 @@ body.card-detail-open{overflow:hidden;}
       </div>
     </div>
     <div class="email-filterbar hidden" id="emailFilters">
-      <div class="email-filter-group">
+      <div class="email-filter-group" data-mode-scope="inbox">
         <span class="viewbar-label">Inbox</span>
         <div class="filters" aria-label="Filter email replies by inbox">
           <button class="chip on" data-email-project="">All</button>
@@ -757,11 +817,18 @@ body.card-detail-open{overflow:hidden;}
           <button class="chip" data-email-project="personal">Personal</button>
         </div>
       </div>
-      <div class="email-filter-group">
+      <div class="email-filter-group" data-mode-scope="inbox">
         <span class="viewbar-label">Kind</span>
         <div class="filters" aria-label="Filter email replies by sales or lead">
           <button class="chip on" data-email-kind="">All</button>
           <button class="chip" data-email-kind="sales">Sales &amp; leads</button>
+        </div>
+      </div>
+      <div class="email-filter-group">
+        <span class="viewbar-label">Mode</span>
+        <div class="filters" aria-label="Switch between the inbox and today's cold leads">
+          <button class="chip on" data-email-mode="inbox">Inbox</button>
+          <button class="chip" data-email-mode="cold-leads">Cold Leads</button>
         </div>
       </div>
     </div>
@@ -937,6 +1004,23 @@ const emailDrafts = new Map();
 let projectFilter = "";
 let emailProjectFilter = "";
 let emailKindFilter = "";
+
+// --- Cold Leads mode -------------------------------------------------------
+// Studio Pod Sales assigns a daily batch by stamping cold_lead_touches at pull
+// time with touched_by = the operator below. That stamp — not the lead status —
+// is what defines "today's 25". Change this one constant if Sales renames it.
+const COLD_LEAD_OPERATOR = "Chris Bailey";
+const COLD_LEAD_DAILY_TARGET = 25;
+const COLD_LEAD_FROM = "chris@thestudiopod.com";
+// Marks the throwaway ops_card used to push one cold email through Sydney's
+// existing send path. Keeps them out of the inbox list and off the boards.
+const COLD_LEAD_REF_PREFIX = "cold-lead:";
+let emailMode = localStorage.getItem("ops_email_mode")==="cold-leads" ? "cold-leads" : "inbox";
+let coldLeads = [];                // [{ lead, draft, drafts, sentToday }]
+let coldLeadsState = "idle";       // idle | loading | ready | error
+let coldLeadsError = "";
+let openColdLeadId = null;
+const coldLeadEdits = new Map();   // lead id -> { subject, body, dirty }
 let drawerOpen = false;
 let dragId = null;
 let savingOrder = false;
@@ -1339,6 +1423,9 @@ function syncActorUI(){
   const showingHome = actor==="home";
   const showingBoardTools = showingBoard();
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
+  // Inbox and Kind only mean something for inbox mail, not the cold batch.
+  $$("#emailFilters [data-mode-scope='inbox']").forEach(group => group.classList.toggle("hidden", emailMode==="cold-leads"));
+  $$("[data-email-mode]").forEach(x => x.classList.toggle("on", (x.dataset.emailMode||"inbox")===emailMode));
   $("#contentFilters").classList.toggle("hidden", !showingContent);
   $("#contentHelp").classList.toggle("hidden", !showingContent);
   $("#ownerFilters").classList.toggle("hidden", !isDedicatedActor(actor));
@@ -1370,6 +1457,7 @@ function syncActorUI(){
 
 $$(".actor button").forEach(b => b.onclick = async () => {
   if(b.dataset.actor!==actor && !(await finishOpenEmailDraft())) return;
+  if(b.dataset.actor!==actor && !(await finishColdLeadDraft())) return;
   if(actor==="content") snapshotOpenContentForm();
   if(actor==="home"){
     captureHomeDraft();
@@ -1383,6 +1471,7 @@ $$(".actor button").forEach(b => b.onclick = async () => {
   if(actor==="emails"){
     loadMailStatus();
     repairQueuedReplySignedUrls();
+    if(emailMode==="cold-leads" && coldLeadsState!=="loading") loadColdLeads();
   }
   if(actor==="content") loadContent();
   if(actor==="digest") loadMorningDigests();
@@ -1435,6 +1524,7 @@ async function onSignedIn(session){
   await loadContent();
   await loadHome();
   await loadAlerts();
+  if(actor==="emails" && emailMode==="cold-leads") await loadColdLeads();
   subscribeToAlerts();
   startSendNowPolling();
 }
@@ -1547,10 +1637,11 @@ async function loadCards(){
     return;
   }
   setStatus(openCards().length ? "" : "Board is empty. Add a card, or import from Microsoft To Do.");
-  if(shouldPreserveOpenEmail()){
+  if(shouldPreserveOpenEmail() || shouldPreserveColdLead()){
     $("#doneCount").textContent = String(doneCards().length);
     refreshEmailWaitChips();
     syncEmailCommandBar();
+    if(shouldPreserveColdLead()) renderColdLeadsIfIdle();
     if(drawerOpen) renderDrawer();
     return;
   }
@@ -1664,6 +1755,9 @@ function bindSendNowControl(root){
 
 function syncEmailCommandBar(){
   if(actor!=="emails") return;
+  // Cold Leads renders its own command bar (N/25 sent today) using the same
+  // class names. Leave it alone or the poll overwrites it with inbox counts.
+  if(emailMode==="cold-leads") return;
   const bar = document.querySelector(".email-commandbar");
   if(!bar) return;
   const queuedCount = queuedEmailCards().length;
@@ -1710,6 +1804,9 @@ async function refreshSendNowLive(){
   }
   await loadMailStatus();
   await loadSendNowStatus();
+  // Sydney writes cold_lead_drafts.sent_at after Gmail accepts the send, so
+  // this poll is how Ops learns a queued cold email actually went out.
+  if(actor==="emails" && emailMode==="cold-leads" && coldLeadsState!=="loading") await loadColdLeads({ quiet:true });
 }
 
 async function loadMailStatus(){
@@ -1949,7 +2046,10 @@ function refreshEmailKindUI(card){
   const el = document.querySelector(`.email-card[data-id="${CSS.escape(card.id)}"]`);
   if(!el) return;
   const kind = resolvedEmailKind(card);
-  el.querySelectorAll("[data-email-kind-set]").forEach(button => {
+  // The kind buttons live in the detail, which on desktop sits in the right
+  // pane rather than inside the card — look them up by the detail's own id.
+  const detail = document.querySelector(`.email-detail[data-detail-id="${CSS.escape(card.id)}"]`);
+  (detail || el).querySelectorAll("[data-email-kind-set]").forEach(button => {
     const on = button.dataset.emailKindSet===kind;
     button.classList.toggle("on", on);
     button.setAttribute("aria-pressed", on ? "true" : "false");
@@ -2514,14 +2614,50 @@ function isPhoneEmailLayout(){
   return window.matchMedia("(max-width: 700px)").matches;
 }
 
+// Desktop Emails runs a two-pane reading layout: compact list left, the
+// selected email's Incoming / Reply pane on the right. Phone (<=700px) keeps
+// the stacked full-screen sheet; 701-899px keeps the original inline accordion.
+function isDesktopEmailLayout(){
+  return window.matchMedia("(min-width: 900px)").matches;
+}
+
 function syncEmailSheetClass(){
-  const open = actor==="emails" && !!openEmailCardId && isPhoneEmailLayout();
+  const open = actor==="emails" && emailMode==="inbox" && !!openEmailCardId && isPhoneEmailLayout();
   document.body.classList.toggle("email-sheet-open", open);
 }
 
+// The detail markup lives inside the card on phone/tablet and inside the right
+// pane on desktop, so look it up by its own id rather than through the card.
 function openEmailDetailEl(){
   if(!openEmailCardId) return null;
-  return document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-detail`);
+  return document.querySelector(`.email-detail[data-detail-id="${CSS.escape(openEmailCardId)}"]`);
+}
+
+function emailListScrollEl(){
+  return document.querySelector(".email-pane-list .email-list");
+}
+
+function captureEmailListScroll(){
+  const list = emailListScrollEl();
+  return list ? list.scrollTop : null;
+}
+
+function restoreEmailListScroll(top){
+  if(top==null) return;
+  const list = emailListScrollEl();
+  if(list) list.scrollTop = top;
+}
+
+// The two-pane grid needs to know where the board starts so both panes can
+// scroll inside the viewport instead of the page scrolling as a whole.
+function syncEmailPaneOffset(){
+  const board = document.getElementById("board");
+  if(!board || !isDesktopEmailLayout()) return;
+  // Viewport-relative, never document-relative: the value is subtracted from
+  // 100dvh, so adding scrollY here would size the pane taller than the screen
+  // and push Send below the fold.
+  const top = Math.max(0, Math.round(board.getBoundingClientRect().top));
+  document.documentElement.style.setProperty("--email-pane-offset", (top + 28)+"px");
 }
 
 function shouldPreserveOpenEmail(){
@@ -2530,17 +2666,18 @@ function shouldPreserveOpenEmail(){
 }
 
 function captureOpenEmailScroll(){
-  const card = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId||"")}"]`);
-  const scroller = card && card.querySelector(".email-detail-scroll");
+  const detail = openEmailDetailEl();
+  const scroller = detail && detail.querySelector(".email-detail-scroll");
   if(!scroller) return null;
-  const panel = card.querySelector(".email-incoming") ? "incoming" : "reply";
+  const panel = detail.querySelector(".email-incoming") ? "incoming" : "reply";
   if(panel!==openEmailPanel) return null;
   return { id:openEmailCardId, panel, top:scroller.scrollTop };
 }
 
 function restoreOpenEmailScroll(saved){
   if(!saved || saved.id!==openEmailCardId || saved.panel!==openEmailPanel) return;
-  const scroller = document.querySelector(`.email-card[data-id="${CSS.escape(openEmailCardId)}"] .email-detail-scroll`);
+  const detail = openEmailDetailEl();
+  const scroller = detail && detail.querySelector(".email-detail-scroll");
   if(scroller) scroller.scrollTop = saved.top;
 }
 
@@ -3078,7 +3215,10 @@ function emailMoreHTML(card, replyDraft){
     replyFiles ? attachmentCountLabel(replyFiles, "to send") : ""
   ].filter(Boolean);
   const label = countBits.length ? `Who / files · ${countBits.join(" · ")}` : "Who / files";
-  return `<details class="email-more"${isPhoneEmailLayout()?"":" open"}>
+  // Desktop two-pane keeps this collapsed so the reply box is visible the
+  // moment a row is clicked. The 701-899px band keeps the old expanded default.
+  const expanded = !isPhoneEmailLayout() && !isDesktopEmailLayout();
+  return `<details class="email-more"${expanded?" open":""}>
     <summary class="email-more-toggle">${esc(label)}</summary>
     <div class="email-more-body">${parts.join("")}</div>
   </details>`;
@@ -3086,8 +3226,6 @@ function emailMoreHTML(card, replyDraft){
 
 function emailCardHTML(c){
   const inbox = projectKey(c.project);
-  const localDraft = emailDrafts.get(c.id);
-  const draft = localDraft ? localDraft.value : (c.snippet || "");
   const from = c.inbound_from || "Sender unavailable";
   const subject = c.inbound_subject || c.title || "(no subject)";
   const queued = !!c.send_requested_at;
@@ -3106,11 +3244,40 @@ function emailCardHTML(c){
     </article>`;
   }
   const open = c.id===openEmailCardId;
+  const detail = open && !isDesktopEmailLayout() ? emailDetailHTML(c) : "";
+  return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
+    <div class="email-card-row">
+      <label class="email-check" title="Mark manually done">
+        <input type="checkbox" class="chk" aria-label="Mark ${esc(subject)} done">
+      </label>
+      <button type="button" class="email-card-toggle" aria-expanded="${open}">
+        <span class="email-from-row">${emailKindBadgeHTML(c)}<span class="email-from">${esc(from)}</span></span>
+        <span class="email-subject">${esc(subject)}</span>
+        <span class="email-preview">${esc(emailPreview(c))}</span>
+        <span class="email-meta">
+          <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
+          <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
+          ${emailFileChipLabel(c) ? `<span class="email-files">${esc(emailFileChipLabel(c))}</span>` : ""}
+          <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
+        </span>
+      </button>
+    </div>
+    ${detail}
+  </article>`;
+}
+
+// Incoming | Reply pane for one email. Rendered inline under the card on
+// phone/tablet, or into the right-hand pane on desktop.
+function emailDetailHTML(c){
+  const localDraft = emailDrafts.get(c.id);
+  const draft = localDraft ? localDraft.value : (c.snippet || "");
+  const from = c.inbound_from || "Sender unavailable";
+  const subject = c.inbound_subject || c.title || "(no subject)";
   const queueDisabled = !emailQueueColumnsAvailable || !emailRecipientColumnsAvailable;
-  const replyDraft = open && openEmailPanel==="reply" ? emailDraftFor(c) : null;
-  const more = open ? emailMoreHTML(c, replyDraft) : "";
-  const detail = open ? `
-    <section class="email-detail" aria-label="Email details">
+  const replyDraft = openEmailPanel==="reply" ? emailDraftFor(c) : null;
+  const more = emailMoreHTML(c, replyDraft);
+  return `
+    <section class="email-detail" aria-label="Email details" data-detail-id="${esc(c.id)}">
       <div class="email-detail-head">
         <div class="email-sheet-top">
           <div class="email-sheet-id">
@@ -3144,48 +3311,602 @@ function emailCardHTML(c){
         ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
         <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${queueDisabled?"Apply the Ops email SQL files before queueing replies":"Save and queue this reply"}">${queueDisabled?"Setup required":"Send"}</button>
       </div>
-    </section>` : "";
-  return `<article class="card email-card${open?" open":""}" data-id="${esc(c.id)}">
+    </section>`;
+}
+
+// --- Cold Leads ------------------------------------------------------------
+
+function isColdLeadCard(card){
+  return String(card && card.source_ref || "").startsWith(COLD_LEAD_REF_PREFIX);
+}
+
+function coldLeadCardForDraft(draftId){
+  const ref = COLD_LEAD_REF_PREFIX + draftId;
+  return cards.find(c => c.source_ref===ref && !c.done_at)
+    || cards.find(c => c.source_ref===ref)
+    || null;
+}
+
+// Sales writes several drafts per lead: email sequence_order 1/2/3 plus
+// LinkedIn rows. Outreach sends the lowest unsent EMAIL draft and ignores the
+// rest, so a LinkedIn note never goes out as an email.
+function pickColdLeadDraft(rows){
+  const emails = (rows||[])
+    .filter(d => String(d.channel||"email")==="email")
+    .sort((a,b) => {
+      const ao = a.sequence_order==null ? 9999 : a.sequence_order;
+      const bo = b.sequence_order==null ? 9999 : b.sequence_order;
+      return ao-bo;
+    });
+  return emails.find(d => !d.sent_at) || emails[emails.length-1] || null;
+}
+
+function coldLeadSentToday(rows, today){
+  return (rows||[]).some(d => d.sent_at && chicagoDateISO(new Date(d.sent_at))===today);
+}
+
+// True while Chris is editing a cold draft, so background polls do not blow
+// away the pane he is typing into.
+function shouldPreserveColdLead(){
+  if(actor!=="emails" || emailMode!=="cold-leads" || !openColdLeadId) return false;
+  return !!document.querySelector(`[data-cold-detail-id="${CSS.escape(openColdLeadId)}"]`);
+}
+
+function renderColdLeadsIfIdle(){
+  if(actor!=="emails" || emailMode!=="cold-leads") return;
+  if(shouldPreserveColdLead()){
+    // Refresh only the header and the row states; leave the editor untouched.
+    const board = document.getElementById("board");
+    const bar = board && board.querySelector(".email-command-title");
+    if(bar){
+      const progress = coldLeadProgress();
+      bar.textContent = `${progress.sent}/${progress.total} sent today`;
+    }
+    coldLeads.forEach(entry => {
+      const row = document.querySelector(`.cold-lead-card[data-cold-lead="${CSS.escape(entry.lead.id)}"] .cold-lead-state`);
+      if(!row) return;
+      const state = coldLeadStatus(entry);
+      row.className = "cold-lead-state "+state.key;
+      row.textContent = state.label;
+    });
+    return;
+  }
+  renderBoard();
+}
+
+async function loadColdLeads(options){
+  if(!sb || !currentUser) return;
+  const quiet = !!(options && options.quiet);
+  coldLeadsError = "";
+  if(!quiet){
+    coldLeadsState = "loading";
+    renderColdLeadsIfIdle();
+  }
+  const today = chicagoDateISO();
+  const touch = await sb.from("cold_lead_touches")
+    .select("cold_lead_id")
+    .eq("touched_on", today)
+    .eq("touched_by", COLD_LEAD_OPERATOR);
+  if(touch.error){
+    coldLeadsState = "error";
+    coldLeadsError = touch.error.code==="42P01"
+      ? "The cold_lead tables are not on this Supabase project yet."
+      : touch.error.message;
+    renderColdLeadsIfIdle();
+    return;
+  }
+  const ids = [...new Set((touch.data||[]).map(row => row.cold_lead_id))];
+  if(!ids.length){
+    coldLeads = [];
+    coldLeadsState = "ready";
+    renderColdLeadsIfIdle();
+    return;
+  }
+  const [leadRes, draftRes] = await Promise.all([
+    sb.from("cold_leads")
+      .select("id,company_name,contact_name,title,email,segment,region,priority,status,assigned_to,suggested_hook,website")
+      .in("id", ids),
+    sb.from("cold_lead_drafts")
+      .select("id,cold_lead_id,subject,body,status,sent_at,channel,sequence_order")
+      .in("cold_lead_id", ids)
+  ]);
+  if(leadRes.error || draftRes.error){
+    coldLeadsState = "error";
+    coldLeadsError = (leadRes.error || draftRes.error).message;
+    renderColdLeadsIfIdle();
+    return;
+  }
+  const byLead = new Map();
+  (draftRes.data||[]).forEach(row => {
+    if(!byLead.has(row.cold_lead_id)) byLead.set(row.cold_lead_id, []);
+    byLead.get(row.cold_lead_id).push(row);
+  });
+  coldLeads = (leadRes.data||[])
+    .map(lead => {
+      const rows = byLead.get(lead.id) || [];
+      return { lead, drafts:rows, draft:pickColdLeadDraft(rows), sentToday:coldLeadSentToday(rows, today) };
+    })
+    .sort((a,b) => String(a.lead.company_name||"").localeCompare(String(b.lead.company_name||"")));
+  if(openColdLeadId && !coldLeads.some(e => e.lead.id===openColdLeadId)) openColdLeadId = null;
+  coldLeadsState = "ready";
+  renderColdLeadsIfIdle();
+}
+
+// Fallback when Sales has not written a draft for this lead. Short, plain, and
+// fully editable before it goes anywhere.
+function generateColdLeadDraft(lead){
+  const first = String(lead.contact_name||"").trim().split(/\s+/)[0] || "there";
+  const company = String(lead.company_name||"your team").trim();
+  const hook = String(lead.suggested_hook||"").trim();
+  const subject = `Studio Pod // ${company}`;
+  const body = [
+    `Hi ${first},`,
+    "",
+    hook || `I work with teams at organizations like ${company} on staff and headshot photography.`,
+    "",
+    "Studio Pod brings a mobile studio on site. People walk in between meetings and leave with consistent, ready-to-use photos the same day.",
+    "",
+    "Worth a short conversation?",
+    "",
+    "Chris Bailey",
+    "Studio Pod · Houston",
+    "https://thestudiopod.com"
+  ].join("\n");
+  return { subject, body };
+}
+
+// Keyed by DRAFT, not by lead. Once Sydney stamps sent_at on sequence 1,
+// pickColdLeadDraft advances to sequence 2 — a lead-keyed cache would hand the
+// follow-up the first email's body.
+function coldLeadEditFor(entry){
+  const key = entry.draft ? "d:"+entry.draft.id : "l:"+entry.lead.id;
+  let edit = coldLeadEdits.get(key);
+  if(!edit){
+    const generated = entry.draft ? null : generateColdLeadDraft(entry.lead);
+    const subject = entry.draft ? (entry.draft.subject || "") : generated.subject;
+    const body = entry.draft ? (entry.draft.body || "") : generated.body;
+    edit = { key, subject, body, savedSubject:subject, savedBody:body, dirty:false, generated:!entry.draft, saveTimer:0, savePromise:null };
+    coldLeadEdits.set(key, edit);
+  }
+  return edit;
+}
+
+function setColdLeadSaveState(entry, text){
+  const pane = document.querySelector(`[data-cold-detail-id="${CSS.escape(entry.lead.id)}"]`);
+  const save = pane && pane.querySelector(".cold-lead-save");
+  if(save) save.textContent = text;
+}
+
+// Autosave edits back to cold_lead_drafts so a refresh mid-batch does not lose
+// them. Only subject/body/updated_at — status and sent_at stay Sydney's, and
+// the `is('sent_at', null)` guard means an edit can never land on a draft that
+// already went out.
+async function persistColdLeadDraft(entry){
+  if(!entry || !entry.draft || !sb) return true;
+  const edit = coldLeadEditFor(entry);
+  if(edit.saveTimer){ clearTimeout(edit.saveTimer); edit.saveTimer = 0; }
+  if(edit.savePromise) await edit.savePromise.catch(() => {});
+  if(edit.subject===edit.savedSubject && edit.body===edit.savedBody) return true;
+  if(entry.draft.sent_at) return true;
+  const subject = edit.subject;
+  const body = edit.body;
+  setColdLeadSaveState(entry, "Saving…");
+  edit.savePromise = sb.from("cold_lead_drafts")
+    .update({ subject, body, updated_at:isoNow() })
+    .eq("id", entry.draft.id)
+    .is("sent_at", null)
+    .select("id,subject,body")
+    .maybeSingle();
+  const { data, error } = await edit.savePromise;
+  edit.savePromise = null;
+  if(error){
+    setColdLeadSaveState(entry, "Not saved");
+    setStatus("Could not save the cold draft: "+error.message, true);
+    return false;
+  }
+  if(!data){
+    setColdLeadSaveState(entry, "Already sent — edit not saved");
+    return false;
+  }
+  edit.savedSubject = subject;
+  edit.savedBody = body;
+  edit.dirty = false;
+  entry.draft.subject = subject;
+  entry.draft.body = body;
+  setColdLeadSaveState(entry, "Draft saved");
+  return true;
+}
+
+function scheduleColdLeadSave(entry){
+  const edit = coldLeadEditFor(entry);
+  if(!entry.draft) return;
+  if(edit.saveTimer) clearTimeout(edit.saveTimer);
+  edit.saveTimer = setTimeout(() => {
+    edit.saveTimer = 0;
+    persistColdLeadDraft(entry);
+  }, EMAIL_DRAFT_SAVE_DELAY_MS);
+}
+
+// Flush the open cold draft before anything swaps it out.
+async function finishColdLeadDraft(){
+  if(emailMode!=="cold-leads" || !openColdLeadId) return true;
+  const entry = coldLeads.find(e => e.lead.id===openColdLeadId);
+  if(!entry) return true;
+  return await persistColdLeadDraft(entry);
+}
+
+// What Ops can honestly say about one lead. The authoritative "Sent" stamp is
+// cold_lead_drafts.sent_at, which Sydney writes after Gmail accepts the send.
+function coldLeadStatus(entry){
+  if(entry.draft && entry.draft.sent_at) return { key:"sent", label:"Sent" };
+  const card = entry.draft ? coldLeadCardForDraft(entry.draft.id) : null;
+  if(card && card.done_at) return { key:"pending", label:"Sent · write-back pending" };
+  if(card && card.send_requested_at) return { key:"queued", label:"Queued" };
+  if(card) return { key:"staged", label:"Staged" };
+  return { key:"ready", label:"Not sent" };
+}
+
+function coldLeadProgress(){
+  const sent = coldLeads.filter(e => e.sentToday || (e.draft && e.draft.sent_at)).length;
+  return { sent, total:coldLeads.length || COLD_LEAD_DAILY_TARGET };
+}
+
+function coldLeadRowHTML(entry){
+  const lead = entry.lead;
+  const state = coldLeadStatus(entry);
+  const open = lead.id===openColdLeadId;
+  const who = [lead.contact_name, lead.title].filter(Boolean).join(" · ");
+  return `<article class="card email-card cold-lead-card${open?" open":""}" data-cold-lead="${esc(lead.id)}">
     <div class="email-card-row">
-      <label class="email-check" title="Mark manually done">
-        <input type="checkbox" class="chk" aria-label="Mark ${esc(subject)} done">
-      </label>
-      <button type="button" class="email-card-toggle" aria-expanded="${open}">
-        <span class="email-from-row">${emailKindBadgeHTML(c)}<span class="email-from">${esc(from)}</span></span>
-        <span class="email-subject">${esc(subject)}</span>
-        <span class="email-preview">${esc(emailPreview(c))}</span>
+      <button type="button" class="email-card-toggle cold-lead-toggle" aria-expanded="${open}">
+        <span class="email-from-row"><span class="cold-lead-state ${state.key}">${esc(state.label)}</span><span class="email-from">${esc(lead.company_name||"Unknown company")}</span></span>
+        <span class="email-subject">${esc(who||lead.email||"")}</span>
         <span class="email-meta">
-          <span class="tag ${esc(inbox)}">${esc(PROJECTS[inbox]||c.project||"Unfiled")}</span>
-          <span class="email-wait" data-card-id="${esc(c.id)}" title="${esc(receivedTitle(c))}">${esc(emailWaitLabel(c))}</span>
-          ${emailFileChipLabel(c) ? `<span class="email-files">${esc(emailFileChipLabel(c))}</span>` : ""}
-          <span class="duechip ${dueClass(c.due_on)}">${esc(emailUrgency(c))}</span>
+          ${lead.priority ? `<span class="tag studio-pod">${esc(lead.priority)}</span>` : ""}
+          ${lead.region ? `<span class="email-wait">${esc(lead.region)}</span>` : ""}
         </span>
       </button>
     </div>
-    ${detail}
   </article>`;
 }
 
+function coldLeadDetailHTML(entry){
+  const lead = entry.lead;
+  const edit = coldLeadEditFor(entry);
+  const state = coldLeadStatus(entry);
+  const sent = state.key==="sent";
+  const locked = sent || state.key==="queued" || state.key==="pending";
+  const context = [
+    ["Contact", [lead.contact_name, lead.title].filter(Boolean).join(" · ")],
+    ["Email", lead.email],
+    ["Segment", [lead.segment, lead.region].filter(Boolean).join(" · ")],
+    ["Hook", lead.suggested_hook]
+  ].filter(([,value]) => value);
+  return `
+    <section class="email-detail cold-lead-detail" aria-label="Cold lead draft" data-cold-detail-id="${esc(lead.id)}">
+      <div class="email-detail-head">
+        <div class="email-sheet-top">
+          <div class="email-sheet-id">
+            <div class="email-sheet-from">${esc(lead.company_name||"Unknown company")}</div>
+            <div class="email-sheet-subject">${esc(lead.email||"No email on file")}</div>
+          </div>
+          <button type="button" class="email-sheet-close" aria-label="Close lead">×</button>
+        </div>
+        <span class="cold-lead-state ${state.key} head">${esc(state.label)}</span>
+      </div>
+      <div class="email-detail-scroll">
+        <details class="email-more">
+          <summary class="email-more-toggle">Lead context${edit.generated?" · draft written by Ops":""}</summary>
+          <div class="email-more-body">
+            <div class="email-participants">
+              ${context.map(([label,value]) => `<div class="email-participant-row">
+                <span class="email-participant-label">${esc(label)}</span>
+                <span class="email-participant-list">${esc(value)}</span>
+              </div>`).join("")}
+            </div>
+          </div>
+        </details>
+        <label class="email-reply-label" for="cold-subject-${esc(lead.id)}">Subject</label>
+        <input class="cold-lead-subject" id="cold-subject-${esc(lead.id)}" type="text" value="${esc(edit.subject)}"${locked?" readonly":""} autocomplete="off">
+        <label class="email-reply-label" for="cold-body-${esc(lead.id)}">Cold email</label>
+        <textarea class="email-reply cold-lead-body" id="cold-body-${esc(lead.id)}"${locked?" readonly":""} autocomplete="off">${esc(edit.body)}</textarea>
+      </div>
+      <div class="email-actions">
+        <span class="email-save-state cold-lead-save" aria-live="polite">${sent?"Sent — Sales has this":state.key==="pending"?"Gmail sent. Waiting on the Sales write-back.":state.key==="queued"?"Queued for Sydney to send":""}</span>
+        ${state.key==="queued" ? `<button type="button" class="btn tiny ghost cold-lead-cancel">Cancel</button>` : ""}
+        <button type="button" class="btn tiny cold-lead-send"${locked||!lead.email||!entry.draft?" disabled":""} title="${!entry.draft?"Sales has no cold_lead_drafts row for this lead, so the send could not be reconciled":!lead.email?"This lead has no email address":"Queue this cold email for Sydney to send"}">${sent?"Sent":state.key==="queued"?"Queued":"Send"}</button>
+      </div>
+    </section>`;
+}
+
+function coldLeadEmptyHTML(){
+  if(coldLeadsState==="loading" || coldLeadsState==="idle") return `<div class="email-detail-empty"><div class="email-detail-empty-title">Loading today's leads…</div></div>`;
+  return `<div class="email-detail-empty">
+    <div class="email-detail-empty-title">Nothing selected</div>
+    <div class="email-detail-empty-sub">Pick a lead on the left to read the draft and send it.</div>
+  </div>`;
+}
+
+function renderColdLeads(root){
+  root.classList.add("email-board");
+  const progress = coldLeadProgress();
+  const queuedCount = queuedEmailCards().length;
+  const bar = `<div class="email-commandbar" aria-label="Cold leads controls">
+      <div class="email-command-copy">
+        <span class="email-command-title">${progress.sent}/${progress.total} sent today</span>
+        <span class="email-command-sub" aria-live="polite">
+          <span class="email-mail-line">From ${esc(COLD_LEAD_FROM)} · batch stamped for ${esc(COLD_LEAD_OPERATOR)}</span>
+          ${coldLeadsState==="error" ? `<span class="email-mail-line">${esc(coldLeadsError)}</span>` : ""}
+        </span>
+      </div>
+      ${sendNowControlHTML(queuedCount)}
+    </div>`;
+  let listHTML;
+  if(coldLeadsState==="loading" || coldLeadsState==="idle") listHTML = `<div class="empty email-empty">Loading today's leads…</div>`;
+  else if(coldLeadsState==="error") listHTML = `<div class="empty email-empty">Could not load cold leads. ${esc(coldLeadsError)}</div>`;
+  else if(!coldLeads.length) listHTML = `<div class="empty email-empty">No leads stamped for ${esc(COLD_LEAD_OPERATOR)} today. Studio Pod Sales assigns the batch.</div>`;
+  else listHTML = `<div class="email-list">${coldLeads.map(coldLeadRowHTML).join("")}</div>`;
+  const selected = openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null;
+  if(isDesktopEmailLayout()){
+    root.innerHTML = `<div class="email-two-pane">
+      <div class="email-pane-list">${bar}${listHTML}</div>
+      <div class="email-pane-detail${selected?"":" empty-pane"}">${selected ? coldLeadDetailHTML(selected) : coldLeadEmptyHTML()}</div>
+    </div>`;
+  }else{
+    root.innerHTML = bar + listHTML + (selected ? `<div class="email-pane-detail cold-lead-stacked">${coldLeadDetailHTML(selected)}</div>` : "");
+  }
+  bindSendNowControl(root);
+  bindColdLeads(root);
+  syncEmailPaneOffset();
+}
+
+function renderColdLeadDetailPane(){
+  const pane = document.querySelector(".email-pane-detail");
+  const entry = openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null;
+  if(!pane){ renderBoard(); return; }
+  pane.innerHTML = entry ? coldLeadDetailHTML(entry) : coldLeadEmptyHTML();
+  pane.classList.toggle("empty-pane", !entry);
+  bindColdLeadDetail(pane, entry);
+}
+
+function bindColdLeads(root){
+  (root||document).querySelectorAll(".cold-lead-card").forEach(el => {
+    const id = el.dataset.coldLead;
+    const toggle = el.querySelector(".cold-lead-toggle");
+    if(!toggle) return;
+    toggle.onclick = async () => {
+      if(!(await finishColdLeadDraft())) return;
+      openColdLeadId = openColdLeadId===id ? null : id;
+      if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+        root.querySelectorAll(".cold-lead-card").forEach(row => row.classList.toggle("open", row.dataset.coldLead===openColdLeadId));
+        renderColdLeadDetailPane();
+        return;
+      }
+      renderBoard();
+    };
+  });
+  const pane = (root||document).querySelector(".email-pane-detail");
+  if(pane) bindColdLeadDetail(pane, openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null);
+}
+
+function bindColdLeadDetail(pane, entry){
+  if(!pane || !entry) return;
+  const close = pane.querySelector(".email-sheet-close");
+  if(close) close.onclick = async () => {
+    if(!(await finishColdLeadDraft())) return;
+    openColdLeadId = null;
+    if(isDesktopEmailLayout()){
+      document.querySelectorAll(".cold-lead-card").forEach(row => row.classList.remove("open"));
+      renderColdLeadDetailPane();
+      return;
+    }
+    renderBoard();
+  };
+  const edit = coldLeadEditFor(entry);
+  const subject = pane.querySelector(".cold-lead-subject");
+  const body = pane.querySelector(".cold-lead-body");
+  const save = pane.querySelector(".cold-lead-save");
+  const markDirty = () => {
+    edit.dirty = edit.subject!==edit.savedSubject || edit.body!==edit.savedBody;
+    const key = coldLeadStatus(entry).key;
+    if(save && (key==="ready" || key==="staged")) save.textContent = edit.dirty ? "Unsaved" : "Draft saved";
+    scheduleColdLeadSave(entry);
+  };
+  if(subject && !subject.readOnly){
+    subject.oninput = () => { edit.subject = subject.value; markDirty(); };
+    subject.onblur = () => persistColdLeadDraft(entry);
+  }
+  if(body && !body.readOnly){
+    body.oninput = () => { edit.body = body.value; markDirty(); };
+    body.onblur = () => persistColdLeadDraft(entry);
+  }
+  const send = pane.querySelector(".cold-lead-send");
+  if(send && !send.disabled) send.onclick = () => sendColdLead(entry, send, save);
+  const cancel = pane.querySelector(".cold-lead-cancel");
+  if(cancel) cancel.onclick = async () => {
+    const card = entry.draft ? coldLeadCardForDraft(entry.draft.id) : null;
+    if(!card) return;
+    cancel.disabled = true;
+    cancel.textContent = "Canceling…";
+    const saved = await patchCard(card.id, { send_requested_at:null, send_requested_by:null }, { render:false });
+    if(saved){
+      setStatus("Cold email pulled out of the queue. The draft is still here to edit.");
+      renderColdLeadDetailPane();
+      renderColdLeadsIfIdle();
+    }else{
+      cancel.disabled = false;
+      cancel.textContent = "Cancel";
+    }
+  };
+}
+
+// Sends by handing the cold email to the same path every Ops reply uses: one
+// ops_card carrying the edited subject/body, queued for Sydney's inbox watch.
+// Ops never talks to Gmail, so it never claims the send succeeded — Sydney
+// writes cold_lead_drafts / cold_leads / cold_lead_touches after Gmail accepts.
+async function sendColdLead(entry, button, save){
+  const lead = entry.lead;
+  const edit = coldLeadEditFor(entry);
+  if(!lead.email){ setStatus("That lead has no email address.", true); return; }
+  if(entry.draft && entry.draft.sent_at){ setStatus("Already sent."); return; }
+  // Checked before the confirm: without a draft row Sales cannot reconcile the
+  // send, so there is no point asking.
+  if(!entry.draft){
+    setStatus("No cold_lead_drafts row for this lead, so Sales could not reconcile the send. Ask Sales to create the draft first.", true);
+    return;
+  }
+  if(!edit.body.trim()){ setStatus("Write the email before sending.", true); return; }
+  if(!window.confirm(`Queue this cold email to ${lead.email} for Sydney to send from ${COLD_LEAD_FROM}?`)) return;
+  button.disabled = true;
+  button.textContent = "Queueing…";
+  if(save) save.textContent = "Queueing…";
+  // Save the final text to cold_lead_drafts first so Sales' copy matches what
+  // goes out. A failure here is not fatal — the ops_card carries the real body
+  // either way — so warn and keep going rather than blocking the send.
+  await persistColdLeadDraft(entry);
+  const ref = COLD_LEAD_REF_PREFIX + entry.draft.id;
+  const draftId = entry.draft.id;
+  const existing = coldLeadCardForDraft(draftId);
+  const payload = {
+    title: `Cold outreach — ${lead.company_name||lead.email}`,
+    snippet: edit.body,
+    project: "studio-pod",
+    column_key: "sydney",
+    owner: "sydney",
+    source: "email",
+    source_ref: ref,
+    email_kind: "lead",
+    inbound_from: COLD_LEAD_FROM,
+    inbound_account: COLD_LEAD_FROM,
+    inbound_subject: edit.subject,
+    inbound_body: `Cold outreach to ${lead.contact_name||lead.email} at ${lead.company_name||""}. Not a reply — send as a new message from ${COLD_LEAD_FROM}.`,
+    reply_all: false,
+    reply_to: [lead.email],
+    reply_cc: [],
+    reply_bcc: [],
+    send_requested_at: isoNow(),
+    send_requested_by: "chris",
+    updated_at: isoNow()
+  };
+  let saved = null;
+  if(existing){
+    const { data, error } = await sb.from("ops_cards").update(payload).eq("id", existing.id).select("*").single();
+    if(error){
+      button.disabled = false;
+      button.textContent = "Send";
+      if(save) save.textContent = "Not queued";
+      setStatus("Could not queue the cold email: "+error.message, true);
+      return;
+    }
+    saved = data;
+    const idx = cards.findIndex(c => c.id===data.id);
+    if(idx>=0) cards[idx] = data; else cards.push(data);
+  }else{
+    const { data, error } = await sb.from("ops_cards").insert(Object.assign({ sort:0, done_at:null, done_by:null }, payload)).select("*").single();
+    if(error){
+      button.disabled = false;
+      button.textContent = "Send";
+      if(save) save.textContent = "Not queued";
+      setStatus("Could not queue the cold email: "+error.message, true);
+      return;
+    }
+    saved = data;
+    cards.push(data);
+  }
+  edit.savedSubject = edit.subject;
+  edit.savedBody = edit.body;
+  edit.dirty = false;
+  setStatus("Cold email queued. Use Send now to flush it, then Sales marks it sent.");
+  if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+    document.querySelectorAll(".cold-lead-card").forEach(row => {
+      if(row.dataset.coldLead===lead.id) row.outerHTML = coldLeadRowHTML(entry);
+    });
+    bindColdLeads(document.getElementById("board"));
+    renderColdLeadDetailPane();
+    return;
+  }
+  renderBoard();
+}
+
+function emailDetailEmptyHTML(){
+  return `<div class="email-detail-empty">
+    <div class="email-detail-empty-title">Nothing selected</div>
+    <div class="email-detail-empty-sub">Pick an email on the left to read it and write the reply here.</div>
+  </div>`;
+}
+
 function renderEmails(root){
+  if(emailMode==="cold-leads"){
+    renderColdLeads(root);
+    syncEmailSheetClass();
+    return;
+  }
   const list = openCards()
     .filter(isEmailCard)
+    // Cold-lead sends borrow an ops_card to reach Sydney's send path; they are
+    // not inbox replies, so they never show in this list.
+    .filter(c => !isColdLeadCard(c))
     .filter(c => !emailProjectFilter || projectKey(c.project)===emailProjectFilter)
     .filter(c => !emailKindFilter || isSalesLeadEmail(c))
     .sort(compareEmailPriority);
+  if(openEmailCardId && !list.some(c => c.id===openEmailCardId)) openEmailCardId = null;
   const queuedCount = queuedEmailCards().length;
   root.classList.add("email-board");
-  root.innerHTML = `<div class="email-commandbar" aria-label="Queued email controls">
+  const commandbar = `<div class="email-commandbar" aria-label="Queued email controls">
       <div class="email-command-copy">
         <span class="email-command-title">${queuedCount} queued ${queuedCount===1?"reply":"replies"}</span>
         <span class="email-command-sub" aria-live="polite">${emailMailStatusHTML()}</span>
       </div>
       ${sendNowControlHTML(queuedCount)}
-    </div>` + (list.length
+    </div>`;
+  const listHTML = list.length
     ? `<div class="email-list">${list.map(emailCardHTML).join("")}</div>`
-    : `<div class="empty email-empty">No email replies waiting${emailKindFilter ? " that are sales or leads" : ""}${emailProjectFilter ? " in this inbox" : ""}.</div>`);
-  bindSendNowControl(root);
-  bindEmailCards();
+    : `<div class="empty email-empty">No email replies waiting${emailKindFilter ? " that are sales or leads" : ""}${emailProjectFilter ? " in this inbox" : ""}.</div>`;
+  if(isDesktopEmailLayout()){
+    const selected = openEmailCardId ? list.find(c => c.id===openEmailCardId) : null;
+    root.innerHTML = `<div class="email-two-pane">
+      <div class="email-pane-list">${commandbar}${listHTML}</div>
+      <div class="email-pane-detail${selected?"":" empty-pane"}">${selected ? emailDetailHTML(selected) : emailDetailEmptyHTML()}</div>
+    </div>`;
+    bindSendNowControl(root);
+    bindEmailCards();
+    const pane = root.querySelector(".email-pane-detail");
+    if(selected) bindEmailDetail(pane, selected);
+    syncEmailPaneOffset();
+  }else{
+    root.innerHTML = commandbar + listHTML;
+    bindSendNowControl(root);
+    bindEmailCards();
+  }
   syncEmailSheetClass();
+}
+
+// Desktop only: swap the right pane without re-rendering the list, so the
+// list keeps its scroll position when Chris clicks through rows.
+function renderEmailDetailPane(){
+  const pane = document.querySelector(".email-pane-detail");
+  if(!pane) return;
+  // Match renderEmails' filters so a card hidden by the active filter cannot
+  // stay open in the pane.
+  const card = openEmailCardId ? openCards().find(c => c.id===openEmailCardId
+    && isEmailCard(c)
+    && !isColdLeadCard(c)
+    && (!emailProjectFilter || projectKey(c.project)===emailProjectFilter)
+    && (!emailKindFilter || isSalesLeadEmail(c))) : null;
+  if(!card) openEmailCardId = null;
+  pane.innerHTML = card ? emailDetailHTML(card) : emailDetailEmptyHTML();
+  pane.classList.toggle("empty-pane", !card);
+  if(card) bindEmailDetail(pane, card);
+}
+
+function setEmailSelection(nextId){
+  openEmailCardId = nextId;
+  $$(".email-card").forEach(el => el.classList.toggle("open", !!nextId && el.dataset.id===nextId));
+  $$(".email-card-toggle").forEach(el => {
+    const owner = el.closest(".email-card");
+    el.setAttribute("aria-expanded", String(!!nextId && !!owner && owner.dataset.id===nextId));
+  });
+  renderEmailDetailPane();
 }
 
 function cardsInColumn(columnKey, exceptId){
@@ -4539,6 +5260,7 @@ function openContentCreateModal(){
 
 function renderBoard(){
   const savedEmailScroll = captureOpenEmailScroll();
+  const savedEmailListScroll = captureEmailListScroll();
   tick();
   const root = $("#board");
   root.classList.remove("master-board");
@@ -4549,6 +5271,7 @@ function renderBoard(){
     root.classList.remove("content-board");
     root.classList.remove("home-board");
     renderEmails(root);
+    restoreEmailListScroll(savedEmailListScroll);
     restoreOpenEmailScroll(savedEmailScroll);
     return;
   }
@@ -5166,6 +5889,10 @@ function bindRecipientControls(el, card, draft){
 
 async function closeOpenEmail(){
   if(!(await finishOpenEmailDraft())) return false;
+  if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+    setEmailSelection(null);
+    return true;
+  }
   openEmailCardId = null;
   renderBoard();
   return true;
@@ -5199,20 +5926,33 @@ function bindEmailCards(){
     el.querySelector(".chk").onchange = e => completeCard(card, e.target);
     el.querySelector(".email-card-toggle").onclick = async () => {
       if(!(await finishOpenEmailDraft())) return;
-      if(openEmailCardId===card.id){
-        openEmailCardId = null;
-      }else{
-        openEmailCardId = card.id;
-        openEmailPanel = "reply";
+      const nextId = openEmailCardId===card.id ? null : card.id;
+      if(nextId) openEmailPanel = "reply";
+      // Desktop swaps only the right pane so the list never jumps.
+      if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+        setEmailSelection(nextId);
+        return;
       }
+      openEmailCardId = nextId;
       renderBoard();
     };
-    const closeBtn = el.querySelector(".email-sheet-close");
+    // On desktop the detail lives in the right pane, bound separately.
+    if(!isDesktopEmailLayout()) bindEmailDetail(el, card);
+  });
+}
+
+function bindEmailDetail(el, card){
+  if(!el || !card) return;
+  const closeBtn = el.querySelector(".email-sheet-close");
     if(closeBtn) closeBtn.onclick = () => closeOpenEmail();
     el.querySelectorAll(".email-panel-btn").forEach(button => {
       button.onclick = async () => {
         if(openEmailPanel==="reply" && !(await finishOpenEmailDraft())) return;
         openEmailPanel = button.dataset.panel;
+        if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+          renderEmailDetailPane();
+          return;
+        }
         renderBoard();
       };
     });
@@ -5305,12 +6045,11 @@ function bindEmailCards(){
         if(saveState) saveState.textContent = "Not queued";
       }
     };
-  });
 }
 
 function updateEmailDraftSaveState(cardId, text){
-  const card = document.querySelector(`.email-card[data-id="${CSS.escape(cardId)}"]`);
-  const saveState = card && card.querySelector(".email-save-state");
+  const detail = document.querySelector(`.email-detail[data-detail-id="${CSS.escape(cardId)}"]`);
+  const saveState = detail && detail.querySelector(".email-save-state");
   if(saveState) saveState.textContent = text;
 }
 
@@ -5698,6 +6437,23 @@ $$("[data-email-kind]").forEach(ch => ch.onclick = async () => {
   renderBoard();
 });
 
+$$("[data-email-mode]").forEach(ch => ch.onclick = async () => {
+  if(!(await finishOpenEmailDraft())) return;
+  const next = ch.dataset.emailMode || "inbox";
+  if(next===emailMode) return;
+  if(!(await finishColdLeadDraft())) return;
+  // Each mode owns its own selection. Leaving one selected across the switch
+  // scroll-locks the phone sheet and lets Escape wipe the wrong pane.
+  if(openEmailCardId){ discardEmailDraft(openEmailCardId); openEmailCardId = null; }
+  openColdLeadId = null;
+  emailMode = next;
+  localStorage.setItem("ops_email_mode", emailMode);
+  $$("[data-email-mode]").forEach(x => x.classList.toggle("on", x===ch));
+  syncActorUI();
+  renderBoard();
+  if(emailMode==="cold-leads" && coldLeadsState!=="loading") loadColdLeads();
+});
+
 $$("[data-content-status]").forEach(ch => ch.onclick = () => {
   contentStatusFilter = ch.dataset.contentStatus === undefined ? "open" : ch.dataset.contentStatus;
   $$("[data-content-status]").forEach(x => x.classList.toggle("on", x===ch));
@@ -6032,19 +6788,46 @@ async function boot(){
   if(session) onSignedIn(session); else showLogin();
 }
 let lastPhoneEmailLayout = isPhoneEmailLayout();
+let lastDesktopEmailLayout = isDesktopEmailLayout();
 window.addEventListener("resize", () => {
   const phone = isPhoneEmailLayout();
+  const desktop = isDesktopEmailLayout();
+  // Crossing 900px swaps stacked <-> two-pane, so the DOM has to be rebuilt.
+  if(actor==="emails" && desktop!==lastDesktopEmailLayout){
+    lastPhoneEmailLayout = phone;
+    lastDesktopEmailLayout = desktop;
+    renderBoard();
+    return;
+  }
+  lastDesktopEmailLayout = desktop;
   if(actor==="emails" && phone!==lastPhoneEmailLayout && openEmailCardId){
     lastPhoneEmailLayout = phone;
     renderBoard();
     return;
   }
   lastPhoneEmailLayout = phone;
-  if(actor==="emails") syncEmailSheetClass();
+  if(actor==="emails"){
+    syncEmailSheetClass();
+    syncEmailPaneOffset();
+  }
 });
 document.addEventListener("keydown", event => {
-  if(event.key!=="Escape" || actor!=="emails" || !openEmailCardId) return;
+  if(event.key!=="Escape" || actor!=="emails") return;
   if(document.querySelector(".card-detail, .modal")) return;
+  if(emailMode==="cold-leads"){
+    if(!openColdLeadId) return;
+    event.preventDefault();
+    finishColdLeadDraft();
+    openColdLeadId = null;
+    if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+      document.querySelectorAll(".cold-lead-card").forEach(row => row.classList.remove("open"));
+      renderColdLeadDetailPane();
+      return;
+    }
+    renderBoard();
+    return;
+  }
+  if(!openEmailCardId) return;
   event.preventDefault();
   closeOpenEmail();
 });
