@@ -41,9 +41,12 @@ Everything in this repo is served publicly at that origin **except** `commodores
 
 ---
 
-## Commodores access control — status (2026-08-25)
+## Commodores access control — status (merged 2026-09-04)
 
-RESOLVED on branch `claude/commodores-auth` (pending Chris's merge + coach invites):
+RESOLVED and merged to `main`. `claude/commodores-auth` has no commits left
+outside `main`; the branch can be deleted. Coach invites are a Supabase Auth
+check, not a code change — verify the three coaches exist in
+`commodores_coaches` and have accepted invites.
 
 1. ~~PIN gate is cosmetic~~ → replaced with Supabase Auth email+password login.
 2. ~~PIN hash in file~~ → removed.
