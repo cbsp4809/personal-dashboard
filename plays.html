@@ -95,6 +95,7 @@ h1{margin:0 0 6px;font:400 30px/1.05 var(--serif)}
 .play-name small{display:block;margin:0 0 3px;color:var(--gold);font:700 11px/1.2 var(--sans);letter-spacing:.16em;text-transform:uppercase}
 .field-wrap{border:1px solid var(--strong);border-radius:16px;overflow:hidden;background:#000;touch-action:pan-y;-webkit-user-select:none;user-select:none}
 .field-wrap.is-drawing{touch-action:none;overscroll-behavior:none}
+body.draw-active .field-wrap{touch-action:none;overscroll-behavior:none}
 .field{display:block;width:100%;height:auto}
 .field text{font:700 11px var(--sans)}
 .field .yard{stroke:rgba(255,255,255,.2);stroke-width:1}
@@ -323,11 +324,7 @@ body.immersive.gameday .scrub{display:none}
     <button type="button" data-unit="B">Q2/Q4 names</button>
   </div>
   <div id="drawPanel" class="hidden">
-    <div class="drawmode" id="drawMode" role="group" aria-label="Draw mode">
-      <button type="button" data-drawmode="move">Move players</button>
-      <button type="button" data-drawmode="route">Draw routes</button>
-    </div>
-    <p class="draw-help" id="drawHelp">Move players: drag anyone to place them. Draw routes: drag from a player to draw its path.</p>
+    <p class="draw-help" id="drawHelp">Tap a player to pick him. Drag him behind the line to move him. Drag across the line of scrimmage to draw his route — keep your finger going to curl it.</p>
     <div class="chips" id="letterChips"></div>
     <div class="draw-tools">
       <button type="button" id="sitBtn">Sit / no route</button>
@@ -370,10 +367,6 @@ body.immersive.gameday .scrub{display:none}
         <button type="button" id="gdDraw" class="gd-draw">Draw a play</button>
       </div>
       <div class="gd-sheet" id="gdSheet" aria-label="Call sheet"></div>
-      <div class="gd-drawmode" id="gdDrawMode" role="group" aria-label="Draw mode">
-        <button type="button" data-drawmode="move">Move players</button>
-        <button type="button" data-drawmode="route">Draw routes</button>
-      </div>
       <div class="gd-drawbar" id="gdDrawBar">
         <button type="button" id="gdFresh">↺ Fresh</button>
         <button type="button" id="gdDrawPlay">▶ Play</button>
@@ -1199,7 +1192,7 @@ function setCue(play,mode){
   const look=play.looks[STATE.look];
   if(STATE.mode==="draw"){
     if(!STATE.selected){
-      $("#cue").textContent="Tap a letter chip to draw. Drag letters to place them. Swipe empty turf to scroll.";
+      $("#cue").textContent="Tap a player to pick him. Drag behind the line to move; drag across the line to draw.";
       return;
     }
     const spot=play.spots.find(s=>s.letter===STATE.selected);
@@ -1317,6 +1310,7 @@ function renderChrome(){
   const play=workingPlay();
   $("#modePlay").classList.toggle("on",STATE.mode==="play");
   $("#modeDraw").classList.toggle("on",STATE.mode==="draw");
+  document.body.classList.toggle("draw-active",STATE.mode==="draw");
   $("#drawPanel").classList.toggle("hidden",STATE.mode!=="draw");
   $("#savePanel").classList.toggle("hidden",STATE.mode!=="draw");
   $("#scrub").disabled=STATE.mode==="draw";
@@ -1847,92 +1841,91 @@ function startRouteDraw(evt,pt){
   paintOnly(pointer.points);
 }
 
+// Interaction model (no mode toggle): the line of scrimmage IS the switch.
+// - Tap a player to pick him.
+// - Behind the LOS: the finger moves/places the player.
+// - Across the LOS (downfield): the finger draws his route from where he stands.
+// One fluid gesture can reposition, then cross the line and draw.
+function beginRoute(spot,pt){
+  spot.sit=false;
+  spot.route=[];
+  return [pt];
+}
 function onFieldPointerDown(evt){
   if(STATE.mode!=="draw"||!draft) return;
   if(evt.isPrimary===false) return;
   const pt=svgPoint(evt);
   if(!pt) return;
-  pointer={
-    kind:"pending",
-    id:evt.pointerId,
-    start:pt,
-    clientX:evt.clientX,
-    clientY:evt.clientY,
-    hit:hitLetter(draft,pt)
-  };
+  const hit=hitLetter(draft,pt);
+  if(hit){
+    // Pick this player; decide move-vs-draw once the finger actually moves.
+    STATE.selected=hit;
+    pointer={kind:"engage",id:evt.pointerId,letter:hit,start:pt,mode:null,points:null};
+  }else if(STATE.selected&&selectedSpot()){
+    const spot=selectedSpot();
+    if(pt.y<LOS_Y){
+      // Press downfield with a player picked → draw his route from here.
+      pointer={kind:"engage",id:evt.pointerId,letter:STATE.selected,start:pt,mode:"draw",points:beginRoute(spot,pt)};
+      markDirty();
+    }else{
+      // Press behind the line → jump him to that spot.
+      spot.x=pt.x;spot.y=storedFormationY(pt.y);
+      pointer={kind:"engage",id:evt.pointerId,letter:STATE.selected,start:pt,mode:"move",points:null};
+      markDirty();
+    }
+  }else{
+    pointer=null;
+    return;
+  }
+  try{$("#fieldHost").setPointerCapture(evt.pointerId)}catch(_){}
+  if(evt.cancelable) evt.preventDefault();
+  setFieldDrawing(true);
+  paintOnly(pointer.points);
 }
 function onFieldPointerMove(evt){
   if(!pointer||STATE.mode!=="draw"||!draft) return;
   if(pointer.id!=null&&evt.pointerId!==pointer.id) return;
+  if(pointer.kind!=="engage") return;
   const pt=svgPoint(evt);
-  if(pointer.kind==="drag"){
-    if(!pt) return;
-    evt.preventDefault();
-    const spot=draft.spots.find(s=>s.letter===pointer.letter);
-    if(!spot) return;
-    const start=formationPoint(spot);
-    if(Math.hypot(pt.x-start.x,pt.y-start.y)>3) pointer.moved=true;
-    spot.x=pt.x;
-    spot.y=storedFormationY(pt.y);
-    markDirty();
-    paintOnly();
-    return;
-  }
-  if(pointer.kind==="draw"){
-    if(!pt) return;
-    evt.preventDefault();
+  if(!pt) return;
+  if(evt.cancelable) evt.preventDefault();
+  const spot=draft.spots.find(s=>s.letter===pointer.letter);
+  if(!spot) return;
+  if(pointer.mode==="draw"){
     const last=pointer.points[pointer.points.length-1];
     if(!last||Math.hypot(pt.x-last.x,pt.y-last.y)>=5) pointer.points.push(pt);
     paintOnly(pointer.points);
     return;
   }
-  if(pointer.kind!=="pending") return;
-  const dx=evt.clientX-pointer.clientX;
-  const dy=evt.clientY-pointer.clientY;
-  if(Math.hypot(dx,dy)<POINTER_SLOP_PX) return;
-  const hit=pointer.hit;
-  // Move mode: dragging any player repositions it. Draw routes mode: dragging
-  // from a player draws its route (and selects it). This keeps "place first,
-  // then draw" unambiguous on touch.
-  if(STATE.drawMode==="move"){
-    if(hit){startLetterDrag(evt,hit,pt);return;}
-    pointer=null;
+  // Undecided or moving: wait for a real drag so a tap stays a tap.
+  if(pointer.mode===null&&Math.hypot(pt.x-pointer.start.x,pt.y-pointer.start.y)<POINTER_SLOP_PX) return;
+  if(pt.y<LOS_Y){
+    // Crossed the line → start the route from the player's current position.
+    pointer.mode="draw";
+    pointer.points=beginRoute(spot,pt);
+    markDirty();
+    paintOnly(pointer.points);
     return;
   }
-  if(hit){
-    if(hit!==STATE.selected) STATE.selected=hit;
-    startRouteDraw(evt,pt||pointer.start);
-    return;
-  }
-  if(!STATE.selected||!selectedSpot()){
-    pointer=null;
-    return;
-  }
-  if(Math.abs(dy)>=Math.abs(dx)*1.15){
-    pointer=null;
-    return;
-  }
-  startRouteDraw(evt,pt||pointer.start);
+  // Behind the line → the player follows the finger.
+  pointer.mode="move";
+  spot.x=pt.x;
+  spot.y=storedFormationY(pt.y);
+  markDirty();
+  paintOnly();
 }
 function onFieldPointerUp(evt){
   if(!pointer) return;
   if(pointer.id!=null&&evt&&evt.pointerId!==pointer.id) return;
   const pointerId=pointer.id;
-  const pending=pointer.kind==="pending";
-  const hit=pointer.hit;
-  const wasDraw=pointer.kind==="draw";
-  if(pointer.kind==="draw"){
-    const spot=selectedSpot();
-    if(spot){
-      spot.sit=false;
-      spot.route=pointer.points.slice();
-      if(spot.route.length<2) spot.route=[];
-    }
+  const drew=pointer.mode==="draw";
+  if(drew){
+    const spot=draft.spots.find(s=>s.letter===pointer.letter);
+    if(spot) spot.route=(pointer.points||[]).slice();
   }
   pointer=null;
   releaseFieldPointer(pointerId);
-  if(pending&&hit) STATE.selected=hit;
-  if(wasDraw&&STATE.quickDraw) advanceQuickDraw();
+  if(drew&&STATE.quickDraw) advanceQuickDraw();
   render();
 }
 
@@ -2203,7 +2196,7 @@ $("#newPlayBtn").onclick=startNewPlay;
 $("#saveBtn").onclick=saveDraft;
 $("#deleteBtn").onclick=deleteDraft;
 const host=$("#fieldHost");
-host.addEventListener("pointerdown",onFieldPointerDown,{passive:true});
+host.addEventListener("pointerdown",onFieldPointerDown,{passive:false});
 window.addEventListener("pointermove",onFieldPointerMove,{passive:false});
 window.addEventListener("pointerup",onFieldPointerUp);
 window.addEventListener("pointercancel",onFieldPointerUp);
