@@ -78,6 +78,7 @@ a{color:var(--brass)}
 .install-hint{margin-top:10px;font-size:12px;line-height:1.4;color:var(--muted);}
 
 #app{display:none;min-height:100vh;width:100%;max-width:100%;overflow-x:hidden;padding-bottom:calc(124px + env(safe-area-inset-bottom, 0px));}
+#app.signed-in{display:block;}
 .top{width:100%;min-width:0;padding:22px 28px 0;max-width:1720px;margin:0 auto;}
 .mast{display:flex;min-width:0;max-width:100%;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:18px;border-bottom:1px solid var(--line);}
 .brand{min-width:0;}
@@ -463,9 +464,14 @@ a{color:var(--brass)}
    701-899px band keep the original stacked flow. */
 @media(min-width:900px){
   .board.email-board{max-width:1720px;padding:0 28px 20px;}
-  /* Never taller than the screen — Send has to stay reachable without
-     scrolling the page. */
-  .email-two-pane{display:grid;min-width:0;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:stretch;height:calc(100dvh - var(--email-pane-offset,260px));min-height:340px;max-height:calc(100dvh - var(--email-pane-offset,260px));}
+  /* The Emails view becomes a fixed-height flex column: header at its natural
+     size, board taking the rest. No computed offsets — the panes simply fill
+     what is left, so Send can never fall below the fold. */
+  #app.signed-in.email-view{display:flex;flex-direction:column;height:100dvh;min-height:0;padding-bottom:0;overflow:hidden;}
+  #app.signed-in.email-view .top{flex:0 0 auto;}
+  #app.signed-in.email-view .board.email-board{flex:1 1 auto;min-height:0;overflow:hidden;padding-bottom:12px;}
+  #app.signed-in.email-view .below-board{flex:0 0 auto;padding-bottom:12px;}
+  .email-two-pane{display:grid;min-width:0;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:stretch;height:100%;min-height:0;}
   .email-pane-list{display:flex;min-width:0;flex-direction:column;height:100%;}
   .email-pane-list .email-commandbar{flex:0 0 auto;}
   .email-pane-list .email-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
@@ -504,6 +510,16 @@ a{color:var(--brass)}
   /* Send stays pinned to the bottom edge of the pane. */
   .email-pane-detail .email-actions{flex:0 0 auto;padding:12px 20px;border-top:1px solid var(--line);background:var(--bg-2);}
   .email-pane-detail .cold-lead-body{min-height:0;}
+}
+/* 701-899px: too narrow for two panes, but Send still must not require
+   scrolling. The open card's detail is capped to the viewport and scrolls
+   inside itself, with Send pinned under it. */
+@media(min-width:701px) and (max-width:899px){
+  .email-card.open .email-detail{display:flex;min-height:0;flex-direction:column;max-height:calc(100dvh - 150px);}
+  .email-card.open .email-detail-scroll{display:flex;min-height:0;flex:1 1 auto;flex-direction:column;gap:10px;max-height:none;}
+  .email-card.open .email-reply{flex:1 1 auto;min-height:140px;resize:none;}
+  .email-card.open .email-more[open] .email-more-body{max-height:32vh;overflow-y:auto;}
+  .email-card.open .email-actions{flex:0 0 auto;}
 }
 /* Cold Leads mode */
 .cold-lead-state{flex-shrink:0;padding:2px 8px;border-radius:999px;background:var(--line);color:var(--soft);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
@@ -1102,13 +1118,17 @@ setInterval(tick, 30000);
 
 function showLogin(){
   $("#boot").classList.add("hidden");
-  $("#app").style.display = "none";
+  // Display is owned by the .signed-in class, not an inline style, so the
+  // Emails view can switch #app to a flex column at desktop widths.
+  $("#app").classList.remove("signed-in");
+  $("#app").style.removeProperty("display");
   $("#login").style.display = "flex";
 }
 function showApp(){
   $("#boot").classList.add("hidden");
   $("#login").style.display = "none";
-  $("#app").style.display = "block";
+  $("#app").classList.add("signed-in");
+  $("#app").style.removeProperty("display");
   $("#userLabel").textContent = currentUser && currentUser.email ? currentUser.email : "Signed in";
   syncActorUI();
   tick();
@@ -2648,18 +2668,6 @@ function restoreEmailListScroll(top){
   if(list) list.scrollTop = top;
 }
 
-// The two-pane grid needs to know where the board starts so both panes can
-// scroll inside the viewport instead of the page scrolling as a whole.
-function syncEmailPaneOffset(){
-  const board = document.getElementById("board");
-  if(!board || !isDesktopEmailLayout()) return;
-  // Viewport-relative, never document-relative: the value is subtracted from
-  // 100dvh, so adding scrollY here would size the pane taller than the screen
-  // and push Send below the fold.
-  const top = Math.max(0, Math.round(board.getBoundingClientRect().top));
-  document.documentElement.style.setProperty("--email-pane-offset", (top + 28)+"px");
-}
-
 function shouldPreserveOpenEmail(){
   if(actor!=="emails" || !openEmailCardId) return false;
   return !!openEmailDetailEl();
@@ -3215,10 +3223,9 @@ function emailMoreHTML(card, replyDraft){
     replyFiles ? attachmentCountLabel(replyFiles, "to send") : ""
   ].filter(Boolean);
   const label = countBits.length ? `Who / files · ${countBits.join(" · ")}` : "Who / files";
-  // Desktop two-pane keeps this collapsed so the reply box is visible the
-  // moment a row is clicked. The 701-899px band keeps the old expanded default.
-  const expanded = !isPhoneEmailLayout() && !isDesktopEmailLayout();
-  return `<details class="email-more"${expanded?" open":""}>
+  // Always collapsed. Expanding it by default pushes the reply box — and the
+  // Send button under it — below the fold at every width.
+  return `<details class="email-more">
     <summary class="email-more-toggle">${esc(label)}</summary>
     <div class="email-more-body">${parts.join("")}</div>
   </details>`;
@@ -3657,7 +3664,6 @@ function renderColdLeads(root){
   }
   bindSendNowControl(root);
   bindColdLeads(root);
-  syncEmailPaneOffset();
 }
 
 function renderColdLeadDetailPane(){
@@ -3872,7 +3878,6 @@ function renderEmails(root){
     bindEmailCards();
     const pane = root.querySelector(".email-pane-detail");
     if(selected) bindEmailDetail(pane, selected);
-    syncEmailPaneOffset();
   }else{
     root.innerHTML = commandbar + listHTML;
     bindSendNowControl(root);
@@ -5935,6 +5940,12 @@ function bindEmailCards(){
       }
       openEmailCardId = nextId;
       renderBoard();
+      // Tablet band: bring the opened card to the top so its capped detail —
+      // and the Send button under it — land on screen.
+      if(nextId && !isPhoneEmailLayout() && !isDesktopEmailLayout()){
+        const opened = document.querySelector(`.email-card[data-id="${CSS.escape(nextId)}"]`);
+        if(opened) opened.scrollIntoView({ block:"start", behavior:"smooth" });
+      }
     };
     // On desktop the detail lives in the right pane, bound separately.
     if(!isDesktopEmailLayout()) bindEmailDetail(el, card);
@@ -6806,10 +6817,7 @@ window.addEventListener("resize", () => {
     return;
   }
   lastPhoneEmailLayout = phone;
-  if(actor==="emails"){
-    syncEmailSheetClass();
-    syncEmailPaneOffset();
-  }
+  if(actor==="emails") syncEmailSheetClass();
 });
 document.addEventListener("keydown", event => {
   if(event.key!=="Escape" || actor!=="emails") return;
