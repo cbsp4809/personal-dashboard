@@ -506,10 +506,21 @@ a{color:var(--brass)}
   /* An expanded Who / files block scrolls inside itself instead of pushing
      the reply box off the bottom of the pane. */
   .email-pane-detail .email-more[open] .email-more-body{max-height:38vh;overflow-y:auto;}
-  .email-pane-detail .email-attach-dock{flex:0 0 auto;padding:0 20px;}
-  /* Send stays pinned to the bottom edge of the pane. */
-  .email-pane-detail .email-actions{flex:0 0 auto;padding:12px 20px;border-top:1px solid var(--line);background:var(--bg-2);}
+  .email-pane-detail .email-attach-dock{flex:0 0 auto;padding:0;}
   .email-pane-detail .cold-lead-body{min-height:0;}
+  /* Belt and braces: even if the flex chain above ever fails to resolve, the
+     pane can never grow past the window, so its scroll area stays usable. */
+  .email-pane-detail{max-height:100%;}
+}
+/* Send sits in the header on tablet and desktop — never below the draft, so it
+   cannot be pushed off the bottom of the screen. Phones keep the pinned
+   bottom bar, which is easier to reach with a thumb. */
+@media(min-width:701px){
+  .email-detail-head{flex-wrap:wrap;gap:10px;}
+  .email-head-controls{display:flex;min-width:0;flex:1 1 auto;align-items:center;justify-content:space-between;gap:12px;order:3;width:100%;}
+  .email-head-controls .email-actions{flex:0 0 auto;padding:0;border-top:0;background:transparent;}
+  .email-head-controls .email-save-state{white-space:nowrap;}
+  .cold-lead-state.head{margin-top:0;}
 }
 /* 701-899px: too narrow for two panes, but Send still must not require
    scrolling. The open card's detail is capped to the viewport and scrolls
@@ -3283,6 +3294,15 @@ function emailDetailHTML(c){
   const queueDisabled = !emailQueueColumnsAvailable || !emailRecipientColumnsAvailable;
   const replyDraft = openEmailPanel==="reply" ? emailDraftFor(c) : null;
   const more = emailMoreHTML(c, replyDraft);
+  // Send lives in the header on anything bigger than a phone, so it can never
+  // end up below the fold no matter how tall the draft gets. Phones keep the
+  // pinned bottom bar, which is easier to reach with a thumb.
+  const phone = isPhoneEmailLayout();
+  const actions = `<div class="email-actions">
+        <span class="email-save-state" aria-live="polite"></span>
+        ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
+        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${queueDisabled?"Apply the Ops email SQL files before queueing replies":"Save and queue this reply"}">${queueDisabled?"Setup required":"Send"}</button>
+      </div>`;
   return `
     <section class="email-detail" aria-label="Email details" data-detail-id="${esc(c.id)}">
       <div class="email-detail-head">
@@ -3293,31 +3313,31 @@ function emailDetailHTML(c){
           </div>
           <button type="button" class="email-sheet-close" aria-label="Close email">×</button>
         </div>
-        <div class="email-segment" role="group" aria-label="Choose incoming email or reply draft">
-          <button type="button" class="email-panel-btn${openEmailPanel==="incoming"?" on":""}" data-panel="incoming" aria-pressed="${openEmailPanel==="incoming"}">Incoming</button>
-          <button type="button" class="email-panel-btn${openEmailPanel==="reply"?" on":""}" data-panel="reply" aria-pressed="${openEmailPanel==="reply"}">Reply</button>
+        <div class="email-head-controls">
+          <div class="email-segment" role="group" aria-label="Choose incoming email or reply draft">
+            <button type="button" class="email-panel-btn${openEmailPanel==="incoming"?" on":""}" data-panel="incoming" aria-pressed="${openEmailPanel==="incoming"}">Incoming</button>
+            <button type="button" class="email-panel-btn${openEmailPanel==="reply"?" on":""}" data-panel="reply" aria-pressed="${openEmailPanel==="reply"}">Reply</button>
+          </div>
+          ${phone ? "" : actions}
         </div>
       </div>
       <div class="email-detail-scroll">
         ${openEmailPanel==="incoming" ? `
           <div class="email-incoming">
-            ${isPhoneEmailLayout() ? "" : more}
+            ${phone ? "" : more}
             <div class="email-incoming-body">${esc(c.inbound_body||"Received message body unavailable.")}</div>
-            ${isPhoneEmailLayout() ? more : ""}
+            ${phone ? more : ""}
           </div>
         ` : `
-          ${isPhoneEmailLayout() ? "" : more}
+          ${phone ? "" : more}
           <label class="email-reply-label" for="reply-${esc(c.id)}">Reply draft</label>
           <textarea class="email-reply" id="reply-${esc(c.id)}" placeholder="Write the reply Sydney should send…" autocomplete="off">${esc(draft)}</textarea>
-          ${isPhoneEmailLayout() ? more : ""}
+          ${phone ? more : ""}
+          ${!phone && openEmailPanel==="reply" ? `<div class="email-attach-dock">${emailAttachmentsHTML(c, "reply")}</div>` : ""}
         `}
       </div>
-      ${openEmailPanel==="reply" ? `<div class="email-attach-dock">${emailAttachmentsHTML(c, "reply")}</div>` : ""}
-      <div class="email-actions">
-        <span class="email-save-state" aria-live="polite"></span>
-        ${openEmailPanel==="reply" ? `<button type="button" class="btn tiny ghost copy-draft"${draft?"":" disabled"}>Copy</button>` : ""}
-        <button type="button" class="btn tiny queue-send"${queueDisabled?" disabled":""} title="${queueDisabled?"Apply the Ops email SQL files before queueing replies":"Save and queue this reply"}">${queueDisabled?"Setup required":"Send"}</button>
-      </div>
+      ${phone && openEmailPanel==="reply" ? `<div class="email-attach-dock">${emailAttachmentsHTML(c, "reply")}</div>` : ""}
+      ${phone ? actions : ""}
     </section>`;
 }
 
@@ -3583,6 +3603,12 @@ function coldLeadDetailHTML(entry){
   const state = coldLeadStatus(entry);
   const sent = state.key==="sent";
   const locked = sent || state.key==="queued" || state.key==="pending";
+  const phone = isPhoneEmailLayout();
+  const actions = `<div class="email-actions">
+        <span class="email-save-state cold-lead-save" aria-live="polite">${sent?"Sent — Sales has this":state.key==="pending"?"Gmail sent. Waiting on the Sales write-back.":state.key==="queued"?"Queued for Sydney to send":""}</span>
+        ${state.key==="queued" ? `<button type="button" class="btn tiny ghost cold-lead-cancel">Cancel</button>` : ""}
+        <button type="button" class="btn tiny cold-lead-send"${locked||!lead.email||!entry.draft?" disabled":""} title="${!entry.draft?"Sales has no cold_lead_drafts row for this lead, so the send could not be reconciled":!lead.email?"This lead has no email address":"Queue this cold email for Sydney to send"}">${sent?"Sent":state.key==="queued"?"Queued":"Send"}</button>
+      </div>`;
   const context = [
     ["Contact", [lead.contact_name, lead.title].filter(Boolean).join(" · ")],
     ["Email", lead.email],
@@ -3599,7 +3625,10 @@ function coldLeadDetailHTML(entry){
           </div>
           <button type="button" class="email-sheet-close" aria-label="Close lead">×</button>
         </div>
-        <span class="cold-lead-state ${state.key} head">${esc(state.label)}</span>
+        <div class="email-head-controls">
+          <span class="cold-lead-state ${state.key} head">${esc(state.label)}</span>
+          ${phone ? "" : actions}
+        </div>
       </div>
       <div class="email-detail-scroll">
         <details class="email-more">
@@ -3618,11 +3647,7 @@ function coldLeadDetailHTML(entry){
         <label class="email-reply-label" for="cold-body-${esc(lead.id)}">Cold email</label>
         <textarea class="email-reply cold-lead-body" id="cold-body-${esc(lead.id)}"${locked?" readonly":""} autocomplete="off">${esc(edit.body)}</textarea>
       </div>
-      <div class="email-actions">
-        <span class="email-save-state cold-lead-save" aria-live="polite">${sent?"Sent — Sales has this":state.key==="pending"?"Gmail sent. Waiting on the Sales write-back.":state.key==="queued"?"Queued for Sydney to send":""}</span>
-        ${state.key==="queued" ? `<button type="button" class="btn tiny ghost cold-lead-cancel">Cancel</button>` : ""}
-        <button type="button" class="btn tiny cold-lead-send"${locked||!lead.email||!entry.draft?" disabled":""} title="${!entry.draft?"Sales has no cold_lead_drafts row for this lead, so the send could not be reconciled":!lead.email?"This lead has no email address":"Queue this cold email for Sydney to send"}">${sent?"Sent":state.key==="queued"?"Queued":"Send"}</button>
-      </div>
+      ${phone ? actions : ""}
     </section>`;
 }
 
