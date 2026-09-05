@@ -471,8 +471,11 @@ a{color:var(--brass)}
   #app.signed-in.email-view .top{flex:0 0 auto;}
   #app.signed-in.email-view .board.email-board{flex:1 1 auto;min-height:0;overflow:hidden;padding-bottom:12px;}
   #app.signed-in.email-view .below-board{flex:0 0 auto;padding-bottom:12px;}
-  .email-two-pane{display:grid;min-width:0;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px;align-items:stretch;height:100%;min-height:0;}
-  .email-pane-list{display:flex;min-width:0;flex-direction:column;height:100%;}
+  /* grid-template-rows is load-bearing: without an explicit minmax(0,1fr) the
+     implicit row sizes to its content and overflows the bounded container, so
+     neither pane can ever scroll. */
+  .email-two-pane{display:grid;min-width:0;grid-template-columns:minmax(300px,380px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:16px;align-items:stretch;height:100%;min-height:0;}
+  .email-pane-list{display:flex;min-width:0;min-height:0;flex-direction:column;height:100%;}
   .email-pane-list .email-commandbar{flex:0 0 auto;}
   .email-pane-list .email-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
   .email-pane-list .email-empty{flex:0 0 auto;}
@@ -483,7 +486,7 @@ a{color:var(--brass)}
   .email-pane-list .email-meta{margin-top:6px;}
   .email-pane-list .email-check{width:36px;min-width:36px;height:36px;margin:6px 0 0 4px;}
   .email-card.open{border-color:var(--brass);box-shadow:0 0 0 1px rgba(196,165,116,.35);}
-  .email-pane-detail{display:flex;min-width:0;flex-direction:column;height:100%;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);overflow:hidden;}
+  .email-pane-detail{display:flex;min-width:0;min-height:0;flex-direction:column;height:100%;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);overflow:hidden;}
   .email-pane-detail.empty-pane{align-items:center;justify-content:center;}
   .email-detail-empty{padding:24px;text-align:center;}
   .email-detail-empty-title{color:var(--ink);font-size:15px;font-weight:700;}
@@ -542,6 +545,7 @@ a{color:var(--brass)}
 .cold-lead-subject:focus-visible{border-color:var(--brass);outline:none;}
 .cold-lead-subject[readonly]{opacity:.7;}
 .cold-lead-card .email-card-toggle{min-height:0;}
+.cold-lead-stage{flex-shrink:0;padding:2px 7px;border-radius:6px;border:1px solid var(--line-strong);color:var(--soft);font-size:10px;font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums;}
 .cold-lead-stacked{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);overflow:hidden;}
 .cold-lead-stacked .cold-lead-body{min-height:220px;}
 @media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
@@ -3368,8 +3372,39 @@ function pickColdLeadDraft(rows){
   return emails.find(d => !d.sent_at) || emails[emails.length-1] || null;
 }
 
+function coldLeadEmailDrafts(entry){
+  return (entry && entry.drafts || [])
+    .filter(d => String(d.channel||"email")==="email")
+    .sort((a,b) => {
+      const ao = a.sequence_order==null ? 9999 : a.sequence_order;
+      const bo = b.sequence_order==null ? 9999 : b.sequence_order;
+      return ao-bo;
+    });
+}
+
+function coldLeadSentTodayDraft(rows, today){
+  return (rows||[])
+    .filter(d => String(d.channel||"email")==="email")
+    .find(d => d.sent_at && chicagoDateISO(new Date(d.sent_at))===today) || null;
+}
+
 function coldLeadSentToday(rows, today){
-  return (rows||[]).some(d => d.sent_at && chicagoDateISO(new Date(d.sent_at))===today);
+  return !!coldLeadSentTodayDraft(rows, today);
+}
+
+// Which step of the sequence this lead is on: "Email 1 of 3" and a plain-word
+// description, so it is obvious whether this is a first touch or a follow-up.
+function coldLeadStage(entry){
+  const list = coldLeadEmailDrafts(entry);
+  const total = list.length || 1;
+  const active = entry.draft;
+  let n = 1;
+  if(active){
+    const idx = list.findIndex(d => d.id===active.id);
+    n = idx>=0 ? idx+1 : (active.sequence_order || 1);
+  }
+  const words = n===1 ? "first email" : n===total ? "last follow-up" : "follow-up";
+  return { n, total, short:`Email ${n}/${total}`, label:`Email ${n} of ${total} · ${words}` };
 }
 
 // True while Chris is editing a cold draft, so background polls do not blow
@@ -3451,7 +3486,11 @@ async function loadColdLeads(options){
   coldLeads = (leadRes.data||[])
     .map(lead => {
       const rows = byLead.get(lead.id) || [];
-      return { lead, drafts:rows, draft:pickColdLeadDraft(rows), sentToday:coldLeadSentToday(rows, today) };
+      // If something already went out today, show THAT draft rather than
+      // advancing to the next one in the sequence — otherwise the pane would
+      // display tomorrow's follow-up and re-enable Send the same day.
+      const sentTodayDraft = coldLeadSentTodayDraft(rows, today);
+      return { lead, drafts:rows, draft:sentTodayDraft || pickColdLeadDraft(rows), sentToday:!!sentTodayDraft };
     })
     .sort((a,b) => String(a.lead.company_name||"").localeCompare(String(b.lead.company_name||"")));
   if(openColdLeadId && !coldLeads.some(e => e.lead.id===openColdLeadId)) openColdLeadId = null;
@@ -3565,6 +3604,9 @@ async function finishColdLeadDraft(){
 // What Ops can honestly say about one lead. The authoritative "Sent" stamp is
 // cold_lead_drafts.sent_at, which Sydney writes after Gmail accepts the send.
 function coldLeadStatus(entry){
+  // One send per lead per day: a lead touched today is done today, even though
+  // the next sequence draft is technically unsent.
+  if(entry.sentToday) return { key:"sent", label:"Sent today" };
   if(entry.draft && entry.draft.sent_at) return { key:"sent", label:"Sent" };
   const card = entry.draft ? coldLeadCardForDraft(entry.draft.id) : null;
   if(card && card.done_at) return { key:"pending", label:"Sent · write-back pending" };
@@ -3583,12 +3625,14 @@ function coldLeadRowHTML(entry){
   const state = coldLeadStatus(entry);
   const open = lead.id===openColdLeadId;
   const who = [lead.contact_name, lead.title].filter(Boolean).join(" · ");
+  const stage = coldLeadStage(entry);
   return `<article class="card email-card cold-lead-card${open?" open":""}" data-cold-lead="${esc(lead.id)}">
     <div class="email-card-row">
       <button type="button" class="email-card-toggle cold-lead-toggle" aria-expanded="${open}">
         <span class="email-from-row"><span class="cold-lead-state ${state.key}">${esc(state.label)}</span><span class="email-from">${esc(lead.company_name||"Unknown company")}</span></span>
         <span class="email-subject">${esc(who||lead.email||"")}</span>
         <span class="email-meta">
+          <span class="cold-lead-stage">${esc(stage.short)}</span>
           ${lead.priority ? `<span class="tag studio-pod">${esc(lead.priority)}</span>` : ""}
           ${lead.region ? `<span class="email-wait">${esc(lead.region)}</span>` : ""}
         </span>
@@ -3621,7 +3665,7 @@ function coldLeadDetailHTML(entry){
         <div class="email-sheet-top">
           <div class="email-sheet-id">
             <div class="email-sheet-from">${esc(lead.company_name||"Unknown company")}</div>
-            <div class="email-sheet-subject">${esc(lead.email||"No email on file")}</div>
+            <div class="email-sheet-subject">${esc(lead.email||"No email on file")} · ${esc(coldLeadStage(entry).label)}</div>
           </div>
           <button type="button" class="email-sheet-close" aria-label="Close lead">×</button>
         </div>
