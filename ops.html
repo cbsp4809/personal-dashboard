@@ -639,18 +639,20 @@ a{color:var(--brass)}
   .email-actions .queue-send{flex:1;max-width:190px;}
   body.email-sheet-open{overflow:hidden;overscroll-behavior:none;}
   body.email-sheet-open #app{overflow:hidden;}
-  .email-card.open{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;width:100%;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:0;border:0;border-radius:0;background:var(--panel);box-shadow:none;overflow:hidden;}
-  .email-card.open:hover{background:var(--panel);}
-  .email-card.open .email-card-row{display:none;}
-  .email-card.open .email-detail{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;border-top:0;background:var(--panel);}
-  .email-card.open .email-detail-head{flex-shrink:0;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);}
-  .email-card.open .email-detail-scroll{flex:1;min-width:0;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px));}
-  .email-card.open .email-attach-dock{flex-shrink:0;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));}
-  .email-card.open .email-attach-dock .email-attachments-title,.email-card.open .email-attach-dock .email-attach-empty,.email-card.open .email-attach-dock .email-attach-hint{display:none;}
+  .email-card.open:not(.cold-lead-card),.cold-lead-stacked{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;width:100%;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:0;border:0;border-radius:0;background:var(--panel);box-shadow:none;overflow:hidden;}
+  .email-card.open:not(.cold-lead-card):hover{background:var(--panel);}
+  .email-card.open:not(.cold-lead-card) .email-card-row{display:none;}
+  .email-card.open .email-detail,.cold-lead-stacked .email-detail{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;border-top:0;background:var(--panel);}
+  .email-card.open .email-detail-head,.cold-lead-stacked .email-detail-head{flex-shrink:0;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);}
+  .email-card.open .email-detail-scroll,.cold-lead-stacked .email-detail-scroll{flex:1;min-width:0;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px));}
+  .email-card.open .email-attach-dock,.cold-lead-stacked .email-attach-dock{flex-shrink:0;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));}
+  .email-card.open .email-attach-dock .email-attachments-title,.email-card.open .email-attach-dock .email-attach-empty,.email-card.open .email-attach-dock .email-attach-hint,.cold-lead-stacked .email-attach-dock .email-attach-hint{display:none;}
   .email-card.open .email-attach-dock .email-attach-list{gap:6px;}
   .email-card.open .email-attach-dock .email-attach-item{padding:8px 10px;}
-  .email-card.open .email-attach-btn{margin-top:8px;}
-  .email-card.open .email-actions{flex-shrink:0;padding:10px max(16px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));}
+  .email-card.open .email-attach-btn,.cold-lead-stacked .email-attach-btn{margin-top:8px;}
+  .email-card.open .email-actions,.cold-lead-stacked .email-actions{flex-shrink:0;padding:10px max(16px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));}
+  /* Cold Leads on phone: the row stays a row; the draft opens as the sheet. */
+  .cold-lead-stacked{margin:0;border:0;border-radius:0;}
   .login-card{padding:28px 20px 22px;}
   .login-card h1{font-size:30px;}
   .login-card input,.login-card .btn{min-height:44px;font-size:16px;}
@@ -2661,7 +2663,10 @@ function isDesktopEmailLayout(){
 }
 
 function syncEmailSheetClass(){
-  const open = actor==="emails" && emailMode==="inbox" && !!openEmailCardId && isPhoneEmailLayout();
+  // Lock the page behind whichever full-screen sheet is open on phone.
+  const open = actor==="emails" && isPhoneEmailLayout() && (
+    emailMode==="cold-leads" ? !!openColdLeadId : !!openEmailCardId
+  );
   document.body.classList.toggle("email-sheet-open", open);
 }
 
@@ -3737,6 +3742,7 @@ function renderColdLeads(root){
   }
   bindSendNowControl(root);
   bindColdLeads(root);
+  syncEmailSheetClass();
 }
 
 function renderColdLeadDetailPane(){
