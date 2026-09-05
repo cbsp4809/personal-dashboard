@@ -54,18 +54,39 @@ check, not a code change — verify the three coaches exist in
 4. ~~Nominal RLS (`using(true)`)~~ → RLS gates every Commodores table to allowlisted coaches via `commodores_is_coach()`. Verified anon=denied, non-coach=0 rows, coach=full.
    Plus: Commodores moved to its own project (see Stack) so its public key can't touch other data.
 
-Still open on the SHARED sales project (not Commodores, lower priority):
+Also RESOLVED on the SHARED sales project — verified against
+`daddiljpnhfuxcdqsulg` on 2026-09-04, no code change needed:
 
-5. `public.calendar_invites`, `public.invite_tokens`, `public.qbo_tokens` have RLS on with **zero policies**. Confirm genuinely unreachable.
-6. `SECURITY DEFINER` functions (`is_admin`, `is_staff`, `sp_role`, `reserve_invoice_number`, `bump_invoice_number`) executable by `anon` over REST.
+5. ~~`public.calendar_invites`, `public.invite_tokens`, `public.qbo_tokens` have RLS on with zero policies~~ → confirmed genuinely unreachable. RLS is on, zero policies, and neither `anon` nor `authenticated` holds a `SELECT`/`INSERT` grant, so there is no path to them over REST.
+6. ~~`SECURITY DEFINER` functions executable by `anon` over REST~~ → `anon` can execute **none** of the seven `SECURITY DEFINER` functions in `public`. `is_staff` now lives in the `private` schema; `is_admin` and `sp_role` are no longer in `public` at all.
 
-## Recommended fix path for access control
+Re-verify with:
 
-Client-side gating cannot be made to work on GitHub Pages. Real options:
+```sql
+-- expect anon_select/anon_insert = false on all three
+select c.relname, c.relrowsecurity, count(p.polname) as policies,
+       has_table_privilege('anon', c.oid, 'SELECT') as anon_select,
+       has_table_privilege('anon', c.oid, 'INSERT') as anon_insert
+from pg_class c join pg_namespace n on n.oid=c.relnamespace and n.nspname='public'
+left join pg_policy p on p.polrelid=c.oid
+where c.relname in ('calendar_invites','invite_tokens','qbo_tokens')
+group by c.relname, c.relrowsecurity, c.oid;
 
-- **Cloudflare Pages/Workers** with Access in front of it (a `proxy/worker.js` already exists — the muscle is partly there). Keeps the static-file simplicity.
-- **Supabase Auth** for the three coaches, with content loaded from the DB after sign-in rather than baked into the HTML, plus RLS keyed to `auth.uid()`.
-- **Netlify** password protection — least work, weakest guarantee, but strictly better than today.
+-- expect zero rows
+select p.proname from pg_proc p
+join pg_namespace n on n.oid=p.pronamespace and n.nspname='public'
+where p.prosecdef and has_function_privilege('anon', p.oid, 'EXECUTE');
+```
+
+## How access control ended up (shipped — do not redesign)
+
+Client-side gating cannot be made to work on GitHub Pages, so it isn't used.
+What is live: **Supabase Auth** for the three coaches, content loaded from the
+DB after sign-in rather than baked into the HTML, RLS keyed to the
+`commodores_coaches` allowlist — served from the **Cloudflare Worker**, with the
+deploy workflow stripping those files from the public Pages artifact. Do not put
+Cloudflare Access back, and do not reach for Netlify password protection; both
+were considered and rejected.
 
 ---
 
