@@ -367,6 +367,7 @@ a{color:var(--brass)}
 .email-attach-copy{flex:1 1 140px;min-width:0;}
 .email-attach-name{display:block;min-width:0;overflow-wrap:anywhere;color:var(--ink);font-size:13px;font-weight:600;}
 .email-attach-meta{display:block;min-width:0;margin-top:3px;color:var(--muted);font-size:11px;overflow-wrap:anywhere;}
+.email-attach-summary{display:block;min-width:0;margin-top:5px;padding-left:8px;border-left:2px solid var(--line-strong);color:var(--soft);font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
 .email-attach-actions{display:flex;flex-wrap:wrap;gap:6px;}
 .email-attach-actions .btn{min-height:40px;}
 .email-attach-empty{color:var(--muted);font-size:12.5px;font-family:var(--serif);font-style:italic;}
@@ -550,6 +551,10 @@ a{color:var(--brass)}
 .cold-lead-subject[readonly]{opacity:.7;}
 .cold-lead-card .email-card-toggle{min-height:0;}
 .cold-lead-stage{flex-shrink:0;padding:2px 7px;border-radius:6px;border:1px solid var(--line-strong);color:var(--soft);font-size:10px;font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums;}
+.cold-lead-state.li{background:rgba(90,140,190,.20);color:#9fc2e6;}
+.cold-li-head{margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line-strong);color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.cold-li-link{display:inline-block;color:var(--brass);font-size:13px;text-decoration:underline;}
+.cold-li-body{opacity:.85;}
 .cold-lead-stacked{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);overflow:hidden;}
 .cold-lead-stacked .cold-lead-body{min-height:220px;}
 @media(max-width:1400px){.board{grid-template-columns:repeat(3,minmax(0,1fr));}}
@@ -1052,11 +1057,20 @@ const COLD_LEAD_FROM = "chris@thestudiopod.com";
 // Marks the throwaway ops_card used to push one cold email through Sydney's
 // existing send path. Keeps them out of the inbox list and off the boards.
 const COLD_LEAD_REF_PREFIX = "cold-lead:";
+// LinkedIn is a separate track: due 10 BUSINESS days after the first email, and
+// it never counts against the 25 emails. It can't be sent through Gmail, so Ops
+// hands over the text and records that it went out.
+const COLD_LEAD_LINKEDIN_DAY = 10;
+// Sales owns the holiday calendar; until Ops reads it from the DB, these keep
+// the client-side maths honest. Update alongside public.outreach_holidays.
+const COLD_LEAD_HOLIDAYS = ["2026-09-07","2026-11-26","2026-11-27","2026-12-24","2026-12-25","2027-01-01"];
 let emailMode = localStorage.getItem("ops_email_mode")==="cold-leads" ? "cold-leads" : "inbox";
 let coldLeads = [];                // [{ lead, draft, drafts, sentToday }]
 let coldLeadsState = "idle";       // idle | loading | ready | error
 let coldLeadsError = "";
 let openColdLeadId = null;
+let openColdKind = "email";        // "email" | "linkedin" — which list the selection came from
+let coldLeadLinkedIn = [];         // [{ lead, draft }] due today, separate from the 25
 const coldLeadEdits = new Map();   // lead id -> { subject, body, dirty }
 let drawerOpen = false;
 let dragId = null;
@@ -3005,10 +3019,15 @@ function emailAttachmentsHTML(card, kind){
     ? files.map(file => {
         const canOpen = !!(file.path || file.url);
         const meta = [file.mime, file.size ? formatFileSize(file.size) : ""].filter(Boolean).join(" · ");
+        // Sydney's inbox watch may write an optional short `summary` per
+        // attachment so the contents are readable without opening the file.
+        // Renders only when present, so this is inert until she ships it.
+        const summary = String(file.summary || "").trim();
         return `<div class="email-attach-item" data-attach-id="${esc(file.id)}">
           <div class="email-attach-copy">
             <span class="email-attach-name">${esc(file.name)}</span>
             ${meta ? `<span class="email-attach-meta">${esc(meta)}</span>` : ""}
+            ${summary ? `<span class="email-attach-summary">${esc(summary)}</span>` : ""}
           </div>
           <div class="email-attach-actions">
             <button type="button" class="btn tiny ghost email-attach-open"${canOpen?"":" disabled"} data-attach-kind="${kind}" data-attach-id="${esc(file.id)}">Open</button>
@@ -3381,6 +3400,24 @@ function pickColdLeadDraft(rows){
   return emails.find(d => !d.sent_at) || emails[emails.length-1] || null;
 }
 
+// Business days between two Chicago dates, skipping weekends and holidays.
+function coldLeadBusinessDaysSince(fromISO, toISO){
+  if(!fromISO || !toISO) return 0;
+  const start = new Date(fromISO+"T12:00:00Z");
+  const end = new Date(toISO+"T12:00:00Z");
+  if(Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+  let n = 0;
+  const cur = new Date(start.getTime());
+  cur.setUTCDate(cur.getUTCDate()+1);
+  while(cur <= end){
+    const dow = cur.getUTCDay();
+    const iso = cur.toISOString().slice(0,10);
+    if(dow!==0 && dow!==6 && COLD_LEAD_HOLIDAYS.indexOf(iso)<0) n++;
+    cur.setUTCDate(cur.getUTCDate()+1);
+  }
+  return n;
+}
+
 function coldLeadEmailDrafts(entry){
   return (entry && entry.drafts || [])
     .filter(d => String(d.channel||"email")==="email")
@@ -3502,9 +3539,91 @@ async function loadColdLeads(options){
       return { lead, drafts:rows, draft:sentTodayDraft || pickColdLeadDraft(rows), sentToday:!!sentTodayDraft };
     })
     .sort((a,b) => String(a.lead.company_name||"").localeCompare(String(b.lead.company_name||"")));
-  if(openColdLeadId && !coldLeads.some(e => e.lead.id===openColdLeadId)) openColdLeadId = null;
+  if(openColdKind==="email" && openColdLeadId && !coldLeads.some(e => e.lead.id===openColdLeadId)) openColdLeadId = null;
   coldLeadsState = "ready";
+  await loadColdLeadLinkedIn();
   renderColdLeadsIfIdle();
+}
+
+/* LinkedIn track — due 10 business days after the first email, never counted
+   against the 25. Looks across ALL of this operator's leads, not just today's
+   batch, because the LinkedIn touch lands long after that day's list. */
+async function loadColdLeadLinkedIn(){
+  if(!sb || !currentUser) return;
+  const today = chicagoDateISO();
+  const leadRes = await sb.from("cold_leads")
+    .select("id,company_name,contact_name,title,email,linkedin")
+    .eq("assigned_to", COLD_LEAD_OPERATOR)
+    .is("archived_at", null);
+  if(leadRes.error || !(leadRes.data||[]).length){ coldLeadLinkedIn = []; return; }
+  const ids = leadRes.data.map(l => l.id);
+  const draftRes = await sb.from("cold_lead_drafts")
+    .select("id,cold_lead_id,channel,sequence_order,sent_at,subject,body")
+    .in("cold_lead_id", ids);
+  if(draftRes.error){ coldLeadLinkedIn = []; return; }
+  const byLead = new Map();
+  (draftRes.data||[]).forEach(row => {
+    if(!byLead.has(row.cold_lead_id)) byLead.set(row.cold_lead_id, []);
+    byLead.get(row.cold_lead_id).push(row);
+  });
+  const due = [];
+  leadRes.data.forEach(lead => {
+    const rows = byLead.get(lead.id) || [];
+    const note = rows.find(d => d.channel==="linkedin_connection" && !d.sent_at);
+    if(!note) return;
+    const first = rows.filter(d => d.channel==="email" && d.sequence_order===1 && d.sent_at)
+                      .map(d => chicagoDateISO(new Date(d.sent_at))).sort()[0];
+    if(!first) return;
+    if(coldLeadBusinessDaysSince(first, today) >= COLD_LEAD_LINKEDIN_DAY) due.push({ lead, draft:note, firstSent:first });
+  });
+  due.sort((a,b) => a.firstSent.localeCompare(b.firstSent));
+  coldLeadLinkedIn = due;
+}
+
+function coldLinkedInRowHTML(entry){
+  const lead = entry.lead;
+  const open = openColdKind==="linkedin" && lead.id===openColdLeadId;
+  return `<article class="card email-card cold-lead-card cold-li-card${open?" open":""}" data-cold-li="${esc(lead.id)}">
+    <div class="email-card-row">
+      <button type="button" class="email-card-toggle cold-li-toggle" aria-expanded="${open}">
+        <span class="email-from-row"><span class="cold-lead-state li">LinkedIn</span><span class="email-from">${esc(lead.company_name||"Unknown company")}</span></span>
+        <span class="email-subject">${esc(lead.contact_name||"")}</span>
+      </button>
+    </div>
+  </article>`;
+}
+
+function coldLinkedInDetailHTML(entry){
+  const lead = entry.lead;
+  const phone = isPhoneEmailLayout();
+  const actions = `<div class="email-actions">
+        <span class="email-save-state cold-li-save" aria-live="polite"></span>
+        <button type="button" class="btn tiny ghost cold-li-copy">Copy note</button>
+        <button type="button" class="btn tiny cold-li-sent">Mark sent</button>
+      </div>`;
+  return `
+    <section class="email-detail cold-lead-detail" aria-label="LinkedIn connection note" data-cold-detail-id="${esc(lead.id)}">
+      <div class="email-detail-head">
+        <div class="email-sheet-top">
+          <div class="email-sheet-id">
+            <div class="email-sheet-from">${esc(lead.company_name||"Unknown company")}</div>
+            <div class="email-sheet-subject">${esc(lead.contact_name||"")} · LinkedIn connection · not counted in the 25</div>
+          </div>
+          <button type="button" class="email-sheet-close" aria-label="Close">×</button>
+        </div>
+        <div class="email-head-controls">
+          <span class="cold-lead-state li head">LinkedIn</span>
+          ${phone ? "" : actions}
+        </div>
+      </div>
+      <div class="email-detail-scroll">
+        ${lead.linkedin ? `<a class="cold-li-link" href="${esc(lead.linkedin)}" target="_blank" rel="noopener noreferrer">Open their LinkedIn profile</a>` : `<div class="email-attach-empty">No LinkedIn URL on this lead.</div>`}
+        <label class="email-reply-label" for="cold-li-${esc(lead.id)}">Connection note</label>
+        <textarea class="email-reply cold-li-body" id="cold-li-${esc(lead.id)}" readonly>${esc(entry.draft.body||"")}</textarea>
+        <div class="email-recipient-hint">LinkedIn can't be sent from here. Copy the note, send it in LinkedIn, then mark it sent.</div>
+      </div>
+      ${phone ? actions : ""}
+    </section>`;
 }
 
 // Fallback when Sales has not written a draft for this lead. Short, plain, and
@@ -3731,14 +3850,26 @@ function renderColdLeads(root){
   else if(coldLeadsState==="error") listHTML = `<div class="empty email-empty">Could not load cold leads. ${esc(coldLeadsError)}</div>`;
   else if(!coldLeads.length) listHTML = `<div class="empty email-empty">No leads stamped for ${esc(COLD_LEAD_OPERATOR)} today. Studio Pod Sales assigns the batch.</div>`;
   else listHTML = `<div class="email-list">${coldLeads.map(coldLeadRowHTML).join("")}</div>`;
-  const selected = openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null;
+  // LinkedIn sits below the 25 under its own divider — same list, clearly not
+  // part of the email quota.
+  if(coldLeadLinkedIn.length && coldLeadsState==="ready"){
+    const li = `<div class="cold-li-head">LinkedIn due · ${coldLeadLinkedIn.length} · not counted in the 25</div>${coldLeadLinkedIn.map(coldLinkedInRowHTML).join("")}`;
+    listHTML = listHTML.replace(/<\/div>\s*$/, li+"</div>");
+    if(!/^<div class="email-list">/.test(listHTML)) listHTML += `<div class="email-list">${li}</div>`;
+  }
+  const selected = openColdKind==="linkedin"
+    ? (openColdLeadId ? coldLeadLinkedIn.find(e => e.lead.id===openColdLeadId) : null)
+    : (openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null);
+  const detailHTML = selected
+    ? (openColdKind==="linkedin" ? coldLinkedInDetailHTML(selected) : coldLeadDetailHTML(selected))
+    : coldLeadEmptyHTML();
   if(isDesktopEmailLayout()){
     root.innerHTML = `<div class="email-two-pane">
       <div class="email-pane-list">${bar}${listHTML}</div>
-      <div class="email-pane-detail${selected?"":" empty-pane"}">${selected ? coldLeadDetailHTML(selected) : coldLeadEmptyHTML()}</div>
+      <div class="email-pane-detail${selected?"":" empty-pane"}">${detailHTML}</div>
     </div>`;
   }else{
-    root.innerHTML = bar + listHTML + (selected ? `<div class="email-pane-detail cold-lead-stacked">${coldLeadDetailHTML(selected)}</div>` : "");
+    root.innerHTML = bar + listHTML + (selected ? `<div class="email-pane-detail cold-lead-stacked">${detailHTML}</div>` : "");
   }
   bindSendNowControl(root);
   bindColdLeads(root);
@@ -3747,11 +3878,13 @@ function renderColdLeads(root){
 
 function renderColdLeadDetailPane(){
   const pane = document.querySelector(".email-pane-detail");
-  const entry = openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null;
   if(!pane){ renderBoard(); return; }
-  pane.innerHTML = entry ? coldLeadDetailHTML(entry) : coldLeadEmptyHTML();
+  const li = openColdKind==="linkedin";
+  const list = li ? coldLeadLinkedIn : coldLeads;
+  const entry = openColdLeadId ? list.find(e => e.lead.id===openColdLeadId) : null;
+  pane.innerHTML = entry ? (li ? coldLinkedInDetailHTML(entry) : coldLeadDetailHTML(entry)) : coldLeadEmptyHTML();
   pane.classList.toggle("empty-pane", !entry);
-  bindColdLeadDetail(pane, entry);
+  if(li) bindColdLinkedInDetail(pane, entry); else bindColdLeadDetail(pane, entry);
 }
 
 function bindColdLeads(root){
@@ -3770,8 +3903,77 @@ function bindColdLeads(root){
       renderBoard();
     };
   });
+  (root||document).querySelectorAll(".cold-li-card").forEach(el => {
+    const id = el.dataset.coldLi;
+    const toggle = el.querySelector(".cold-li-toggle");
+    if(!toggle) return;
+    toggle.onclick = async () => {
+      if(!(await finishColdLeadDraft())) return;
+      const same = openColdKind==="linkedin" && openColdLeadId===id;
+      openColdKind = same ? "email" : "linkedin";
+      openColdLeadId = same ? null : id;
+      if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+        (root||document).querySelectorAll(".cold-lead-card").forEach(row =>
+          row.classList.toggle("open", (row.dataset.coldLi||row.dataset.coldLead)===openColdLeadId));
+        renderColdLeadDetailPane();
+        return;
+      }
+      renderBoard();
+    };
+  });
   const pane = (root||document).querySelector(".email-pane-detail");
-  if(pane) bindColdLeadDetail(pane, openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null);
+  if(pane){
+    if(openColdKind==="linkedin") bindColdLinkedInDetail(pane, openColdLeadId ? coldLeadLinkedIn.find(e => e.lead.id===openColdLeadId) : null);
+    else bindColdLeadDetail(pane, openColdLeadId ? coldLeads.find(e => e.lead.id===openColdLeadId) : null);
+  }
+}
+
+function bindColdLinkedInDetail(pane, entry){
+  if(!pane || !entry) return;
+  const close = pane.querySelector(".email-sheet-close");
+  if(close) close.onclick = () => {
+    openColdLeadId = null; openColdKind = "email";
+    if(isDesktopEmailLayout()){
+      document.querySelectorAll(".cold-lead-card").forEach(row => row.classList.remove("open"));
+      renderColdLeadDetailPane();
+      return;
+    }
+    renderBoard();
+  };
+  const save = pane.querySelector(".cold-li-save");
+  const copy = pane.querySelector(".cold-li-copy");
+  if(copy) copy.onclick = async () => {
+    try{
+      await copyText(entry.draft.body||"");
+      copy.textContent = "Copied";
+      setStatus("Connection note copied.");
+      setTimeout(() => { if(copy.isConnected) copy.textContent = "Copy note"; }, 1600);
+    }catch(_){ setStatus("Could not copy the note.", true); }
+  };
+  const sent = pane.querySelector(".cold-li-sent");
+  if(sent) sent.onclick = async () => {
+    if(!window.confirm(`Mark the LinkedIn connection note to ${entry.lead.contact_name||entry.lead.company_name} as sent?`)) return;
+    sent.disabled = true;
+    sent.textContent = "Saving…";
+    if(save) save.textContent = "Saving…";
+    const { data, error } = await sb.from("cold_lead_drafts")
+      .update({ status:"Sent", sent_at:isoNow(), updated_at:isoNow() })
+      .eq("id", entry.draft.id)
+      .is("sent_at", null)
+      .select("id")
+      .maybeSingle();
+    if(error || !data){
+      sent.disabled = false;
+      sent.textContent = "Mark sent";
+      if(save) save.textContent = error ? "Not saved" : "Already marked";
+      if(error) setStatus("Could not mark it sent: "+error.message, true);
+      return;
+    }
+    setStatus("LinkedIn connection marked sent.");
+    openColdLeadId = null; openColdKind = "email";
+    await loadColdLeadLinkedIn();
+    renderBoard();
+  };
 }
 
 function bindColdLeadDetail(pane, entry){
