@@ -551,6 +551,9 @@ a{color:var(--brass)}
 .cold-lead-subject[readonly]{opacity:.7;}
 .cold-lead-card .email-card-toggle{min-height:0;}
 .cold-lead-stage{flex-shrink:0;padding:2px 7px;border-radius:6px;border:1px solid var(--line-strong);color:var(--soft);font-size:10px;font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums;}
+.cold-send-all-wrap{display:flex;flex-shrink:0;align-items:center;gap:8px;}
+.cold-send-all{flex-shrink:0;min-width:96px;text-align:center;}
+.cold-send-all[disabled]{opacity:.5;}
 .cold-lead-state.li{background:rgba(90,140,190,.20);color:#9fc2e6;}
 .cold-li-head{margin:14px 0 8px;padding-top:12px;border-top:1px solid var(--line-strong);color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
 .cold-li-link{display:inline-block;color:var(--brass);font-size:13px;text-decoration:underline;}
@@ -3823,12 +3826,129 @@ function coldLeadDetailHTML(entry){
     </section>`;
 }
 
+/* ===== Send all =====
+   Queues the reviewed batch in one go and hands it to the SAME flush Send now
+   uses — one ops_send_now row, Sydney's paced Gmail send, then the Sales
+   write-back. It does not bypass anything: every lead still has to pass
+   coldLeadBlockReason, so a lead already sent today, already queued, or without
+   a draft row is skipped rather than forced through. */
+function coldLeadsReadyToQueue(){
+  return coldLeads.filter(e => !coldLeadBlockReason(e));
+}
+
+// A flush is already out — queueing more now would race Sydney's pass.
+function coldLeadFlushInFlight(){
+  return sendNowPhase==="sending" || !!pendingSendNowRequest;
+}
+
+/* Soft checks only. These are warnings a human should see before sending 25
+   emails at once, not rules — Chris can still say yes. */
+function coldLeadBatchWarnings(list){
+  const warnings = [];
+  const seen = {};
+  list.forEach(e => {
+    const to = String(e.lead.email||"").trim().toLowerCase();
+    if(to) seen[to] = (seen[to]||0)+1;
+  });
+  const dupes = Object.keys(seen).filter(k => seen[k]>1);
+  if(dupes.length){
+    warnings.push(`${dupes.length} address${dupes.length===1?"":"es"} appear${dupes.length===1?"s":""} more than once: ${dupes.slice(0,3).join(", ")}${dupes.length>3?"…":""}`);
+  }
+  const subjects = {};
+  list.forEach(e => {
+    const s = String(coldLeadEditFor(e).subject||"").trim().toLowerCase();
+    if(s) subjects[s] = (subjects[s]||0)+1;
+  });
+  const repeated = Object.keys(subjects).filter(s => subjects[s]>=3)
+    .sort((a,b) => subjects[b]-subjects[a]);
+  if(repeated.length){
+    const top = repeated[0];
+    warnings.push(`${subjects[top]} emails share the subject "${top.slice(0,50)}${top.length>50?"…":""}"`);
+  }
+  return warnings;
+}
+
+async function sendAllColdLeads(button){
+  if(!sb || !currentUser) return;
+  if(coldLeadFlushInFlight()){
+    setStatus("A send is already going out. Wait for it to finish.", true);
+    return;
+  }
+  if(sendNowAvailable!==true){
+    setStatus("Send now is unavailable, so the batch can't be flushed. Apply sql/ops_send_now.sql.", true);
+    return;
+  }
+  // Flush anything still typing before we read the bodies.
+  if(!(await finishColdLeadDraft())) return;
+  const ready = coldLeadsReadyToQueue();
+  if(!ready.length){
+    setStatus("Nothing ready to send. Leads already sent, already queued, or without a draft are skipped.");
+    return;
+  }
+  const batch = ready.slice(0, COLD_LEAD_DAILY_TARGET);
+  const heldBack = ready.length - batch.length;
+  // Inbox replies already queued will ride along on the same flush — say so.
+  const otherQueued = queuedEmailCards().filter(c => !isColdLeadCard(c)).length;
+  const warnings = coldLeadBatchWarnings(batch);
+  const lines = [`Queue ${batch.length} for Send now?`];
+  if(heldBack) lines.push(`\n${heldBack} more are ready but over the ${COLD_LEAD_DAILY_TARGET}-a-day cap — they stay for next time.`);
+  if(otherQueued) lines.push(`\n${otherQueued} inbox ${otherQueued===1?"reply is":"replies are"} already queued and will send in the same pass.`);
+  if(warnings.length) lines.push("\nWorth a look first:\n· "+warnings.join("\n· "));
+  lines.push(`\nSending from ${COLD_LEAD_FROM}.`);
+  if(!window.confirm(lines.join("\n"))) return;
+
+  const prev = button ? button.textContent : "";
+  if(button){ button.disabled = true; button.textContent = "Queueing…"; }
+  const failed = [];
+  for(let i=0; i<batch.length; i++){
+    const entry = batch[i];
+    if(button) button.textContent = `Queueing ${i+1}/${batch.length}…`;
+    const err = await queueColdLeadCard(entry);
+    if(err) failed.push((entry.lead.company_name||entry.lead.email)+": "+err);
+  }
+  const queued = batch.length - failed.length;
+  if(!queued){
+    if(button){ button.disabled = false; button.textContent = prev||"Send all"; }
+    setStatus("Could not queue any of them. "+(failed[0]||""), true);
+    renderBoard();
+    return;
+  }
+  const leftover = heldBack ? ` ${heldBack} left over the ${COLD_LEAD_DAILY_TARGET}-a-day cap.` : "";
+  if(failed.length){
+    setStatus(`Queued ${queued}, but ${failed.length} failed: ${failed[0]}.${leftover}`, true);
+  }else{
+    setStatus(`Queued ${queued}. Flushing now — Sydney sends them one at a time.${leftover}`);
+  }
+  // Hand off to the existing flush — same row, same paced send, same write-back.
+  await requestSendNow();
+  renderBoard();
+}
+
 function coldLeadEmptyHTML(){
   if(coldLeadsState==="loading" || coldLeadsState==="idle") return `<div class="email-detail-empty"><div class="email-detail-empty-title">Loading today's leads…</div></div>`;
   return `<div class="email-detail-empty">
     <div class="email-detail-empty-title">Nothing selected</div>
     <div class="email-detail-empty-sub">Pick a lead on the left to read the draft and send it.</div>
   </div>`;
+}
+
+/* The Send all control. Disabled while a flush is already out, because queueing
+   into a pass Sydney has started would race it. */
+function coldSendAllControlHTML(){
+  if(coldLeadsState!=="ready") return "";
+  const ready = coldLeadsReadyToQueue().length;
+  const inFlight = coldLeadFlushInFlight();
+  if(inFlight){
+    return `<div class="send-now send-now-status cold-send-all" role="status" aria-live="polite">Sending…</div>`;
+  }
+  const capped = Math.min(ready, COLD_LEAD_DAILY_TARGET);
+  const disabled = !ready || sendNowAvailable!==true;
+  const title = !ready
+    ? "Nothing ready — leads already sent, already queued, or without a draft are skipped"
+    : sendNowAvailable!==true
+      ? "Send now is unavailable, so the batch can't be flushed"
+      : `Queue ${capped} and flush them in one pass`;
+  return `<button type="button" class="btn tiny cold-send-all"${disabled?" disabled":""} title="${esc(title)}">Send all${capped?` ${capped}`:""}</button>`;
 }
 
 function renderColdLeads(root){
@@ -3843,7 +3963,7 @@ function renderColdLeads(root){
           ${coldLeadsState==="error" ? `<span class="email-mail-line">${esc(coldLeadsError)}</span>` : ""}
         </span>
       </div>
-      ${sendNowControlHTML(queuedCount)}
+      <div class="cold-send-all-wrap">${coldSendAllControlHTML()}${sendNowControlHTML(queuedCount)}</div>
     </div>`;
   let listHTML;
   if(coldLeadsState==="loading" || coldLeadsState==="idle") listHTML = `<div class="empty email-empty">Loading today's leads…</div>`;
@@ -3872,6 +3992,8 @@ function renderColdLeads(root){
     root.innerHTML = bar + listHTML + (selected ? `<div class="email-pane-detail cold-lead-stacked">${detailHTML}</div>` : "");
   }
   bindSendNowControl(root);
+  const sendAll = root.querySelector("button.cold-send-all");
+  if(sendAll && !sendAll.disabled) sendAll.onclick = () => sendAllColdLeads(sendAll);
   bindColdLeads(root);
   syncEmailSheetClass();
 }
@@ -4031,37 +4153,33 @@ function bindColdLeadDetail(pane, entry){
 // ops_card carrying the edited subject/body, queued for Sydney's inbox watch.
 // Ops never talks to Gmail, so it never claims the send succeeded — Sydney
 // writes cold_lead_drafts / cold_leads / cold_lead_touches after Gmail accepts.
-async function sendColdLead(entry, button, save){
+/* Why a lead can't be queued right now, or "" if it can. Shared by the single
+   Send button and Send all so both agree on what "ready" means. */
+function coldLeadBlockReason(entry){
   const lead = entry.lead;
-  const edit = coldLeadEditFor(entry);
-  if(!lead.email){ setStatus("That lead has no email address.", true); return; }
-  if(entry.draft && entry.draft.sent_at){ setStatus("Already sent."); return; }
-  // Checked before the confirm: without a draft row Sales cannot reconcile the
-  // send, so there is no point asking.
-  if(!entry.draft){
-    setStatus("No cold_lead_drafts row for this lead, so Sales could not reconcile the send. Ask Sales to create the draft first.", true);
-    return;
-  }
-  if(!edit.body.trim()){ setStatus("Write the email before sending.", true); return; }
-  if(!window.confirm(`Queue this cold email to ${lead.email} for Sydney to send from ${COLD_LEAD_FROM}?`)) return;
-  button.disabled = true;
-  button.textContent = "Queueing…";
-  if(save) save.textContent = "Queueing…";
-  // Save the final text to cold_lead_drafts first so Sales' copy matches what
-  // goes out. A failure here is not fatal — the ops_card carries the real body
-  // either way — so warn and keep going rather than blocking the send.
-  await persistColdLeadDraft(entry);
-  const ref = COLD_LEAD_REF_PREFIX + entry.draft.id;
-  const draftId = entry.draft.id;
-  const existing = coldLeadCardForDraft(draftId);
-  const payload = {
+  if(!lead.email) return "no email address";
+  if(entry.sentToday) return "already sent today";
+  if(entry.draft && entry.draft.sent_at) return "already sent";
+  // Without a draft row Sales cannot reconcile the send afterwards.
+  if(!entry.draft) return "no cold_lead_drafts row for Sales to reconcile against";
+  const key = coldLeadStatus(entry).key;
+  if(key==="queued" || key==="pending") return "already queued";
+  if(!coldLeadEditFor(entry).body.trim()) return "the email is empty";
+  return "";
+}
+
+// Everything a queued cold email needs on its ops_card. Body is ALWAYS the
+// current snippet the rep sees — never a Gmail draft id.
+function coldLeadCardPayload(entry, edit){
+  const lead = entry.lead;
+  return {
     title: `Cold outreach — ${lead.company_name||lead.email}`,
     snippet: edit.body,
     project: "studio-pod",
     column_key: "sydney",
     owner: "sydney",
     source: "email",
-    source_ref: ref,
+    source_ref: COLD_LEAD_REF_PREFIX + entry.draft.id,
     email_kind: "lead",
     inbound_from: COLD_LEAD_FROM,
     inbound_account: COLD_LEAD_FROM,
@@ -4075,30 +4193,52 @@ async function sendColdLead(entry, button, save){
     send_requested_by: "chris",
     updated_at: isoNow()
   };
-  let saved = null;
-  if(existing){
-    const { data, error } = await sb.from("ops_cards").update(payload).eq("id", existing.id).select("*").single();
-    if(error){
-      button.disabled = false;
-      button.textContent = "Send";
-      if(save) save.textContent = "Not queued";
-      setStatus("Could not queue the cold email: "+error.message, true);
-      return;
-    }
-    saved = data;
-    const idx = cards.findIndex(c => c.id===data.id);
-    if(idx>=0) cards[idx] = data; else cards.push(data);
-  }else{
-    const { data, error } = await sb.from("ops_cards").insert(Object.assign({ sort:0, done_at:null, done_by:null }, payload)).select("*").single();
-    if(error){
-      button.disabled = false;
-      button.textContent = "Send";
-      if(save) save.textContent = "Not queued";
-      setStatus("Could not queue the cold email: "+error.message, true);
-      return;
-    }
-    saved = data;
-    cards.push(data);
+}
+
+/* Persist the draft, then create or update the throwaway ops_card that carries
+   this cold email into Sydney's existing send path. Returns an error string, or
+   "" on success. Does no UI work — callers decide what to show. */
+async function queueColdLeadCard(entry){
+  const edit = coldLeadEditFor(entry);
+  // Save the final text to cold_lead_drafts first so Sales' copy matches what
+  // goes out. A failure here is not fatal — the ops_card carries the real body
+  // either way — so keep going rather than blocking the send.
+  await persistColdLeadDraft(entry);
+  const payload = coldLeadCardPayload(entry, edit);
+  const existing = coldLeadCardForDraft(entry.draft.id);
+  const res = existing
+    ? await sb.from("ops_cards").update(payload).eq("id", existing.id).select("*").single()
+    : await sb.from("ops_cards").insert(Object.assign({ sort:0, done_at:null, done_by:null }, payload)).select("*").single();
+  if(res.error) return res.error.message || "could not queue";
+  const idx = cards.findIndex(c => c.id===res.data.id);
+  if(idx>=0) cards[idx] = res.data; else cards.push(res.data);
+  edit.savedSubject = edit.subject;
+  edit.savedBody = edit.body;
+  edit.dirty = false;
+  return "";
+}
+
+async function sendColdLead(entry, button, save){
+  const lead = entry.lead;
+  const edit = coldLeadEditFor(entry);
+  const blocked = coldLeadBlockReason(entry);
+  if(blocked){
+    setStatus(blocked==="already sent today" || blocked==="already sent"
+      ? "Already sent."
+      : "Can't queue this one — "+blocked+".", blocked.indexOf("already sent")<0);
+    return;
+  }
+  if(!window.confirm(`Queue this cold email to ${lead.email} for Sydney to send from ${COLD_LEAD_FROM}?`)) return;
+  button.disabled = true;
+  button.textContent = "Queueing…";
+  if(save) save.textContent = "Queueing…";
+  const err = await queueColdLeadCard(entry);
+  if(err){
+    button.disabled = false;
+    button.textContent = "Send";
+    if(save) save.textContent = "Not queued";
+    setStatus("Could not queue the cold email: "+err, true);
+    return;
   }
   edit.savedSubject = edit.subject;
   edit.savedBody = edit.body;
