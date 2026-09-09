@@ -171,6 +171,20 @@ a{color:var(--brass)}
 /* Chris's ask reads as the live brief while changes are outstanding, and fades
    to context once Sydney has restaged. Her staging note sits separately so it
    is always clear whose words you are reading. */
+/* Sydney's visual plan — read-only. Reads as a checklist Chris scans before
+   approving, not as another form to fill in. */
+.content-visual{display:flex;min-width:0;flex-direction:column;gap:8px;}
+.content-rec{display:flex;min-width:0;align-items:flex-start;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);}
+.content-rec-kind{flex-shrink:0;margin-top:1px;padding:2px 7px;border-radius:999px;background:var(--line);color:var(--soft);font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.content-rec-kind.video{background:rgba(90,140,190,.20);color:#9fc2e6;}
+.content-rec-copy{display:flex;min-width:0;flex-direction:column;gap:2px;}
+.content-rec-label{color:var(--ink);font-size:13px;font-weight:600;overflow-wrap:anywhere;}
+.content-rec-why{color:var(--muted);font-size:11.5px;overflow-wrap:anywhere;}
+.content-rec-file{color:var(--soft);font-size:11px;font-family:var(--mono,ui-monospace,monospace);overflow-wrap:anywhere;}
+a.content-rec-file{color:var(--brass);text-decoration:underline;}
+.content-rec-ask{padding:8px 10px;border-left:3px solid var(--brass);border-radius:0 8px 8px 0;background:rgba(196,165,116,.09);color:var(--ink);font-size:12.5px;line-height:1.45;white-space:pre-wrap;}
+.content-rec-ask strong{display:block;margin-bottom:3px;color:var(--brass);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;}
+.content-rec-note{color:var(--muted);font-size:11.5px;line-height:1.45;white-space:pre-wrap;}
 .content-change-note.feedback{border-left:3px solid var(--line-strong);}
 .content-change-note.feedback.live{border-left-color:var(--soon);background:rgba(212,176,106,.09);}
 .content-change-note.sydney{opacity:.85;}
@@ -5157,6 +5171,35 @@ function contentPhotoRecord(value){
   };
 }
 
+/* ops_content.photo carries TWO things:
+     · Sydney's staging plan — recommended[], capture_ask, note, theme, …
+     · the final attached image — id/name/mime/size/path/signed_url
+   Attaching used to write a fresh object over the top, silently deleting her
+   recommendations. These keep both halves in one column, no migration needed. */
+const CONTENT_PHOTO_ATTACH_KEYS = ["id","name","mime","size","path","signed_url","signed_url_expires_at"];
+
+function contentPhotoObject(value){
+  if(!value) return {};
+  let item = value;
+  if(typeof value==="string"){
+    try{ item = JSON.parse(value); }catch(_){ return {}; }
+  }
+  if(Array.isArray(item)) item = item[0];
+  return (item && typeof item==="object") ? item : {};
+}
+
+// Everything on the row that is NOT attachment bookkeeping — i.e. Sydney's plan.
+function contentPhotoKeepKeys(value){
+  const base = contentPhotoObject(value);
+  const keep = {};
+  Object.keys(base).forEach(k => { if(CONTENT_PHOTO_ATTACH_KEYS.indexOf(k)<0) keep[k] = base[k]; });
+  return keep;
+}
+
+function contentPhotoMerged(existing, attachment){
+  return Object.assign(contentPhotoKeepKeys(existing), attachment || {});
+}
+
 function contentPhotoPayload(photo){
   if(!photo) return null;
   const record = {
@@ -5333,6 +5376,48 @@ function contentFeedbackHTML(item){
   return `<div class="content-change-note feedback${live?" live":""}"><strong>${label}${meta?` · ${esc(meta)}`:""}</strong>\n${esc(note)}</div>`;
 }
 
+/* Sydney's visual plan for a staged draft, read from ops_content.photo exactly
+   as she already writes it: recommended[{kind,label,filename|url,rationale,
+   source}] plus capture_ask and an optional note. Display only — Ops never
+   writes these. Hidden entirely when she hasn't set anything. */
+const CONTENT_VISUAL_STATUSES = ["needs_you","ready","scheduled"];
+
+function contentVisualPlan(item){
+  const p = contentPhotoObject(item && item.photo);
+  const recs = Array.isArray(p.recommended) ? p.recommended.filter(r => r && (r.label || r.filename || r.url)) : [];
+  const ask = String(p.capture_ask||"").trim();
+  const note = String(p.note||"").trim();
+  return { recs, ask, note, any: !!(recs.length || ask || note) };
+}
+
+function contentVisualHTML(item){
+  if(!item || CONTENT_VISUAL_STATUSES.indexOf(item.status)<0) return "";
+  const plan = contentVisualPlan(item);
+  if(!plan.any) return "";
+  const rows = plan.recs.map(r => {
+    const kind = String(r.kind||"photo").toLowerCase()==="video" ? "Video" : "Photo";
+    const name = String(r.filename || r.url || "").trim();
+    const isUrl = /^https?:\/\//i.test(name);
+    const where = String(r.source||"").toLowerCase()==="capture" ? "to shoot" : "in library";
+    return `<div class="content-rec">
+      <span class="content-rec-kind ${kind.toLowerCase()}">${kind}</span>
+      <span class="content-rec-copy">
+        <span class="content-rec-label">${esc(r.label || name || "Suggested visual")}</span>
+        ${r.rationale ? `<span class="content-rec-why">${esc(r.rationale)}</span>` : ""}
+        ${name ? (isUrl
+          ? `<a class="content-rec-file" href="${esc(name)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`
+          : `<span class="content-rec-file">${esc(name)} · ${esc(where)}</span>`) : ""}
+      </span>
+    </div>`;
+  }).join("");
+  return `<div class="content-field content-visual">
+    <span class="content-label">Recommended visual</span>
+    ${rows}
+    ${plan.ask ? `<div class="content-rec-ask"><strong>To capture</strong>\n${esc(plan.ask)}</div>` : ""}
+    ${plan.note ? `<div class="content-rec-note">${esc(plan.note)}</div>` : ""}
+  </div>`;
+}
+
 function contentCardHTML(item, photo){
   const draft = contentDraftFor(item);
   const open = item.id===openContentId;
@@ -5376,6 +5461,7 @@ function contentCardHTML(item, photo){
           </div>
         </div>
       </div>
+      ${contentVisualHTML(item)}
       ${contentFeedbackHTML(item)}
       ${item.change_note ? `<div class="content-change-note sydney"><strong>Sydney's note</strong>\n${esc(item.change_note)}</div>` : ""}
       <div class="content-actions">
@@ -5613,7 +5699,8 @@ async function attachContentPhoto(item, file, cardEl){
     signed_url_expires_at:minted ? minted.expiresAt : null
   });
   const previous = contentPhotoRecord(item.photo);
-  const saved = await saveContentFields(item, cardEl, { photo });
+  // Merge, don't replace — Sydney's recommendations live in the same column.
+  const saved = await saveContentFields(item, cardEl, { photo:contentPhotoMerged(item.photo, photo) });
   contentPhotoBusy.delete(item.id);
   if(!saved){
     await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([path]);
