@@ -168,6 +168,12 @@ a{color:var(--brass)}
 .content-status.ready{color:var(--week);border-color:rgba(143,163,176,.4);}
 .content-status.needs_you{color:var(--needs);border-color:rgba(212,160,154,.4);}
 .content-status.needs_changes{color:var(--soon);border-color:rgba(212,176,106,.4);background:rgba(212,176,106,.12);}
+/* Chris's ask reads as the live brief while changes are outstanding, and fades
+   to context once Sydney has restaged. Her staging note sits separately so it
+   is always clear whose words you are reading. */
+.content-change-note.feedback{border-left:3px solid var(--line-strong);}
+.content-change-note.feedback.live{border-left-color:var(--soon);background:rgba(212,176,106,.09);}
+.content-change-note.sydney{opacity:.85;}
 .content-status.approved{color:var(--sydney);border-color:rgba(154,175,152,.4);background:rgba(154,175,152,.1);}
 .content-status.scheduled{color:#e4cfaa;border-color:rgba(196,165,116,.35);background:var(--brass-soft);}
 .content-detail{min-width:0;border-top:1px solid var(--line);background:rgba(18,17,15,.36);padding:12px 14px 14px;}
@@ -1049,6 +1055,8 @@ const emailDrafts = new Map();
 let projectFilter = "";
 let emailProjectFilter = "";
 let emailKindFilter = "";
+// null = not yet known, false = sql/ops_content_feedback.sql has not been run.
+let contentFeedbackColumns = null;
 
 // --- Cold Leads mode -------------------------------------------------------
 // Studio Pod Sales assigns a daily batch by stamping cold_lead_touches at pull
@@ -1416,13 +1424,18 @@ async function openAlert(id){
 
 async function createOpsAlert(fields){
   if(!sb || !currentUser || !fields || !fields.title) return null;
-  const { data, error } = await sb.from("ops_alerts").insert({
+  const row = {
     title: fields.title,
     body: fields.body || "",
     kind: fields.kind || "general",
     href: fields.href || null,
     card_id: fields.card_id || null
-  }).select("id,title,body,kind,href,card_id,read_at,created_at").single();
+  };
+  // user_id defaults to auth.uid(); the table is own-row only, so it may only be
+  // set explicitly when it matches the signed-in user.
+  if(fields.user_id) row.user_id = fields.user_id;
+  const { data, error } = await sb.from("ops_alerts").insert(row)
+    .select("id,title,body,kind,href,card_id,read_at,created_at").single();
   if(error){
     setStatus("Card saved. Could not create alert: "+error.message, true);
     return null;
@@ -5198,6 +5211,9 @@ function applyContentRow(row){
   const next = {
     photo:null,
     change_note:null,
+    feedback_note:null,
+    feedback_at:null,
+    feedback_by:null,
     planned_on:null,
     drive_url:null,
     approved_at:null,
@@ -5242,9 +5258,19 @@ async function ensureContentPhotoUrl(item){
 async function loadContent(){
   snapshotOpenContentForm();
   if(!sb) return;
-  const { data, error } = await sb.from("ops_content")
-    .select("id,title,caption,status,planned_on,source,drive_url,photo,change_note,created_by,approved_at,approved_by,posted_at,posted_by,created_at,updated_at")
+  const BASE_COLS = "id,title,caption,status,planned_on,source,drive_url,photo,change_note,created_by,approved_at,approved_by,posted_at,posted_by,created_at,updated_at";
+  const FEEDBACK_COLS = ",feedback_note,feedback_at,feedback_by";
+  let { data, error } = await sb.from("ops_content")
+    .select(BASE_COLS + (contentFeedbackColumns===false ? "" : FEEDBACK_COLS))
     .order("created_at", { ascending:false });
+  // sql/ops_content_feedback.sql may not have been run yet. Fall back to the
+  // original columns rather than taking the whole Content tab down with it.
+  if(error && /feedback_(note|at|by)/.test(error.message||"")){
+    contentFeedbackColumns = false;
+    ({ data, error } = await sb.from("ops_content").select(BASE_COLS).order("created_at", { ascending:false }));
+  }else if(!error){
+    contentFeedbackColumns = true;
+  }
   if(error){
     contentAvailable = !(error.code==="42P01" || /ops_content|schema cache/i.test(error.message||""));
     contentItems = [];
@@ -5293,6 +5319,20 @@ function contentThumbHTML(item, photo){
   return `<span class="content-thumb">No photo</span>`;
 }
 
+/* Chris's revision ask. Stays on the card after Sydney restages — while the
+   status is needs_changes it is the live brief; afterwards it is the reason the
+   current draft looks the way it does, which is worth keeping in front of him. */
+function contentFeedbackHTML(item){
+  const note = String(item.feedback_note||"").trim();
+  if(!note) return "";
+  const live = item.status==="needs_changes";
+  const when = item.feedback_at ? formatGratitudeDate(chicagoDateISO(new Date(item.feedback_at))) : "";
+  const who = String(item.feedback_by||"").split("@")[0];
+  const label = live ? "You asked for changes" : "Previous ask";
+  const meta = [when, live ? "" : who].filter(Boolean).join(" · ");
+  return `<div class="content-change-note feedback${live?" live":""}"><strong>${label}${meta?` · ${esc(meta)}`:""}</strong>\n${esc(note)}</div>`;
+}
+
 function contentCardHTML(item, photo){
   const draft = contentDraftFor(item);
   const open = item.id===openContentId;
@@ -5336,7 +5376,8 @@ function contentCardHTML(item, photo){
           </div>
         </div>
       </div>
-      ${item.change_note ? `<div class="content-change-note"><strong>Requested changes</strong>\n${esc(item.change_note)}</div>` : ""}
+      ${contentFeedbackHTML(item)}
+      ${item.change_note ? `<div class="content-change-note sydney"><strong>Sydney's note</strong>\n${esc(item.change_note)}</div>` : ""}
       <div class="content-actions">
         <span class="content-save-state" aria-live="polite"></span>
         <button type="button" class="btn tiny ghost content-save">Save</button>
@@ -5591,38 +5632,111 @@ function closeContentModal(){
   if(wrap) wrap.remove();
 }
 
+/* Chris's Ops user. The alert table is own-row only (RLS check is
+   auth.uid() = user_id), so this is used ONLY when he is the signed-in user —
+   otherwise the column default (auth.uid()) applies and the alert goes to
+   whoever is actually reviewing. Hardcoding it unconditionally would make the
+   insert fail for anyone else. */
+const CONTENT_FEEDBACK_ALERT_USER = "5da8b91d-bb0b-429d-b3f4-c4312387442c";
+
+/* A Content revision needs somewhere Chris will actually see it. ops_alerts
+   only links to ops_cards (card_id has an FK), so the feedback rides on a
+   master "Needs you" card keyed to the content row, and the alert points at
+   that card. Re-asking for changes updates the same card rather than stacking
+   duplicates. */
+async function upsertContentRevisionCard(item, note){
+  if(!sb) return null;
+  const ref = "content:" + item.id;
+  const existing = cards.find(c => c.source_ref===ref && c.source==="content");
+  const link = item.drive_url ? `\n\nDraft: ${item.drive_url}` : "";
+  const payload = {
+    title: `Content revision: ${item.title || "Untitled draft"}`,
+    snippet: note + link,
+    project: "studio-pod",
+    column_key: "needs-you",
+    owner: "sydney",
+    source: "content",
+    source_ref: ref,
+    done_at: null,
+    done_by: null,
+    updated_at: isoNow()
+  };
+  const res = existing
+    ? await sb.from("ops_cards").update(payload).eq("id", existing.id).select("*").single()
+    : await sb.from("ops_cards").insert(Object.assign({ sort:0 }, payload)).select("*").single();
+  if(res.error) return null;
+  const idx = cards.findIndex(c => c.id===res.data.id);
+  if(idx>=0) cards[idx] = res.data; else cards.push(res.data);
+  return res.data;
+}
+
+/* Only used when sql/ops_content_feedback.sql has not been run. Prepends a
+   clearly labelled block and keeps whatever Sydney had written below it. */
+function contentFeedbackFallbackNote(item, note){
+  const stamp = formatGratitudeDate(chicagoDateISO()) + " " + formatMailClock(new Date()) + " CT";
+  const block = `---\nCHRIS FEEDBACK (${stamp}):\n${note}\n---`;
+  const prior = String(item.change_note||"").replace(/^---\nCHRIS FEEDBACK[\s\S]*?\n---\n?/, "").trim();
+  return prior ? block+"\n\n"+prior : block;
+}
+
 function openContentChangesModal(item, cardEl){
   closeContentModal();
+  const prior = String(item.feedback_note||"").trim();
   const wrap = document.createElement("div");
   wrap.className = "modal content-modal";
   wrap.innerHTML = `<div class="box content-box">
-    <h3>Request changes</h3>
-    <div class="msub">Tell Sydney what to change. The ChatGPT caption stays as written until someone edits it.</div>
-    <label for="content-change-note">Note for Sydney</label>
-    <textarea id="content-change-note" placeholder="What should change?">${esc(item.change_note||"")}</textarea>
+    <h3>What needs to change?</h3>
+    <div class="msub">Your note becomes the revision brief Sydney hands to ChatGPT. Be specific — "too long, cut about a third and tighten the middle" beats "not quite right". The caption itself stays as written.</div>
+    ${prior ? `<div class="content-change-note"><strong>Your previous ask${item.feedback_at?` · ${esc(formatGratitudeDate(chicagoDateISO(new Date(item.feedback_at))))}`:""}</strong>\n${esc(prior)}</div>` : ""}
+    <label for="content-change-note">Your feedback</label>
+    <textarea id="content-change-note" placeholder="e.g. too long — cut about 30%, tighten the middle" required></textarea>
     <div class="macts">
       <button type="button" class="btn tiny ghost" id="contentChangeCancel">Cancel</button>
-      <button type="button" class="btn tiny" id="contentChangeSave">Send note</button>
+      <button type="button" class="btn tiny" id="contentChangeSave">Send to Sydney</button>
     </div>
   </div>`;
   document.body.appendChild(wrap);
+  const field = wrap.querySelector("#content-change-note");
+  field.focus();
   wrap.querySelector("#contentChangeCancel").onclick = closeContentModal;
   wrap.onclick = e => { if(e.target===wrap) closeContentModal(); };
   wrap.querySelector("#contentChangeSave").onclick = async () => {
-    const note = wrap.querySelector("#content-change-note").value.trim();
+    const note = field.value.trim();
     if(!note){
-      wrap.querySelector("#content-change-note").reportValidity();
+      field.setCustomValidity("Tell Sydney what to change before sending.");
+      field.reportValidity();
+      field.oninput = () => field.setCustomValidity("");
       return;
     }
     const btn = wrap.querySelector("#contentChangeSave");
     btn.disabled = true;
-    const saved = await saveContentFields(item, cardEl, { status:"needs_changes", change_note:note });
-    btn.disabled = false;
-    if(saved){
-      closeContentModal();
-      setStatus("Requested changes.");
-      renderBoard();
+    btn.textContent = "Sending…";
+    // change_note is deliberately untouched — that is Sydney's staging note.
+    // If the migration has not been run yet, fall back to prepending a labelled
+    // block to change_note so the feedback is never silently lost.
+    const extra = contentFeedbackColumns===false
+      ? { status:"needs_changes", change_note:contentFeedbackFallbackNote(item, note) }
+      : { status:"needs_changes", feedback_note:note, feedback_at:isoNow(),
+          feedback_by:(currentUser && currentUser.email) || "chris" };
+    const saved = await saveContentFields(item, cardEl, extra);
+    if(!saved){
+      btn.disabled = false;
+      btn.textContent = "Send to Sydney";
+      return;
     }
+    closeContentModal();
+    // Surface it: a Needs you card carrying the brief, and an alert pointing at it.
+    const card = await upsertContentRevisionCard(saved, note);
+    const alertFields = {
+      title: "Content needs changes",
+      body: `${saved.title || "Untitled draft"} — ${note.slice(0,120)}${note.length>120?"…":""}`,
+      kind: "content",
+      card_id: card ? card.id : null
+    };
+    if(currentUser && currentUser.id===CONTENT_FEEDBACK_ALERT_USER) alertFields.user_id = CONTENT_FEEDBACK_ALERT_USER;
+    await createOpsAlert(alertFields);
+    setStatus(card ? "Sent to Sydney. Added to Needs you." : "Sent to Sydney.");
+    renderBoard();
   };
 }
 
