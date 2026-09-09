@@ -185,6 +185,13 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .content-rec-ask{padding:8px 10px;border-left:3px solid var(--brass);border-radius:0 8px 8px 0;background:rgba(196,165,116,.09);color:var(--ink);font-size:12.5px;line-height:1.45;white-space:pre-wrap;}
 .content-rec-ask strong{display:block;margin-bottom:3px;color:var(--brass);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;}
 .content-rec-note{color:var(--muted);font-size:11.5px;line-height:1.45;white-space:pre-wrap;}
+.content-detail-head{display:none;}
+.content-detail-id{min-width:0;flex:1 1 auto;}
+.content-detail-hook{color:var(--ink);font-size:14px;font-weight:700;overflow-wrap:anywhere;}
+.content-detail-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px;}
+.content-detail-close{width:36px;height:36px;min-width:36px;flex-shrink:0;padding:0;border:1px solid var(--line-strong);border-radius:10px;background:transparent;color:var(--soft);font-size:20px;line-height:1;}
+.content-detail-close:hover,.content-detail-close:focus-visible{border-color:var(--brass);color:var(--ink);outline:none;}
+@media(min-width:900px){ .email-pane-detail .content-detail-head{display:flex;} }
 .content-change-note.feedback{border-left:3px solid var(--line-strong);}
 .content-change-note.feedback.live{border-left-color:var(--soon);background:rgba(212,176,106,.09);}
 .content-change-note.sydney{opacity:.85;}
@@ -484,14 +491,14 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
    own so clicking a row never moves the list. Phone (<=700px) and the
    701-899px band keep the original stacked flow. */
 @media(min-width:900px){
-  .board.email-board{max-width:1720px;padding:0 28px 20px;}
+  .board.email-board,.board.content-board{max-width:1720px;padding:0 28px 20px;}
   /* The Emails view becomes a fixed-height flex column: header at its natural
      size, board taking the rest. No computed offsets — the panes simply fill
      what is left, so Send can never fall below the fold. */
-  #app.signed-in.email-view{display:flex;flex-direction:column;height:100dvh;min-height:0;padding-bottom:0;overflow:hidden;}
-  #app.signed-in.email-view .top{flex:0 0 auto;}
-  #app.signed-in.email-view .board.email-board{flex:1 1 auto;min-height:0;overflow:hidden;padding-bottom:12px;}
-  #app.signed-in.email-view .below-board{flex:0 0 auto;padding-bottom:12px;}
+  #app.signed-in.email-view,#app.signed-in.content-view{display:flex;flex-direction:column;height:100dvh;min-height:0;padding-bottom:0;overflow:hidden;}
+  #app.signed-in.email-view .top,#app.signed-in.content-view .top{flex:0 0 auto;}
+  #app.signed-in.email-view .board.email-board,#app.signed-in.content-view .board.content-board{flex:1 1 auto;min-height:0;overflow:hidden;padding-bottom:12px;}
+  #app.signed-in.email-view .below-board,#app.signed-in.content-view .below-board{flex:0 0 auto;padding-bottom:12px;}
   /* grid-template-rows is load-bearing: without an explicit minmax(0,1fr) the
      implicit row sizes to its content and overflows the bounded container, so
      neither pane can ever scroll. */
@@ -536,6 +543,15 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
   .email-pane-detail .email-more[open] .email-more-body{max-height:38vh;overflow-y:auto;}
   .email-pane-detail .email-attach-dock{flex:0 0 auto;padding:0;}
   .email-pane-detail .cold-lead-body{min-height:0;}
+  /* Content reuses the Emails panes; only the inner chrome differs. */
+  .content-two-pane .content-list{display:flex;min-width:0;min-height:0;flex:1 1 auto;flex-direction:column;gap:10px;overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
+  .content-two-pane .content-list > *{flex:0 0 auto;}
+  .content-two-pane .content-preview{display:none;}
+  .email-pane-detail .content-detail{display:flex;min-width:0;min-height:0;flex:1 1 auto;flex-direction:column;gap:0;border:0;background:transparent;padding:0;}
+  .email-pane-detail .content-detail-head{display:flex;flex:0 0 auto;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 20px 12px;border-bottom:1px solid var(--line);}
+  .email-pane-detail .content-detail-scroll{display:flex;min-height:0;flex:1 1 auto;flex-direction:column;gap:12px;overflow-y:auto;padding:14px 20px 16px;}
+  .email-pane-detail .content-caption{min-height:200px;}
+  .email-pane-detail .content-actions{flex:0 0 auto;padding:12px 20px;border-top:1px solid var(--line);background:var(--bg-2);}
   /* Belt and braces: even if the flex chain above ever fails to resolve, the
      pane can never grow past the window, so its scroll area stays usable. */
   .email-pane-detail{max-height:100%;}
@@ -5418,15 +5434,28 @@ function contentVisualHTML(item){
   </div>`;
 }
 
-function contentCardHTML(item, photo){
+/* The editable draft. Rendered inline under the card on phone/tablet, or into
+   the right-hand pane on desktop — same markup either way, so the bindings and
+   the draft-preservation logic do not fork. Fields stay directly editable;
+   there is no read-only mode to click out of. */
+function contentDetailHTML(item, photo){
   const draft = contentDraftFor(item);
-  const open = item.id===openContentId;
-  const preview = contentPreviewText(item);
   const planned = draft.planned_on || item.planned_on || "";
   const source = draft.source || item.source || "ChatGPT";
   const posted = item.status==="posted";
-  const detail = open ? `
-    <section class="content-detail" aria-label="LinkedIn draft">
+  return `
+    <section class="content-detail" aria-label="LinkedIn draft" data-content-detail-id="${esc(item.id)}">
+      <div class="content-detail-head">
+        <div class="content-detail-id">
+          <div class="content-detail-hook">${esc(draft.title || "Untitled draft")}</div>
+          <div class="content-detail-meta">
+            <span class="content-status ${esc(item.status||"draft")}">${esc(contentStatusLabel(item.status))}</span>
+            ${planned ? `<span class="duechip ${dueClass(planned)}">${esc(fmtDue(planned))}</span>` : ""}
+          </div>
+        </div>
+        <button type="button" class="content-detail-close" aria-label="Close draft">×</button>
+      </div>
+      <div class="content-detail-scroll">
       <div class="content-field">
         <label for="content-title-${esc(item.id)}">Title / hook</label>
         <input class="content-title" id="content-title-${esc(item.id)}" type="text" value="${esc(draft.title)}" autocomplete="off">
@@ -5464,6 +5493,7 @@ function contentCardHTML(item, photo){
       ${contentVisualHTML(item)}
       ${contentFeedbackHTML(item)}
       ${item.change_note ? `<div class="content-change-note sydney"><strong>Sydney's note</strong>\n${esc(item.change_note)}</div>` : ""}
+      </div>
       <div class="content-actions">
         <span class="content-save-state" aria-live="polite"></span>
         <button type="button" class="btn tiny ghost content-save">Save</button>
@@ -5472,7 +5502,17 @@ function contentCardHTML(item, photo){
         ${posted || item.status==="approved" || item.status==="scheduled" ? "" : `<button type="button" class="btn tiny content-approve">Approve</button>`}
         ${posted ? "" : `<button type="button" class="btn tiny ghost content-posted">Mark posted</button>`}
       </div>
-    </section>` : "";
+    </section>`;
+}
+
+function contentCardHTML(item, photo){
+  const draft = contentDraftFor(item);
+  const open = item.id===openContentId;
+  const preview = contentPreviewText(item);
+  const planned = draft.planned_on || item.planned_on || "";
+  const source = draft.source || item.source || "ChatGPT";
+  // Desktop puts the draft in the right-hand pane instead of under the row.
+  const detail = open && !isDesktopEmailLayout() ? contentDetailHTML(item, photo) : "";
   return `<article class="card content-card${open?" open":""}" data-content-id="${esc(item.id)}">
     <button type="button" class="content-card-toggle" aria-expanded="${open}">
       ${contentThumbHTML(item, photo)}
@@ -5491,11 +5531,20 @@ function contentCardHTML(item, photo){
   </article>`;
 }
 
+/* The form lives under the card on phone/tablet and in the right pane on
+   desktop. Look it up by the detail's own id so an in-progress caption is
+   captured before any re-render, wherever it is. */
+function contentDetailEl(id){
+  if(!id) return null;
+  return document.querySelector(`[data-content-detail-id="${CSS.escape(id)}"]`)
+      || document.querySelector(`[data-content-id="${CSS.escape(id)}"]`);
+}
+
 function snapshotOpenContentForm(){
   if(!openContentId) return;
-  const cardEl = document.querySelector(`[data-content-id="${CSS.escape(openContentId)}"]`);
+  const el = contentDetailEl(openContentId);
   const item = contentItems.find(row => row.id===openContentId);
-  if(cardEl && item) readContentForm(cardEl, item);
+  if(el && item) readContentForm(el, item);
 }
 
 function renderContent(root){
@@ -5504,6 +5553,26 @@ function renderContent(root){
   const openCount = (contentItems||[]).filter(item => item.status!=="posted").length;
   const setup = !contentAvailable;
   root.classList.add("content-board");
+  const listHTML = list.length
+    ? `<div class="content-list">${list.map(item => contentCardHTML(item, contentPhotoRecord(item.photo))).join("")}</div>`
+    : `<div class="content-empty">No LinkedIn drafts in this filter.<div class="content-empty-sub">New draft pastes a ChatGPT caption. The Drive folder watcher is separate.</div></div>`;
+  const setupHTML = `<div class="content-empty">Apply sql/ops_content.sql to open the LinkedIn queue.<div class="content-empty-sub">Do not run it from this page. Sydney or Chris applies it in the Studio Pod SQL editor.</div></div>`;
+  // Desktop mirrors Emails: list left, the draft on the right. Same pane
+  // classes and breakpoint, so there is one layout to maintain, not two.
+  const selected = openContentId ? list.find(item => item.id===openContentId) : null;
+  let body;
+  if(setup){
+    body = setupHTML;
+  }else if(isDesktopEmailLayout()){
+    body = `<div class="email-two-pane content-two-pane">
+      <div class="email-pane-list">${listHTML}</div>
+      <div class="email-pane-detail${selected?"":" empty-pane"}">${selected
+        ? contentDetailHTML(selected, contentPhotoRecord(selected.photo))
+        : `<div class="email-detail-empty"><div class="email-detail-empty-title">Nothing selected</div><div class="email-detail-empty-sub">Pick a draft on the left to read and edit it here.</div></div>`}</div>
+    </div>`;
+  }else{
+    body = listHTML;
+  }
   root.innerHTML = `<div class="content">
     <div class="content-commandbar" aria-label="LinkedIn content queue">
       <div class="content-command-copy">
@@ -5514,11 +5583,7 @@ function renderContent(root){
       </div>
       <button type="button" class="btn tiny content-new"${setup?" disabled":""}>New draft</button>
     </div>
-    ${setup
-      ? `<div class="content-empty">Apply sql/ops_content.sql to open the LinkedIn queue.<div class="content-empty-sub">Do not run it from this page. Sydney or Chris applies it in the Studio Pod SQL editor.</div></div>`
-      : (list.length
-        ? `<div class="content-list">${list.map(item => contentCardHTML(item, contentPhotoRecord(item.photo))).join("")}</div>`
-        : `<div class="content-empty">No LinkedIn drafts in this filter.<div class="content-empty-sub">New draft pastes a ChatGPT caption. The Drive folder watcher is separate.</div></div>`)}
+    ${body}
   </div>`;
   bindContentBoard(root);
   refreshContentPhotoThumbs(root);
@@ -5582,95 +5647,130 @@ function bindContentBoard(root){
     const toggle = cardEl.querySelector(".content-card-toggle");
     if(toggle){
       toggle.onclick = () => {
-        if(openContentId===id){
-          readContentForm(cardEl, item);
-          openContentId = null;
-        }else{
-          if(openContentId){
-            const openEl = root.querySelector(`[data-content-id="${CSS.escape(openContentId)}"]`);
-            const openItem = contentItems.find(row => row.id===openContentId);
-            if(openEl && openItem) readContentForm(openEl, openItem);
-          }
-          openContentId = id;
+        // Capture whatever is typed in the currently open draft first — losing a
+        // half-written caption to a stray click is the failure that matters here.
+        snapshotOpenContentForm();
+        openContentId = (openContentId===id) ? null : id;
+        if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+          renderContentDetailPane(root);
+          return;
         }
         renderBoard();
       };
     }
-    const saveBtn = cardEl.querySelector(".content-save");
-    if(saveBtn) saveBtn.onclick = async () => {
-      saveBtn.disabled = true;
-      const saved = await saveContentFields(item, cardEl);
-      saveBtn.disabled = false;
-      if(saved){
+    // On desktop the draft lives in the right pane and is bound separately.
+    if(!isDesktopEmailLayout()) bindContentDetail(cardEl, item, root);
+  });
+  if(isDesktopEmailLayout()){
+    const pane = root.querySelector(".email-pane-detail");
+    const sel = openContentId ? contentItems.find(row => row.id===openContentId) : null;
+    if(pane && sel) bindContentDetail(pane, sel, root);
+  }
+}
+
+// Desktop only: swap the right pane without rebuilding the list, so the list
+// keeps its scroll position when clicking between drafts.
+function renderContentDetailPane(root){
+  const scope = root || document.getElementById("board");
+  const pane = scope.querySelector(".email-pane-detail");
+  if(!pane){ renderBoard(); return; }
+  const item = openContentId ? contentItems.find(row => row.id===openContentId) : null;
+  scope.querySelectorAll(".content-card").forEach(el =>
+    el.classList.toggle("open", !!item && el.dataset.contentId===item.id));
+  pane.innerHTML = item
+    ? contentDetailHTML(item, contentPhotoRecord(item.photo))
+    : `<div class="email-detail-empty"><div class="email-detail-empty-title">Nothing selected</div><div class="email-detail-empty-sub">Pick a draft on the left to read and edit it here.</div></div>`;
+  pane.classList.toggle("empty-pane", !item);
+  if(item) bindContentDetail(pane, item, scope);
+  refreshContentPhotoThumbs(scope);
+}
+
+function bindContentDetail(cardEl, item, root){
+  if(!cardEl || !item) return;
+  const closeBtn = cardEl.querySelector(".content-detail-close");
+  if(closeBtn) closeBtn.onclick = () => {
+  snapshotOpenContentForm();
+  openContentId = null;
+  if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+    renderContentDetailPane(root);
+    return;
+  }
+  renderBoard();
+  };
+  const saveBtn = cardEl.querySelector(".content-save");
+  if(saveBtn) saveBtn.onclick = async () => {
+    saveBtn.disabled = true;
+    const saved = await saveContentFields(item, cardEl);
+    saveBtn.disabled = false;
+    if(saved){
         setStatus("Saved caption as written.");
         renderBoard();
-      }
-    };
-    const readyBtn = cardEl.querySelector(".content-ready");
-    if(readyBtn) readyBtn.onclick = async () => {
-      readyBtn.disabled = true;
-      const saved = await saveContentFields(item, cardEl, { status:"needs_you" });
-      readyBtn.disabled = false;
-      if(saved){
+    }
+  };
+  const readyBtn = cardEl.querySelector(".content-ready");
+  if(readyBtn) readyBtn.onclick = async () => {
+    readyBtn.disabled = true;
+    const saved = await saveContentFields(item, cardEl, { status:"needs_you" });
+    readyBtn.disabled = false;
+    if(saved){
         setStatus("Marked ready for Chris.");
         renderBoard();
-      }
-    };
-    const approveBtn = cardEl.querySelector(".content-approve");
-    if(approveBtn) approveBtn.onclick = async () => {
-      const draft = readContentForm(cardEl, item);
-      approveBtn.disabled = true;
-      const saved = await saveContentFields(item, cardEl, {
+    }
+  };
+  const approveBtn = cardEl.querySelector(".content-approve");
+  if(approveBtn) approveBtn.onclick = async () => {
+    const draft = readContentForm(cardEl, item);
+    approveBtn.disabled = true;
+    const saved = await saveContentFields(item, cardEl, {
         status:nextApprovedStatus(draft.planned_on),
         approved_at:isoNow(),
         approved_by:currentUser && currentUser.email || "chris"
-      });
-      approveBtn.disabled = false;
-      if(saved){
+    });
+    approveBtn.disabled = false;
+    if(saved){
         setStatus("Approved. Sydney can post this caption as written.");
         renderBoard();
-      }
-    };
-    const postedBtn = cardEl.querySelector(".content-posted");
-    if(postedBtn) postedBtn.onclick = async () => {
-      postedBtn.disabled = true;
-      const saved = await saveContentFields(item, cardEl, {
+    }
+  };
+  const postedBtn = cardEl.querySelector(".content-posted");
+  if(postedBtn) postedBtn.onclick = async () => {
+    postedBtn.disabled = true;
+    const saved = await saveContentFields(item, cardEl, {
         status:"posted",
         posted_at:isoNow(),
         posted_by:currentUser && currentUser.email || "sydney"
-      });
-      postedBtn.disabled = false;
-      if(saved){
+    });
+    postedBtn.disabled = false;
+    if(saved){
         setStatus("Marked posted.");
         openContentId = null;
         renderBoard();
-      }
-    };
-    const changesBtn = cardEl.querySelector(".content-changes");
-    if(changesBtn) changesBtn.onclick = () => openContentChangesModal(item, cardEl);
-    const photoInput = cardEl.querySelector(".content-photo-input");
-    if(photoInput){
-      photoInput.onchange = async () => {
+    }
+  };
+  const changesBtn = cardEl.querySelector(".content-changes");
+  if(changesBtn) changesBtn.onclick = () => openContentChangesModal(item, cardEl);
+  const photoInput = cardEl.querySelector(".content-photo-input");
+  if(photoInput){
+    photoInput.onchange = async () => {
         const file = photoInput.files && photoInput.files[0];
         photoInput.value = "";
         if(file) await attachContentPhoto(item, file, cardEl);
-      };
-    }
-  });
+    };
+  }
 }
 
 async function attachContentPhoto(item, file, cardEl){
   if(!contentAvailable || !sb){
-    setStatus("Apply sql/ops_content.sql before attaching a photo.", true);
-    return;
+  setStatus("Apply sql/ops_content.sql before attaching a photo.", true);
+  return;
   }
   if(!contentPhotoAllowed(file)){
-    setStatus(file.name+" is not an image.", true);
-    return;
+  setStatus(file.name+" is not an image.", true);
+  return;
   }
   if(file.size > EMAIL_ATTACH_MAX_BYTES){
-    setStatus(file.name+" is larger than 25 MB.", true);
-    return;
+  setStatus(file.name+" is larger than 25 MB.", true);
+  return;
   }
   const state = cardEl && cardEl.querySelector(".content-save-state");
   if(state) state.textContent = "Uploading "+file.name+"…";
@@ -5678,37 +5778,37 @@ async function attachContentPhoto(item, file, cardEl){
   const path = item.id+"/"+id+"/"+sanitizeAttachName(file.name);
   contentPhotoBusy.add(item.id);
   const { error } = await sb.storage.from(CONTENT_PHOTO_BUCKET).upload(path, file, {
-    cacheControl:"3600",
-    contentType:file.type || "image/jpeg",
-    upsert:false
+  cacheControl:"3600",
+  contentType:file.type || "image/jpeg",
+  upsert:false
   });
   if(error){
-    contentPhotoBusy.delete(item.id);
-    setStatus("Could not attach "+file.name+": "+error.message, true);
-    if(state) state.textContent = "Photo not attached";
-    return;
+  contentPhotoBusy.delete(item.id);
+  setStatus("Could not attach "+file.name+": "+error.message, true);
+  if(state) state.textContent = "Photo not attached";
+  return;
   }
   const minted = await mintContentPhotoUrl(path);
   const photo = contentPhotoPayload({
-    id,
-    name:file.name,
-    mime:file.type || "image/jpeg",
-    size:file.size || 0,
-    path,
-    url:minted ? minted.url : "",
-    signed_url_expires_at:minted ? minted.expiresAt : null
+  id,
+  name:file.name,
+  mime:file.type || "image/jpeg",
+  size:file.size || 0,
+  path,
+  url:minted ? minted.url : "",
+  signed_url_expires_at:minted ? minted.expiresAt : null
   });
   const previous = contentPhotoRecord(item.photo);
   // Merge, don't replace — Sydney's recommendations live in the same column.
   const saved = await saveContentFields(item, cardEl, { photo:contentPhotoMerged(item.photo, photo) });
   contentPhotoBusy.delete(item.id);
   if(!saved){
-    await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([path]);
-    if(state) state.textContent = "Photo not attached";
-    return;
+  await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([path]);
+  if(state) state.textContent = "Photo not attached";
+  return;
   }
   if(previous && previous.path && previous.path!==path){
-    await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([previous.path]);
+  await sb.storage.from(CONTENT_PHOTO_BUCKET).remove([previous.path]);
   }
   setStatus("Photo attached.");
   renderBoard();
