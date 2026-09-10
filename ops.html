@@ -187,6 +187,37 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .content-rec-note{color:var(--muted);font-size:11.5px;line-height:1.45;white-space:pre-wrap;}
 .content-detail-head{display:none;}
 .content-detail-id{min-width:0;flex:1 1 auto;}
+.content-filter-group{display:flex;min-width:0;align-items:center;gap:8px;flex-wrap:wrap;}
+.content-calendar{display:flex;min-width:0;flex-direction:column;gap:10px;}
+.content-cal-bar{display:flex;min-width:0;align-items:center;gap:8px;}
+.content-cal-title{flex:1 1 auto;min-width:0;color:var(--ink);font-size:13px;font-weight:700;}
+.content-cal-prev,.content-cal-next{width:32px;min-width:32px;padding:0;}
+.content-cal-grid{display:grid;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+.content-cal-weekday{padding:2px 4px;color:var(--muted);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;text-align:center;}
+.content-cal-day{display:flex;min-width:0;min-height:78px;flex-direction:column;gap:3px;padding:4px;border:1px solid var(--line);border-radius:9px;background:rgba(18,17,15,.28);}
+.content-cal-day.outside{opacity:.4;}
+.content-cal-day.today{border-color:var(--brass);background:var(--brass-soft);}
+.content-cal-daynum{color:var(--soft);font-size:10.5px;font-weight:700;}
+.content-cal-day.today .content-cal-daynum{color:var(--ink);}
+.content-day-chip{display:flex;width:100%;min-width:0;align-items:center;gap:4px;padding:2px 4px;border:0;border-radius:6px;background:rgba(255,255,255,.05);color:var(--soft);font-size:10.5px;text-align:left;line-height:1.25;}
+.content-day-chip:hover,.content-day-chip:focus-visible{background:rgba(255,255,255,.12);color:var(--ink);outline:none;}
+.content-day-chip.on{background:var(--brass-soft);color:var(--ink);box-shadow:inset 0 0 0 1px var(--brass);}
+.content-day-dot{width:6px;height:6px;min-width:6px;border-radius:50%;background:var(--muted);}
+.content-day-dot.ready{background:var(--week);}
+.content-day-dot.needs_you{background:var(--needs);}
+.content-day-dot.needs_changes{background:var(--soon);}
+.content-day-dot.approved{background:var(--sydney);}
+.content-day-dot.scheduled{background:var(--brass);}
+.content-day-hook{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.content-day-more{padding:0 4px;color:var(--muted);font-size:10px;}
+.content-cal-undated{min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(18,17,15,.28);}
+.content-cal-undated-title{color:var(--ink);font-size:12px;font-weight:700;}
+.content-cal-undated-list{display:flex;min-width:0;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.content-cal-undated-list .content-day-chip{width:auto;max-width:100%;}
+.content-cal-undated-hint{margin-top:6px;color:var(--muted);font-size:11px;}
+.content-calendar-detail{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);overflow:hidden;}
+.content-calendar-detail .content-detail-head{display:flex;}
+.content-calendar-detail .content-detail{border-top:0;background:transparent;}
 .content-detail-hook{color:var(--ink);font-size:14px;font-weight:700;overflow-wrap:anywhere;}
 .content-detail-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px;}
 .content-detail-close{width:36px;height:36px;min-width:36px;flex-shrink:0;padding:0;border:1px solid var(--line-strong);border-radius:10px;background:transparent;color:var(--soft);font-size:20px;line-height:1;}
@@ -214,8 +245,8 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .content-save-state{flex:1 1 100%;min-width:0;color:var(--muted);font-size:11px;}
 .content-empty{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:42px 20px;text-align:center;color:var(--muted);font-family:var(--serif);font-style:italic;}
 .content-empty-sub{margin-top:8px;font-family:var(--sans);font-style:normal;font-size:13px;overflow-wrap:anywhere;}
-.content-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:12px;padding:0 0 16px;}
-.content-filterbar .filters{justify-content:flex-end;padding:0;}
+.content-filterbar{display:flex;min-width:0;max-width:100%;align-items:flex-start;justify-content:space-between;gap:12px 18px;flex-wrap:wrap;padding:0 0 16px;}
+.content-filterbar .filters{justify-content:flex-start;padding:0;}
 .content-help{min-width:0;max-width:760px;margin:0 0 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
 .content-help[open]{border-color:var(--line-strong);}
 .content-help-toggle{display:flex;min-width:0;max-width:100%;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:8px 12px;cursor:pointer;list-style:none;color:var(--soft);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
@@ -498,6 +529,14 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
   #app.signed-in.email-view,#app.signed-in.content-view{display:flex;flex-direction:column;height:100dvh;min-height:0;padding-bottom:0;overflow:hidden;}
   #app.signed-in.email-view .top,#app.signed-in.content-view .top{flex:0 0 auto;}
   #app.signed-in.email-view .board.email-board,#app.signed-in.content-view .board.content-board{flex:1 1 auto;min-height:0;overflow:hidden;padding-bottom:12px;}
+  /* Emails puts .email-two-pane straight into #board, so its height:100% has a
+     bounded parent. Content wraps everything in .content first, and a percentage
+     height against that auto-height wrapper resolves to auto — so the panes grew
+     to fit their content and #board clipped the overflow instead of scrolling.
+     Give the wrapper the board's height and let the panes flex inside it. */
+  #app.signed-in.content-view .content{height:100%;min-height:0;}
+  #app.signed-in.content-view .content > .content-commandbar{flex:0 0 auto;}
+  #app.signed-in.content-view .content > .email-two-pane{flex:1 1 auto;min-height:0;height:auto;}
   #app.signed-in.email-view .below-board,#app.signed-in.content-view .below-board{flex:0 0 auto;padding-bottom:12px;}
   /* grid-template-rows is load-bearing: without an explicit minmax(0,1fr) the
      implicit row sizes to its content and overflows the bounded container, so
@@ -547,6 +586,9 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
   .content-two-pane .content-list{display:flex;min-width:0;min-height:0;flex:1 1 auto;flex-direction:column;gap:10px;overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
   .content-two-pane .content-list > *{flex:0 0 auto;}
   .content-two-pane .content-preview{display:none;}
+  .content-calendar-pane{grid-template-columns:minmax(0,1fr) minmax(320px,420px);}
+  .content-calendar-pane .email-pane-list{overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
+  .content-calendar-pane .content-cal-day{min-height:96px;}
   .email-pane-detail .content-detail{display:flex;min-width:0;min-height:0;flex:1 1 auto;flex-direction:column;gap:0;border:0;background:transparent;padding:0;}
   .email-pane-detail .content-detail-head{display:flex;flex:0 0 auto;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 20px 12px;border-bottom:1px solid var(--line);}
   .email-pane-detail .content-detail-scroll{display:flex;min-height:0;flex:1 1 auto;flex-direction:column;gap:12px;overflow-y:auto;padding:14px 20px 16px;}
@@ -627,7 +669,8 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
   .email-kind-bar{align-items:flex-start;flex-direction:column;padding:0 12px 10px;}
   .email-kind-buttons{display:flex;width:100%;}
   .email-kind-buttons button{flex:1;min-width:0;min-height:40px;}
-  .content-filterbar{display:block;padding-bottom:14px;}
+  .content-filterbar{display:flex;flex-direction:column;align-items:stretch;padding-bottom:14px;}
+  .content-filter-group{width:100%;}
   .content-filterbar .viewbar-label{display:block;margin-bottom:8px;}
   .content-filterbar .filters{justify-content:flex-start;flex-wrap:wrap;}
   .content-help{margin-bottom:12px;}
@@ -914,6 +957,7 @@ body.card-detail-open{overflow:hidden;}
       </div>
     </div>
     <div class="content-filterbar hidden" id="contentFilters">
+      <div class="content-filter-group">
       <span class="viewbar-label">Queue</span>
       <div class="filters" aria-label="Filter LinkedIn drafts by status">
         <button class="chip on" data-content-status="open">Open</button>
@@ -922,6 +966,14 @@ body.card-detail-open{overflow:hidden;}
         <button class="chip" data-content-status="needs_changes">Needs changes</button>
         <button class="chip" data-content-status="approved">Approved</button>
         <button class="chip" data-content-status="posted">Posted</button>
+      </div>
+      </div>
+      <div class="content-filter-group">
+        <span class="viewbar-label">View</span>
+        <div class="filters" aria-label="Show the queue as a list or a calendar">
+          <button class="chip on" data-content-view="list">List</button>
+          <button class="chip" data-content-view="calendar">Calendar</button>
+        </div>
       </div>
     </div>
     <details class="content-help hidden" id="contentHelp">
@@ -1057,6 +1109,9 @@ let contentItems = [];
 let contentAvailable = true;
 let contentStatusFilter = "open";
 let openContentId = null;
+// List or Calendar. Per-browser, so Chris and Sydney keep their own habit.
+let contentView = localStorage.getItem("ops_content_view")==="calendar" ? "calendar" : "list";
+let contentMonth = "";
 let contentPhotoBusy = new Set();
 const contentDrafts = new Map();
 let openCardDetailId = null;
@@ -1528,6 +1583,8 @@ function syncActorUI(){
   $$("#emailFilters [data-mode-scope='inbox']").forEach(group => group.classList.toggle("hidden", emailMode==="cold-leads"));
   $$("[data-email-mode]").forEach(x => x.classList.toggle("on", (x.dataset.emailMode||"inbox")===emailMode));
   $("#contentFilters").classList.toggle("hidden", !showingContent);
+  $$("[data-content-view]").forEach(x =>
+    x.classList.toggle("on", (x.dataset.contentView||"list")===contentView));
   $("#contentHelp").classList.toggle("hidden", !showingContent);
   $("#ownerFilters").classList.toggle("hidden", !isDedicatedActor(actor));
   $("#projectFilters").classList.add("hidden");
@@ -5547,6 +5604,133 @@ function snapshotOpenContentForm(){
   if(el && item) readContentForm(el, item);
 }
 
+// ---- Calendar mode -------------------------------------------------------
+// Dates are handled as YYYY-MM-DD strings throughout. Parsing planned_on into a
+// Date without a time component shifts it a day west of UTC, which would file a
+// draft under the wrong square.
+function contentMonthKey(){
+  if(/^\d{4}-\d{2}$/.test(contentMonth)) return contentMonth;
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+}
+
+function contentMonthShift(key, delta){
+  const y = Number(key.slice(0,4));
+  const m = Number(key.slice(5,7)) - 1 + delta;
+  const d = new Date(y, m, 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+
+function contentMonthLabel(key){
+  return new Date(Number(key.slice(0,4)), Number(key.slice(5,7))-1, 1)
+    .toLocaleDateString([], { month:"long", year:"numeric" });
+}
+
+function contentTodayISO(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+// The planned date a square should file this draft under. An unsaved edit in the
+// date field wins, so moving a draft is visible on the grid before you save.
+function contentPlannedISO(item){
+  const draft = contentDraftFor(item);
+  const raw = String(draft.planned_on || item.planned_on || "").trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : "";
+}
+
+function contentDayChipHTML(item){
+  const draft = contentDraftFor(item);
+  const open = item.id===openContentId;
+  const hook = String(draft.title || "Untitled draft").trim();
+  return `<button type="button" class="content-day-chip${open?" on":""}" data-content-open="${esc(item.id)}" title="${esc(hook)}">
+    <span class="content-day-dot ${esc(item.status||"draft")}"></span>
+    <span class="content-day-hook">${esc(hook)}</span>
+  </button>`;
+}
+
+const CONTENT_DAY_CHIP_LIMIT = 3;
+
+function contentCalendarHTML(list){
+  const key = contentMonthKey();
+  const year = Number(key.slice(0,4));
+  const month = Number(key.slice(5,7)) - 1;
+  const first = new Date(year, month, 1);
+  const start = new Date(year, month, 1 - first.getDay());
+  const today = contentTodayISO();
+
+  const byDay = new Map();
+  const undated = [];
+  list.forEach(item => {
+    const iso = contentPlannedISO(item);
+    if(!iso){ undated.push(item); return; }
+    if(!byDay.has(iso)) byDay.set(iso, []);
+    byDay.get(iso).push(item);
+  });
+
+  const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+    .map(d => `<div class="content-cal-weekday">${d}</div>`).join("");
+
+  let cells = "";
+  for(let i=0; i<42; i++){
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const outside = d.getMonth()!==month;
+    const items = byDay.get(iso) || [];
+    const shown = items.slice(0, CONTENT_DAY_CHIP_LIMIT);
+    const extra = items.length - shown.length;
+    cells += `<div class="content-cal-day${outside?" outside":""}${iso===today?" today":""}">
+      <div class="content-cal-daynum">${d.getDate()}</div>
+      ${shown.map(contentDayChipHTML).join("")}
+      ${extra>0 ? `<div class="content-day-more">+${extra} more</div>` : ""}
+    </div>`;
+  }
+
+  const undatedHTML = undated.length
+    ? `<div class="content-cal-undated">
+        <div class="content-cal-undated-title">No planned date (${undated.length})</div>
+        <div class="content-cal-undated-list">${undated.map(contentDayChipHTML).join("")}</div>
+        <div class="content-cal-undated-hint">Set Planned date on a draft to place it on the calendar.</div>
+      </div>`
+    : "";
+
+  return `<div class="content-calendar">
+    <div class="content-cal-bar">
+      <button type="button" class="btn tiny content-cal-prev" aria-label="Previous month">‹</button>
+      <span class="content-cal-title">${esc(contentMonthLabel(key))}</span>
+      <button type="button" class="btn tiny content-cal-next" aria-label="Next month">›</button>
+      <button type="button" class="btn tiny content-cal-today">Today</button>
+    </div>
+    <div class="content-cal-grid">${weekdays}${cells}</div>
+    ${undatedHTML}
+  </div>`;
+}
+
+function bindContentCalendar(root){
+  const go = key => {
+    contentMonth = key;
+    renderBoard();
+  };
+  const prev = root.querySelector(".content-cal-prev");
+  if(prev) prev.onclick = () => go(contentMonthShift(contentMonthKey(), -1));
+  const next = root.querySelector(".content-cal-next");
+  if(next) next.onclick = () => go(contentMonthShift(contentMonthKey(), 1));
+  const todayBtn = root.querySelector(".content-cal-today");
+  if(todayBtn) todayBtn.onclick = () => go(contentTodayISO().slice(0,7));
+  root.querySelectorAll("[data-content-open]").forEach(chip => {
+    chip.onclick = () => {
+      snapshotOpenContentForm();
+      const id = chip.dataset.contentOpen;
+      openContentId = (openContentId===id) ? null : id;
+      if(isDesktopEmailLayout() && root.querySelector(".email-pane-detail")){
+        renderContentDetailPane(root);
+        return;
+      }
+      renderBoard();
+    };
+  });
+}
+
 function renderContent(root){
   snapshotOpenContentForm();
   const list = visibleContentItems();
@@ -5560,16 +5744,25 @@ function renderContent(root){
   // Desktop mirrors Emails: list left, the draft on the right. Same pane
   // classes and breakpoint, so there is one layout to maintain, not two.
   const selected = openContentId ? list.find(item => item.id===openContentId) : null;
+  // Calendar swaps what fills the left side. The draft pane, the bindings and
+  // the status machine are the same either way.
+  const calendar = contentView==="calendar";
+  const leftHTML = calendar ? contentCalendarHTML(list) : listHTML;
   let body;
   if(setup){
     body = setupHTML;
   }else if(isDesktopEmailLayout()){
-    body = `<div class="email-two-pane content-two-pane">
-      <div class="email-pane-list">${listHTML}</div>
+    body = `<div class="email-two-pane content-two-pane${calendar?" content-calendar-pane":""}">
+      <div class="email-pane-list">${leftHTML}</div>
       <div class="email-pane-detail${selected?"":" empty-pane"}">${selected
         ? contentDetailHTML(selected, contentPhotoRecord(selected.photo))
         : `<div class="email-detail-empty"><div class="email-detail-empty-title">Nothing selected</div><div class="email-detail-empty-sub">Pick a draft on the left to read and edit it here.</div></div>`}</div>
     </div>`;
+  }else if(calendar){
+    // No rows to expand under on the phone, so the draft opens below the grid.
+    body = leftHTML + (selected
+      ? `<div class="content-calendar-detail">${contentDetailHTML(selected, contentPhotoRecord(selected.photo))}</div>`
+      : "");
   }else{
     body = listHTML;
   }
@@ -5640,6 +5833,12 @@ function nextApprovedStatus(plannedOn){
 function bindContentBoard(root){
   const createBtn = root.querySelector(".content-new");
   if(createBtn) createBtn.onclick = () => openContentCreateModal();
+  if(root.querySelector(".content-calendar")) bindContentCalendar(root);
+  const phoneDetail = root.querySelector(".content-calendar-detail .content-detail");
+  if(phoneDetail){
+    const sel = contentItems.find(row => row.id===phoneDetail.dataset.contentDetailId);
+    if(sel) bindContentDetail(phoneDetail, sel, root);
+  }
   root.querySelectorAll(".content-card").forEach(cardEl => {
     const id = cardEl.dataset.contentId;
     const item = contentItems.find(row => row.id===id);
@@ -5677,6 +5876,8 @@ function renderContentDetailPane(root){
   const item = openContentId ? contentItems.find(row => row.id===openContentId) : null;
   scope.querySelectorAll(".content-card").forEach(el =>
     el.classList.toggle("open", !!item && el.dataset.contentId===item.id));
+  scope.querySelectorAll("[data-content-open]").forEach(el =>
+    el.classList.toggle("on", !!item && el.dataset.contentOpen===item.id));
   pane.innerHTML = item
     ? contentDetailHTML(item, contentPhotoRecord(item.photo))
     : `<div class="email-detail-empty"><div class="email-detail-empty-title">Nothing selected</div><div class="email-detail-empty-sub">Pick a draft on the left to read and edit it here.</div></div>`;
@@ -7185,6 +7386,17 @@ $$("[data-email-mode]").forEach(ch => ch.onclick = async () => {
   syncActorUI();
   renderBoard();
   if(emailMode==="cold-leads" && coldLeadsState!=="loading") loadColdLeads();
+});
+
+$$("[data-content-view]").forEach(ch => ch.onclick = () => {
+  const next = ch.dataset.contentView === "calendar" ? "calendar" : "list";
+  if(next===contentView) return;
+  // Keep whatever is half-typed in the open draft across the switch.
+  snapshotOpenContentForm();
+  contentView = next;
+  localStorage.setItem("ops_content_view", contentView);
+  $$("[data-content-view]").forEach(x => x.classList.toggle("on", x===ch));
+  renderBoard();
 });
 
 $$("[data-content-status]").forEach(ch => ch.onclick = () => {
