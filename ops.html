@@ -31,7 +31,7 @@
   --soft:#d4cdc0;
   --muted:#9a9286;
   --line:rgba(244,239,230,.09);
-  --line-strong:rgba(244,239,230,.16);
+  --line-strong:rgba(244,239,230,.16);--focus:#7eb07c;
   --brass:#c4a574;
   --brass-soft:rgba(196,165,116,.16);
   --needs:#d4a09a;
@@ -775,6 +775,14 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .col[data-col="later"] .col-h h2{color:var(--later);font-weight:500;}
 .col[data-col="sydney"] .col-h h2{color:var(--sydney);}
 .col-body{flex:1;min-width:0;max-width:100%;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.focus-filterbar{display:flex;min-width:0;max-width:100%;align-items:center;gap:10px;flex-wrap:wrap;padding:0 0 16px;}
+.col-focus{display:block;width:100%;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;border-radius:6px;}
+.col-focus h2{margin:0;font-size:15px;font-weight:600;letter-spacing:.01em;color:inherit;}
+.col-focus:hover h2{color:var(--focus);}
+.col-focus:focus-visible{outline:2px solid var(--focus);outline-offset:3px;}
+.col.focused{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus), 0 0 18px rgba(126,176,124,.14);}
+.col.focused .col-h{border-bottom-color:rgba(126,176,124,.35);}
+.col.focused .col-h h2{color:var(--focus);}
 .col-add{display:flex;min-width:0;align-items:center;gap:6px;padding:8px 10px 0;}
 .col-add-input{min-width:0;flex:1 1 auto;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-size:13px;}
 .col-add-input::placeholder{color:var(--muted);}
@@ -942,6 +950,10 @@ body.card-detail-open{overflow:hidden;}
         <button type="button" class="chip" data-owner="sydney">Sydney</button>
       </div>
     </div>
+    <div class="focus-filterbar hidden" id="focusFilters">
+      <span class="viewbar-label">Focus</span>
+      <div class="filters" aria-label="Outline one column to work in"></div>
+    </div>
     <div class="email-filterbar hidden" id="emailFilters">
       <div class="email-filter-group" data-mode-scope="inbox">
         <span class="viewbar-label">Inbox</span>
@@ -1086,6 +1098,51 @@ let currentUser = null;
 let previewMode = false;
 let storedActor = localStorage.getItem("ops_actor") || "master";
 let ownerFilter = localStorage.getItem("ops_owner") || "chris";
+
+// Which column is lit on each board. Per browser, never written to Supabase —
+// this is Chris's attention, not shared board state, so it must not follow
+// Sydney around.
+let focusColumns = (() => {
+  try{ return JSON.parse(localStorage.getItem("ops_focus_columns") || "{}") || {}; }
+  catch(_){ return {}; }
+})();
+
+function focusKeyFor(a){ return a || actor; }
+function focusedColumn(a){ return focusColumns[focusKeyFor(a)] || ""; }
+function setFocusColumn(key, a){
+  const board = focusKeyFor(a);
+  if(!key || focusColumns[board]===key) delete focusColumns[board];   // click again to clear
+  else focusColumns[board] = key;
+  try{ localStorage.setItem("ops_focus_columns", JSON.stringify(focusColumns)); }catch(_){ }
+  renderBoard();
+  syncFocusChips();
+}
+
+// The chips a board offers depend on what its columns mean: companies on
+// Master, priorities everywhere else.
+function focusChoices(){
+  if(actor==="master") return BOARD_PROJECTS.map(k => ({ key:k, label:PROJECTS[k] }));
+  if(isDedicatedActor(actor)) return COLUMNS.map(c => ({ key:c.key, label:c.label }));
+  return [];
+}
+
+function syncFocusChips(){
+  const bar = $("#focusFilters");
+  if(!bar) return;
+  const choices = focusChoices();
+  const show = choices.length > 0;
+  bar.classList.toggle("hidden", !show);
+  if(!show) return;
+  const current = focusedColumn();
+  const chips = choices.map(c =>
+    `<button type="button" class="chip${c.key===current?" on":""}" data-focus-col="${esc(c.key)}">${esc(c.label)}</button>`
+  ).join("");
+  bar.querySelector(".filters").innerHTML =
+    `<button type="button" class="chip${current?"":" on"}" data-focus-col="">Off</button>` + chips;
+  bar.querySelectorAll("[data-focus-col]").forEach(chip => {
+    chip.onclick = () => setFocusColumn(chip.dataset.focusCol || "", actor);
+  });
+}
 if(storedActor==="chris" || storedActor==="sydney"){
   ownerFilter = storedActor==="sydney" ? "sydney" : "chris";
   storedActor = "master";
@@ -1598,6 +1655,7 @@ function syncActorUI(){
     x.classList.toggle("on", (x.dataset.contentView||"list")===contentView));
   $("#contentHelp").classList.toggle("hidden", !showingContent);
   $("#ownerFilters").classList.toggle("hidden", !isDedicatedActor(actor));
+  syncFocusChips();
   $("#projectFilters").classList.add("hidden");
   $("#msImport").classList.toggle("hidden", !showingBoardTools);
   $("#doneBtn").classList.toggle("hidden", showingContent || showingHome);
@@ -6272,14 +6330,16 @@ function renderBoard(){
       ? list.map(c => cardHTML(c)).join("")
       : `<div class="empty">${col.key==="later"?"Nothing in the backlog.":"Nothing here."}</div>`;
     const deemphasized = ownerFilter==="chris" && col.key==="sydney";
-    return `<section class="col${deemphasized?" deemphasized":""}" data-col="${col.key}">
-      <div class="col-h"><div><h2>${esc(col.label)}</h2><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
+    const focused = focusedColumn()===col.key;
+    return `<section class="col${deemphasized?" deemphasized":""}${focused?" focused":""}" data-col="${col.key}">
+      <div class="col-h"><div><button type="button" class="col-focus" data-focus-col="${esc(col.key)}" title="Focus this column" aria-pressed="${focused}"><h2>${esc(col.label)}</h2></button><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
       ${colAddHTML(actor, col.key, col.label)}
       <div class="col-body">${body}</div>
     </section>`;
   }).join("");
   bindBoard();
   bindColAdds(root);
+  bindFocusHeaders(root);
 }
 
 
@@ -6376,14 +6436,22 @@ function renderMasterBoard(root){
     const body = list.length
       ? list.map(c => cardHTML(c)).join("")
       : `<div class="empty">Nothing needs you.</div>`;
-    return `<section class="col" data-col="needs-you" data-project="${key}">
-      <div class="col-h"><div><h2>${esc(PROJECTS[key])}</h2><span class="sub">High priority</span></div><span class="n">${list.length}</span></div>
+    const focused = focusedColumn()===key;
+    return `<section class="col${focused?" focused":""}" data-col="needs-you" data-project="${key}">
+      <div class="col-h"><div><button type="button" class="col-focus" data-focus-col="${esc(key)}" title="Focus this column" aria-pressed="${focused}"><h2>${esc(PROJECTS[key])}</h2></button><span class="sub">High priority</span></div><span class="n">${list.length}</span></div>
       ${colAddHTML(key, "needs-you", PROJECTS[key])}
       <div class="col-body">${body}</div>
     </section>`;
   }).join("");
   bindBoard({ projectScope:true });
   bindColAdds(root);
+  bindFocusHeaders(root);
+}
+
+function bindFocusHeaders(root){
+  root.querySelectorAll(".col-focus").forEach(btn => {
+    btn.onclick = () => setFocusColumn(btn.dataset.focusCol || "", actor);
+  });
 }
 
 function renderUnfiledBoard(root){
