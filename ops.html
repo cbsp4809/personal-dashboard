@@ -189,11 +189,13 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .content-detail-id{min-width:0;flex:1 1 auto;}
 .content-filter-group{display:flex;min-width:0;align-items:center;gap:8px;flex-wrap:wrap;}
 .content-calendar{display:flex;min-width:0;flex-direction:column;gap:10px;}
-.content-cal-bar{display:flex;min-width:0;align-items:center;gap:8px;}
-.content-cal-title{flex:1 1 auto;min-width:0;color:var(--ink);font-size:13px;font-weight:700;}
+.content-cal-scroll{display:flex;min-width:0;flex-direction:column;gap:10px;}
+.content-cal-bar{display:flex;min-width:0;flex:0 0 auto;align-items:center;gap:8px;}
+.content-cal-title{min-width:0;color:var(--ink);font-size:13px;font-weight:700;}
+.content-cal-today{margin-left:auto;}
 .content-cal-prev,.content-cal-next{width:32px;min-width:32px;padding:0;}
 .content-cal-grid{display:grid;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
-.content-cal-weekday{padding:2px 4px;color:var(--muted);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;text-align:center;}
+.content-cal-weekday{position:sticky;top:0;z-index:1;padding:4px;background:var(--bg);color:var(--muted);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;text-align:center;}
 .content-cal-day{display:flex;min-width:0;min-height:78px;flex-direction:column;gap:3px;padding:4px;border:1px solid var(--line);border-radius:9px;background:rgba(18,17,15,.28);}
 .content-cal-day.outside{opacity:.4;}
 .content-cal-day.today{border-color:var(--brass);background:var(--brass-soft);}
@@ -587,7 +589,9 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
   .content-two-pane .content-list > *{flex:0 0 auto;}
   .content-two-pane .content-preview{display:none;}
   .content-calendar-pane{grid-template-columns:minmax(0,1fr) minmax(320px,420px);}
-  .content-calendar-pane .email-pane-list{overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
+  .content-calendar-pane .email-pane-list{overflow:hidden;}
+  .content-calendar-pane .content-calendar{height:100%;min-height:0;}
+  .content-calendar-pane .content-cal-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:6px;}
   .content-calendar-pane .content-cal-day{min-height:96px;}
   .email-pane-detail .content-detail{display:flex;min-width:0;min-height:0;flex:1 1 auto;flex-direction:column;gap:0;border:0;background:transparent;padding:0;}
   .email-pane-detail .content-detail-head{display:flex;flex:0 0 auto;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 20px 12px;border-bottom:1px solid var(--line);}
@@ -771,6 +775,13 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .col[data-col="later"] .col-h h2{color:var(--later);font-weight:500;}
 .col[data-col="sydney"] .col-h h2{color:var(--sydney);}
 .col-body{flex:1;min-width:0;max-width:100%;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.col-add{display:flex;min-width:0;align-items:center;gap:6px;padding:8px 10px 0;}
+.col-add-input{min-width:0;flex:1 1 auto;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-size:13px;}
+.col-add-input::placeholder{color:var(--muted);}
+.col-add-input:focus{border-color:rgba(196,165,116,.55);outline:none;}
+.col-add-btn{width:32px;height:32px;min-width:32px;flex:0 0 auto;padding:0;border:1px solid var(--line-strong);border-radius:10px;background:transparent;color:var(--soft);font-size:17px;line-height:1;}
+.col-add-btn:hover,.col-add-btn:focus-visible{border-color:var(--brass);color:var(--ink);outline:none;}
+.col-add-btn:disabled{opacity:.5;}
 .empty{color:var(--muted);font-size:13px;padding:18px 8px;text-align:center;font-family:var(--serif);font-style:italic;}
 
 .card{min-width:0;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 0 rgba(255,255,255,.02);-webkit-touch-callout:none;}
@@ -1019,7 +1030,7 @@ body.card-detail-open{overflow:hidden;}
       <div class="composer-confirm" id="composerConfirm" aria-live="polite">
         <div class="composer-chips">
           <button type="button" class="chip composer-chip on" id="composerProjectChip" title="Tap to change project">Unfiled</button>
-          <button type="button" class="chip composer-chip on" id="composerColumnChip" title="Tap to change column">Today</button>
+          <button type="button" class="chip composer-chip on" id="composerColumnChip" title="Tap to change column">Medium priority</button>
         </div>
         <span class="composer-heard" id="composerHeard"></span>
       </div>
@@ -1047,11 +1058,13 @@ const MS_CLIENT_ID = "6317e330-50ac-46f2-89c3-dc661be621f4";
 const MS_REDIRECT = "https://cbsp4809.github.io/personal-dashboard/";
 const MS_LIVE = /github\.io\/personal-dashboard/i.test(location.href);
 
+// Labels are priorities; the keys stay as they were so the email queue, the
+// digest, the To Do import and every saved row keep working untouched.
 const COLUMNS = [
-  { key:"needs-you", label:"Needs you", sub:"Waiting on Chris" },
-  { key:"today", label:"Today", sub:"" },
-  { key:"this-week", label:"This week", sub:"Parked for the next few days" },
-  { key:"later", label:"Later", sub:"The long list — not today, not this week" },
+  { key:"needs-you", label:"High priority", sub:"Do these first" },
+  { key:"today", label:"Medium priority", sub:"Next up" },
+  { key:"this-week", label:"Low priority", sub:"When there is room" },
+  { key:"later", label:"Backlog", sub:"The long list — not now" },
   { key:"sydney", label:"Sydney owns", sub:"She writes these and can finish them" }
 ];
 const PROJECTS = { "studio-pod":"Studio Pod", cbp:"CBP", personal:"Personal", unfiled:"Unfiled" };
@@ -1241,8 +1254,6 @@ function tick(){
   const n = new Date();
   $("#time").textContent = n.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
   $("#date").textContent = n.toLocaleDateString([], { weekday:"long", month:"long", day:"numeric" });
-  const todayCol = COLUMNS.find(c => c.key==="today");
-  if(todayCol) todayCol.sub = n.toLocaleDateString([], { weekday:"long", month:"short", day:"numeric" }) + " · daily focus";
   refreshEmailWaitChips(n);
 }
 setInterval(tick, 30000);
@@ -1534,7 +1545,7 @@ async function createAlertForCard(card){
   if(isEmailCard(card)){
     await createOpsAlert({ title:"New email reply", body:card.title, kind:"email", card_id:card.id });
   }else if(card.column_key==="needs-you"){
-    await createOpsAlert({ title:"Needs you", body:card.title, kind:"needs-you", card_id:card.id });
+    await createOpsAlert({ title:"High priority", body:card.title, kind:"needs-you", card_id:card.id });
   }
 }
 
@@ -1599,7 +1610,7 @@ function syncActorUI(){
   if(label){
     label.textContent = showingEmails || showingDigest || showingContent || showingHome
       ? "View"
-      : actor==="master" ? "Needs you" : actor==="unfiled" ? "File these" : "Board";
+      : actor==="master" ? "High priority" : actor==="unfiled" ? "File these" : "Board";
   }
   const input = $("#composerInput");
   if(input){
@@ -1687,8 +1698,11 @@ async function onSignedIn(session){
   startSendNowPolling();
 }
 
+let cardsLoadSeq = 0;
+
 async function loadCards(){
   if(previewMode) return;
+  const seq = ++cardsLoadSeq;
   if(savingOrder || (touchDrag && touchDrag.active)) return;
   if(!sb){ setStatus("Supabase client missing.", true); return; }
   const requiredFields = "id,title,snippet,project,column_key,owner,due_on,source,source_ref,sort,done_at,done_by,created_at,updated_at";
@@ -1771,6 +1785,9 @@ async function loadCards(){
   }
   const { data, error } = result;
   if(error){ setStatus("Could not load cards: "+error.message, true); return; }
+  // A card created while this query was in flight is not in `data`. Assigning it
+  // would erase the new card from the screen a moment after it appeared.
+  if(seq !== cardsLoadSeq) return;
   cards = data || [];
   emailDrafts.forEach((draft, cardId) => {
     const card = cards.find(item => item.id===cardId);
@@ -5701,8 +5718,10 @@ function contentCalendarHTML(list){
       <button type="button" class="btn tiny content-cal-next" aria-label="Next month">›</button>
       <button type="button" class="btn tiny content-cal-today">Today</button>
     </div>
-    <div class="content-cal-grid">${weekdays}${cells}</div>
-    ${undatedHTML}
+    <div class="content-cal-scroll">
+      <div class="content-cal-grid">${weekdays}${cells}</div>
+      ${undatedHTML}
+    </div>
   </div>`;
 }
 
@@ -6187,6 +6206,7 @@ function openContentCreateModal(){
 }
 
 function renderBoard(){
+  snapshotColAdds();
   const savedEmailScroll = captureOpenEmailScroll();
   const savedEmailListScroll = captureEmailListScroll();
   tick();
@@ -6250,14 +6270,101 @@ function renderBoard(){
       .sort(compareCards);
     const body = list.length
       ? list.map(c => cardHTML(c)).join("")
-      : `<div class="empty">${col.key==="today"?"Nothing parked for today yet.":col.key==="later"?"Nothing parked for later.":"Nothing here."}</div>`;
+      : `<div class="empty">${col.key==="later"?"Nothing in the backlog.":"Nothing here."}</div>`;
     const deemphasized = ownerFilter==="chris" && col.key==="sydney";
     return `<section class="col${deemphasized?" deemphasized":""}" data-col="${col.key}">
       <div class="col-h"><div><h2>${esc(col.label)}</h2><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
+      ${colAddHTML(actor, col.key, col.label)}
       <div class="col-body">${body}</div>
     </section>`;
   }).join("");
   bindBoard();
+  bindColAdds(root);
+}
+
+
+// ---- Per-list intake -------------------------------------------------------
+// One add box per column, filing straight into that column at the top.
+const colAddDrafts = new Map();
+let colAddFocus = null;
+
+function colAddKey(project, column){ return (project||"") + "|" + (column||""); }
+
+function colAddHTML(project, column, label){
+  const key = colAddKey(project, column);
+  const draft = colAddDrafts.get(key) || "";
+  return `<form class="col-add" data-add-project="${esc(project)}" data-add-col="${esc(column)}">
+    <input class="col-add-input" type="text" autocomplete="off" enterkeyhint="send"
+      placeholder="Add to ${esc(label)}…" value="${esc(draft)}" aria-label="Add to ${esc(label)}">
+    <button type="submit" class="col-add-btn" aria-label="Add">+</button>
+  </form>`;
+}
+
+// Read the boxes back out before a re-render throws the DOM away.
+function snapshotColAdds(root){
+  const scope = root || document.getElementById("board");
+  if(!scope) return;
+  scope.querySelectorAll(".col-add").forEach(form => {
+    const input = form.querySelector(".col-add-input");
+    if(!input) return;
+    const key = colAddKey(form.dataset.addProject, form.dataset.addCol);
+    if(input.value.trim()) colAddDrafts.set(key, input.value);
+    else colAddDrafts.delete(key);
+    if(document.activeElement===input){
+      colAddFocus = { key, start:input.selectionStart, end:input.selectionEnd };
+    }
+  });
+}
+
+function restoreColAddFocus(root){
+  if(!colAddFocus) return;
+  const scope = root || document.getElementById("board");
+  const form = scope && scope.querySelector(
+    `.col-add[data-add-project="${CSS.escape(colAddFocus.key.split("|")[0])}"][data-add-col="${CSS.escape(colAddFocus.key.split("|")[1])}"]`);
+  const input = form && form.querySelector(".col-add-input");
+  if(input){
+    input.focus();
+    try{ input.setSelectionRange(colAddFocus.start, colAddFocus.end); }catch(_){ }
+  }
+  colAddFocus = null;
+}
+
+function bindColAdds(root){
+  root.querySelectorAll(".col-add").forEach(form => {
+    const input = form.querySelector(".col-add-input");
+    const project = form.dataset.addProject;
+    const column = form.dataset.addCol;
+    const key = colAddKey(project, column);
+    if(input){
+      input.oninput = () => {
+        if(input.value.trim()) colAddDrafts.set(key, input.value);
+        else colAddDrafts.delete(key);
+      };
+    }
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const title = (input.value||"").trim();
+      if(!title) return;
+      const btn = form.querySelector(".col-add-btn");
+      if(btn) btn.disabled = true;
+      const row = await createCard({
+        title,
+        snippet: "",
+        project,
+        column_key: column,
+        owner: column==="sydney" ? "sydney" : "chris",
+        due_on: null,
+        source: "chat"
+      }, { createAlert:false });
+      if(btn) btn.disabled = false;
+      if(!row) return;           // createCard already reported the error
+      input.value = "";
+      colAddDrafts.delete(key);
+      colAddFocus = { key, start:0, end:0 };
+      renderBoard();
+    };
+  });
+  restoreColAddFocus(root);
 }
 
 function renderMasterBoard(root){
@@ -6270,11 +6377,13 @@ function renderMasterBoard(root){
       ? list.map(c => cardHTML(c)).join("")
       : `<div class="empty">Nothing needs you.</div>`;
     return `<section class="col" data-col="needs-you" data-project="${key}">
-      <div class="col-h"><div><h2>${esc(PROJECTS[key])}</h2><span class="sub">Needs you</span></div><span class="n">${list.length}</span></div>
+      <div class="col-h"><div><h2>${esc(PROJECTS[key])}</h2><span class="sub">High priority</span></div><span class="n">${list.length}</span></div>
+      ${colAddHTML(key, "needs-you", PROJECTS[key])}
       <div class="col-body">${body}</div>
     </section>`;
   }).join("");
   bindBoard({ projectScope:true });
+  bindColAdds(root);
 }
 
 function renderUnfiledBoard(root){
@@ -7194,6 +7303,11 @@ function parseComposer(raw){
   take(/\bunder\s+needs\s+you\b/i, () => { column_key = "needs-you"; owner = "chris"; });
   take(/\bneeds\s+you\b/i, () => { column_key = "needs-you"; owner = "chris"; });
   take(/\bsydney\s+owns\b/i, () => { column_key = "sydney"; owner = "sydney"; });
+  take(/\bhigh\s*(?:priority|pri)?\b/i, () => { column_key = "needs-you"; owner = "chris"; });
+  take(/\bmedium\s*(?:priority|pri)?\b|\bmed\s+pri\b/i, () => { column_key = "today"; });
+  take(/\blow\s*(?:priority|pri)?\b/i, () => { column_key = "this-week"; });
+  take(/\bbacklog\b/i, () => { column_key = "later"; });
+  // The old time words still work — Sydney and the voice notes use them.
   take(/\bthis\s+week\b/i, () => { column_key = "this-week"; });
   take(/\btoday\b/i, () => { column_key = "today"; });
   take(/\blater\b/i, () => { column_key = "later"; });
@@ -7309,8 +7423,12 @@ async function sendComposer(){
 
 async function createCard(fields, options){
   if(!sb && !previewMode){ setStatus("Not signed in.", true); return null; }
-  const siblings = openCards().filter(c => c.column_key===fields.column_key);
-  const sort = siblings.length ? Math.max(...siblings.map(c => c.sort||0)) + 1 : 0;
+  // Top of its OWN list. The old rule took the max across every project's copy
+  // of this column and added one, which dropped a new card into the middle of a
+  // hundred-card list — it looked like the add had failed.
+  const siblings = openCards().filter(c =>
+    c.column_key===fields.column_key && cardProjectKey(c)===cardProjectKey({ project:fields.project }));
+  const sort = siblings.length ? Math.min(...siblings.map(c => Number(c.sort)||0)) - 1 : 0;
   const row = {
     title: fields.title,
     snippet: fields.snippet || "",
@@ -7334,6 +7452,7 @@ async function createCard(fields, options){
   }
   const { data, error } = await sb.from("ops_cards").insert(row).select("*").single();
   if(error){ setStatus("Could not add card: "+error.message, true); return null; }
+  cardsLoadSeq++;   // invalidate any poll already in flight
   cards.push(data);
   setStatus("Added.");
   renderBoard();
@@ -7593,7 +7712,7 @@ function showImportPanel(data){
   const wrap = document.createElement("div");
   wrap.className = "modal";
   wrap.innerHTML = `<div class="box"><h3>Import from Microsoft To Do</h3>
-    <div class="msub">${total} open task${total!==1?"s":""} across ${data.length} list${data.length!==1?"s":""}. Choose a project for each list. Due dates decide Today / This week / Needs you.</div>
+    <div class="msub">${total} open task${total!==1?"s":""} across ${data.length} list${data.length!==1?"s":""}. Choose a project for each list. Due dates decide High / Medium / Low.</div>
     <div id="maprows"></div>
     <div class="macts">
       <button class="btn tiny ghost" id="impCancel">Cancel</button>
