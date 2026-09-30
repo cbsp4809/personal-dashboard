@@ -783,6 +783,21 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .col.focused{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus), 0 0 18px rgba(126,176,124,.14);}
 .col.focused .col-h{border-bottom-color:rgba(126,176,124,.35);}
 .col.focused .col-h h2{color:var(--focus);}
+.api-activity{min-width:0;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:rgba(18,17,15,.3);}
+.api-activity-toggle{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;cursor:pointer;color:var(--soft);font-size:12px;font-weight:700;list-style:none;}
+.api-activity-toggle::-webkit-details-marker{display:none;}
+.api-activity-count{color:var(--muted);font-size:11px;font-weight:400;}
+.api-activity[open] .api-activity-toggle{border-bottom:1px solid var(--line);}
+.api-activity-sheet{padding:10px 12px 12px;}
+.api-activity-note{margin-bottom:8px;color:var(--muted);font-size:11px;}
+.api-act-row{display:flex;min-width:0;flex-wrap:wrap;align-items:baseline;gap:4px 8px;padding:5px 0;border-top:1px solid rgba(244,239,230,.05);}
+.api-act-row:first-of-type{border-top:0;}
+.api-act-when{min-width:58px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;}
+.api-act-what{min-width:0;flex:1 1 200px;color:var(--soft);font-size:12px;overflow-wrap:anywhere;}
+.api-act-row.send .api-act-what strong{color:var(--brass);}
+.api-act-body{width:100%;margin-top:4px;}
+.api-act-body summary{color:var(--muted);font-size:11px;cursor:pointer;}
+.api-act-body div{margin-top:5px;padding:7px 9px;border-radius:8px;background:rgba(0,0,0,.25);color:var(--soft);font-size:11.5px;white-space:pre-wrap;overflow-wrap:anywhere;}
 .col-add{display:flex;min-width:0;align-items:center;gap:6px;padding:8px 10px 0;}
 .col-add-input{min-width:0;flex:1 1 auto;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-size:13px;}
 .col-add-input::placeholder{color:var(--muted);}
@@ -1181,6 +1196,13 @@ let contentStatusFilter = "open";
 let openContentId = null;
 // List or Calendar. Per-browser, so Chris and Sydney keep their own habit.
 let contentView = localStorage.getItem("ops_content_view")==="calendar" ? "calendar" : "list";
+
+// What an integration key has done on Chris's behalf. Anything holding an
+// ops:write key can revise a draft and send mail as him, so there has to be
+// somewhere he can see that without writing SQL. Read-only: this panel never
+// changes anything.
+let apiActivity = [];
+let apiActivityAvailable = true;
 let contentMonth = "";
 let contentPhotoBusy = new Set();
 const contentDrafts = new Map();
@@ -1750,6 +1772,7 @@ async function onSignedIn(session){
   await loadMorningDigests();
   await loadContent();
   await loadHome();
+  await loadApiActivity();
   await loadAlerts();
   if(actor==="emails" && emailMode==="cold-leads") await loadColdLeads();
   subscribeToAlerts();
@@ -1757,6 +1780,66 @@ async function onSignedIn(session){
 }
 
 let cardsLoadSeq = 0;
+
+async function loadApiActivity(){
+  if(previewMode || !sb || !apiActivityAvailable) return;
+  const { data, error } = await sb.from("api_write_log")
+    .select("id,at,key_name,action,record_id,detail,ok")
+    .order("at", { ascending:false })
+    .limit(25);
+  if(error){
+    // Table not applied yet, or no read access — hide the panel rather than nag.
+    apiActivityAvailable = false;
+    apiActivity = [];
+    return;
+  }
+  apiActivity = data || [];
+}
+
+function apiActionLabel(action){
+  return ({
+    "reply.send":   "sent a reply",
+    "reply.edit":   "edited a draft",
+    "reply.unsend": "pulled a reply back",
+    "reply.skip":   "skipped a reply",
+    "card.create":  "added a card",
+    "card.update":  "changed a card"
+  })[action] || action;
+}
+
+function apiActivityHTML(){
+  if(!apiActivityAvailable || !apiActivity.length) return "";
+  const sends = apiActivity.filter(r => r.action==="reply.send").length;
+  const rows = apiActivity.map(r => {
+    const d = r.detail || {};
+    const who = r.key_name || "an integration";
+    const target = d.to || d.title || d.subject || r.record_id || "";
+    const sent = r.action==="reply.send";
+    return `<div class="api-act-row${sent?" send":""}">
+      <span class="api-act-when">${esc(fmtWhen(r.at))}</span>
+      <span class="api-act-what"><strong>${esc(who)}</strong> ${esc(apiActionLabel(r.action))}${
+        target ? ` — ${esc(String(target).slice(0,60))}` : ""}</span>
+      ${sent && d.body ? `<details class="api-act-body"><summary>what went out</summary><div>${esc(String(d.body).slice(0,1200))}</div></details>` : ""}
+    </div>`;
+  }).join("");
+  return `<details class="api-activity">
+    <summary class="api-activity-toggle">Assistant activity<span class="api-activity-count">${apiActivity.length} recent${sends?` · ${sends} sent`:""}</span></summary>
+    <div class="api-activity-sheet">
+      <div class="api-activity-note">Everything an integration key has done on your behalf. Read-only — nothing here can be changed from this panel.</div>
+      ${rows}
+    </div>
+  </details>`;
+}
+
+function fmtWhen(iso){
+  if(!iso) return "";
+  const d = new Date(iso), now = new Date();
+  const mins = Math.round((now - d) / 60000);
+  if(mins < 1) return "just now";
+  if(mins < 60) return mins + "m ago";
+  if(mins < 1440) return Math.round(mins/60) + "h ago";
+  return d.toLocaleDateString([], { month:"short", day:"numeric" });
+}
 
 async function loadCards(){
   if(previewMode) return;
@@ -4464,10 +4547,11 @@ function renderEmails(root){
   const listHTML = list.length
     ? `<div class="email-list">${list.map(emailCardHTML).join("")}</div>`
     : `<div class="empty email-empty">No email replies waiting${emailKindFilter ? " that are sales or leads" : ""}${emailProjectFilter ? " in this inbox" : ""}.</div>`;
+  const activity = apiActivityHTML();
   if(isDesktopEmailLayout()){
     const selected = openEmailCardId ? list.find(c => c.id===openEmailCardId) : null;
     root.innerHTML = `<div class="email-two-pane">
-      <div class="email-pane-list">${commandbar}${listHTML}</div>
+      <div class="email-pane-list">${commandbar}${activity}${listHTML}</div>
       <div class="email-pane-detail${selected?"":" empty-pane"}">${selected ? emailDetailHTML(selected) : emailDetailEmptyHTML()}</div>
     </div>`;
     bindSendNowControl(root);
@@ -4475,7 +4559,7 @@ function renderEmails(root){
     const pane = root.querySelector(".email-pane-detail");
     if(selected) bindEmailDetail(pane, selected);
   }else{
-    root.innerHTML = commandbar + listHTML;
+    root.innerHTML = commandbar + activity + listHTML;
     bindSendNowControl(root);
     bindEmailCards();
   }
@@ -7972,7 +8056,7 @@ document.addEventListener("visibilitychange", () => {
     if(actor==="emails") repairQueuedReplySignedUrls();
   }
 });
-setInterval(() => { if(currentUser && !previewMode){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); } }, 45000);
+setInterval(() => { if(currentUser && !previewMode){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); loadApiActivity(); } }, 45000);
 boot();
 </script>
 </body>
