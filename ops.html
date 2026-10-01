@@ -783,6 +783,20 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .col.focused{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus), 0 0 18px rgba(126,176,124,.14);}
 .col.focused .col-h{border-bottom-color:rgba(126,176,124,.35);}
 .col.focused .col-h h2{color:var(--focus);}
+.event-lead-picker{max-width:220px;padding:2px 6px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--soft);font-size:11px;}
+.event-lead-type{padding:1px 6px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);font-size:10px;letter-spacing:.03em;text-transform:uppercase;font-weight:700;}
+.event-lead-type.booth_demo{color:var(--sydney);border-color:rgba(154,175,152,.45);}
+.event-lead-type.met_only{color:var(--soon);border-color:rgba(212,176,106,.45);}
+.event-lead-variant{padding:1px 5px;border-radius:5px;background:rgba(255,255,255,.06);color:var(--muted);font-family:Consolas,monospace;font-size:10px;}
+.event-lead-multi{color:var(--brass);font-size:10px;font-weight:700;}
+.event-lead-note{padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:rgba(18,17,15,.35);color:var(--soft);font-size:11.5px;}
+.event-lead-note.warn{border-color:rgba(212,176,106,.4);background:rgba(212,176,106,.1);}
+.event-lead-ab{color:var(--muted);font-size:11px;font-family:Consolas,monospace;overflow-wrap:anywhere;}
+.event-lead-subject{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line-strong);border-radius:9px;background:var(--bg);color:var(--ink);font-size:14px;}
+.event-lead-subject:focus{border-color:var(--brass);outline:none;}
+.event-lead-save{min-width:0;flex:1 1 auto;color:var(--muted);font-size:11px;}
+.event-lead-detail .email-detail-sub{color:var(--muted);font-size:11px;}
+.event-lead-detail .content-detail-close{display:flex;align-items:center;justify-content:center;}
 .api-activity{min-width:0;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:rgba(18,17,15,.3);}
 .api-activity-toggle{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;cursor:pointer;color:var(--soft);font-size:12px;font-weight:700;list-style:none;}
 .api-activity-toggle::-webkit-details-marker{display:none;}
@@ -991,6 +1005,7 @@ body.card-detail-open{overflow:hidden;}
         <div class="filters" aria-label="Switch between the inbox and today's cold leads">
           <button class="chip on" data-email-mode="inbox">Inbox</button>
           <button class="chip" data-email-mode="cold-leads">Cold Leads</button>
+          <button class="chip" data-email-mode="event-leads">Event Leads</button>
         </div>
       </div>
     </div>
@@ -1252,7 +1267,24 @@ const COLD_LEAD_LINKEDIN_DAY = 10;
 // Sales owns the holiday calendar; until Ops reads it from the DB, these keep
 // the client-side maths honest. Update alongside public.outreach_holidays.
 const COLD_LEAD_HOLIDAYS = ["2026-09-07","2026-11-26","2026-11-27","2026-12-24","2026-12-25","2027-01-01"];
-let emailMode = localStorage.getItem("ops_email_mode")==="cold-leads" ? "cold-leads" : "inbox";
+let emailMode = ["cold-leads","event-leads"].includes(localStorage.getItem("ops_email_mode"))
+  ? localStorage.getItem("ops_email_mode") : "inbox";
+// ---- Event Leads -------------------------------------------------------
+// Event follow-up, not cold outreach. Different source (event_leads, shared
+// with Sales), different pace (40/day), and every draft carries an A/B variant
+// tag that has to survive editing.
+const EVENT_LEAD_DAILY_TARGET = 40;
+const EVENT_LEAD_FROM = "chris@thestudiopod.com";
+const EVENT_LEAD_REF_PREFIX = "event-lead:";
+
+let eventList = [];                // [{id, name, city, start_date, emailable}]
+let eventLeadEventId = localStorage.getItem("ops_event_id") || "";
+let eventLeads = [];               // [{ lead, draft }]
+let eventLeadsState = "idle";      // idle | loading | ready | error
+let eventLeadsError = "";
+let openEventLeadId = null;
+const eventLeadEdits = new Map();  // lead id -> { subject, body, dirty, saved* }
+
 let coldLeads = [];                // [{ lead, draft, drafts, sentToday }]
 let coldLeadsState = "idle";       // idle | loading | ready | error
 let coldLeadsError = "";
@@ -1670,7 +1702,7 @@ function syncActorUI(){
   const showingBoardTools = showingBoard();
   $("#emailFilters").classList.toggle("hidden", !showingEmails);
   // Inbox and Kind only mean something for inbox mail, not the cold batch.
-  $$("#emailFilters [data-mode-scope='inbox']").forEach(group => group.classList.toggle("hidden", emailMode==="cold-leads"));
+  $$("#emailFilters [data-mode-scope='inbox']").forEach(group => group.classList.toggle("hidden", emailMode!=="inbox"));
   $$("[data-email-mode]").forEach(x => x.classList.toggle("on", (x.dataset.emailMode||"inbox")===emailMode));
   $("#contentFilters").classList.toggle("hidden", !showingContent);
   $$("[data-content-view]").forEach(x =>
@@ -4209,6 +4241,457 @@ function coldSendAllControlHTML(){
   return `<button type="button" class="btn tiny cold-send-all"${disabled?" disabled":""} title="${esc(title)}">Send all${capped?` ${capped}`:""}</button>`;
 }
 
+// ---------------------------------------------------------------------------
+// Event Leads — follow-up after a trade show or event.
+//
+// Shares public.event_leads with Sales rather than copying it: that table
+// already holds the people, and "did they use the booth" is already recorded
+// as met / booth_user. Only the drafts are ours (event_lead_drafts).
+//
+// Two things the spec is firm about and the code enforces:
+//   * met-only leads rank equally with booth-demo leads, but the copy must not
+//     claim they tried the booth — the row says which they are.
+//   * someone who appears at more than one event is kept, not deduped. Their
+//     cross_event_note is surfaced so the draft can acknowledge it.
+// ---------------------------------------------------------------------------
+
+function eventLeadType(lead){
+  return lead.booth_user ? "booth_demo" : (lead.met ? "met_only" : "list_only");
+}
+function eventLeadTypeLabel(lead){
+  const t = eventLeadType(lead);
+  return t==="booth_demo" ? "Used the booth" : t==="met_only" ? "Met, no booth" : "List only";
+}
+function eventLeadEmailable(lead){
+  return !!String(lead.email||"").trim() && (lead.booth_user || lead.met);
+}
+
+function eventLeadEditFor(entry){
+  const id = entry.lead.id;
+  if(!eventLeadEdits.has(id)){
+    const d = entry.draft || {};
+    eventLeadEdits.set(id, {
+      subject: d.subject || "", body: d.body || "",
+      savedSubject: d.subject || "", savedBody: d.body || "", dirty: false
+    });
+  }
+  return eventLeadEdits.get(id);
+}
+
+function eventLeadProgress(){
+  const sent = eventLeads.filter(e => e.draft && e.draft.sent_at).length;
+  return { sent, total: EVENT_LEAD_DAILY_TARGET };
+}
+
+function eventLeadStatus(entry){
+  const d = entry.draft;
+  if(d && d.sent_at) return { key:"sent", label:"Sent" };
+  const queued = eventLeadCardForDraft(d && d.id);
+  if(queued && queued.send_requested_at) return { key:"queued", label:"Queued" };
+  if(d && d.status==="approved") return { key:"approved", label:"Approved" };
+  if(!d || !String(d.body||"").trim()) return { key:"nodraft", label:"No draft" };
+  return { key:"ready", label:"Draft" };
+}
+
+function eventLeadCardForDraft(draftId){
+  if(!draftId) return null;
+  return cards.find(c => c.source_ref === EVENT_LEAD_REF_PREFIX + draftId) || null;
+}
+
+async function loadEventList(){
+  if(!sb) return;
+  const ev = await sb.from("events").select("id,name,city,start_date").order("start_date", { ascending:false, nullsFirst:false });
+  if(ev.error){ eventLeadsState="error"; eventLeadsError=ev.error.message; return; }
+  eventList = ev.data || [];
+  if(!eventLeadEventId && eventList.length) eventLeadEventId = eventList[0].id;
+}
+
+async function loadEventLeads(){
+  if(!sb || previewMode) return;
+  eventLeadsState = "loading";
+  renderEventLeadsIfIdle();
+  if(!eventList.length) await loadEventList();
+  if(!eventLeadEventId){ eventLeadsState="ready"; eventLeads=[]; renderBoard(); return; }
+
+  const today = chicagoDateISO();
+  const res = await sb.from("event_leads")
+    .select("id,event_id,full_name,title,organization,email,linkedin,met,booth_user," +
+            "anticipated_product,notes,priority,assigned_day,cross_event_note")
+    .eq("event_id", eventLeadEventId)
+    .eq("assigned_day", today);
+  if(res.error){ eventLeadsState="error"; eventLeadsError=res.error.message; renderBoard(); return; }
+
+  const leads = res.data || [];
+  let drafts = [];
+  if(leads.length){
+    const dr = await sb.from("event_lead_drafts")
+      .select("*").in("event_lead_id", leads.map(l => l.id)).eq("channel","email");
+    if(dr.error){ eventLeadsState="error"; eventLeadsError=dr.error.message; renderBoard(); return; }
+    drafts = dr.data || [];
+  }
+  eventLeads = leads.map(lead => ({
+    lead, draft: drafts.find(d => d.event_lead_id===lead.id) || null
+  })).sort((a,b) => String(a.lead.organization||"").localeCompare(String(b.lead.organization||"")));
+  eventLeadsState = "ready";
+  eventLeadsError = "";
+  renderBoard();
+}
+
+function renderEventLeadsIfIdle(){
+  if(actor==="emails" && emailMode==="event-leads") renderBoard();
+}
+
+/* Pull the next 40 for today. Emailable means they have an address AND we
+   actually met them — a scanned badge list is not a follow-up. */
+async function pullEventLeadDay(button){
+  if(!sb || !eventLeadEventId) return;
+  const today = chicagoDateISO();
+  button.disabled = true;
+  button.textContent = "Pulling…";
+  const res = await sb.from("event_leads")
+    .select("id,met,booth_user,email")
+    .eq("event_id", eventLeadEventId)
+    .is("assigned_day", null)
+    .order("created_at", { ascending:true })
+    .limit(600);
+  if(res.error){
+    button.disabled = false; button.textContent = "Pull today's 40";
+    setStatus("Could not pull: "+res.error.message, true);
+    return;
+  }
+  // met-only and booth-demo rank equally, in the order Sales captured them.
+  const eligible = (res.data||[]).filter(eventLeadEmailable).slice(0, EVENT_LEAD_DAILY_TARGET);
+  if(!eligible.length){
+    button.disabled = false; button.textContent = "Pull today's 40";
+    setStatus("Nothing left to follow up for this event.");
+    return;
+  }
+  const up = await sb.from("event_leads")
+    .update({ assigned_day: today, updated_at: isoNow() })
+    .in("id", eligible.map(l => l.id));
+  if(up.error){
+    button.disabled = false; button.textContent = "Pull today's 40";
+    setStatus("Could not assign the day: "+up.error.message, true);
+    return;
+  }
+  setStatus(`Pulled ${eligible.length} for today.`);
+  await loadEventLeads();
+}
+
+function eventLeadRowHTML(entry){
+  const lead = entry.lead, d = entry.draft;
+  const state = eventLeadStatus(entry);
+  const open = lead.id===openEventLeadId;
+  const who = [lead.full_name, lead.title].filter(Boolean).join(" · ");
+  return `<article class="card email-card event-lead-card${open?" open":""}" data-event-lead="${esc(lead.id)}">
+    <div class="email-card-row">
+      <button type="button" class="email-card-toggle event-lead-toggle" aria-expanded="${open}">
+        <span class="email-from-row">
+          <span class="cold-lead-state ${state.key}">${esc(state.label)}</span>
+          <span class="email-from">${esc(lead.organization||"Unknown organisation")}</span>
+        </span>
+        <span class="email-subject">${esc(who||lead.email||"")}</span>
+        <span class="email-meta">
+          <span class="event-lead-type ${esc(eventLeadType(lead))}">${esc(eventLeadTypeLabel(lead))}</span>
+          ${d && d.variant_id ? `<span class="event-lead-variant" title="A/B variant">${esc(d.variant_id)}</span>` : ""}
+          ${lead.cross_event_note ? `<span class="event-lead-multi" title="${esc(lead.cross_event_note)}">multi-touch</span>` : ""}
+        </span>
+      </button>
+    </div>
+  </article>`;
+}
+
+function eventLeadEmptyHTML(){
+  return `<div class="email-detail-empty">
+    <div class="email-detail-empty-title">Nothing selected</div>
+    <div class="email-detail-empty-sub">Pick someone on the left to read and edit their follow-up.</div>
+  </div>`;
+}
+
+function eventLeadDetailHTML(entry){
+  const lead = entry.lead, d = entry.draft || {};
+  const edit = eventLeadEditFor(entry);
+  const state = eventLeadStatus(entry);
+  const locked = state.key==="sent" || state.key==="queued";
+  const approved = d.status==="approved" || state.key==="sent" || state.key==="queued";
+  const ab = [d.variant_id, d.subject_family, d.opener_family, d.cta_family].filter(Boolean);
+  return `<section class="email-detail event-lead-detail" data-event-lead-detail="${esc(lead.id)}">
+    <div class="email-detail-head">
+      <div class="email-sheet-top">
+        <div class="email-from">${esc(lead.organization||"")} — ${esc(lead.full_name||lead.email||"")}</div>
+        <div class="content-detail-meta">
+          <span class="event-lead-type ${esc(eventLeadType(lead))}">${esc(eventLeadTypeLabel(lead))}</span>
+          <span class="cold-lead-state ${state.key}">${esc(state.label)}</span>
+          ${lead.anticipated_product ? `<span class="src">${esc(lead.anticipated_product)}</span>` : ""}
+        </div>
+      </div>
+      <button type="button" class="content-detail-close event-lead-close" aria-label="Close">×</button>
+    </div>
+    <div class="email-detail-scroll">
+      ${lead.cross_event_note ? `<div class="event-lead-note"><strong>Seen before:</strong> ${esc(lead.cross_event_note)}</div>` : ""}
+      ${eventLeadType(lead)==="met_only" ? `<div class="event-lead-note warn">Met at the event but did <strong>not</strong> use the booth — the copy must not say they tried it.</div>` : ""}
+      ${ab.length ? `<div class="event-lead-ab">Variant ${ab.map(x=>esc(x)).join(" · ")}${d.highlight?` · ${esc(d.highlight)}`:""}</div>` : ""}
+      <label class="email-reply-label" for="ev-subj-${esc(lead.id)}">Subject</label>
+      <input class="event-lead-subject" id="ev-subj-${esc(lead.id)}" type="text" value="${esc(edit.subject)}"${locked?" disabled":""}>
+      <label class="email-reply-label" for="ev-body-${esc(lead.id)}">Message</label>
+      <textarea class="email-reply event-lead-body" id="ev-body-${esc(lead.id)}"${locked?" disabled":""}>${esc(edit.body)}</textarea>
+      <div class="email-detail-sub">To ${esc(lead.email||"no address")} · from ${esc(EVENT_LEAD_FROM)}</div>
+    </div>
+    <div class="email-actions">
+      <span class="event-lead-save" aria-live="polite"></span>
+      ${locked ? "" : `<button type="button" class="btn tiny event-lead-approve"${approved?" disabled":""}>${approved?"Approved":"Approve"}</button>
+      <button type="button" class="btn tiny event-lead-verbal"${approved?" disabled":""} title="He said yes on a call">Approved verbally</button>`}
+      <button type="button" class="btn tiny event-lead-send"${locked||!approved?" disabled":""}>${state.key==="sent"?"Sent":state.key==="queued"?"Queued":"Send"}</button>
+    </div>
+  </section>`;
+}
+
+function eventSendAllControlHTML(){
+  const ready = eventLeads.filter(e => {
+    const st = eventLeadStatus(e);
+    return st.key==="approved" && e.lead.email;
+  }).length;
+  if(!ready) return "";
+  return `<button type="button" class="btn tiny cold-send-all event-send-all">Send ${ready} approved</button>`;
+}
+
+function renderEventLeads(root){
+  root.classList.add("email-board");
+  const progress = eventLeadProgress();
+  const queuedCount = queuedEmailCards().length;
+  const ev = eventList.find(e => e.id===eventLeadEventId);
+  const picker = eventList.length
+    ? `<select class="event-lead-picker" aria-label="Which event">${
+        eventList.map(e => `<option value="${esc(e.id)}"${e.id===eventLeadEventId?" selected":""}>${esc(e.name)}</option>`).join("")
+      }</select>`
+    : "";
+  const bar = `<div class="email-commandbar" aria-label="Event leads controls">
+      <div class="email-command-copy">
+        <span class="email-command-title">${progress.sent}/${progress.total} sent today</span>
+        <span class="email-command-sub" aria-live="polite">
+          <span class="email-mail-line">${picker} · from ${esc(EVENT_LEAD_FROM)}</span>
+          ${eventLeadsState==="error" ? `<span class="email-mail-line">${esc(eventLeadsError)}</span>` : ""}
+        </span>
+      </div>
+      <div class="cold-send-all-wrap">${eventSendAllControlHTML()}${sendNowControlHTML(queuedCount)}</div>
+    </div>`;
+  let listHTML;
+  if(eventLeadsState==="loading" || eventLeadsState==="idle") listHTML = `<div class="empty email-empty">Loading…</div>`;
+  else if(eventLeadsState==="error") listHTML = `<div class="empty email-empty">Could not load event leads. ${esc(eventLeadsError)}</div>`;
+  else if(!eventLeads.length) listHTML = `<div class="empty email-empty">
+      Nothing pulled for today${ev?` from ${esc(ev.name)}`:""}.
+      <div class="content-empty-sub">Pull the next ${EVENT_LEAD_DAILY_TARGET} to start today's follow-up.</div>
+      <button type="button" class="btn tiny event-lead-pull">Pull today's ${EVENT_LEAD_DAILY_TARGET}</button>
+    </div>`;
+  else listHTML = `<div class="email-list">${eventLeads.map(eventLeadRowHTML).join("")}</div>`;
+
+  const selected = openEventLeadId ? eventLeads.find(e => e.lead.id===openEventLeadId) : null;
+  const detailHTML = selected ? eventLeadDetailHTML(selected) : eventLeadEmptyHTML();
+  if(isDesktopEmailLayout()){
+    root.innerHTML = `<div class="email-two-pane">
+      <div class="email-pane-list">${bar}${listHTML}</div>
+      <div class="email-pane-detail${selected?"":" empty-pane"}">${detailHTML}</div>
+    </div>`;
+  }else{
+    root.innerHTML = bar + listHTML + (selected ? `<div class="email-pane-detail cold-lead-stacked">${detailHTML}</div>` : "");
+  }
+  bindSendNowControl(root);
+  bindEventLeads(root);
+  syncEmailSheetClass();
+}
+
+function renderEventLeadDetailPane(){
+  const pane = document.querySelector(".email-pane-detail");
+  if(!pane){ renderBoard(); return; }
+  const entry = openEventLeadId ? eventLeads.find(e => e.lead.id===openEventLeadId) : null;
+  pane.innerHTML = entry ? eventLeadDetailHTML(entry) : eventLeadEmptyHTML();
+  pane.classList.toggle("empty-pane", !entry);
+  if(entry) bindEventLeadDetail(pane, entry);
+}
+
+function bindEventLeads(root){
+  const scope = root || document;
+  const picker = scope.querySelector(".event-lead-picker");
+  if(picker) picker.onchange = async () => {
+    eventLeadEventId = picker.value;
+    try{ localStorage.setItem("ops_event_id", eventLeadEventId); }catch(_){ }
+    openEventLeadId = null;
+    await loadEventLeads();
+  };
+  const pull = scope.querySelector(".event-lead-pull");
+  if(pull) pull.onclick = () => pullEventLeadDay(pull);
+  const sendAll = scope.querySelector(".event-send-all");
+  if(sendAll) sendAll.onclick = () => sendAllEventLeads(sendAll);
+
+  scope.querySelectorAll(".event-lead-card").forEach(el => {
+    const id = el.dataset.eventLead;
+    const toggle = el.querySelector(".event-lead-toggle");
+    if(!toggle) return;
+    toggle.onclick = async () => {
+      await persistEventLeadDraft(openEventLeadId);
+      openEventLeadId = openEventLeadId===id ? null : id;
+      if(isDesktopEmailLayout() && document.querySelector(".email-pane-detail")){
+        scope.querySelectorAll(".event-lead-card").forEach(r =>
+          r.classList.toggle("open", r.dataset.eventLead===openEventLeadId));
+        renderEventLeadDetailPane();
+        return;
+      }
+      renderBoard();
+    };
+  });
+  const pane = scope.querySelector(".email-pane-detail");
+  const sel = openEventLeadId ? eventLeads.find(e => e.lead.id===openEventLeadId) : null;
+  if(pane && sel) bindEventLeadDetail(pane, sel);
+}
+
+function bindEventLeadDetail(pane, entry){
+  if(!pane || !entry) return;
+  const edit = eventLeadEditFor(entry);
+  const subj = pane.querySelector(".event-lead-subject");
+  const body = pane.querySelector(".event-lead-body");
+  const note = pane.querySelector(".event-lead-save");
+  const mark = () => { edit.dirty = (edit.subject!==edit.savedSubject || edit.body!==edit.savedBody);
+                       if(note) note.textContent = edit.dirty ? "Unsaved" : ""; };
+  if(subj) subj.oninput = () => { edit.subject = subj.value; mark(); };
+  if(body) body.oninput = () => { edit.body = body.value; mark(); };
+
+  const close = pane.querySelector(".event-lead-close");
+  if(close) close.onclick = async () => {
+    await persistEventLeadDraft(openEventLeadId);
+    openEventLeadId = null;
+    if(isDesktopEmailLayout()) renderEventLeadDetailPane(); else renderBoard();
+  };
+  const approve = pane.querySelector(".event-lead-approve");
+  if(approve) approve.onclick = () => approveEventLead(entry, "ops_edit", approve);
+  const verbal = pane.querySelector(".event-lead-verbal");
+  if(verbal) verbal.onclick = () => approveEventLead(entry, "verbal", verbal);
+  const send = pane.querySelector(".event-lead-send");
+  if(send) send.onclick = () => sendEventLead(entry, send);
+}
+
+/* Save the edited text back to event_lead_drafts. Creates the draft row if the
+   import has not made one yet, so a hand-written follow-up is never lost. */
+async function persistEventLeadDraft(leadId){
+  if(!leadId || !sb) return;
+  const entry = eventLeads.find(e => e.lead.id===leadId);
+  if(!entry) return;
+  const edit = eventLeadEdits.get(leadId);
+  if(!edit || !edit.dirty) return;
+  const payload = { subject: edit.subject, body: edit.body, updated_at: isoNow() };
+  let res;
+  if(entry.draft && entry.draft.id){
+    res = await sb.from("event_lead_drafts").update(payload).eq("id", entry.draft.id).select("*").single();
+  }else{
+    res = await sb.from("event_lead_drafts")
+      .insert(Object.assign({ event_lead_id: leadId, channel:"email", from_email: EVENT_LEAD_FROM }, payload))
+      .select("*").single();
+  }
+  if(res.error){ setStatus("Could not save the draft: "+res.error.message, true); return; }
+  entry.draft = res.data;
+  edit.savedSubject = edit.subject; edit.savedBody = edit.body; edit.dirty = false;
+}
+
+async function approveEventLead(entry, path, button){
+  if(!sb) return;
+  const edit = eventLeadEditFor(entry);
+  if(!String(edit.body||"").trim()){ setStatus("Nothing to approve — the draft is empty.", true); return; }
+  button.disabled = true;
+  await persistEventLeadDraft(entry.lead.id);
+  const id = entry.draft && entry.draft.id;
+  if(!id){ button.disabled = false; setStatus("Could not approve — no draft saved.", true); return; }
+  const res = await sb.from("event_lead_drafts").update({
+    status: "approved", approval_path: path, approved_at: isoNow(),
+    approved_by: (currentUser && currentUser.email) || "chris", updated_at: isoNow()
+  }).eq("id", id).select("*").single();
+  if(res.error){ button.disabled = false; setStatus("Could not approve: "+res.error.message, true); return; }
+  entry.draft = res.data;
+  setStatus(path==="verbal" ? "Marked approved on your say-so." : "Approved.");
+  if(isDesktopEmailLayout()) renderEventLeadDetailPane(); else renderBoard();
+}
+
+function eventLeadBlockReason(entry){
+  const lead = entry.lead, d = entry.draft;
+  if(!lead.email) return "no email address";
+  if(d && d.sent_at) return "already sent";
+  if(!d || !String(d.body||"").trim()) return "no draft";
+  if(d.status!=="approved") return "not approved yet";
+  return "";
+}
+
+function eventLeadCardPayload(entry, edit){
+  const lead = entry.lead;
+  const ev = eventList.find(e => e.id===lead.event_id);
+  return {
+    title: `Event follow-up — ${lead.organization||lead.email}`,
+    snippet: edit.body,
+    project: "studio-pod",
+    column_key: "sydney",
+    owner: "sydney",
+    source: "email",
+    source_ref: EVENT_LEAD_REF_PREFIX + entry.draft.id,
+    email_kind: "lead",
+    inbound_from: EVENT_LEAD_FROM,
+    inbound_account: EVENT_LEAD_FROM,
+    inbound_subject: edit.subject,
+    inbound_body: `Event follow-up to ${lead.full_name||lead.email} at ${lead.organization||""}`
+      + (ev ? ` after ${ev.name}` : "")
+      + `. Not a reply — send as a new message from ${EVENT_LEAD_FROM}.`,
+    reply_all: false,
+    reply_to: [lead.email],
+    reply_cc: [],
+    reply_bcc: [],
+    send_requested_at: isoNow(),
+    send_requested_by: "chris",
+    updated_at: isoNow()
+  };
+}
+
+async function queueEventLeadCard(entry){
+  await persistEventLeadDraft(entry.lead.id);
+  if(!entry.draft || !entry.draft.id) return "no draft saved";
+  const edit = eventLeadEditFor(entry);
+  const payload = eventLeadCardPayload(entry, edit);
+  const existing = eventLeadCardForDraft(entry.draft.id);
+  const res = existing
+    ? await sb.from("ops_cards").update(payload).eq("id", existing.id).select("*").single()
+    : await sb.from("ops_cards").insert(Object.assign({ sort:0, done_at:null, done_by:null }, payload)).select("*").single();
+  if(res.error) return res.error.message || "could not queue";
+  const idx = cards.findIndex(c => c.id===res.data.id);
+  if(idx>=0) cards[idx] = res.data; else cards.push(res.data);
+  const mark = await sb.from("event_lead_drafts")
+    .update({ status:"sent", sent_at: isoNow(), updated_at: isoNow() })
+    .eq("id", entry.draft.id).select("*").single();
+  if(!mark.error) entry.draft = mark.data;
+  return "";
+}
+
+async function sendEventLead(entry, button){
+  const blocked = eventLeadBlockReason(entry);
+  if(blocked){ setStatus("Can't send — "+blocked+".", true); return; }
+  if(!window.confirm(`Send this follow-up to ${entry.lead.email} from ${EVENT_LEAD_FROM}?`)) return;
+  button.disabled = true; button.textContent = "Queueing…";
+  const err = await queueEventLeadCard(entry);
+  if(err){ button.disabled = false; button.textContent = "Send"; setStatus("Could not queue: "+err, true); return; }
+  setStatus("Queued to send.");
+  if(isDesktopEmailLayout()) renderEventLeadDetailPane(); else renderBoard();
+  requestSendNow();
+}
+
+async function sendAllEventLeads(button){
+  const ready = eventLeads.filter(e => !eventLeadBlockReason(e));
+  if(!ready.length){ setStatus("Nothing approved and ready to send."); return; }
+  if(!window.confirm(`Send ${ready.length} approved follow-up${ready.length===1?"":"s"} from ${EVENT_LEAD_FROM}?`)) return;
+  button.disabled = true; button.textContent = "Queueing…";
+  let ok = 0, failed = 0;
+  for(const entry of ready){
+    const err = await queueEventLeadCard(entry);
+    if(err) failed++; else ok++;
+  }
+  setStatus(failed ? `Queued ${ok}; ${failed} could not be queued.` : `Queued ${ok} to send.`, !!failed);
+  await loadEventLeads();
+  requestSendNow();
+}
+
 function renderColdLeads(root){
   root.classList.add("email-board");
   const progress = coldLeadProgress();
@@ -4523,6 +5006,11 @@ function emailDetailEmptyHTML(){
 function renderEmails(root){
   if(emailMode==="cold-leads"){
     renderColdLeads(root);
+    syncEmailSheetClass();
+    return;
+  }
+  if(emailMode==="event-leads"){
+    renderEventLeads(root);
     syncEmailSheetClass();
     return;
   }
@@ -7657,6 +8145,7 @@ $$("[data-email-mode]").forEach(ch => ch.onclick = async () => {
   syncActorUI();
   renderBoard();
   if(emailMode==="cold-leads" && coldLeadsState!=="loading") loadColdLeads();
+  if(emailMode==="event-leads" && eventLeadsState!=="loading") loadEventLeads();
 });
 
 $$("[data-content-view]").forEach(ch => ch.onclick = () => {
