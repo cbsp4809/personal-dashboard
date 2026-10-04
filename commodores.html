@@ -210,6 +210,10 @@ body.plays-immersive .plays-frame{position:fixed;top:var(--vvy,0px);left:var(--v
 .name-chip .chip-out{color:#e07a6a;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
 .status-line{min-height:20px;margin-top:10px;color:var(--highlight);font-size:12px}
 .staff-note{margin-top:18px;color:var(--muted);font-size:11px;text-align:center}
+.plays-fab{display:none;position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:150;flex-direction:column;gap:10px;align-items:flex-end}
+body.tab-plays:not(.plays-immersive) .plays-fab{display:flex}
+.plays-fab button{min-height:52px;padding:0 20px;border-radius:999px;border:1px solid var(--gold);background:var(--gold);color:#1C1C1C;font-weight:800;font-size:15px;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+.plays-fab #fabWhiteboard{background:#1C1C1C;color:var(--gold)}
 .league-block{min-width:0;max-width:100%}
 .league-block .section-head{flex-direction:column;align-items:flex-start;gap:4px}
 .league-block .section-head p{text-align:left}
@@ -958,6 +962,11 @@ body.team-dragging{overflow:hidden;touch-action:none}
 
 </div>
 
+<div class="plays-fab" id="playsFab">
+  <button type="button" id="fabWhiteboard">✎ Whiteboard</button>
+  <button type="button" id="fabGameday">▶ Gameday</button>
+</div>
+
 <noscript>This staff field book needs JavaScript for coach sign-in and shared practice plans.</noscript>
 <script>
 const $=s=>document.querySelector(s);
@@ -1436,6 +1445,7 @@ function showPage(name,options){
   const seasonNav=$("#seasonNav");
   if(seasonNav) seasonNav.classList.toggle("on",resolved==="season");
   $$(".page").forEach(item=>item.classList.toggle("on",item.id==="page-"+resolved));
+  document.body.classList.toggle("tab-plays",resolved==="plays");
   if(resolved==="plays") startPlaysFrame();
   if(resolved==="playbook") showPlaybookPane((options&&options.pane)||PLAYBOOK_PANES[requested]||"offense");
   if(resolved==="today"){
@@ -3175,6 +3185,14 @@ function renderDatesTab(){
 }
 const practiceNavEl=$("#practiceNav");
 if(practiceNavEl) practiceNavEl.onclick=e=>{const b=e.target.closest("[data-prtab]");if(b) setPracticeTab(b.dataset.prtab);};
+function messagePlays(type){
+  const frame=$("#playsFrame");
+  if(frame&&frame.contentWindow) frame.contentWindow.postMessage({type},location.origin);
+}
+const fabGamedayBtn=$("#fabGameday");
+if(fabGamedayBtn) fabGamedayBtn.onclick=()=>messagePlays("commodores-enter-gameday");
+const fabWhiteboardBtn=$("#fabWhiteboard");
+if(fabWhiteboardBtn) fabWhiteboardBtn.onclick=()=>messagePlays("commodores-whiteboard");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DAWGS CHAIN — post-game award tracker. Current holder + history on the Roster
