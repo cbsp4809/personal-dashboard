@@ -6979,6 +6979,15 @@ function bindColAdds(root){
       if(!title) return;
       const btn = form.querySelector(".col-add-btn");
       if(btn) btn.disabled = true;
+
+      // Clear BEFORE creating. createCard re-renders the board itself, and a
+      // re-render snapshots whatever is sitting in this box — so clearing
+      // afterwards wrote to an element that had already been replaced, and the
+      // typed text came straight back.
+      input.value = "";
+      colAddDrafts.delete(key);
+      colAddFocus = { key, start:0, end:0 };
+
       const row = await createCard({
         title,
         snippet: "",
@@ -6989,11 +6998,18 @@ function bindColAdds(root){
         source: "chat"
       }, { createAlert:false });
       if(btn) btn.disabled = false;
-      if(!row) return;           // createCard already reported the error
-      input.value = "";
-      colAddDrafts.delete(key);
-      colAddFocus = { key, start:0, end:0 };
-      renderBoard();
+      if(!row){
+        // The insert failed and createCard has already said so. Put the words
+        // back rather than making him retype them — into the box as well as the
+        // draft map, because the re-render snapshots the box and would
+        // otherwise delete what we just restored.
+        input.value = title;
+        colAddDrafts.set(key, title);
+        colAddFocus = { key, start:title.length, end:title.length };
+        renderBoard();
+      }
+      // On success createCard has already re-rendered, with the box empty and
+      // focus restored — nothing more to do here.
     };
   });
   restoreColAddFocus(root);
