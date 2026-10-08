@@ -797,6 +797,15 @@ a.content-rec-file{color:var(--brass);text-decoration:underline;}
 .event-lead-save{min-width:0;flex:1 1 auto;color:var(--muted);font-size:11px;}
 .event-lead-detail .email-detail-sub{color:var(--muted);font-size:11px;}
 .event-lead-detail .content-detail-close{display:flex;align-items:center;justify-content:center;}
+.card.quiet{opacity:.52;background:rgba(18,17,15,.5);border-style:dashed;}
+.card.quiet:hover,.card.quiet:focus-within{opacity:.82;}
+.card.quiet .title{color:var(--muted);font-weight:500;}
+.card.quiet .snippet{display:none;}
+.card-quiet{color:var(--muted);font-size:17px;}
+.card-quiet:hover,.card-quiet:focus-visible{color:var(--brass);outline:none;}
+.card-quiet.on{color:var(--brass);}
+.quiet-chip{padding:1px 7px;border-radius:999px;border:1px dashed var(--line-strong);color:var(--muted);font-size:10.5px;letter-spacing:.03em;}
+.n-quiet{color:var(--muted);font-weight:400;}
 .api-activity{min-width:0;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:rgba(18,17,15,.3);}
 .api-activity-toggle{display:flex;min-width:0;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;cursor:pointer;color:var(--soft);font-size:12px;font-weight:700;list-style:none;}
 .api-activity-toggle::-webkit-details-marker{display:none;}
@@ -1209,6 +1218,12 @@ let contentItems = [];
 let contentAvailable = true;
 let contentStatusFilter = "open";
 let openContentId = null;
+
+// Cards Chris has quieted: still on the list, greyed, sunk to the bottom. For
+// work blocked on someone else. Per person — the table is RLS'd to the owner,
+// so Sydney never sees his quiet state, which matters because he is often
+// waiting on her.
+let quietCards = new Map();   // card id -> quieted_at ISO
 // List or Calendar. Per-browser, so Chris and Sydney keep their own habit.
 let contentView = localStorage.getItem("ops_content_view")==="calendar" ? "calendar" : "list";
 
@@ -1805,6 +1820,7 @@ async function onSignedIn(session){
   await loadContent();
   await loadHome();
   await loadApiActivity();
+  await loadQuietCards();
   await loadAlerts();
   if(actor==="emails" && emailMode==="cold-leads") await loadColdLeads();
   subscribeToAlerts();
@@ -1871,6 +1887,63 @@ function fmtWhen(iso){
   if(mins < 60) return mins + "m ago";
   if(mins < 1440) return Math.round(mins/60) + "h ago";
   return d.toLocaleDateString([], { month:"short", day:"numeric" });
+}
+
+async function loadQuietCards(){
+  if(previewMode || !sb) return;
+  const { data, error } = await sb.from("ops_card_quiet").select("card_id,quieted_at");
+  if(error) return;              // table not applied yet — quiet just stays off
+  quietCards = new Map((data||[]).map(r => [r.card_id, r.quieted_at]));
+}
+
+/* The headline number is what is actually on him right now; the quiet pile is
+   still shown so nothing can sit blocked for months unseen. */
+function countLabel(list){
+  const quiet = list.filter(isQuiet).length;
+  const live = list.length - quiet;
+  return quiet ? `${live}<span class="n-quiet"> + ${quiet} quiet</span>` : String(live);
+}
+
+function isQuiet(card){ return quietCards.has(card && card.id); }
+
+function quietDays(card){
+  const at = quietCards.get(card && card.id);
+  if(!at) return 0;
+  return Math.max(0, Math.floor((Date.now() - new Date(at).getTime()) / 86400000));
+}
+
+function quietLabel(card){
+  const d = quietDays(card);
+  return d < 1 ? "quiet" : "quiet " + d + "d";
+}
+
+/* Quiet sinks the card; raising it brings it back to the top of its list so it
+   is the first thing seen once whoever you were waiting on comes back. */
+async function toggleQuiet(cardId){
+  if(!sb || !currentUser) return;
+  const card = cards.find(c => c.id===cardId);
+  if(!card) return;
+  if(quietCards.has(cardId)){
+    const { error } = await sb.from("ops_card_quiet").delete()
+      .eq("card_id", cardId).eq("user_id", currentUser.id);
+    if(error){ setStatus("Could not raise that card: "+error.message, true); return; }
+    quietCards.delete(cardId);
+    // Back to the top of its own list.
+    const siblings = openCards().filter(c =>
+      c.column_key===card.column_key && cardProjectKey(c)===cardProjectKey(card) && !isQuiet(c));
+    const top = siblings.length ? Math.min(...siblings.map(c => Number(c.sort)||0)) - 1 : 0;
+    const up = await sb.from("ops_cards").update({ sort: top, updated_at: isoNow() })
+      .eq("id", cardId).select("*").single();
+    if(!up.error){ const i = cards.findIndex(c => c.id===cardId); if(i>=0) cards[i] = up.data; }
+    setStatus("Back on the list.");
+  }else{
+    const { error } = await sb.from("ops_card_quiet")
+      .insert({ card_id: cardId, user_id: currentUser.id });
+    if(error){ setStatus("Could not quiet that card: "+error.message, true); return; }
+    quietCards.set(cardId, isoNow());
+    setStatus("Quieted. Still here, just out of the way.");
+  }
+  renderBoard();
 }
 
 async function loadCards(){
@@ -2268,7 +2341,10 @@ function masterNeedsYouCards(){
 }
 
 function compareCards(a, b){
-  return (Number(a.sort)||0) - (Number(b.sort)||0)
+  // Quiet cards sink below everything live, whatever their sort.
+  const qa = isQuiet(a) ? 1 : 0, qb = isQuiet(b) ? 1 : 0;
+  return (qa - qb)
+    || (Number(a.sort)||0) - (Number(b.sort)||0)
     || String(a.created_at).localeCompare(String(b.created_at))
     || String(a.id).localeCompare(String(b.id));
 }
@@ -6904,7 +6980,7 @@ function renderBoard(){
     const deemphasized = ownerFilter==="chris" && col.key==="sydney";
     const focused = focusedColumn()===col.key;
     return `<section class="col${deemphasized?" deemphasized":""}${focused?" focused":""}" data-col="${col.key}">
-      <div class="col-h"><div><button type="button" class="col-focus" data-focus-col="${esc(col.key)}" title="Focus this column" aria-pressed="${focused}"><h2>${esc(col.label)}</h2></button><span class="sub">${esc(col.sub)}</span></div><span class="n">${list.length}</span></div>
+      <div class="col-h"><div><button type="button" class="col-focus" data-focus-col="${esc(col.key)}" title="Focus this column" aria-pressed="${focused}"><h2>${esc(col.label)}</h2></button><span class="sub">${esc(col.sub)}</span></div><span class="n">${countLabel(list)}</span></div>
       ${colAddHTML(actor, col.key, col.label)}
       <div class="col-body">${body}</div>
     </section>`;
@@ -7026,7 +7102,7 @@ function renderMasterBoard(root){
       : `<div class="empty">Nothing needs you.</div>`;
     const focused = focusedColumn()===key;
     return `<section class="col${focused?" focused":""}" data-col="needs-you" data-project="${key}">
-      <div class="col-h"><div><button type="button" class="col-focus" data-focus-col="${esc(key)}" title="Focus this column" aria-pressed="${focused}"><h2>${esc(PROJECTS[key])}</h2></button><span class="sub">High priority</span></div><span class="n">${list.length}</span></div>
+      <div class="col-h"><div><button type="button" class="col-focus" data-focus-col="${esc(key)}" title="Focus this column" aria-pressed="${focused}"><h2>${esc(PROJECTS[key])}</h2></button><span class="sub">High priority</span></div><span class="n">${countLabel(list)}</span></div>
       ${colAddHTML(key, "needs-you", PROJECTS[key])}
       <div class="col-body">${body}</div>
     </section>`;
@@ -7063,10 +7139,12 @@ function cardHTML(c, options){
   const starred = c.column_key==="needs-you";
   const drag = opts.draggable!==false;
   const project = cardProjectKey(c);
-  return `<article class="card" ${drag?`draggable="true"`:""} tabindex="0" data-id="${esc(c.id)}" aria-label="Open ${esc(c.title)} details">
+  const quiet = isQuiet(c);
+  return `<article class="card${quiet?" quiet":""}" ${drag?`draggable="true"`:""} tabindex="0" data-id="${esc(c.id)}" aria-label="Open ${esc(c.title)} details">
     <div class="card-top">
       <input type="checkbox" class="chk" title="Mark done">
       <div class="title">${esc(c.title)}</div>
+      <button type="button" class="star-btn card-quiet${quiet?" on":""}" draggable="false" title="${quiet?"Bring back to the top":"Quiet — waiting on someone else"}" aria-label="${quiet?"Raise this card":"Quiet this card"}" aria-pressed="${quiet?"true":"false"}">${quiet?"⌃":"⌄"}</button>
       <button type="button" class="star-btn card-star${starred?" on":""}" draggable="false" title="${starred?"Move to Today":"Move to Needs you"}" aria-label="${starred?"Move to Today":"Move to Needs you"}" aria-pressed="${starred?"true":"false"}">${starred?"★":"☆"}</button>
     </div>
     ${c.snippet ? `<div class="snippet">${esc(c.snippet)}</div>` : ""}
@@ -7075,6 +7153,7 @@ function cardHTML(c, options){
       <span class="tag">${esc(OWNERS[c.owner]||c.owner)}</span>
       ${due?`<span class="duechip ${dueClass(due)}">${esc(fmtDue(due))}</span>`:""}
       <span class="src">${esc(src)}</span>
+      ${quiet ? `<span class="quiet-chip">${esc(quietLabel(c))}</span>` : ""}
     </div>
     ${opts.file ? `<div class="file-row">
       <span class="file-label">File on</span>
@@ -7433,6 +7512,8 @@ function bindBoard(options){
       };
     }
     el.querySelector(".chk").onchange = e => completeCard(card, e.target);
+    const quietBtn = el.querySelector(".card-quiet");
+    if(quietBtn) quietBtn.onclick = e => { e.stopPropagation(); toggleQuiet(el.dataset.id); };
     const star = el.querySelector(".card-star");
     star.onpointerdown = e => e.stopPropagation();
     star.onclick = e => { e.preventDefault(); e.stopPropagation(); toggleNeedsYou(card); };
@@ -8561,7 +8642,7 @@ document.addEventListener("visibilitychange", () => {
     if(actor==="emails") repairQueuedReplySignedUrls();
   }
 });
-setInterval(() => { if(currentUser && !previewMode){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); loadApiActivity(); } }, 45000);
+setInterval(() => { if(currentUser && !previewMode){ loadCards(); loadMailStatus(); loadMorningDigests(); loadContent(); loadHome(); loadApiActivity(); loadQuietCards(); } }, 45000);
 boot();
 </script>
 </body>
